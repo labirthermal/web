@@ -34,7 +34,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: packages/docs/.vitepress/cache
-          key: ${{ runner.os }}-vitepress-${{ hashFiles('packages/docs/**', 'pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-vitepress-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-vitepress-
       - name: Setup Pages
