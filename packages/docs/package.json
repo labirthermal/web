@@ -5,11 +5,8 @@
     "docs:preview": "vitepress preview"
   },
   "dependencies": {
-    "@labirthermal/client": "workspace:*",
     "@labirthermal/core": "workspace:*",
-    "@labirthermal/server": "workspace:*",
-    "@labirthermal/embed": "workspace:*",
-    "@labirthermal/server-simple": "workspace:*"
+    "@labirthermal/webcomponents": "workspace:*"
   },
   "devDependencies": {
     "vitepress": "^1.6.4",

@@ -1,18 +1,12 @@
 # Typescript tools for thermal imaging
 
-Documentation and examples at [https://edu.labir.cz](https://edu.labir.cz/obsah/software/webova-aplikace/dokumentace/).
+Documentation and examples at [https://labirthermal.github.io/web/](https://labirthermal.github.io/web/).
 
 Set of JS/TS packages for work with recordings from thermal cameras:
 
 - `@labir/core` - the core functionality in pure TS
 - `@labir/embed` - webcomponents on top of `@labir/core`
 - `@labir/thermal-display` - a Wordpress plugin using `@labir/embed`
-- `@labir/server` - a PHP backend & a TS client
-
-Experimental / inactive packages:
-- `@labir/react-bridge` - React hooks and base components
-- `@labir/vue` - experimental integration to Vue 3
-- `@labir/api` - the first version of PHP server
 
 ## Development
 
@@ -24,7 +18,7 @@ Use **PNPM** package manager - this monorepo relies on its workspaces functional
 ### Installation
 
 ```bash
-git clone https://github.com/moichim/labir
+gh repo clone labirthermal/web
 pnpm install
 ```
 

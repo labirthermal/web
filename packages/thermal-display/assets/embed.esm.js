@@ -44,7 +44,6 @@ let date_fns = require("date-fns");
 let lit_directives_when_js = require("lit/directives/when.js");
 let lit_directives_unsafe_html_js = require("lit/directives/unsafe-html.js");
 let lit_directives_guard_js = require("lit/directives/guard.js");
-let _labirthermal_client = require("@labirthermal/client");
 let mediabunny = require("mediabunny");
 let lit_directive_js = require("lit/directive.js");
 //#region src/utils/converters/numberRangeConverter.ts
@@ -3687,7 +3686,7 @@ window.i18next = instance;
 const i18webcomponents = instance;
 //#endregion
 //#region package.json
-var name = "@labirthermal/embed";
+var name = "@labirthermal/webcomponents";
 var version$1 = "1.3.4";
 window.matchMedia("(prefers-color-scheme: dark)");
 const DARK_MODE_CLASS = "thermal-dark-mode";
@@ -4341,7 +4340,7 @@ function __decorate(decorators, target, key, desc) {
 //#endregion
 //#region src/hierarchy/AbstractThermalElement.ts
 /** 
-* All the webcomponents of \@labirthermal/embed (and its extensions) should be based on the abstract class `AbstractThermalElement`. 
+* All the webcomponents of \@labirthermal/webcomponents (and its extensions) should be based on the abstract class `AbstractThermalElement`. 
 * 
 * Functionality:
 * - listens to the locale context for rerender
@@ -5041,7 +5040,7 @@ var FileLoadController = class extends AbstractHierarchyController {
 /**
 * Exposes the `GroupController` instance to the `AbstractGroupConsumer` elements.
 * @see {@link GroupController}
-* @module @labirthermal/embed
+* @module @labirthermal/webcomponents
 * @author Jan Jáchim <jachim@zcu.cz>
 */
 const groupControllerContext = (0, _lit_context.createContext)("group-controller-context");
@@ -5050,7 +5049,7 @@ const groupControllerContext = (0, _lit_context.createContext)("group-controller
 * 
 * @see {@link GroupController}
 * @see {@link ThermalGroup}
-* @module @labirthermal/embed
+* @module @labirthermal/webcomponents
 * @author Jan Jáchim <jachim@zcu.cz>
 */
 const groupObjectContext = (0, _lit_context.createContext)("group-object-context");
@@ -5803,7 +5802,7 @@ var GroupListingController = class extends AbstractHierarchyController {
             </div>
             <file-analysis-complex
                 table-mode="full"
-                ?forceinteractiveanalysis=${true}
+                forceinteractiveanalysis="true"
                 ?graph-activation-enabled=${true}
             ></file-analysis-complex>
         </div>`;
@@ -15486,7 +15485,7 @@ __decorate([
 //#region src/controls/file/analysis/edit/analysisColorDropdown.ts
 /** 
 * Render the dropdown for color selection of an analysis. Property `analysis` needs to be passed down from the parent component 
-* @package \@labirthermal/embed
+* @package \@labirthermal/webcomponents
 * @author Jan Jáchim
 */
 var AnalysisColorDropdown = class extends AbstractThermalElement {
@@ -15563,7 +15562,7 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", St
 //#region src/controls/file/analysis/edit/analysisNameInput.ts
 /** 
 * Render the input for editing the analysis name. Property `analysis` needs to be passed down from the parent component 
-* @package \@labirthermal/embed
+* @package \@labirthermal/webcomponents
 * @author Jan Jáchim
 */
 var AnalysisNameInput = class extends AbstractThermalElement {
@@ -15608,7 +15607,7 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", St
 //#region src/controls/file/analysis/edit/editAreaTable.ts
 /** 
 * The full table and form for editing an area analysis properties. Enables editing of name, color and dimensions (top, left, width, height, right, bottom). Property `analysis` needs to be passed down from the parent component 
-* @package \@labirthermal/embed
+* @package \@labirthermal/webcomponents
 * @author Jan Jáchim
 */
 var AreaEditTable = class extends AbstractThermalElement {
@@ -15752,7 +15751,7 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Nu
 //#region src/controls/file/analysis/edit/editPointTable.ts
 /** 
 * The full table and form for editing a point analysis properties. Enables editing of name, color and coordinates (top, left). Property `analysis` needs to be passed down from the parent component 
-* @package \@labirthermal/embed
+* @package \@labirthermal/webcomponents
 * @author Jan Jáchim
 */
 var EditpointTable = class extends AbstractThermalElement {
@@ -16926,7 +16925,6 @@ var DropinAppElement = class extends AbstractApp {
 		}
 		return elements;
 	}
-	renderContent() {}
 	renderDetail() {
 		return this.renderLayout(this.groupListingController.renderDetailBody());
 	}
@@ -17421,20 +17419,10 @@ var FileLabelElement = class extends AbstractFileConsumer {
     `;
 	}
 	render() {
-		if (this.file === void 0) return lit.nothing;
-		else if (this.label !== void 0) return this.label;
-		else if (this.grouping !== void 0) switch (this.grouping) {
-			case _labirthermal_client.GridGrouping.HOUR:
-			case _labirthermal_client.GridGrouping.DAY: return (0, date_fns.format)(this.file.timestamp, "HH:mm");
-			case _labirthermal_client.GridGrouping.WEEK:
-			case _labirthermal_client.GridGrouping.MONTH:
-			case _labirthermal_client.GridGrouping.YEAR: return _labirthermal_core.TimeFormat.human(this.file.timestamp);
-			default: return _labirthermal_core.TimeFormat.human(this.file.timestamp);
-		}
+		if (!this.file) return lit.nothing;
 		return this.file.fileName;
 	}
 };
-__decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", typeof _labirthermal_client.GridGrouping === "undefined" ? Object : _labirthermal_client.GridGrouping)], FileLabelElement.prototype, "grouping", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], FileLabelElement.prototype, "label", void 0);
 //#endregion
 //#region src/controls/file/FileTimelineElement.ts

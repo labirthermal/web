@@ -1,0 +1,75 @@
+{
+  "name": "@labirthermal/webcomponents",
+  "version": "1.3.4",
+  "author": "Jan Jáchim <jachim@ntc.zcu.cz>",
+  "description": "Foundation of webcomponents for the purpose of embedding thermal images in various contexts.",
+  "main": "./dist/lib/index.export.cjs",
+  "module": "./dist/lib/index.export.mjs",
+  "types": "./dist/lib/index.export.d.mts",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/labirthermal/webcomponents"
+  },
+  "scripts": {
+    "dev": "vite --config vite.config.dev.ts",
+    "eslint": "eslint src",
+    "test": "vitest src",
+    "build": "pnpm run build:iife && pnpm run build:lib && pnpm run build:esm",
+    "build:iife": "vite build --config vite.config.iife.ts",
+    "build:esm": "vite build --config vite.config.esm.ts",
+    "build:lib": "tsdown",
+    "lint": "eslint src"
+  },
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/lib/index.export.d.mts",
+      "import": "./dist/lib/index.export.mjs",
+      "require": "./dist/lib/index.export.cjs"
+    },
+    "./api": {
+      "import": {
+        "types": "./dist/lib/index.export.d.mts",
+        "default": "./dist/lib/index.export.mjs"
+      },
+      "require": {
+        "types": "./dist/lib/index.export.d.cts",
+        "default": "./dist/lib/index.export.cjs"
+      }
+    }
+  },
+  "dependencies": {
+    "@floating-ui/dom": "^1.8.0",
+    "@labirthermal/core": "workspace:*",
+    "@lit/context": "^1.1.6",
+    "date-fns": "^4.4.0",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "idb-keyval": "^6.3.0",
+    "lit": "^3.3.3",
+    "lit-code": "^0.1.12",
+    "lit-i18n": "^4.1.0",
+    "mediabunny": "^1.61.4",
+    "public-ip": "^8.0.0",
+    "uuid": "^14.0.3"
+  },
+  "devDependencies": {
+    "@arcmantle/vite-plugin-minify-css-literal": "^1.0.3",
+    "@eslint/js": "^10.0.1",
+    "@lit-labs/rollup-plugin-minify-html-literals": "^0.2.0",
+    "@types/node": "^25.3.3",
+    "eslint": "^10.12.0",
+    "i18next": "^26.4.5",
+    "jsdom": "^30.1.3",
+    "tsdown": "0.23.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4",
+    "vite-plugin-html-minifier": "^1.0.5",
+    "vite-plugin-static-copy": "^4.1.1"
+  }
+}
