@@ -1,5 +1,9 @@
 # file-provider
 
+<script setup>
+import { withBase } from 'vitepress'
+</script>
+
 <ComponentInfo
     tag="file-provider"
     category="Provider"
@@ -48,8 +52,8 @@ The opacity itself is controlled by the `ThermalRegistry`.
         <HierarchyRegistry watch="opacity" opacity="0.5">
             <HierarchyGroup>
                 <HierarchyFile watch="thermal, visible"
-                    thermal="/labir/files/makak.lrc"
-                    visible="/labir/files/kitten.jpg"
+                    :thermal="withBase('/files/makak.lrc')"
+                    :visible="withBase('/files/kitten.jpg')"
                 >
                     <registry-opacity-slider></registry-opacity-slider>
                     <file-canvas></file-canvas>
@@ -90,7 +94,7 @@ During the playback, the `ms` attribute is updated by the current internal value
         <HierarchyRegistry>
             <HierarchyGroup>
                 <HierarchyFile watch="thermal, ms"
-                    thermal="/labir/files/sequence.lrc"
+                    :thermal="withBase('/files/sequence.lrc')"
                     ms="50000"
                 >
                     <file-canvas></file-canvas>

@@ -84,7 +84,7 @@ export default defineConfig({
   description: "Work with thermal images in the browser.",
   base: "/web/",
   sitemap: {
-    hostname: 'https://labirthermal.github.io'
+    hostname: 'https://labirthermal.github.io/web/'
   },
   markdown: {
     config(md) {

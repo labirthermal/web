@@ -1,5 +1,9 @@
 # manager-provider
 
+<script setup>
+import { withBase } from 'vitepress'
+</script>
+
 <ComponentInfo tag="manager-provider" category="Provider">
 
 Provides manager-level context, including the global manager and display palette. No provider is required above it. See the [context hierarchy](../hierarchy.md) for its place among the providers and [Thermal palette](../thermal-palette.md) for palette behavior.
@@ -15,7 +19,7 @@ These webcomponents read the context of the enclosing `manager-provider` and are
         <WebcomponentTable components="manager-palette-dropdown, manager-palette-buttons, manager-advanced-palette-switch, manager-image-smooth-switch, manager-graph-smooth-switch, manager-tool-bar" />
         <HierarchyRegistry>
             <HierarchyGroup>
-                <HierarchyFile watch="thermal, analysis1" thermal="/labir/files/husy.lrc" analysis1="Rectangle 0;rectangle;color:Blue;top:54;left:64;width:64;height:47;avg">
+                <HierarchyFile watch="thermal, analysis1" :thermal="withBase('/files/husy.lrc')" analysis1="Rectangle 0;rectangle;color:Blue;top:54;left:64;width:64;height:47;avg">
                     <file-canvas></file-canvas>
                     <file-analysis-graph></file-analysis-graph>
                 </HierarchyFile>
