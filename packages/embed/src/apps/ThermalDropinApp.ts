@@ -334,10 +334,6 @@ export class DropinAppElement
 
     }
 
-    protected renderContent() {
-
-    }
-
     protected renderDetail() {
 
         return this.renderLayout(this.groupListingController.renderDetailBody());
