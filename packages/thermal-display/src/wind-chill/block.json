@@ -1,0 +1,70 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "thermal-display/wind-chill",
+	"version": "0.1.0",
+	"title": "Wind chill calculator",
+	"category": "thermal",
+	"icon": "file:./assets/icon.svg",
+	"description": "An interactive calculator of wind chill using the AAT model.",
+	"example": {},
+	"supports": {
+		"interactivity": false,
+		"html": false,
+		"anchor": true,
+		"lock": true,
+		"align": [
+			"wide",
+			"full"
+		],
+		"spacing": {
+			"padding": true,
+			"margin": true
+		}
+	},
+	"textdomain": "thermal-display",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php",
+	
+	"keywords": [
+		"webcomponent",
+		"IR Camera",
+		"embed",
+		"LRC"
+	],
+	"attributes": {
+		"layout": {
+			"type": "object",
+			"default": {
+				"type": "constrained"
+			}
+		},
+		"t": {
+			"type": "number"
+		},
+		"v": {
+			"type": "number"
+		},
+		"ha": {
+			"type": "number"
+		},
+		"vunits": {
+			"type": "string",
+			"default": "mps"
+		},
+		"skin": {
+			"type": "string",
+			"default": "default"
+		},
+		"lines": {
+			"type":"string",
+			"default": "default"
+		},
+		"corners": {
+			"type":"string",
+			"default": "default"
+		}
+	}
+}

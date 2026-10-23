@@ -1,0 +1,63 @@
+/**
+ * The following styles get applied inside the editor only.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+
+:root {
+    --labir-editor-wall-color: gray;
+}
+
+.labir-wall,
+.labir-wall-meta,
+.labir-wall-meta span {
+    transition: color .3s ease-in-out, fill .3s ease-in-out, background-color .3s ease-in-out, outline-color .3s ease-in-out;
+}
+
+.labir-wall {
+    outline: 5px solid var(--labir-editor-wall-color);
+    border-radius: 1em;
+    outline-offset: 1em;
+    position: relative;
+    display: block;
+}
+
+.labir-wall__enabled {
+    --labir-editor-wall-color: rgb(87, 7, 63);
+}
+
+.labir-wall__disabled {
+    --labir-editor-wall-color: rgb(0, 217, 255);
+}
+
+.labir-wall-meta {
+
+    position: absolute;
+    top: -2em;
+    left: 0em;
+
+    display: flex;
+    gap: .3em;
+    align-items: stretch;
+    
+    color: white;
+    fill: white;
+    
+
+    span {
+
+        display: flex;
+        align-items: center;
+
+        background: var(--labir-editor-wall-color);
+
+        box-sizing: border-box;
+        border-radius: .5em;
+        padding: 0.1em 0.5em;
+
+        font-size: 0.9em;
+
+    }
+
+}

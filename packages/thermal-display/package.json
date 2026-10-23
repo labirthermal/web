@@ -1,0 +1,32 @@
+{
+	"name": "thermal-display",
+	"version": "1.3.4",
+	"description": "A Wordpress integration of @labirthermal/webcomponents.",
+	"author": "Jan Jáchim",
+	"private": true,
+	"license": "GPL-2.0-or-later",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build --webpack-copy-php",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"packages-update": "wp-scripts packages-update",
+		"plugin-zip": "wp-scripts plugin-zip",
+		"dev": "wp-scripts start --webpack-copy-php",
+		"package": "./package.bat"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^36.1.0"
+	},
+	"files": [
+		"build",
+		"assets",
+		"lib",
+		"thermal-display.php",
+		"languages"
+	],
+	"dependencies": {
+		"@wordpress/icons": "^18.0.0"
+	}
+}

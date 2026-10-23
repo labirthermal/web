@@ -1,0 +1,6 @@
+{
+    "javascript.preferences.importModuleSpecifier": "non-relative",
+    "editor.wordWrap": "on",
+    "js/ts.implicitProjectConfig.experimentalDecorators": true,
+    "editor.defaultColorDecorators": "always"
+}

@@ -1,0 +1,86 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "thermal-display/remote-browser",
+	"version": "0.1.0",
+	"title": "Remote folders browser",
+	"category": "thermal",
+	"icon": "file:./assets/icon.svg",
+	"description": "Browse folders of IR images stored on a remote server.",
+	"example": {},
+	"supports": {
+		"interactivity": false,
+		"html": false,
+		"anchor": true,
+		"lock": true,
+		"align": [
+			"wide",
+			"full"
+		],
+		"spacing": {
+			"padding": true,
+			"margin": true
+		}
+	},
+	"textdomain": "thermal-display",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php",
+	
+	"keywords": [
+		"webcomponent",
+		"IR Camera",
+		"embed",
+		"LRC"
+	],
+	"attributes": {
+		"layout": {
+			"type": "object",
+			"default": {
+				"type": "constrained"
+			}
+		},
+		"url": {
+			"type": "string"
+		},
+		"subfolder": {
+			"type": "string"
+		},
+		"palette": {
+			"type": "string",
+			"default": "iron"
+		},
+		"by": {
+			"type": "string",
+			"default": "days"
+		},
+		"author": {
+			"type": "string"
+		},
+		"license": {
+			"type": "string"
+		},
+		"label": {
+			"type": "string"
+		},
+		"enablegrouping": {
+			"type": "boolean",
+			"default": false
+		},
+		"skin": {
+			"type": "string",
+			"default": "default"
+		},
+		"lines": {
+			"type":"string",
+			"default": "default"
+		},
+		"corners": {
+			"type":"string",
+			"default": "default"
+		}
+
+
+	}
+}

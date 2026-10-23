@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "dependencies": {
+    "@labirthermal/client": "workspace:*",
+    "@labirthermal/core": "workspace:*",
+    "@labirthermal/server": "workspace:*",
+    "@labirthermal/embed": "workspace:*",
+    "@labirthermal/server-simple": "workspace:*"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-tabs": "^0.9.1"
+  }
+}

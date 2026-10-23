@@ -1,0 +1,147 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "thermal-display/file",
+  "version": "0.1.0",
+  "title": "IR image",
+  "category": "thermal",
+  "icon": "file:./assets/icon.svg",
+  "description": "Display and analyse an uploaded IR image.",
+  "example": {},
+  "supports": {
+    "interactivity": false,
+    "html": false,
+    "anchor": true,
+    "lock": true,
+    "align": [
+      "wide",
+      "full"
+    ],
+    "spacing": {
+      "padding": true,
+      "margin": true
+    }
+  },
+  "textdomain": "thermal-display",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "render": "file:./render.php",
+  "viewScript": "file:./view.js",
+  "keywords": [
+    "webcomponent",
+    "IR Camera",
+    "embed",
+    "LRC"
+  ],
+  "attributes": {
+    "layout": {
+      "type": "object",
+      "default": {
+        "type": "constrained"
+      }
+    },
+    "variant": {
+      "type": "string",
+      "default": "advanced"
+    },
+    "showabout": {
+      "type": "boolean",
+      "default": true
+    },
+    "advancedpalettes": {
+      "type": "boolean",
+      "default": false
+    },
+    "showhistogram": {
+      "type": "boolean",
+      "default": true
+    },
+    "showshare": {
+      "type": "boolean",
+      "default": false
+    },
+    "showlayout": {
+      "type": "boolean",
+      "default": false
+    },
+    "interactiveanalysis": {
+      "type": "boolean",
+      "default": true
+    },
+    "thermal": {
+      "type": "string"
+    },
+    "visible": {
+      "type": "string"
+    },
+    "opacity": {
+      "type": "number",
+      "default": 1
+    },
+    "palette": {
+      "type": "string",
+      "default": "iron"
+    },
+    "from": {
+      "type": "number"
+    },
+    "to": {
+      "type": "number"
+    },
+    "speed": {
+      "type": "number",
+      "default": 1
+    },
+    "label": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string",
+      "default": "CC BY-SA 4.0"
+    },
+    "description": {
+      "type": "string"
+    },
+    "analysis1": {
+      "type": "string"
+    },
+    "analysis2": {
+      "type": "string"
+    },
+    "analysis3": {
+      "type": "string"
+    },
+    "analysis4": {
+      "type": "string"
+    },
+    "analysis5": {
+      "type": "string"
+    },
+    "analysis6": {
+      "type": "string"
+    },
+    "analysis7": {
+      "type": "string"
+    },
+    "notations": {
+      "type": "object",
+      "default": {}
+    },
+    "skin": {
+      "type": "string",
+      "default": "default"
+    },
+    "lines": {
+      "type": "string",
+      "default": "default"
+    },
+    "corners": {
+      "type": "string",
+      "default": "default"
+    }
+  }
+}

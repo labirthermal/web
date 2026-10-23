@@ -1,0 +1,9 @@
+node_modules/
+
+# Generated VitePress files
+packages/docs/.vitepress/cache/
+packages/docs/.vitepress/dist/
+
+public/materialy/
+public/fen-a-ruka/
+public/zihle/

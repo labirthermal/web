@@ -1,0 +1,61 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "thermal-display/wall",
+	"version": "0.1.0",
+	"title": "LabIR Server Wall",
+	"category": "thermal",
+	"description": "Content protected that requires LabIR Server authentication to display",
+	"example": {},
+	"supports": {
+		"anchor": true,
+		"lock": true,
+		"align": [
+			"wide",
+			"full"
+		],
+		"spacing": {
+			"padding": true,
+			"margin": true
+		}
+	},
+	"textdomain": "thermal-display",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php",
+	
+	"keywords": [
+		"webcomponent",
+		"IR Camera",
+		"embed",
+		"LRC"
+	],
+	"attributes": {
+		"layout": {
+			"type": "object",
+			"default": {
+				"type": "constrained"
+			}
+		},
+		"enabled": {
+			"type": "boolean",
+			"default": false
+		},
+		"serverUrl": {
+			"type": "string"
+		},
+		"serverApiRoot": {
+			"type": "string",
+			"default": "/api"
+		},
+		"promptTitle": {
+			"type": "string",
+			"default": "Pro přihlášené"
+		},
+		"promptText": {
+			"type": "string",
+			"default": "Tento obsah je viditelný pouze pro přihlášené uživatele."
+		}
+	}
+}

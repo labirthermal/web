@@ -1,0 +1,117 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "thermal-display/connected",
+  "version": "0.1.0",
+  "title": "LabIR Connected Browser",
+  "category": "thermal",
+  "icon": "file:./assets/icon.svg",
+  "description": "A complex block for displaying the data from a remote LabIR Server.",
+  "example": {},
+  "supports": {
+    "interactivity": false,
+    "html": false,
+    "anchor": true,
+    "lock": true,
+    "align": [
+      "wide",
+      "full"
+    ],
+    "spacing": {
+      "padding": true,
+      "margin": true
+    }
+  },
+  "textdomain": "thermal-display",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "render": "file:./render.php",
+  "keywords": [
+    "webcomponent",
+    "IR Camera",
+    "embed",
+    "LRC"
+  ],
+  "attributes": {
+    "layout": {
+      "type": "object",
+      "default": {
+        "type": "constrained"
+      }
+    },
+    "serverUrl": {
+      "type": "string",
+      "default": "https://dev2-edu.labir.cz"
+    },
+    "apiRoot": {
+      "type": "string",
+      "default": "/api"
+    },
+    "path": {
+      "type": "string"
+    },
+    "pathLock": {
+      "type": "string"
+    },
+    "fileName": {
+      "type": "string"
+    },
+    "replaceWithLogin": {
+      "type": "string"
+    },
+    "palette": {
+      "type": "string",
+      "default": "iron"
+    },
+    "displayMode": {
+      "type": "string",
+      "default": "grid"
+    },
+    "compact": {
+      "type": "boolean",
+      "default": false
+    },
+    "folderMode": {
+      "type": "string",
+      "default": "table-subfolders"
+    },
+    "by": {
+      "type": "string",
+      "default": "hour"
+    },
+    "disableLogging": {
+      "type": "boolean",
+      "default": false
+    },
+    "label": {
+      "type": "string",
+      "default": "LabIR Server Files"
+    },
+    "labelTooltip": {
+      "type": "string"
+    },
+    "labelIcon": {
+      "type": "string"
+    },
+    "labelIconStyle": {
+      "type": "string"
+    },
+    "labelVariant": {
+      "type": "string",
+      "default": "foreground"
+    },
+    "skin": {
+      "type": "string",
+      "default": "default"
+    },
+    "lines": {
+      "type": "string",
+      "default": "default"
+    },
+    "corners": {
+      "type": "string",
+      "default": "default"
+    }
+  }
+}

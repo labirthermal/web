@@ -1,0 +1,214 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2025-03-17 16:16+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cy_GB\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SearchPath-0: lib\n"
+"X-Poedit-SearchPath-1: thermal-display.php\n"
+"X-Poedit-SearchPath-2: src\n"
+"X-Poedit-SearchPathExcluded-0: build\n"
+
+#: src/app/edit.js:274 src/group/edit.js:280
+msgid "Author"
+msgstr "Awdur"
+
+#: src/app/edit.js:285 src/group/edit.js:291
+msgid "License"
+msgstr "Trwydded"
+
+#: src/app/edit.js:296 src/group/edit.js:302
+msgid "Label"
+msgstr "Label"
+
+#: src/dropin/render.php:45 src/dropin/render.php:46
+msgid "Privacy"
+msgstr "Preifatrwydd"
+
+#: src/dropin/render.php:48
+msgid "This module stores anonymised usage data."
+msgstr "Mae'r modiwl hwn yn storio data defnydd dienw."
+
+#: src/dropin/render.php:49
+msgid "Why do we store the data?"
+msgstr "Pam rydym yn storio'r data?"
+
+#: src/dropin/render.php:51
+msgid "to know what browsers do our users use to access our app"
+msgstr "i wybod pa borwyr mae ein defnyddwyr yn eu defnyddio i gyrchu ein ap"
+
+#: src/dropin/render.php:52
+msgid "to know what kind of files do our users work with"
+msgstr "i wybod pa fath o ffeiliau mae ein defnyddwyr yn gweithio gyda nhw"
+
+#: src/dropin/render.php:53
+msgid "from which locations do our users access our app"
+msgstr "o ba leoliadau mae ein defnyddwyr yn cyrchu ein ap"
+
+#: src/dropin/render.php:55
+msgid ""
+"These information help us develop the <code>thermal-dropin-app</code> "
+"webcomponent and other parts of the <code>@labir/embed</code> library."
+msgstr ""
+"Mae'r wybodaeth hon yn ein helpu i ddatblygu'r cydran we <code>thermal-"
+"dropin-app</code> a rhannau eraill o'r llyfrgell <code>@labir/embed</code>."
+
+#: src/dropin/render.php:56
+msgid "Where are the data stored?"
+msgstr "Ble mae'r data yn cael eu storio?"
+
+#: src/dropin/render.php:57
+#, php-format
+msgid ""
+"The data are stored on the domain <a href=\"%1$s\" target=\"_blank\">%1$s</"
+"a> and are being viewed only by administrators of this particular website."
+msgstr ""
+"Mae'r data yn cael eu storio ar y parth <a href=\"%1$s\" "
+"target=\"_blank\">%1$s</a> a dim ond gweinyddwyr y wefan benodol hon sy'n eu "
+"gweld."
+
+#: src/dropin/render.php:58
+msgid "What data are being stored?"
+msgstr "Pa ddata sy'n cael eu storio?"
+
+#: src/dropin/render.php:60
+msgid "Time when you upload a file"
+msgstr "Amser pan fyddwch yn uwchlwytho ffeil"
+
+#: src/dropin/render.php:61 thermal-display.php:217
+msgid "File name"
+msgstr "Enw'r ffeil"
+
+#: src/dropin/render.php:62
+msgid "File resolution"
+msgstr "Cydraniad y ffeil"
+
+#: src/dropin/render.php:63
+msgid "File timestamp"
+msgstr "Stamp amser y ffeil"
+
+#: src/dropin/render.php:64
+msgid "File bytesize"
+msgstr "Maint y ffeil mewn beitiau"
+
+#: src/dropin/render.php:65
+msgid "File frame count"
+msgstr "Cyfrif fframiau'r ffeil"
+
+#: src/dropin/render.php:66
+msgid "Yor current browser parameters (`userAgent`)"
+msgstr "Paramedrau eich porwr cyfredol (`userAgent`)"
+
+#: src/dropin/render.php:67
+msgid "Your current browser size"
+msgstr "Maint eich porwr cyfredol"
+
+#: src/dropin/render.php:68
+msgid "Your current IP address"
+msgstr "Eich cyfeiriad IP cyfredol"
+
+#: src/dropin/render.php:70
+msgid "What we do not do?"
+msgstr "Beth nad ydym yn ei wneud?"
+
+#: src/dropin/render.php:71
+msgid ""
+"We do not store the files you use here (we only store their parameters sucha "
+"as bytesize, framecount, resolution)."
+msgstr ""
+"Nid ydym yn storio'r ffeiliau rydych yn eu defnyddio yma (dim ond eu "
+"paramedrau fel maint mewn beitiau, nifer y fframiau, a'r cydraniad rydym yn "
+"eu storio)."
+
+#: src/dropin/render.php:72
+msgid ""
+"We do not store any information that could lead to your identification (all "
+"data are stored in an anonymised form)."
+msgstr ""
+"Nid ydym yn storio unrhyw wybodaeth a allai eich adnabod (mae'r holl ddata "
+"yn cael eu storio mewn ffurf ddienw)."
+
+#: thermal-display.php:188 thermal-display.php:209
+msgid "Thermal display usage"
+msgstr "Defnydd arddangos thermol"
+
+#: thermal-display.php:189
+msgid "Thermal Display"
+msgstr "Arddangosfa Thermol"
+
+#: thermal-display.php:210
+msgid "Download CSV"
+msgstr "Llwytho i lawr CSV"
+
+#: thermal-display.php:214
+msgid "Time"
+msgstr "Amser"
+
+#: thermal-display.php:215
+msgid "URL"
+msgstr "URL"
+
+#: thermal-display.php:216
+msgid "IP"
+msgstr "IP"
+
+#: thermal-display.php:218
+msgid "File size (MB)"
+msgstr "Maint ffeil (MB)"
+
+#: thermal-display.php:219
+msgid "Frames"
+msgstr "Fframiau"
+
+#: thermal-display.php:220
+msgid "Resolution"
+msgstr "Cydraniad"
+
+#: thermal-display.php:221
+msgid "File recorded at"
+msgstr "Ffeil wedi'i chofnodi am"
+
+#: thermal-display.php:222
+msgid "Browser"
+msgstr "Porwr"
+
+#~ msgid "Plugin Name"
+#~ msgstr "Enw'r ategyn"
+
+#~ msgid "Description"
+#~ msgstr "Disgrifiad"
+
+#~ msgid "Requires at least"
+#~ msgstr "Angen o leiaf"
+
+#~ msgid "Requires PHP"
+#~ msgstr "Angen PHP"
+
+#~ msgid "Version"
+#~ msgstr "Fersiwn"
+
+#~ msgid "License URI"
+#~ msgstr "URI Trwydded"
+
+#~ msgid "Text Domain"
+#~ msgstr "Parth Testun"
+
+#~ msgid "No data to export."
+#~ msgstr "Dim data i'w hallforio."
+
+#~ msgid "Invalid data"
+#~ msgstr "Data annilys"
+
+#~ msgid "Error saving data"
+#~ msgstr "Gwall wrth gadw'r data"
+
+#~ msgid "Data saved"
+#~ msgstr "Data wedi'i gadw"

@@ -1,0 +1,273 @@
+0 silly argv {
+0 silly argv   _: [ 'version' ],
+0 silly argv   lernaVersion: '8.1.3',
+0 silly argv   '$0': 'node_modules\\lerna\\dist\\cli.js'
+0 silly argv }
+1 notice cli v8.1.3
+2 verbose packageConfigs Explicit "packages" configuration found in lerna.json. Resolving packages using the configured glob(s): ["packages/*"]
+3 verbose rootPath C:\Users\jachim\Documents\Node\@labir
+4 info current version 1.2.10
+5 silly isAnythingCommitted
+6 verbose isAnythingCommitted 1
+7 silly getCurrentBranch
+8 verbose currentBranch master
+9 silly remoteBranchExists
+10 silly isBehindUpstream
+11 silly isBehindUpstream master is behind origin/master by 0 commit(s) and ahead by 2
+12 silly hasTags
+13 verbose hasTags true
+14 silly git-describe.sync "v1.2.10-7-geca4881" => {"lastTagName":"v1.2.10","lastVersion":"v1.2.10","refCount":"7","sha":"eca4881","isDirty":false}
+15 info Looking for changed packages since v1.2.10
+16 silly checking diff packages/core
+17 silly found diff in packages/core/README.md
+17 silly found diff in packages/core/dist/index.js
+17 silly found diff in packages/core/dist/index.mjs
+17 silly found diff in packages/core/src/properties/states/HistogramState.ts
+18 verbose filtered diff [
+18 verbose filtered diff   'packages/core/README.md',
+18 verbose filtered diff   'packages/core/dist/index.js',
+18 verbose filtered diff   'packages/core/dist/index.mjs',
+18 verbose filtered diff   'packages/core/src/properties/states/HistogramState.ts'
+18 verbose filtered diff ]
+19 silly checking diff packages/docs
+20 silly found diff in packages/docs/.gitignore
+20 silly found diff in packages/docs/LICENSE
+20 silly found diff in packages/docs/README.md
+20 silly found diff in packages/docs/components/App.tsx
+20 silly found diff in packages/docs/components/File.tsx
+20 silly found diff in packages/docs/components/HomepageIntro.tsx
+20 silly found diff in packages/docs/components/Range.tsx
+20 silly found diff in packages/docs/components/TailwindExample.tsx
+20 silly found diff in packages/docs/components/counters.module.css
+20 silly found diff in packages/docs/components/counters.tsx
+20 silly found diff in packages/docs/next-env.d.ts
+20 silly found diff in packages/docs/next.config.js
+20 silly found diff in packages/docs/package.json
+20 silly found diff in packages/docs/pages/Showcase.mdx
+20 silly found diff in packages/docs/pages/_meta.json
+20 silly found diff in packages/docs/pages/core/_meta.json
+20 silly found diff in packages/docs/pages/core/index.mdx
+20 silly found diff in packages/docs/pages/core/overview.mdx
+20 silly found diff in packages/docs/pages/core/properties-concept.mdx
+20 silly found diff in packages/docs/pages/core/properties-list.mdx
+20 silly found diff in packages/docs/pages/examples/index.mdx
+20 silly found diff in packages/docs/pages/index.mdx
+20 silly found diff in packages/docs/pages/react-bridge/_meta.json
+20 silly found diff in packages/docs/pages/react-bridge/components/_meta.json
+20 silly found diff in packages/docs/pages/react-bridge/components/file.mdx
+20 silly found diff in packages/docs/pages/react-bridge/components/histogram.mdx
+20 silly found diff in packages/docs/pages/react-bridge/components/index.mdx
+20 silly found diff in packages/docs/pages/react-bridge/components/range.mdx
+20 silly found diff in packages/docs/pages/react-bridge/context.mdx
+20 silly found diff in packages/docs/pages/react-bridge/hooks.mdx
+20 silly found diff in packages/docs/pages/react-bridge/index.mdx
+20 silly found diff in packages/docs/pnpm-lock.yaml
+20 silly found diff in packages/docs/public/06__6V_4A__top_IR.lrc
+20 silly found diff in packages/docs/public/2024-04-23_16-22-19_stream(1).lrc
+20 silly found diff in packages/docs/public/image-thermal 2021-11-24 11-18-20.lrc
+20 silly found diff in packages/docs/public/image-thermal 2023-11-24 14-02-33.lrc
+20 silly found diff in packages/docs/public/image-thermal 2023-11-24 14-02-47.lrc
+20 silly found diff in packages/docs/public/image-thermal 2023-11-24 14-02-55.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-01-12 10-10-34.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-01-12 10-10-43.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-01-12 10-10-49.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-01-12 14-09-37.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-01-17 14-05-56.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-01-17 14-05-59.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-01-17 14-06-03.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-01-24 10-05-03.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-01-26 10-12-52.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-02-09 11-59-37.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-02-12 10-15-07.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-02-12 10-15-08.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-03-11 11-06-10.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-03-19 09-44-13.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-04-16 12-27-50.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-04-22 14-05-42.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-04-30 10-50-19.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-04-30 10-57-59.lrc
+20 silly found diff in packages/docs/public/image-thermal 2024-05-06 12-15-49.lrc
+20 silly found diff in packages/docs/public/tucnaci_04.lrc
+20 silly found diff in packages/docs/theme.config.tsx
+20 silly found diff in packages/docs/tsconfig.json
+21 verbose filtered diff [
+21 verbose filtered diff   'packages/docs/.gitignore',
+21 verbose filtered diff   'packages/docs/LICENSE',
+21 verbose filtered diff   'packages/docs/README.md',
+21 verbose filtered diff   'packages/docs/components/App.tsx',
+21 verbose filtered diff   'packages/docs/components/File.tsx',
+21 verbose filtered diff   'packages/docs/components/HomepageIntro.tsx',
+21 verbose filtered diff   'packages/docs/components/Range.tsx',
+21 verbose filtered diff   'packages/docs/components/TailwindExample.tsx',
+21 verbose filtered diff   'packages/docs/components/counters.module.css',
+21 verbose filtered diff   'packages/docs/components/counters.tsx',
+21 verbose filtered diff   'packages/docs/next-env.d.ts',
+21 verbose filtered diff   'packages/docs/next.config.js',
+21 verbose filtered diff   'packages/docs/package.json',
+21 verbose filtered diff   'packages/docs/pages/Showcase.mdx',
+21 verbose filtered diff   'packages/docs/pages/_meta.json',
+21 verbose filtered diff   'packages/docs/pages/core/_meta.json',
+21 verbose filtered diff   'packages/docs/pages/core/index.mdx',
+21 verbose filtered diff   'packages/docs/pages/core/overview.mdx',
+21 verbose filtered diff   'packages/docs/pages/core/properties-concept.mdx',
+21 verbose filtered diff   'packages/docs/pages/core/properties-list.mdx',
+21 verbose filtered diff   'packages/docs/pages/examples/index.mdx',
+21 verbose filtered diff   'packages/docs/pages/index.mdx',
+21 verbose filtered diff   'packages/docs/pages/react-bridge/_meta.json',
+21 verbose filtered diff   'packages/docs/pages/react-bridge/components/_meta.json',
+21 verbose filtered diff   'packages/docs/pages/react-bridge/components/file.mdx',
+21 verbose filtered diff   'packages/docs/pages/react-bridge/components/histogram.mdx',
+21 verbose filtered diff   'packages/docs/pages/react-bridge/components/index.mdx',
+21 verbose filtered diff   'packages/docs/pages/react-bridge/components/range.mdx',
+21 verbose filtered diff   'packages/docs/pages/react-bridge/context.mdx',
+21 verbose filtered diff   'packages/docs/pages/react-bridge/hooks.mdx',
+21 verbose filtered diff   'packages/docs/pages/react-bridge/index.mdx',
+21 verbose filtered diff   'packages/docs/pnpm-lock.yaml',
+21 verbose filtered diff   'packages/docs/public/06__6V_4A__top_IR.lrc',
+21 verbose filtered diff   'packages/docs/public/2024-04-23_16-22-19_stream(1).lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2021-11-24 11-18-20.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2023-11-24 14-02-33.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2023-11-24 14-02-47.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2023-11-24 14-02-55.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-01-12 10-10-34.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-01-12 10-10-43.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-01-12 10-10-49.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-01-12 14-09-37.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-01-17 14-05-56.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-01-17 14-05-59.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-01-17 14-06-03.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-01-24 10-05-03.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-01-26 10-12-52.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-02-09 11-59-37.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-02-12 10-15-07.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-02-12 10-15-08.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-03-11 11-06-10.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-03-19 09-44-13.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-04-16 12-27-50.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-04-22 14-05-42.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-04-30 10-50-19.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-04-30 10-57-59.lrc',
+21 verbose filtered diff   'packages/docs/public/image-thermal 2024-05-06 12-15-49.lrc',
+21 verbose filtered diff   'packages/docs/public/tucnaci_04.lrc',
+21 verbose filtered diff   'packages/docs/theme.config.tsx',
+21 verbose filtered diff   'packages/docs/tsconfig.json'
+21 verbose filtered diff ]
+22 silly checking diff packages/embed
+23 silly found diff in packages/embed/dist/embed.js
+24 verbose filtered diff [ 'packages/embed/dist/embed.js' ]
+25 silly checking diff packages/emotion
+26 silly found diff in packages/emotion/dist/index.js
+26 silly found diff in packages/emotion/dist/index.mjs
+26 silly found diff in packages/emotion/src/components/dropdowns/PaletteDropdown.tsx
+27 verbose filtered diff [
+27 verbose filtered diff   'packages/emotion/dist/index.js',
+27 verbose filtered diff   'packages/emotion/dist/index.mjs',
+27 verbose filtered diff   'packages/emotion/src/components/dropdowns/PaletteDropdown.tsx'
+27 verbose filtered diff ]
+28 silly checking diff packages/react-bridge
+29 silly found diff in packages/react-bridge/README.md
+29 silly found diff in packages/react-bridge/dist/index.d.mts
+29 silly found diff in packages/react-bridge/dist/index.d.ts
+29 silly found diff in packages/react-bridge/dist/index.js
+29 silly found diff in packages/react-bridge/dist/index.mjs
+29 silly found diff in packages/react-bridge/src/components/palette/PaletteDropdownHeadless.tsx
+29 silly found diff in packages/react-bridge/src/components/palette/PaletteGradientDisplay.tsx
+29 silly found diff in packages/react-bridge/src/context/useThermalObjectPurpose.ts
+29 silly found diff in packages/react-bridge/src/index.ts
+30 verbose filtered diff [
+30 verbose filtered diff   'packages/react-bridge/README.md',
+30 verbose filtered diff   'packages/react-bridge/dist/index.d.mts',
+30 verbose filtered diff   'packages/react-bridge/dist/index.d.ts',
+30 verbose filtered diff   'packages/react-bridge/dist/index.js',
+30 verbose filtered diff   'packages/react-bridge/dist/index.mjs',
+30 verbose filtered diff   'packages/react-bridge/src/components/palette/PaletteDropdownHeadless.tsx',
+30 verbose filtered diff   'packages/react-bridge/src/components/palette/PaletteGradientDisplay.tsx',
+30 verbose filtered diff   'packages/react-bridge/src/context/useThermalObjectPurpose.ts',
+30 verbose filtered diff   'packages/react-bridge/src/index.ts'
+30 verbose filtered diff ]
+31 silly checking diff packages/tailwind
+32 silly found diff in packages/tailwind/.npmrc
+32 silly found diff in packages/tailwind/dist/index.d.ts
+32 silly found diff in packages/tailwind/dist/index.js
+32 silly found diff in packages/tailwind/dist/index.js.map
+32 silly found diff in packages/tailwind/package.json
+32 silly found diff in packages/tailwind/postcss.config.js
+32 silly found diff in packages/tailwind/src/components/properties/HistogramResolutionInput.tsx
+32 silly found diff in packages/tailwind/src/components/properties/OpacityInput.tsx
+32 silly found diff in packages/tailwind/src/components/properties/PaletteDropdown.tsx
+32 silly found diff in packages/tailwind/src/global.css
+32 silly found diff in packages/tailwind/src/index.ts
+32 silly found diff in packages/tailwind/tailwind.config.js
+32 silly found diff in packages/tailwind/tsconfig.json
+32 silly found diff in packages/tailwind/tsup.config.ts
+33 verbose filtered diff [
+33 verbose filtered diff   'packages/tailwind/.npmrc',
+33 verbose filtered diff   'packages/tailwind/dist/index.d.ts',
+33 verbose filtered diff   'packages/tailwind/dist/index.js',
+33 verbose filtered diff   'packages/tailwind/dist/index.js.map',
+33 verbose filtered diff   'packages/tailwind/package.json',
+33 verbose filtered diff   'packages/tailwind/postcss.config.js',
+33 verbose filtered diff   'packages/tailwind/src/components/properties/HistogramResolutionInput.tsx',
+33 verbose filtered diff   'packages/tailwind/src/components/properties/OpacityInput.tsx',
+33 verbose filtered diff   'packages/tailwind/src/components/properties/PaletteDropdown.tsx',
+33 verbose filtered diff   'packages/tailwind/src/global.css',
+33 verbose filtered diff   'packages/tailwind/src/index.ts',
+33 verbose filtered diff   'packages/tailwind/tailwind.config.js',
+33 verbose filtered diff   'packages/tailwind/tsconfig.json',
+33 verbose filtered diff   'packages/tailwind/tsup.config.ts'
+33 verbose filtered diff ]
+34 silly checking diff packages/vue
+35 silly found diff in packages/vue/README.md
+36 verbose filtered diff [ 'packages/vue/README.md' ]
+37 verbose updated @labir/core
+38 verbose updated @labir/docs
+39 verbose updated @labir/embed
+40 verbose updated @labir/emotion
+41 verbose updated @labir/react-bridge
+42 verbose updated @labir/tailwind
+43 verbose updated @labir/vue
+44 verbose git-describe undefined => "v1.2.10-7-geca4881"
+45 silly git-describe parsed => {"lastTagName":"v1.2.10","lastVersion":"v1.2.10","refCount":"7","sha":"eca4881","isDirty":false}
+46 info execute Skipping releases
+47 warn lifecycle Skipping root "preversion" because it has already been called
+48 silly lifecycle No script for "preversion" in "@labir/core", continuing
+49 verbose version @labir/core has no lockfile. Skipping lockfile update.
+50 silly lifecycle No script for "version" in "@labir/core", continuing
+51 silly lifecycle No script for "preversion" in "@labir/react-bridge", continuing
+52 silly lifecycle No script for "preversion" in "@labir/vue", continuing
+53 verbose version @labir/react-bridge has no lockfile. Skipping lockfile update.
+54 verbose version @labir/vue has no lockfile. Skipping lockfile update.
+55 silly lifecycle No script for "version" in "@labir/vue", continuing
+56 silly lifecycle No script for "version" in "@labir/react-bridge", continuing
+57 silly lifecycle No script for "preversion" in "@labir/emotion", continuing
+58 silly lifecycle No script for "preversion" in "@labir/tailwind", continuing
+59 verbose version @labir/emotion has no lockfile. Skipping lockfile update.
+60 verbose version @labir/tailwind has no lockfile. Skipping lockfile update.
+61 silly lifecycle No script for "version" in "@labir/emotion", continuing
+62 silly lifecycle No script for "preversion" in "@labir/embed", continuing
+63 silly lifecycle No script for "version" in "@labir/tailwind", continuing
+64 verbose version @labir/embed has no lockfile. Skipping lockfile update.
+65 silly lifecycle No script for "version" in "@labir/embed", continuing
+66 silly lifecycle No script for "preversion" in "@labir/docs", continuing
+67 verbose version @labir/docs has no lockfile. Skipping lockfile update.
+68 silly lifecycle No script for "version" in "@labir/docs", continuing
+69 warn lifecycle Skipping root "version" because it has already been called
+70 verbose version Updating root pnpm-lock.yaml
+71 error Error: Command failed with exit code 1: pnpm install --lockfile-only --ignore-scripts
+71 error Scope: all 8 workspace projects
+71 error  WARN  `node_modules` is present. Lockfile only installation will make it out-of-date
+71 error Progress: resolved 1, reused 0, downloaded 0, added 0
+71 error Progress: resolved 63, reused 0, downloaded 0, added 0
+71 error C:\Users\jachim\Documents\Node\@labir\packages\docs:
+71 error  ERR_PNPM_NO_MATCHING_VERSION  No matching version found for @labir/embed@^1.2.11
+71 error
+71 error This error happened while installing a direct dependency of C:\Users\jachim\Documents\Node\@labir\packages\docs
+71 error
+71 error The latest release of @labir/embed is "1.2.10".
+71 error
+71 error If you need the full list of all 11 published versions run "$ pnpm view @labir/embed versions".
+71 error     at makeError (C:\Users\jachim\Documents\Node\@labir\node_modules\.pnpm\execa@5.0.0\node_modules\execa\lib\error.js:59:11)
+71 error     at handlePromise (C:\Users\jachim\Documents\Node\@labir\node_modules\.pnpm\execa@5.0.0\node_modules\execa\index.js:114:26)
+71 error     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+71 error     at async VersionCommand.updatePackageVersions (C:\Users\jachim\Documents\Node\@labir\node_modules\.pnpm\lerna@8.1.3_encoding@0.1.13\node_modules\lerna\dist\index.js:8444:11)
+71 error     at async Promise.all (index 0)

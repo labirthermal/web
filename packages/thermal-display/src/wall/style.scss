@@ -1,0 +1,105 @@
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+:root {
+
+    --thermal-prompt-inactive: var( --thermal-slate-light );
+
+    --thermal-prompt-active: var( --thermal-primary );
+
+}
+
+.labir-wall-frontend {
+
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+
+    min-height: 5em;
+
+
+    margin-top: 1em;
+    padding: 2em;
+
+    color: var( --wp--preset--color--contrast ) !important;
+    background: var( --wp--preset--color--base-2 ) !important;
+
+    
+    border: 2px dashed var( --wp--preset--color--contrast );
+    border-radius: 1em;
+
+    svg {
+        width: 2em;
+        height: 2em;
+    }
+
+}
+
+.labir-wall-frontend-title {
+    margin: 0;
+    padding: 0;
+}
+
+.labir-wall-frontend-content {
+
+}
+
+.labir-wall-login-form {
+
+    input[type=text],
+    input[type=password],
+    button {
+
+        padding: 0.5em;
+        font-size: 1em;
+
+        border-radius: 5px;
+
+    }
+
+
+    input[type=text],
+    input[type=password] {
+
+        padding: 0.5em;
+        font-size: 1em;
+
+        border-radius: 5px;
+        border: 1px solid var( --thermal-prompt-inactive );
+
+        outline-color: var( --thermal-prompt-active );
+
+    }
+
+    input[type=email] {
+        display: none;
+    }
+
+    button {
+
+        cursor: pointer;
+        border-color: var( --thermal-prompt-inactive );
+        border-style: solid;
+
+        background: var( --thermal-prompt-inactive );
+
+        &:hover {
+
+            background: var(  --thermal-prompt-active );
+            border-color: var(  --thermal-prompt-active );
+            color: var( --thermal-background );
+
+        }
+
+    }
+
+
+}

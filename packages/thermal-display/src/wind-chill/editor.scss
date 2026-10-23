@@ -1,0 +1,82 @@
+/**
+ * The following styles get applied inside the editor only.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+.thermal__content-editor__container {
+    position: relative;
+    cursor: pointer;
+
+    thermal-file-app {
+        pointer-events: none;
+    }
+
+    &:hover .thermal__content-editor__wrapper {
+        opacity: 1;
+    }
+}
+
+.thermal__content-editor__wrapper {
+    position: absolute;
+    top: 0;
+    height: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity .2s ease-in-out;
+    pointer-events: none;
+    background-color: rgba(4, 65, 83, 0.801);
+    border-radius: var(--thermal-radius);
+    z-index: 100000;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &>div {
+        color: white;
+    }
+    
+}
+
+.thermal__sidebar__file {
+    margin-bottom: .5rem;
+}
+
+.wp-block-thermal-display-file.is-selected {
+    outline: 2px solid var(--wp--preset--color--vivid-cyan-blue);
+    border-radius: var(--thermal-radius);
+}
+
+$modal-color: rgb(226, 226, 226);
+
+.modal-editor__container {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.modal-editor__tools {
+    width: 100%;
+    border-radius: var(--thermal-radius);
+    
+}
+
+.modal-editor__canvas,
+.modal-editor__details,
+.modal-editor__tools {
+    box-sizing: border-box;
+}
+
+
+@media(min-width: 900px) {
+
+    .modal-editor__canvas,
+    .modal-editor__details {
+        // flex-grow: 1;
+        flex-basis: calc( 50% - 5px/2 );
+    }
+}

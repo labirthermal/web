@@ -1,0 +1,50 @@
+msgid "Plugin Name"
+msgstr "LabIR Edu - Display thermal images"
+
+msgid "Description"
+msgstr "A block for displaying IR camera recordings as interactive analysis apps."
+
+msgid "Thermal display usage"
+msgstr "Thermal display usage"
+
+msgid "Download CSV"
+msgstr "Download CSV"
+
+msgid "No data to export."
+msgstr "No data to export."
+
+msgid "Invalid data"
+msgstr "Invalid data"
+
+msgid "Error saving data"
+msgstr "Error saving data"
+
+msgid "Data saved"
+msgstr "Data saved"
+
+msgid "Time"
+msgstr "Time"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "IP"
+msgstr "IP"
+
+msgid "File name"
+msgstr "File name"
+
+msgid "File size (MB)"
+msgstr "File size (MB)"
+
+msgid "Frames"
+msgstr "Frames"
+
+msgid "Resolution"
+msgstr "Resolution"
+
+msgid "File recorded at"
+msgstr "File recorded at"
+
+msgid "Browser"
+msgstr "Browser"

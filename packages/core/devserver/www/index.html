@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@labirthermal/core</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+
+  <style>
+    :root {
+      --pico-typography-spacing-vertical: 1.5rem;
+      --pico-form-element-spacing-vertical: 1rem;
+      --pico-form-element-spacing-horizontal: 1.25rem;
+    }
+
+    h1 {
+      --pico-font-family: sans-serif;
+      --pico-font-weight: 400;
+      --pico-typography-spacing-vertical: 0.5rem;
+    }
+
+    button {
+      --pico-font-weight: 700;
+    }
+
+    pre {
+      padding: 1em;
+    }
+  </style>
+
+</head>
+
+<body>
+
+
+  <div class="container">
+    <h1>
+      @labirthermal/core
+    </h1>
+    <p>
+      Showcase of the <code>@labirthermal/core</code> key functionality.
+    </p>
+
+    <!-- Example 1: Single Image -->
+    <section>
+
+      <h2>Load a single image and show it inside a <code>div</code></h2>
+
+      <div class="grid">
+        <div>
+          <p>The most simple usage of <code>ThermalManager</code>, <code>ThermalRegistry</code>,
+            <code>ThermalGroup</code>, <code>ThermalFileReader</code> and <code>ThermalInstance</code></p>
+          <div id="single-image"></div>
+          <p>The image is loaded the most straightforward way here, not using the batch mechanism.</p>
+        </div>
+        <script type="module" type="text/javascript">
+
+          import { ThermalManager } from '../../src/hierarchy/ThermalManager';
+          import { ThermalFileReader } from "../../src/loading/workers/ThermalFileReader";
+          import { ThermalFileFailure } from "../../src/loading/workers/ThermalFileFailure";
+
+          const container = document.getElementById('single-image');
+
+          // The manager object should be one per application
+          const manager = new ThermalManager();
+
+          // A registry object wraps set of groups and synchronises some of their parameters such as thermal range ac ati
+          const registry = manager.addOrGetRegistry("single-image-registry");
+
+          // Group wraps a set of thermal files and synchronises some parameters such as: the cursor position, analyses ac ati
+          const group = registry.groups.addOrGetGroup("single-file-group");
+
+          // Request the file asynchronously in the manager
+          const result = await manager.service.loadFile("/soustruh.lrc");
+
+          // The result is either a `ThermalFileReader` or `ThermalFileFailure` object
+
+          // ... Do anything with the failure object
+          if (result instanceof ThermalFileFailure) {
+            console.warn(result.message);
+          }
+
+          // When success, create a new `Instance` object in a desired group
+          else if (result instanceof ThermalFileReader) {
+
+            const instance = await result.createInstance(group);
+
+            // The instance may now be displayed inside a div element
+            await instance.mountToDom(container);
+
+            // And that is it. Loading images this way ensures that all properties such as the thermal range and other are iitialised properly
+
+          }
+        </script>
+      </div>
+
+    </section>
+
+    <!-- Example 2: Multiple Images with Controls -->
+    <section>
+
+      <h2>Multiple images loaded through a batch</h2>
+
+      <div class="grid">
+        <div>
+          <p>Load multiple images using the batch mechanism which ensures that all properties such as the thermal range
+            are calculated only once after all files are loaded.</p>
+          <div id="multiple-images" class="grid"></div>
+        </div>
+        <script type="module" type="text/javascript">
+
+          import { ThermalManager } from '../../src/hierarchy/ThermalManager';
+          import { ThermalFileReader } from "../../src/loading/workers/ThermalFileReader";
+          import { ThermalFileFailure } from "../../src/loading/workers/ThermalFileFailure";
+          import { ThermalFileInstance } from "../../src/file/ThermalFileInstance";
+
+          const container2 = document.getElementById('multiple-images');
+
+          const manager2 = new ThermalManager();
+          const registry2 = manager2.addOrGetRegistry("multiple-images-registry");
+          const group2 = registry2.groups.addOrGetGroup("multiple-files-group");
+
+          // Set a palette
+          manager2.palette.setPalette( "lava" );
+
+          // Callback fn processing one batch result
+          const bindResultToDomIndex = async (result) => {
+            if (result instanceof ThermalFileInstance) {
+              const fileContainer = document.createElement("div");
+              container2.appendChild(fileContainer);
+              await result.mountToDom(fileContainer);
+            }
+          }
+
+          // Request the first file & create the batch object
+          const batch = registry2.batch.request(
+            "/husy_01.lrc",
+            undefined,
+            group2,
+            bindResultToDomIndex
+          );
+
+          // Add another request to the batch
+          batch.request("/hrabac_01.lrc", undefined, group2, bindResultToDomIndex);
+
+          // Add a third request to the batch
+          batch.request("/husy_02.lrc", undefined, group2, bindResultToDomIndex);
+
+          // That is it. The batch fires all registered requests in the next tick.
+
+          // Eventually, you can also add a listener to the batch that will fire as soon as all requests are resolved:
+          batch.onResolve.add("debug", console.log);
+
+        </script>
+      </div>
+
+    </section>
+
+
+    <!-- Example 3: Custom controls on the core objects -->
+    <section>
+
+      <h2>GUI for controlling internal functionality</h2>
+
+      <div class="grid">
+        <div>
+          <p>Load multiple images using the batch mechanism which ensures that all properties such as the thermal range
+            are calculated only once after all files are loaded.</p>
+          <div id="controls"></div>
+        </div>
+        <script type="module" type="text/javascript">
+
+          import { ThermalManager } from '../../src/hierarchy/ThermalManager';
+          import { ThermalFileReader } from "../../src/loading/workers/ThermalFileReader";
+          import { ThermalFileFailure } from "../../src/loading/workers/ThermalFileFailure";
+          import { ThermalFileInstance } from "../../src/file/ThermalFileInstance";
+
+          const container3 = document.getElementById('controls');
+
+          const manager3 = new ThermalManager();
+          const registry3 = manager3.addOrGetRegistry("controls-registry");
+          const group3 = registry3.groups.addOrGetGroup("controls-group");
+
+          // Set a palette
+          manager3.palette.setPalette( "lava" );
+
+          // Callback fn processing one batch result
+          const bindResultToDom = async (result) => {
+            if (result instanceof ThermalFileInstance) {
+              const fileContainer = document.createElement("div");
+              container3.appendChild(fileContainer);
+              await result.mountToDom(fileContainer);
+            }
+          }
+
+          const result3 = await manager3.service.loadFile( "makak_01.lrc" );
+
+          if ( result3 instanceof ThermalFileReader ) {
+            
+            const canvasWrapper = document.createElement("div");
+            container3.appendChild(canvasWrapper);
+
+            const instance3 = await result3.createInstance( group3 );
+            await instance3.mountToDom( canvasWrapper );
+
+            const createButton = (label, onClick) => {
+              const button = document.createElement("button");
+              button.textContent = label;
+              button.addEventListener("click", onClick);
+              container3.appendChild(button);
+            }
+
+            // Palette switching
+            createButton( "IRON palette", () => manager3.palette.setPalette( "iron" ) );
+            createButton( "LAVA palette", () => manager3.palette.setPalette( "lava" ) );
+            createButton( "JET palette", () => manager3.palette.setPalette( "jet" ) );
+
+            // Analysis editor
+            Object.entries( group3.tool.tools ).forEach( ([key, tool]) => {
+              createButton( key, () => {
+                group3.tool.selectTool( key );
+              } );
+            } );
+
+            // Download the entire group in a ZIP
+            createButton( "Download ZIP", () => {
+              group3.files.downloadAllFiles();
+            } );
+
+          }
+
+
+        </script>
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <footer style="display:none">
+    <script type="module" type="text/javascript" ignore="">
+
+      import * as prettier from "https://unpkg.com/prettier@3.8.1/standalone.mjs";
+      import * as prettierPluginBabel from "https://unpkg.com/prettier@3.8.1/plugins/babel.mjs";
+      import * as prettierPluginEstree from "https://unpkg.com/prettier@3.8.1/plugins/estree.mjs";
+      import * as prettierPluginHtml from "https://unpkg.com/prettier@3.8.1/plugins/html.mjs";
+      (async () => {
+
+        const scripts = document.body.querySelectorAll("script");
+
+        for (const script of scripts) {
+
+          if (script.type !== "module" || script.hasAttribute("ignore") || !script.src) continue;
+
+          const response = await fetch(script.src);
+          const text = await response.text();
+          const formatted = await prettier.format(text, {
+            plugins: [prettierPluginBabel, prettierPluginEstree, prettierPluginHtml],
+            parser: "babel"
+          });
+
+          // Remove the //# sourceMappingURL comment, as it is not relevant in the browser and just clutters the output¨
+          const formattedWithoutSourceMap = formatted.replace(/\/\/# sourceMappingURL=.*\n?/, "");
+
+          const pre = document.createElement("pre");
+          pre.textContent = formattedWithoutSourceMap;
+          script.parentElement.appendChild(pre);
+
+        }
+
+      })();
+
+    </script>
+  </footer>
+
+  <!--
+  <script type="module" src="/main.ts" ignore></script>
+  -->
+
+</body>
+
+</html>

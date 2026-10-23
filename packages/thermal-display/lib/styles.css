@@ -1,0 +1,92 @@
+apparent-temperature-aat,
+thermal-file-app,
+thermal-group-app,
+thermal-file-file,
+remote-browser,
+connected-app {
+    &:focus {
+        outline: 0;
+    }
+}
+
+:root {
+
+    --thermal-bar-size: 20px;
+
+    --thermal-bar-gap: calc(var(--thermal-bar-size) / 4);
+    --thermal-bar-fs: var(--thermal-bar-size);
+    --thermal-bar-radius: calc(var(--thermal-bar-size) / 2);
+    --thermal-bar-padding: calc(var(--thermal-bar-size) / 2) var(--thermal-bar-size);
+
+    --thermal-bar-inactive: black;
+    --thermal-bar-color: white;
+    --thermal-bar-bg: blue;
+    --thermal-bar-active: navy;
+
+}
+
+.labir-wall-bar {
+
+    font-size: var(--thermal-bar-fs);
+    color: var(--tehraml-bar-color);
+
+    position: fixed;
+    bottom: var(--thermal-bar-size);
+    right: var(--thermal-bar-size);
+    z-index: 9999;
+    box-sizing: border-box;
+    pointer-events: none;
+
+    color: var(---thermal-bar-fs);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--thermal-bar-gap);
+
+
+}
+
+
+.labir-wall-section {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    gap: var(--thermal-bar-gap);
+}
+
+.labir-wall-item {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--thermal-bar-gap);
+
+    font-size: 1em;
+    color: var(--thermal-bar-color);
+
+    pointer-events: all;
+    border-radius: var(--thermal-bar-radius);
+    background-color: var(--thermal-bar-bg);
+
+    border: 1px solid var(--thermal-slate);
+    padding: var(--thermal-bar-padding);
+
+    text-decoration: none;
+
+    transition: background-color .3s ease-in-out;
+
+    background-color: var(--thermal-bar-inactive);
+
+    &.labir-wall-item__active {
+
+        background-color: var(--thermal-bar-bg);
+        cursor: pointer;
+
+        &:hover,
+        &:focus {
+            background-color: var(--thermal-bar-active);
+        }
+
+    }
+
+}

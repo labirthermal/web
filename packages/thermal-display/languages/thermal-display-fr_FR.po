@@ -1,0 +1,217 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2025-03-17 16:14+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SearchPath-0: lib\n"
+"X-Poedit-SearchPath-1: thermal-display.php\n"
+"X-Poedit-SearchPath-2: src\n"
+"X-Poedit-SearchPathExcluded-0: build\n"
+
+#: src/app/edit.js:274 src/group/edit.js:280
+msgid "Author"
+msgstr "Auteur"
+
+#: src/app/edit.js:285 src/group/edit.js:291
+msgid "License"
+msgstr "Licence"
+
+#: src/app/edit.js:296 src/group/edit.js:302
+msgid "Label"
+msgstr "Étiquette"
+
+#: src/dropin/render.php:45 src/dropin/render.php:46
+msgid "Privacy"
+msgstr "Confidentialité"
+
+#: src/dropin/render.php:48
+msgid "This module stores anonymised usage data."
+msgstr "Ce module stocke des données d'utilisation anonymisées."
+
+#: src/dropin/render.php:49
+msgid "Why do we store the data?"
+msgstr "Pourquoi stockons-nous les données ?"
+
+#: src/dropin/render.php:51
+msgid "to know what browsers do our users use to access our app"
+msgstr ""
+"pour savoir quels navigateurs nos utilisateurs utilisent pour accéder à "
+"notre application"
+
+#: src/dropin/render.php:52
+msgid "to know what kind of files do our users work with"
+msgstr "pour savoir avec quels types de fichiers nos utilisateurs travaillent"
+
+#: src/dropin/render.php:53
+msgid "from which locations do our users access our app"
+msgstr "depuis quels endroits nos utilisateurs accèdent à notre application"
+
+#: src/dropin/render.php:55
+msgid ""
+"These information help us develop the <code>thermal-dropin-app</code> "
+"webcomponent and other parts of the <code>@labir/embed</code> library."
+msgstr ""
+"Ces informations nous aident à développer le composant web <code>thermal-"
+"dropin-app</code> et d'autres parties de la bibliothèque <code>@labir/embed</"
+"code>."
+
+#: src/dropin/render.php:56
+msgid "Where are the data stored?"
+msgstr "Où sont stockées les données ?"
+
+#: src/dropin/render.php:57
+#, php-format
+msgid ""
+"The data are stored on the domain <a href=\"%1$s\" target=\"_blank\">%1$s</"
+"a> and are being viewed only by administrators of this particular website."
+msgstr ""
+"Les données sont stockées sur le domaine <a href=\"%1$s\" "
+"target=\"_blank\">%1$s</a> et ne sont consultées que par les administrateurs "
+"de ce site web."
+
+#: src/dropin/render.php:58
+msgid "What data are being stored?"
+msgstr "Quelles données sont stockées ?"
+
+#: src/dropin/render.php:60
+msgid "Time when you upload a file"
+msgstr "Heure à laquelle vous téléversez un fichier"
+
+#: src/dropin/render.php:61 thermal-display.php:217
+msgid "File name"
+msgstr "Nom du fichier"
+
+#: src/dropin/render.php:62
+msgid "File resolution"
+msgstr "Résolution du fichier"
+
+#: src/dropin/render.php:63
+msgid "File timestamp"
+msgstr "Horodatage du fichier"
+
+#: src/dropin/render.php:64
+msgid "File bytesize"
+msgstr "Taille du fichier en octets"
+
+#: src/dropin/render.php:65
+msgid "File frame count"
+msgstr "Nombre d'images dans le fichier"
+
+#: src/dropin/render.php:66
+msgid "Yor current browser parameters (`userAgent`)"
+msgstr "Paramètres actuels de votre navigateur (`userAgent`)"
+
+#: src/dropin/render.php:67
+msgid "Your current browser size"
+msgstr "Taille actuelle de votre navigateur"
+
+#: src/dropin/render.php:68
+msgid "Your current IP address"
+msgstr "Votre adresse IP actuelle"
+
+#: src/dropin/render.php:70
+msgid "What we do not do?"
+msgstr "Que ne faisons-nous pas ?"
+
+#: src/dropin/render.php:71
+msgid ""
+"We do not store the files you use here (we only store their parameters sucha "
+"as bytesize, framecount, resolution)."
+msgstr ""
+"Nous ne stockons pas les fichiers que vous utilisez ici (nous ne conservons "
+"que certains de leurs paramètres comme la taille en octets, le nombre "
+"d'images et la résolution)."
+
+#: src/dropin/render.php:72
+msgid ""
+"We do not store any information that could lead to your identification (all "
+"data are stored in an anonymised form)."
+msgstr ""
+"Nous ne stockons aucune information pouvant mener à votre identification "
+"(toutes les données sont stockées sous une forme anonymisée)."
+
+#: thermal-display.php:188 thermal-display.php:209
+msgid "Thermal display usage"
+msgstr "Utilisation de l'affichage thermique"
+
+#: thermal-display.php:189
+msgid "Thermal Display"
+msgstr "Affichage thermique"
+
+#: thermal-display.php:210
+msgid "Download CSV"
+msgstr "Télécharger CSV"
+
+#: thermal-display.php:214
+msgid "Time"
+msgstr "Heure"
+
+#: thermal-display.php:215
+msgid "URL"
+msgstr "URL"
+
+#: thermal-display.php:216
+msgid "IP"
+msgstr "IP"
+
+#: thermal-display.php:218
+msgid "File size (MB)"
+msgstr "Taille du fichier en Mo"
+
+#: thermal-display.php:219
+msgid "Frames"
+msgstr "Images"
+
+#: thermal-display.php:220
+msgid "Resolution"
+msgstr "Résolution"
+
+#: thermal-display.php:221
+msgid "File recorded at"
+msgstr "Fichier enregistré à"
+
+#: thermal-display.php:222
+msgid "Browser"
+msgstr "Navigateur"
+
+#~ msgid "Plugin Name"
+#~ msgstr "Nom du plugin"
+
+#~ msgid "Description"
+#~ msgstr "Description"
+
+#~ msgid "Requires at least"
+#~ msgstr "Nécessite au moins"
+
+#~ msgid "Requires PHP"
+#~ msgstr "Nécessite PHP"
+
+#~ msgid "Version"
+#~ msgstr "Version"
+
+#~ msgid "License URI"
+#~ msgstr "URI de la licence"
+
+#~ msgid "Text Domain"
+#~ msgstr "Domaine de texte"
+
+#~ msgid "No data to export."
+#~ msgstr "Aucune donnée à exporter."
+
+#~ msgid "Invalid data"
+#~ msgstr "Données invalides"
+
+#~ msgid "Error saving data"
+#~ msgstr "Erreur lors de l'enregistrement des données"
+
+#~ msgid "Data saved"
+#~ msgstr "Données enregistrées"
