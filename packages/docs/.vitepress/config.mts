@@ -111,7 +111,7 @@ export default defineConfig({
         ]
 
       },
-      { text: 'Webcomponents', link: '/webcomponents/all' },
+      { text: 'Webcomponents', link: '/webcomponents/list' },
     ],
 
     sidebar: [
@@ -154,12 +154,15 @@ export default defineConfig({
               { text: 'Styling and CSS variables', link: '/webcomponents/styling' },
             ]
           },
+          { text: 'List of all components', link: '/webcomponents/list' },
           {
             text: 'App components',
             collapsed: true,
             items: [
               { text: 'Overview of app components', link: '/webcomponents/applications' },
-              { text: 'thermal-dropin-app', link: '/webcomponents/applications/thermal-dropin-app' }
+              { text: 'thermal-dropin-app', link: '/webcomponents/applications/thermal-dropin-app' },
+              { text: 'thermal-file-app', link: '/webcomponents/applications/thermal-file-app' },
+              { text: 'thermal-group-app', link: '/webcomponents/applications/thermal-group-app' }
             ]
           },
           {

@@ -11,3 +11,9 @@ In case you want to use the webcomponents directly in the browser, you need to u
 ```
 
 <blockquote>IIFE = Instantly invoked function expression</blockquote>
+
+## Where to get the IIFE build?
+
+Download the current build from GitHub repository.
+
+[packages/webcomponents/dist/iife/embed.iife.js](https://github.com/labirthermal/web/blob/main/packages/webcomponents/dist/iife/embed.iife.js)

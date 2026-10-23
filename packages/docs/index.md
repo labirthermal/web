@@ -8,16 +8,46 @@ hero:
   tagline: Set of TypeScript packages and webcomponents for work with IR recordings in the browser
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: Webcomponents
+      link: /webcomponents/list
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: Guide
+      link: /webcomponents/
 
 ---
 
 <script setup>
 import { withBase } from 'vitepress'
+import { VPFeatures } from 'vitepress/theme'
+
+const features = [
+  {
+    title: 'LRC thermal recordings',
+    details: 'View and analyse LRC recordings with a ready-to-use web component. Adjust the palette and temperature range, play sequences and inspect temperatures in selected areas.',
+    link: '/webcomponents/applications/thermal-file-app',
+    linkText: 'Explore the file app'
+  },
+  {
+    title: 'Multiple files at once',
+    details: 'Compose a workspace for multiple recordings using provider elements. Share palettes and temperature ranges, and synchronise analysis areas across files in a group.',
+    link: '/webcomponents/hierarchy',
+    linkText: 'Compose your workspace'
+  },
+  {
+    title: 'Framework independent',
+    details: 'Load a script and add custom HTML elements to your page. Configure them with attributes, without depending on a frontend framework.',
+    link: '/webcomponents/usage',
+    linkText: 'Usage in the browser'
+  },
+  {
+    title: 'Built with Lit',
+    details: 'Lightweight, fast and standards-based components built on top of the Lit library.',
+    link: 'https://lit.dev',
+    linkText: 'lit.dev',
+    target: '_blank',
+    rel: 'noopener'
+  }
+]
 </script>
 
 <thermal-file-app 
@@ -42,4 +72,5 @@ import { withBase } from 'vitepress'
   analysis1="Rectangle 0;rectangle;color:Blue;top:22;left:25;width:80;height:53;min"
  ></thermal-file-app>
 ```
-<thermal-dropin-app label="Popiska" palette="iron" advanced-palettes="true"></thermal-dropin-app>
+
+<VPFeatures class="home-features" :features="features" />

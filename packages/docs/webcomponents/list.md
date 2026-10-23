@@ -1,4 +1,6 @@
-# Overview of webcomponents
+# List of all webcomponents
+
+This is a brief, but complete list of all webcomponents included in `@labirthermal/webcomponents` package.
 
 
 <script setup>
@@ -95,3 +97,27 @@ The following components need to be used in the given hierarchy. See [context pr
 </Hierarchy>
 
 ## Applications
+
+Applications are self-contained editors that do not need any context providers. See the [overview of applications](./applications/index.md) for more details.
+
+### [`thermal-dropin-app`](./applications/thermal-dropin-app.md)
+
+Lets users drop and analyze their own LRC files.
+
+<thermal-dropin-app
+    palette="iron"
+    advanced-palettes="true"
+    tool="edit"
+    style="width: 100%"
+></thermal-dropin-app>
+
+### [`thermal-file-app`](./applications/thermal-file-app.md)
+
+Displays and analyzes one thermal file loaded from a URL.
+
+<thermal-file-app
+    label="Kangaroo"
+    author="LabIR Team"
+    style="width: 100%"
+    :thermal="withBase('/files/klokan.lrc')"
+></thermal-file-app>

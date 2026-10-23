@@ -23,7 +23,3 @@ The `palette` and `advanced-palettes` attributes can be to specify the default v
 
 ## tool
 
-
-
-
-A pak zase něco.

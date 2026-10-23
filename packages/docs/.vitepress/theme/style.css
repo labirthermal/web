@@ -140,6 +140,11 @@
   --docsearch-primary-color: var(--vp-c-brand-1) !important;
 }
 
+.vp-doc {
+  /* Keep embedded app layers below the VitePress navigation. */
+  isolation: isolate;
+}
+
 .full-width {
   display: block;
   width: calc( 100vw - 2 * var(--labirthermal-gap));
@@ -332,4 +337,31 @@ main {
     height: 100%;
   }
 
+}
+
+.vp-doc .home-features {
+  margin-top: 48px;
+  padding: 0;
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  h2 {
+    margin: 0;
+    padding: 8px 0 0;
+    border-top: none;
+    line-height: 24px;
+    font-size: 16px;
+    letter-spacing: normal;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .link-text {
+    color: var(--vp-c-brand-1);
+  }
 }

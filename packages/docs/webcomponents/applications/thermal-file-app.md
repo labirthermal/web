@@ -1,5 +1,23 @@
 # thermal-file-app
 
+<script setup>
+import { withBase } from 'vitepress'
+</script>
+
+<style scoped>
+.thermal-file-example {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0 24px;
+    padding: 20px 24px;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 8px;
+    background-color: var(--vp-code-block-bg);
+}
+</style>
+
 <ComponentInfo tag="thermal-file-app" category="Application">
 
 A self-contained viewer and editor of one thermal file loaded from a URL. It creates its own manager, registry, group and file context, so no provider elements are needed around it.
@@ -12,20 +30,27 @@ The application contains a palette dropdown, thermal range form and slider, hist
 
 Only public HTML attributes are listed here. Controllers, loaded objects and the reflected `is-loading` state are internal and are not meant to be set from HTML.
 
+Each example shows plain HTML first, followed by a live preview. The previews use VitePress `withBase()` to resolve asset URLs under the documentation base path; in your own HTML, use URLs pointing to your files.
+
 <ComponentAttribute name="thermal" type="string">
 
 URL of the thermal file (LRC) to display. The file is loaded whenever this attribute is set or changed; setting a new URL replaces the previously loaded file. Without `thermal`, the application stays empty.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/soustruh.lrc"
+    thermal="/files/soustruh.lrc"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/soustruh.lrc')"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -35,18 +60,25 @@ URL of a visible (optical) image of the same scene. The image is placed below th
 
 The visible image is read together with the thermal file, so set `visible` before or together with `thermal`. Changing only `visible` later does not reload the file.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/les_thermal.lrc"
-    visible="/labir/files/les_visual.png"
+    thermal="/files/les_thermal.lrc"
+    visible="/files/les_visual.png"
     opacity="0.5"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/les_thermal.lrc')"
+        :visible="withBase('/files/les_visual.png')"
+        opacity="0.5"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -54,18 +86,25 @@ The visible image is read together with the thermal file, so set `visible` befor
 
 Initial opacity of the thermogram, from `0` (fully transparent) to `1` (fully opaque). Values outside this range are clamped; an invalid number falls back to `1`. The thermogram becomes transparent only when the file has a [`visible`](#visible) image; without it, the opacity has no visible effect.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/les_thermal.lrc"
-    visible="/labir/files/les_visual.png"
+    thermal="/files/les_thermal.lrc"
+    visible="/files/les_visual.png"
     opacity="0.2"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/les_thermal.lrc')"
+        :visible="withBase('/files/les_visual.png')"
+        opacity="0.2"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -79,19 +118,25 @@ Texts displayed in the application bar:
 
 Each attribute is optional; omitted texts are not displayed.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
     style="width: 100%"
-    thermal="/labir/files/klokan.lrc"
+    thermal="/files/klokan.lrc"
     label="Kangaroo"
     author="LabIR Team"
     license="CC BY 4.0"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        label="Kangaroo"
+        author="LabIR Team"
+        license="CC BY 4.0"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -99,18 +144,23 @@ Each attribute is optional; omitted texts are not displayed.
 
 Shows the fullscreen toggle in the application bar. Only `"true"` shows the button; omitted, empty, `"false"` and other values keep it hidden.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
     style="width: 100%"
-    thermal="/labir/files/husy.lrc"
+    thermal="/files/husy.lrc"
     label="Geese"
     show-fullscreen="true"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        style="width: 100%"
+        :thermal="withBase('/files/husy.lrc')"
+        label="Geese"
+        show-fullscreen="true"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -123,18 +173,25 @@ These two attributes configure the initial palette and which palette choices are
 
 See [Thermal palette](../thermal-palette.md) for the available choices.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/makak.lrc"
+    thermal="/files/makak.lrc"
     palette="lava"
     advanced-palettes="true"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/makak.lrc')"
+        palette="lava"
+        advanced-palettes="true"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -147,18 +204,25 @@ Initial thermal range in °C:
 
 The range is applied only when both attributes are set; if either is missing, the full range of the file is used. The user can change the range later with the range form, slider or histogram. See [Thermal range](../thermal-range.md).
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/klokan.lrc"
+    thermal="/files/klokan.lrc"
     from="20"
     to="30"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        from="20"
+        to="30"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -166,17 +230,23 @@ The range is applied only when both attributes are set; if either is missing, th
 
 Initially selected analysis tool in the tool bar. An unsupported value falls back to `inspect`.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/husy.lrc"
+    thermal="/files/husy.lrc"
     tool="add-rect"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/husy.lrc')"
+        tool="add-rect"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -191,19 +261,27 @@ Up to seven analyses created on the loaded file. Each attribute holds one serial
 
 The attributes are synchronised in both directions: editing, adding or removing an analysis in the application updates the attributes, and changing an attribute updates the analysis. Removing the attribute removes the analysis.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/klokan.lrc"
+    thermal="/files/klokan.lrc"
     analysis1="Body;rectangle;color:Blue;top:153;left:200;width:431;height:179;avg;max"
     analysis2="Head;ellipsis;color:Red;top:212;left:439;width:352;height:222;max"
     analysis3="Spot;point;color:Lime;top:100;left:100;avg"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        analysis1="Body;rectangle;color:Blue;top:153;left:200;width:431;height:179;avg;max"
+        analysis2="Head;ellipsis;color:Red;top:212;left:439;width:352;height:222;max"
+        analysis3="Spot;point;color:Lime;top:100;left:100;avg"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -211,18 +289,25 @@ The attributes are synchronised in both directions: editing, adding or removing 
 
 Enables selecting, editing and removing analyses in the analysis table. With `interactiveanalysis="false"`, the table only displays the analyses. An omitted or empty attribute means `true`; only the exact string `"true"` is true otherwise.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/klokan.lrc"
+    thermal="/files/klokan.lrc"
     interactiveanalysis="false"
     analysis1="Body;rectangle;color:Blue;top:153;left:200;width:431;height:179;avg"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        interactiveanalysis="false"
+        analysis1="Body;rectangle;color:Blue;top:153;left:200;width:431;height:179;avg"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -233,18 +318,25 @@ Playback settings of sequences (files with more frames). They have no effect on 
 - `ms` (`number`, default `0`) – initial position in the sequence in milliseconds. The value is clamped to the duration of the sequence and is updated while the sequence plays.
 - `speed` (`0.5 | 1 | 2 | 3 | 5 | 10`, default `1`) – initial playback speed multiplier.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/sequence.lrc"
+    thermal="/files/sequence.lrc"
     ms="2000"
     speed="2"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/sequence.lrc')"
+        ms="2000"
+        speed="2"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -257,17 +349,23 @@ Initial smoothing settings:
 
 Only `"true"` is true; omitted, empty, `"false"` and other values are false.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/husy.lrc"
+    thermal="/files/husy.lrc"
     smooth-thermograms="true"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/husy.lrc')"
+        smooth-thermograms="true"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -275,17 +373,23 @@ Only `"true"` is true; omitted, empty, `"false"` and other values are false.
 
 Language of the user interface. Regional variants such as `en_GB`, `cs_CZ` or `de_AT` are accepted as well; an unknown value falls back to `en`. When omitted, the current language of the page is kept. The language is shared by all webcomponents on the page, so changing it in one application also changes it in the others.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/husy.lrc"
+    thermal="/files/husy.lrc"
     locale="cs"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/husy.lrc')"
+        locale="cs"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -293,17 +397,23 @@ Language of the user interface. Regional variants such as `en_GB`, `cs_CZ` or `d
 
 When present, the temperature range of the loaded file is highlighted on the histogram and range slider. Use the attribute without a value; note that `autohighlight="false"` is also treated as present.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/makak.lrc"
+    thermal="/files/makak.lrc"
     autohighlight
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/makak.lrc')"
+        autohighlight
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -315,22 +425,35 @@ Two applications with the same `manager-slug` share the palette, tool and smooth
 
 Because `slug` is used as a fallback by all three identifiers, setting only `slug` on two applications makes them share everything, including the group.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/makak.lrc"
+    thermal="/files/makak.lrc"
     manager-slug="shared-file-apps"
 ></thermal-file-app>
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/klokan.lrc"
+    thermal="/files/klokan.lrc"
     manager-slug="shared-file-apps"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/makak.lrc')"
+        manager-slug="shared-file-apps"
+    ></thermal-file-app>
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        manager-slug="shared-file-apps"
+    ></thermal-file-app>
+</div>
 
 </ComponentAttribute>
 
@@ -346,42 +469,61 @@ Removes the internal group (and its file) when the application is removed from t
 
 The visible image is displayed below the thermogram. Drag the opacity slider in the application bar to blend the two images.
 
-<ComponentExample>
-
 ```html
 <thermal-file-app
     style="width: 100%"
     label="Forest"
-    thermal="/labir/files/les_thermal.lrc"
-    visible="/labir/files/les_visual.png"
+    thermal="/files/les_thermal.lrc"
+    visible="/files/les_visual.png"
     opacity="0.6"
     palette="iron"
     analysis1="Trunk;rectangle;color:Red;top:30;left:60;width:30;height:60;avg;max"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-file-app
+        style="width: 100%"
+        label="Forest"
+        :thermal="withBase('/files/les_thermal.lrc')"
+        :visible="withBase('/files/les_visual.png')"
+        opacity="0.6"
+        palette="iron"
+        analysis1="Trunk;rectangle;color:Red;top:30;left:60;width:30;height:60;avg;max"
+    ></thermal-file-app>
+</div>
 
 ### Replace the displayed file
 
 Changing the `thermal` attribute loads another file into the same application.
 
-<ComponentExample>
-
 ```html
-<thermal-btn onclick="this.parentElement.querySelector('thermal-file-app').setAttribute('thermal', '/labir/files/makak.lrc')">
+<thermal-btn onclick="this.parentElement.querySelector('thermal-file-app').setAttribute('thermal', '/files/makak.lrc')">
     Show macaque
 </thermal-btn>
-<thermal-btn onclick="this.parentElement.querySelector('thermal-file-app').setAttribute('thermal', '/labir/files/klokan.lrc')">
+<thermal-btn onclick="this.parentElement.querySelector('thermal-file-app').setAttribute('thermal', '/files/klokan.lrc')">
     Show kangaroo
 </thermal-btn>
 <thermal-file-app
+    label="Example"
     style="width: 100%"
-    thermal="/labir/files/makak.lrc"
+    thermal="/files/makak.lrc"
 ></thermal-file-app>
 ```
 
-</ComponentExample>
+<div class="thermal-file-example">
+    <thermal-btn @click="$event.currentTarget.parentElement.querySelector('thermal-file-app').setAttribute('thermal', withBase('/files/makak.lrc'))">
+        Show macaque
+    </thermal-btn>
+    <thermal-btn @click="$event.currentTarget.parentElement.querySelector('thermal-file-app').setAttribute('thermal', withBase('/files/klokan.lrc'))">
+        Show kangaroo
+    </thermal-btn>
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/makak.lrc')"
+    ></thermal-file-app>
+</div>
 
 ### Complete HTML document
 
