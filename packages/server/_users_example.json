@@ -1,0 +1,37 @@
+{
+    "users": {
+        "root": {
+            "login": "root",
+            "name": "Root uživatel",
+            "description": "Administrátor systému se všemi právy.",
+            "institution": "Administrator",
+            "email": "root@example.com",
+            "password": "some-password",
+            "access": [
+                "/"
+            ]
+        },
+        "guest": {
+            "login": "guest",
+            "name": "Host",
+            "description": "Veřejný uživatel s omezeným přístupem.",
+            "institution": "Public",
+            "email": "guest@example.com",
+            "password": "some-password",
+            "access": [
+                "/access/restricted_to_guest"
+            ]
+        },
+        "František Dobrota": {
+            "login": "František Dobrota",
+            "name": "František Dobrota",
+            "description": "Speciální uživatel pro testování přístupu do specials.",
+            "institution": "An institution",
+            "email": "dobrota@example.com",
+            "password": "some-password",
+            "access": [
+                "/specials"
+            ]
+        }
+    }
+}
