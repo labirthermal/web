@@ -41,7 +41,7 @@ describe( "FileDeleteComment", () => {
             .execute();
         expect( add.success ).toBe( true );
 
-        const timestamp = add.data?.file.comments[add.data!.file.comments.length - 1].timestamp!;
+        const timestamp = add.data!.file.comments[add.data!.file.comments.length - 1].timestamp!;
 
         await client.routes.post.login( "guest", "querty" ).execute();
 
@@ -89,7 +89,7 @@ describe( "FileDeleteComment", () => {
             .execute();
         expect( add.success ).toBe( true );
 
-        const timestamp = add.data?.file.comments[add.data!.file.comments.length - 1].timestamp!;
+        const timestamp = add.data!.file.comments[add.data!.file.comments.length - 1].timestamp!;
 
         
 

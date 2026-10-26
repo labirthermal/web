@@ -47,7 +47,7 @@ export class ConnectedBrowserApp extends AbstractConnectedApp {
     /** Main router for the folder state display. Particular content depends on existence of files, subfolders and display mode setting. */
     protected renderStateFolder(): unknown {
 
-        let content: unknown = nothing;
+        let content: unknown;
 
         // If no folder is defined, just render the breadcrumb
         if (this.content.folder === undefined) {

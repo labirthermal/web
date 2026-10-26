@@ -288,7 +288,7 @@ export class ApiClient {
             response = await fetch(request);
         } catch (error) {
             console.error(error);
-            throw new Error("Server is not available or network error occurred.");
+            throw new Error("Server is not available or network error occurred.", { cause: error});
         }
 
         // Process the response
