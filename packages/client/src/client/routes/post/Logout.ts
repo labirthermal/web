@@ -1,5 +1,5 @@
 import { Operation } from "../Operation";
-import type { ApiResponseType } from "../../routes/ResponseTypes";
+import type { ApiResponseType } from "../ResponseTypes";
 
 export type LogoutDataType = object;
 
