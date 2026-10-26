@@ -1,4 +1,4 @@
-import { ControllerApp } from "./connection/controllers/apps/ConnectedBrowserApp";
+import { ControllerApp } from "./controllers/apps/ConnectedBrowserApp";
 
 const connectedAppElements = {
     "connected-browser-app": ControllerApp
