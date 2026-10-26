@@ -1,10 +1,10 @@
 import { html, nothing } from "lit";
 import { directive } from "lit/directive.js";
-import type { AbstractConnectedApp } from "../../../abstraction/AbstractConnectedApp";
-import { AbstractLayoutDirective } from "./AbstractLayoutDirective";
-import { slotOrNothing } from "../SlotOrNothing";
+import type { AbstractConnectedApp } from "../../abstraction/AbstractConnectedApp";
+import type { FolderInfo } from "../../client/responseEntities";
 import { DirectiveHelpers } from "../DirectiveHelpers";
-import type { FolderInfo } from "../../../client/responseEntities";
+import { slotOrNothing } from "../SlotOrNothing";
+import { AbstractLayoutDirective } from "./AbstractLayoutDirective";
 
 class ConnectedFileDetail extends AbstractLayoutDirective {
 
@@ -27,7 +27,7 @@ class ConnectedFileDetail extends AbstractLayoutDirective {
                 .label=${undefined}
             ></connected-file-edit-dialog>` );
 
-            fileOperations.push( html`<connected-file-move-dialog .file=${app.content.file}></connected-file-move-dialog>` );
+            fileOperations.push(html`<connected-file-move-dialog .file=${app.content.file}></connected-file-move-dialog>`);
 
             fileOperations.push(html`<connected-file-delete-dialog
                 .file=${app.content.file}
@@ -85,11 +85,8 @@ class ConnectedFileDetail extends AbstractLayoutDirective {
         );
 
         if (
-            true
-            || (
-                app.content.file !== undefined
-                && app.content.file!.tags.length > 0
-            )
+            app.content.file !== undefined
+            && app.content.file!.tags.length > 0
         ) {
 
             const tags = slotOrNothing(

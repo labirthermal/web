@@ -6,7 +6,7 @@ import { css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import type { FileInfo } from "../../../client/responseEntities";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
-import { slotOrNothing } from "../../../apps/directives/SlotOrNothing";
+import { slotOrNothing } from "../../../directives/SlotOrNothing";
 
 export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
 

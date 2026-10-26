@@ -2,7 +2,7 @@ import { t } from "@labirthermal/webcomponents";
 import type { Part } from "lit";
 import { html } from "lit";
 import { Directive } from "lit/directive.js";
-import { T } from "../../translations/Languages";
+import { T } from "../translations/Languages";
 import { DirectiveHelpers } from "./DirectiveHelpers";
 
 export abstract class AbstractConnectedDirective extends Directive {

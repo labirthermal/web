@@ -111,8 +111,7 @@ export class ConnectedShareDialog extends AbstractControlledConsumer {
 
     }
 
-    public static styles?: CSSResultGroup | undefined = css
-        `
+    public static styles?: CSSResultGroup | undefined = css`
         :host {
             font-size: var( --thermal-fs );
             color: var( --thermal-foreground );

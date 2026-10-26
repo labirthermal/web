@@ -2,7 +2,7 @@ import { expect } from "vitest";
 import { testFileInfo } from "./testFileStructure";
 import { testFolderInfo } from "./testFolderInfo";
 
-export function testGrid(grid: any) {
+export function testGrid(grid: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     // Ověř top-level klíče
     expect(grid).toHaveProperty("folder");
     expect(grid).toHaveProperty("all_subdirectories");

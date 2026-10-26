@@ -1,7 +1,7 @@
 import type { CSSResultGroup } from "lit";
 import { css, html, nothing } from "lit";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
-import { DirectiveHelpers } from "../../../apps/directives/DirectiveHelpers";
+import { DirectiveHelpers } from "../../../directives/DirectiveHelpers";
 import type { T } from "../../../translations/Languages";
 
 export class ConnectedFolderContentModeSwitch extends AbstractControlledConsumer {

@@ -5,7 +5,7 @@ import { css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import { cache } from "lit/directives/cache.js";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { AbstractLayoutDirective } from "../apps/directives/layout/AbstractLayoutDirective";
+import { AbstractLayoutDirective } from "../directives/layout/AbstractLayoutDirective";
 import type { AppWithClientController} from "../controllers/ClientController";
 import { ClientController } from "../controllers/ClientController";
 import type { AppWithContentController} from "../controllers/ContentController";

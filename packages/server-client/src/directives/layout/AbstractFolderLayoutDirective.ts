@@ -1,15 +1,15 @@
 import { html, nothing } from "lit";
-import type { AbstractConnectedApp } from "../../../abstraction/AbstractConnectedApp";
-import type { ConnectedUploadForm } from "../../../components/folder/upload/ConnectedUploadForm";
+import type { AbstractConnectedApp } from "../../abstraction/AbstractConnectedApp";
+import type { ConnectedUploadForm } from "../../components/folder/upload/ConnectedUploadForm";
 import { DirectiveHelpers } from "../DirectiveHelpers";
 import { slotOrNothing } from "../SlotOrNothing";
 import { AbstractLayoutDirective } from "./AbstractLayoutDirective";
-import type { FolderInfo } from "../../../client/responseEntities";
+import type { FolderInfo } from "../../client/responseEntities";
 
 export abstract class AbstractFolderLayoutDirective extends AbstractLayoutDirective {
 
     protected renderFolderContentStatsSlot(
-        app: AbstractConnectedApp
+        app: AbstractConnectedApp // eslint-disable-line @typescript-eslint/no-unused-vars
     ): unknown {
         return slotOrNothing(
             "content",
@@ -18,7 +18,7 @@ export abstract class AbstractFolderLayoutDirective extends AbstractLayoutDirect
     }
 
     protected renderDisplaySlot(
-        app: AbstractConnectedApp
+        app: AbstractConnectedApp // eslint-disable-line @typescript-eslint/no-unused-vars
     ): unknown {
 
         return slotOrNothing(

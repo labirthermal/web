@@ -1,12 +1,12 @@
 import { t } from "@labirthermal/webcomponents";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import { css, html, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
-import type { BreadcrumbItem } from "../client/responseEntities";
-import { T } from "../translations/Languages";
 import { AbstractControlledConsumer } from "../abstraction/AbstractControlledConsumer";
+import type { BreadcrumbItem } from "../client/responseEntities";
 import { DisplayState } from "../controllers/DisplayController";
+import { T } from "../translations/Languages";
 
 
 

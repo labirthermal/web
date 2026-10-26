@@ -1,7 +1,7 @@
 import { expect } from "vitest";
 
 // Helper function to validate FileInfo structure
-export function testFileInfo(file: any) {
+export function testFileInfo(file: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     expect(file).toHaveProperty("entity", "file");
     expect(typeof file.url).toBe("string");
     expect(["string", "object"].includes(typeof file.description)).toBe(true);

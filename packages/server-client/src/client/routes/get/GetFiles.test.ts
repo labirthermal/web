@@ -3,7 +3,6 @@ import { ApiClient } from "../../ApiClient";
 import { testFileInfo } from "../../utils/testFileStructure";
 import { testFolderInfo } from "../../utils/testFolderInfo";
 import { testTagDefinition } from "../../utils/testTagDefinition";
-import { request } from "http";
 
 describe("GetFiles", () => {
 

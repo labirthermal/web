@@ -1,6 +1,6 @@
 import { nothing } from "lit";
-import type { ClientController } from "../../controllers/ClientController";
-import type { FileInfo, FolderInfo } from "../../client/responseEntities";
+import type { ClientController } from "../controllers/ClientController";
+import type { FileInfo, FolderInfo } from "../client/responseEntities";
 
 /** Utilities for rendering */
 export class DirectiveHelpers {

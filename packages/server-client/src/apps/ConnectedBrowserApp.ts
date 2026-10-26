@@ -3,11 +3,11 @@ import { html, nothing } from "lit";
 import { createRef } from "lit/directives/ref.js";
 import { AbstractConnectedApp } from "../abstraction/AbstractConnectedApp";
 import { DisplayState, FolderListDisplayMode } from "../controllers/DisplayController";
-import { connectedFileDetail } from "./directives/layout/ConnectedFileDetailDirective";
-import { connectedFolderFiles } from "./directives/layout/ConnectedFolderFilesDirective";
-import { connectedFolderGrid } from "./directives/layout/ConnectedFolderGridDirective";
-import { connectedFolderSubfolders } from "./directives/layout/ConnectedFolderSubfoldersDirective";
-import { userFolders } from "./directives/layout/UserFoldersDirective";
+import { connectedFileDetail } from "../directives/layout/ConnectedFileDetailDirective";
+import { connectedFolderFiles } from "../directives/layout/ConnectedFolderFilesDirective";
+import { connectedFolderGrid } from "../directives/layout/ConnectedFolderGridDirective";
+import { connectedFolderSubfolders } from "../directives/layout/ConnectedFolderSubfoldersDirective";
+import { userFolders } from "../directives/layout/UserFoldersDirective";
 import type { ManagerProviderElement } from "@labirthermal/webcomponents";
 import type { Identity } from "../client/responseEntities";
 

@@ -38,7 +38,7 @@ export class ControlledFileTags extends AbstractControlledConsumer {
 
 
 
-    protected async handleTagClick(slug: string, tag: TagInfo) {
+    protected async handleTagClick(slug: string) {
 
         // Pokud není editable, nedělej nic
         if (!this.editable) {
@@ -114,14 +114,14 @@ export class ControlledFileTags extends AbstractControlledConsumer {
         const handleKeydown = (event: KeyboardEvent) => {
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                this.handleTagClick(slug, tag);
+                this.handleTagClick(slug);
             }
         };
 
         return html`<button
             class="tag-button ${has ? 'has' : ''}"
             tabindex="${this.editable ? '0' : '-1'}"
-            @click=${() => this.handleTagClick(slug, tag)}
+            @click=${() => this.handleTagClick(slug)}
             @keydown=${handleKeydown}
         >
             <div class="tag-button-content" style="background-color: ${backgroundColor}; color: ${textColor}; --icon-invert: ${iconInvert};">

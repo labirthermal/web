@@ -103,7 +103,7 @@ export class ConnectedFileDeleteDialog extends AbstractControlledConsumer {
             return true;
 
         } catch (error) {
-            this.error = "Došlo k neočekávané chybě při mazání souboru.";
+            this.error = "Došlo k neočekávané chybě při mazání souboru." + (error instanceof Error ? error.message : String(error));
         }
 
         return false;

@@ -1,7 +1,7 @@
 import { css, html, nothing } from "lit";
-import type { AbstractConnectedApp } from "../../../abstraction/AbstractConnectedApp";
+import type { AbstractConnectedApp } from "../../abstraction/AbstractConnectedApp";
 import { AbstractConnectedDirective } from "../AbstractConnectedDirective";
-import type { BreadcrumbItem } from "../../../client/responseEntities";
+import type { BreadcrumbItem } from "../../client/responseEntities";
 
 export abstract class AbstractLayoutDirective extends AbstractConnectedDirective {
 

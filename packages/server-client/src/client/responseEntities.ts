@@ -39,9 +39,7 @@ export type TagInfo = {
 /** 
  * @package `@labirthermal/client`
  */
-export interface ApiEditableEntity {
-
-}
+type ApiEditableEntity = object;
 
 /** 
  * @package `@labirthermal/client`

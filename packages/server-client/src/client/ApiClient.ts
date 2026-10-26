@@ -1,7 +1,6 @@
 import { CallbacksManager } from "@labirthermal/core";
 import { version } from "../../package.json";
 import { Auth } from "./authentication/Auth";
-import { Entities } from "./entities/Entities";
 import { RequestFactory } from "./request/RequestFactory";
 import type { ServerInfo } from "./responseEntities";
 import { Routes } from "./routes/factories/Routes";
@@ -78,14 +77,6 @@ export class ApiClient {
      */
     public readonly routes: Routes;
 
-
-    /**
-     * Access server entities directly and manipulate them using a comfortable API.
-     * 
-     * All entities are observable by their consuming objects, so there should be only one instance of every entity by its given identification.
-     */
-    public readonly entities: Entities = new Entities(this);
-
     /**
      * Needs to be set to `true` before any requests are made (with the exception of the `connect()` route).
      */
@@ -161,6 +152,8 @@ export class ApiClient {
             return response;
 
         } catch (error) {
+
+            console.error(error);
 
             this.onConnection.call(false);
             this.onLoading.call(false);
@@ -294,6 +287,7 @@ export class ApiClient {
         try {
             response = await fetch(request);
         } catch (error) {
+            console.error(error);
             throw new Error("Server is not available or network error occurred.");
         }
 

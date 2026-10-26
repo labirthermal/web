@@ -120,7 +120,7 @@ export class FileThumbnail extends AbstractControlledConsumer {
         this.fileObject?.analysis.removeListener(this.UUID);
     }
 
-    updated(changedProperties: Map<string, any>): void {
+    updated(changedProperties: PropertyValues<FileThumbnail>): void {
         if (changedProperties.has('compact')) {
             if (this.compact) {
                 this.classList.add('compact');

@@ -1,7 +1,7 @@
 import { expect } from "vitest";
 
 // Helper function to validate TagDefinition structure
-export function testTagDefinition(tag: any) {
+export function testTagDefinition(tag: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     expect(typeof tag.slug).toBe("string");
     expect(typeof tag.count).toBe("number");
     if (tag.meta !== undefined) {

@@ -1,6 +1,6 @@
 import { html, nothing } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
-import type { T } from "../../../translations/Languages";
+import type { T } from "../../translations/Languages";
 import { DirectiveHelpers } from "../DirectiveHelpers";
 
 export class SlotFactory {

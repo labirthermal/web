@@ -1,5 +1,5 @@
 import { html, nothing } from "lit";
-import { T } from "../../translations/Languages";
+import { T } from "../translations/Languages";
 import { AbstractConnectedDirective } from "./AbstractConnectedDirective";
 import { t } from "@labirthermal/webcomponents";
 import { directive } from "lit/directive.js";

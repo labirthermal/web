@@ -1,11 +1,11 @@
 import { html, nothing } from "lit";
-import type { AbstractConnectedApp } from "../../../abstraction/AbstractConnectedApp";
+import type { AbstractConnectedApp } from "../../abstraction/AbstractConnectedApp";
 import { DirectiveHelpers } from "../DirectiveHelpers";
 import { slotOrNothing } from "../SlotOrNothing";
 
 import { directive } from "lit/directive.js";
 import { AbstractFolderLayoutDirective } from "./AbstractFolderLayoutDirective";
-import type { BreadcrumbItem, FileInfo } from "../../../client/responseEntities";
+import type { BreadcrumbItem, FileInfo } from "../../client/responseEntities";
 
 class ConnectedFolderFilesDirective extends AbstractFolderLayoutDirective {
 

@@ -12,7 +12,6 @@ const loadPublicFile = (fileName: string, mime: string): File => {
     const fileOriginalName = path.basename(filePath);
     
     // Create File object using a more compatible approach
-    const uint8Array = new Uint8Array(fileBuffer);
     const file = new File([fileBuffer], fileOriginalName, { type: mime });
 
     console.log( file, fileBuffer.length );

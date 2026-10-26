@@ -2,7 +2,7 @@ import { expect } from "vitest";
 import { testFileInfo } from "./testFileStructure";
 
 // Helper function to validate FolderInfo structure
-export function testFolderInfo(folder: any) {
+export function testFolderInfo(folder: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     expect(folder).toHaveProperty("entity", "folder");
     expect(typeof folder.api).toBe("string");
     expect(typeof folder.path).toBe("string");

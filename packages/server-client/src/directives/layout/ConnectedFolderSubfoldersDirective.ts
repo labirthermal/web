@@ -1,10 +1,10 @@
 import { html, nothing } from "lit";
-import type { AbstractConnectedApp } from "../../../abstraction/AbstractConnectedApp";
+import type { AbstractConnectedApp } from "../../abstraction/AbstractConnectedApp";
 import { slotOrNothing } from "../SlotOrNothing";
 
 import { directive } from "lit/directive.js";
 import { AbstractFolderLayoutDirective } from "./AbstractFolderLayoutDirective";
-import type { BreadcrumbItem, FolderInfo } from "../../../client/responseEntities";
+import type { BreadcrumbItem, FolderInfo } from "../../client/responseEntities";
 
 class ConnectedFolderSubfoldersDirective extends AbstractFolderLayoutDirective {
 

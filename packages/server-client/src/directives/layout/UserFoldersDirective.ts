@@ -1,8 +1,8 @@
 import { directive } from "lit/directive.js";
-import type { AbstractConnectedApp } from "../../../abstraction/AbstractConnectedApp";
+import type { AbstractConnectedApp } from "../../abstraction/AbstractConnectedApp";
 import { AbstractLayoutDirective } from "./AbstractLayoutDirective";
 import { html } from "lit";
-import type { Identity } from "../../../client/responseEntities";
+import type { Identity } from "../../client/responseEntities";
 
 class UserFoldersDirective extends AbstractLayoutDirective {
 

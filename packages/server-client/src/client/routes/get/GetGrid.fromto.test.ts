@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { ApiClient } from "../../ApiClient";
 import { GridGrouping } from "./GetGrid";
-import { testGrid } from "../../utils/testGrid";
 
 
 
