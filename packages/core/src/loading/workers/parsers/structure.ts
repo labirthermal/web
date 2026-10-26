@@ -94,6 +94,17 @@ export interface IParserObject {
     /** Determine whether the file corresponds to the given parser */
     is(buffer: ArrayBuffer, url: string): boolean,
 
+    /**
+     * Optional one-time conversion of the loaded file into the working buffer
+     * that is passed to all other methods.
+     * - runs in the main thread before the file is reported as loaded
+     * - the original file stays available in `ThermalFileReader.fileBuffer`
+     * - formats that are read directly (LRC) do not implement it
+     *
+     * @throws FileLoadingError
+     */
+    prepare?(buffer: ArrayBuffer, url: string): Promise<ArrayBuffer>,
+
 
     /** 
      * Get the basic information necessary for every file
@@ -120,6 +131,12 @@ export interface IParserObject {
 
 
     registryHistogram( files: ArrayBuffer[] ): Promise<ThermalStatistics[]>,
+
+    /**
+     * All temperatures of all frames of one file, used for histograms
+     * of registries combining different file formats.
+     */
+    histogramPixels( file: ArrayBuffer ): Promise<Float32Array>,
 
     pointAnalysisData( file: ArrayBuffer, x: number, y: number ): Promise<PointAnalysisData>,
 

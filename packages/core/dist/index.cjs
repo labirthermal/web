@@ -115,7 +115,7 @@ var FileLoadingError = class extends Error {
 };
 //#endregion
 //#region src/loading/workers/parsers/lrc/jobs/baseInfo.ts
-const baseInfo = async (entireFileBuffer) => {
+const baseInfo$1 = async (entireFileBuffer) => {
 	const view = new DataView(entireFileBuffer);
 	const width = view.getUint16(17, true);
 	const height = view.getUint16(19, true);
@@ -215,7 +215,7 @@ const baseInfo = async (entireFileBuffer) => {
 };
 //#endregion
 //#region src/loading/workers/parsers/lrc/jobs/getFrameSubset.ts
-const getFrameSubset = (entireFileBuffer, index) => {
+const getFrameSubset$1 = (entireFileBuffer, index) => {
 	const headerView = new DataView(entireFileBuffer.slice(0, 25));
 	const dataType = headerView.getUint8(15);
 	const width = headerView.getUint16(17, true);
@@ -230,7 +230,7 @@ const getFrameSubset = (entireFileBuffer, index) => {
 		dataType
 	};
 };
-const frameData = async (frameSubset, dataType) => {
+const frameData$1 = async (frameSubset, dataType) => {
 	const view = new DataView(frameSubset);
 	const bigIntTime = view.getBigInt64(0, true);
 	const UnixEpoch = 62135596800000n;
@@ -271,7 +271,7 @@ const frameData = async (frameSubset, dataType) => {
 };
 //#endregion
 //#region src/loading/workers/parsers/lrc/jobs/pointAnalysisData.ts
-const pointAnalysisData = async (entireFileBuffer, x, y) => {
+const pointAnalysisData$1 = async (entireFileBuffer, x, y) => {
 	const view = new DataView(entireFileBuffer);
 	const width = view.getUint16(17, true);
 	const height = view.getUint16(19, true);
@@ -324,7 +324,7 @@ const pointAnalysisData = async (entireFileBuffer, x, y) => {
 };
 //#endregion
 //#region src/loading/workers/parsers/lrc/jobs/rectAnalysisData.ts
-const rectAnalysisData = async (entireFileBuffer, left, top, _width, _height) => {
+const rectAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) => {
 	const view = new DataView(entireFileBuffer);
 	const fileWidth = view.getUint16(17, true);
 	const fileHeight = view.getUint16(19, true);
@@ -400,7 +400,7 @@ const rectAnalysisData = async (entireFileBuffer, left, top, _width, _height) =>
 };
 //#endregion
 //#region src/loading/workers/parsers/lrc/jobs/histogram.ts
-const registryHistogram = async (files) => {
+const registryHistogram$1 = async (files) => {
 	let pixels = [];
 	const readFile = async (file) => {
 		const headerView = new DataView(file.slice(0, 25));
@@ -486,14 +486,14 @@ const registryHistogram = async (files) => {
 };
 //#endregion
 //#region src/loading/workers/parsers/lrc/jobs/is.ts
-const is = (data, url) => {
+const is$1 = (data, url) => {
 	const hasCorrectExtension = url.endsWith("lrc");
 	const hasCorrectSignature = new TextDecoder().decode(data.slice(0, 4)) === "LRC\0";
 	return hasCorrectExtension && hasCorrectSignature;
 };
 //#endregion
 //#region src/loading/workers/parsers/lrc/jobs/ellipsisAnalysisData.ts
-const ellipsisAnalysisData = async (entireFileBuffer, left, top, _width, _height) => {
+const ellipsisAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) => {
 	const view = new DataView(entireFileBuffer);
 	const fileWidth = view.getUint16(17, true);
 	const fileHeight = view.getUint16(19, true);
@@ -574,6 +574,36 @@ const ellipsisAnalysisData = async (entireFileBuffer, left, top, _width, _height
 	}
 	return output;
 };
+//#endregion
+//#region src/loading/workers/parsers/lrc/jobs/histogramPixels.ts
+/**
+* All temperatures of all frames as one array.
+* **Must stay self-contained, it is executed in a worker.**
+*/
+const histogramPixels$1 = async (file) => {
+	const headerView = new DataView(file, 0, 25);
+	const dataType = headerView.getUint8(15);
+	const pixelCount = headerView.getUint16(17, true) * headerView.getUint16(19, true);
+	const pixelByteSize = dataType === 1 ? 4 : 2;
+	const frameHeaderSize = 57;
+	const frameSize = frameHeaderSize + pixelCount * pixelByteSize;
+	const frameCount = Math.floor((file.byteLength - 25) / frameSize);
+	const output = new Float32Array(frameCount * pixelCount);
+	for (let frame = 0; frame < frameCount; frame++) {
+		const frameStart = 25 + frame * frameSize;
+		const pixelsStart = frameStart + frameHeaderSize;
+		if (dataType === 1) output.set(new Float32Array(file.slice(pixelsStart, pixelsStart + pixelCount * 4)), frame * pixelCount);
+		else if (dataType === 0) {
+			const frameView = new DataView(file, frameStart, frameHeaderSize);
+			const min = frameView.getFloat32(8, true);
+			const max = frameView.getFloat32(12, true);
+			const distance = Math.abs(min - max);
+			const values = new Uint16Array(file.slice(pixelsStart, pixelsStart + pixelCount * 2));
+			for (let index = 0; index < pixelCount; index++) output[frame * pixelCount + index] = min + distance * (values[index] / 65535);
+		} else output.fill(NaN, frame * pixelCount, (frame + 1) * pixelCount);
+	}
+	return output;
+};
 const LrcParser = Object.freeze({
 	name: "LabIR Recording (.lrc)",
 	description: "Radiometric data developed by the Infrared Technologies research team at the University of West Bohemia in Pilsen (CZ)",
@@ -594,18 +624,851 @@ const LrcParser = Object.freeze({
 		extension: "lrc",
 		minme: "application/octet-stream"
 	}],
+	is: is$1,
+	baseInfo: baseInfo$1,
+	getFrameSubset: getFrameSubset$1,
+	frameData: frameData$1,
+	registryHistogram: registryHistogram$1,
+	histogramPixels: histogramPixels$1,
+	pointAnalysisData: pointAnalysisData$1,
+	rectAnalysisData: rectAnalysisData$1,
+	ellipsisAnalysisData: ellipsisAnalysisData$1
+});
+//#endregion
+//#region src/loading/workers/parsers/flir/jobs/analysisData.ts
+const pointAnalysisData = async (workingBuffer, x, y) => {
+	const view = new DataView(workingBuffer);
+	const width = view.getUint16(10, true);
+	const height = view.getUint16(12, true);
+	const isInside = Number.isInteger(x) && Number.isInteger(y) && x >= 0 && y >= 0 && x < width && y < height;
+	const output = {};
+	output[0] = isInside ? new Float32Array(workingBuffer, 64, width * height)[y * width + x] : NaN;
+	return output;
+};
+const rectAnalysisData = async (workingBuffer, left, top, areaWidth, areaHeight) => {
+	const view = new DataView(workingBuffer);
+	const width = view.getUint16(10, true);
+	const height = view.getUint16(12, true);
+	const pixels = new Float32Array(workingBuffer, 64, width * height);
+	const fromX = Math.max(0, Math.ceil(left));
+	const toX = Math.min(width - 1, Math.floor(left + areaWidth));
+	const fromY = Math.max(0, Math.ceil(top));
+	const toY = Math.min(height - 1, Math.floor(top + areaHeight));
+	let min = Infinity;
+	let max = -Infinity;
+	let sum = 0;
+	let count = 0;
+	for (let y = fromY; y <= toY; y++) {
+		const rowOffset = y * width;
+		for (let x = fromX; x <= toX; x++) {
+			const value = pixels[rowOffset + x];
+			if (value < min) min = value;
+			if (value > max) max = value;
+			sum += value;
+			count++;
+		}
+	}
+	const output = {};
+	output[0] = {
+		min,
+		max,
+		avg: sum / count,
+		count
+	};
+	return output;
+};
+const ellipsisAnalysisData = async (workingBuffer, left, top, areaWidth, areaHeight) => {
+	const view = new DataView(workingBuffer);
+	const width = view.getUint16(10, true);
+	const height = view.getUint16(12, true);
+	const pixels = new Float32Array(workingBuffer, 64, width * height);
+	const centerX = left + areaWidth / 2;
+	const centerY = top + areaHeight / 2;
+	const radiusX = areaWidth / 2;
+	const radiusY = areaHeight / 2;
+	const fromX = Math.max(0, Math.ceil(left));
+	const toX = Math.min(width - 1, Math.floor(left + areaWidth));
+	const fromY = Math.max(0, Math.ceil(top));
+	const toY = Math.min(height - 1, Math.floor(top + areaHeight));
+	let min = Infinity;
+	let max = -Infinity;
+	let sum = 0;
+	let count = 0;
+	for (let y = fromY; y <= toY; y++) {
+		const rowOffset = y * width;
+		const normalizedY = (y - centerY) / radiusY;
+		for (let x = fromX; x <= toX; x++) {
+			const normalizedX = (x - centerX) / radiusX;
+			if (normalizedX * normalizedX + normalizedY * normalizedY <= 1) {
+				const value = pixels[rowOffset + x];
+				if (value < min) min = value;
+				if (value > max) max = value;
+				sum += value;
+				count++;
+			}
+		}
+	}
+	const output = {};
+	output[0] = {
+		min,
+		max,
+		avg: sum / count,
+		count
+	};
+	return output;
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/jobs/baseInfo.ts
+/**
+* Reads the working buffer header.
+* **Must stay self-contained, it is executed in a worker.**
+*/
+const baseInfo = async (workingBuffer) => {
+	const view = new DataView(workingBuffer);
+	const timestamp = view.getFloat64(16, true);
+	return {
+		width: view.getUint16(10, true),
+		height: view.getUint16(12, true),
+		timestamp,
+		bytesize: view.getFloat64(24, true),
+		frameCount: 1,
+		duration: 0,
+		frameInterval: 0,
+		fps: Infinity,
+		timeline: [{
+			index: 0,
+			absolute: timestamp,
+			relative: 0,
+			offset: 0
+		}],
+		min: view.getFloat32(32, true),
+		max: view.getFloat32(36, true),
+		averageEmissivity: view.getFloat32(40, true),
+		averageReflectedKelvins: view.getFloat32(44, true)
+	};
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/jobs/frameData.ts
+/** A FLIR JPEG has one frame only, the subset is a copy of the working buffer. */
+const getFrameSubset = (workingBuffer) => {
+	return {
+		array: workingBuffer.slice(0),
+		dataType: 0
+	};
+};
+/**
+* **Must stay self-contained, it may be executed in a worker.**
+*/
+const frameData = async (frameSubset) => {
+	const view = new DataView(frameSubset);
+	const width = view.getUint16(10, true);
+	const height = view.getUint16(12, true);
+	return {
+		timestamp: view.getFloat64(16, true),
+		min: view.getFloat32(32, true),
+		max: view.getFloat32(36, true),
+		emissivity: view.getFloat32(40, true),
+		reflectedKelvins: view.getFloat32(44, true),
+		pixels: Array.from(new Float32Array(frameSubset, 64, width * height))
+	};
+};
+//#endregion
+//#region src/loading/workers/parsers/histogramFromPixels.ts
+/**
+* Build a histogram over several pixel sets in one shared temperature range
+* and with shared bins, so that files of different formats are comparable.
+*
+* Linear complexity, no sorting. The output shape is the same as the one
+* produced by `LrcParser.registryHistogram`.
+*
+* **Must stay self-contained, it is executed in a worker.**
+*/
+const histogramFromPixels = async (pixelSets) => {
+	const resolution = 255;
+	let min = Infinity;
+	let max = -Infinity;
+	let total = 0;
+	for (const pixels of pixelSets) for (let index = 0; index < pixels.length; index++) {
+		const value = pixels[index];
+		if (!Number.isFinite(value)) continue;
+		if (value < min) min = value;
+		if (value > max) max = value;
+		total++;
+	}
+	if (total === 0) return [];
+	const distance = max - min;
+	const step = distance / resolution;
+	const counts = new Array(resolution).fill(0);
+	for (const pixels of pixelSets) for (let index = 0; index < pixels.length; index++) {
+		const value = pixels[index];
+		if (!Number.isFinite(value)) continue;
+		const bin = distance === 0 ? 0 : Math.min(254, Math.floor((value - min) / step));
+		counts[bin]++;
+	}
+	const bars = counts.map((count, index) => {
+		const from = min + step * index;
+		return {
+			from,
+			to: from + step,
+			count,
+			percentage: count / total * 100
+		};
+	});
+	let minPercentage = Infinity;
+	let maxPercentage = -Infinity;
+	for (const bar of bars) {
+		if (bar.percentage < minPercentage) minPercentage = bar.percentage;
+		if (bar.percentage > maxPercentage) maxPercentage = bar.percentage;
+	}
+	const percentageDistance = maxPercentage - minPercentage;
+	return bars.map((bar) => ({
+		...bar,
+		height: percentageDistance === 0 ? 100 : bar.percentage / percentageDistance * 100
+	}));
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/jobs/histogram.ts
+/**
+* Copy of the temperatures for histogram calculation.
+* **Must stay self-contained, it is executed in a worker.**
+*/
+const histogramPixels = async (workingBuffer) => {
+	const view = new DataView(workingBuffer);
+	const width = view.getUint16(10, true);
+	const height = view.getUint16(12, true);
+	return new Float32Array(workingBuffer.slice(64, 64 + width * height * 4));
+};
+/**
+* Histogram of FLIR working buffers.
+*
+* Composed of other jobs and therefore **not** serialisable into a worker.
+* `HistogramState` runs `histogramPixels` and `histogramFromPixels` in the pool separately.
+*/
+const registryHistogram = async (files) => {
+	const pixelSets = await Promise.all(files.map((file) => histogramPixels(file)));
+	return histogramFromPixels(pixelSets);
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/decoder/FlirDecodingError.ts
+/** Raised whenever a FLIR JPEG cannot be decoded into a valid temperature raster. */
+var FlirDecodingError = class extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "FlirDecodingError";
+	}
+};
+const requireFlir = (condition, message) => {
+	if (!condition) throw new FlirDecodingError(message);
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/decoder/jpeg.ts
+const SOI = 216;
+const SOS = 218;
+const EOI = 217;
+const APP1 = 225;
+/** APP1 payload signature `FLIR\0` */
+const FLIR_SIGNATURE = [
+	70,
+	76,
+	73,
+	82,
+	0
+];
+/** Signature (5 B) + format byte + chunk index + last chunk index */
+const FLIR_CHUNK_HEADER_SIZE = 8;
+const isJpeg = (bytes) => bytes.length >= 4 && bytes[0] === 255 && bytes[1] === SOI;
+const hasFlirSignature = (bytes, start, length) => {
+	if (length < FLIR_CHUNK_HEADER_SIZE) return false;
+	return FLIR_SIGNATURE.every((value, index) => bytes[start + index] === value);
+};
+/**
+* Iterate the header segments of a JPEG until the image data starts.
+* Returns `false` when the marker structure is broken.
+*/
+const forEachHeaderSegment = (bytes, callback) => {
+	let position = 2;
+	while (position < bytes.length) {
+		if (bytes[position] !== 255) return false;
+		while (position < bytes.length && bytes[position] === 255) position++;
+		if (position >= bytes.length) return false;
+		const marker = bytes[position];
+		position++;
+		if (marker === SOS || marker === EOI) return true;
+		if (marker >= 208 && marker <= 215 || marker === 1) continue;
+		if (position + 2 > bytes.length) return false;
+		const size = bytes[position] << 8 | bytes[position + 1];
+		if (size < 2 || position + size > bytes.length) return false;
+		if (callback({
+			marker,
+			start: position + 2,
+			length: size - 2
+		}) === true) return true;
+		position += size;
+	}
+	return true;
+};
+/** Quick content check: is this a JPEG with at least one FLIR APP1 segment? */
+const hasFlirSegment = (buffer) => {
+	const bytes = new Uint8Array(buffer);
+	if (!isJpeg(bytes)) return false;
+	let found = false;
+	forEachHeaderSegment(bytes, (segment) => {
+		if (segment.marker === APP1 && hasFlirSignature(bytes, segment.start, segment.length)) {
+			found = true;
+			return true;
+		}
+	});
+	return found;
+};
+/**
+* Join the numbered FLIR APP1 chunks into one FFF/AFF container.
+* @throws FlirDecodingError
+*/
+const extractFlirContainer = (buffer) => {
+	const bytes = new Uint8Array(buffer);
+	requireFlir(isJpeg(bytes), "The file is not a JPEG.");
+	const chunks = /* @__PURE__ */ new Map();
+	let lastIndex;
+	const isValid = forEachHeaderSegment(bytes, (segment) => {
+		if (segment.marker !== APP1 || !hasFlirSignature(bytes, segment.start, segment.length)) return;
+		const index = bytes[segment.start + 6];
+		const last = bytes[segment.start + 7];
+		requireFlir(!chunks.has(index), `Duplicate FLIR APP1 chunk ${index}.`);
+		requireFlir(lastIndex === void 0 || lastIndex === last, "Inconsistent FLIR APP1 chunk count.");
+		lastIndex = last;
+		chunks.set(index, bytes.subarray(segment.start + FLIR_CHUNK_HEADER_SIZE, segment.start + segment.length));
+	});
+	requireFlir(isValid, "Broken JPEG marker structure.");
+	requireFlir(lastIndex !== void 0, "The JPEG does not contain FLIR radiometric data.");
+	let totalLength = 0;
+	for (let index = 0; index <= lastIndex; index++) {
+		const chunk = chunks.get(index);
+		requireFlir(chunk !== void 0, `Missing FLIR APP1 chunk ${index} of ${lastIndex + 1}.`);
+		totalLength += chunk.length;
+	}
+	const container = new Uint8Array(totalLength);
+	let offset = 0;
+	for (let index = 0; index <= lastIndex; index++) {
+		const chunk = chunks.get(index);
+		container.set(chunk, offset);
+		offset += chunk.length;
+	}
+	return container;
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/jobs/is.ts
+/** Detects radiometric FLIR JPEGs by content, regardless of the file extension. */
+const is = (buffer) => hasFlirSegment(buffer);
+//#endregion
+//#region src/loading/workers/parsers/flir/decoder/fff.ts
+const DIRECTORY_OFFSET = 24;
+const DIRECTORY_COUNT = 28;
+const FFF_HEADER_SIZE = 64;
+const ENTRY_SIZE = 32;
+const MAX_ENTRIES = 1e4;
+/**
+* Read the record directory of a FLIR FFF/AFF container.
+*
+* The directory byte order is not declared explicitly. Most cameras use
+* big-endian, but e.g. DJI Zenmuse XT uses little-endian, so the only
+* plausible interpretation is selected.
+*
+* @throws FlirDecodingError
+*/
+const readFffRecords = (container) => {
+	requireFlir(container.length >= FFF_HEADER_SIZE, "The FLIR container is truncated.");
+	const signature = String.fromCharCode(...container.subarray(0, 4));
+	requireFlir(signature === "FFF\0" || signature === "AFF\0", "Invalid FLIR container signature.");
+	const view = new DataView(container.buffer, container.byteOffset, container.byteLength);
+	const candidates = [false, true].map((littleEndian) => ({
+		littleEndian,
+		offset: view.getUint32(DIRECTORY_OFFSET, littleEndian),
+		count: view.getUint32(DIRECTORY_COUNT, littleEndian)
+	})).filter((candidate) => candidate.offset >= FFF_HEADER_SIZE && candidate.count > 0 && candidate.count < MAX_ENTRIES && candidate.offset + candidate.count * ENTRY_SIZE <= container.length);
+	requireFlir(candidates.length === 1, "Unable to determine the FLIR record directory.");
+	const { littleEndian, offset, count } = candidates[0];
+	const records = /* @__PURE__ */ new Map();
+	for (let index = 0; index < count; index++) {
+		const entry = offset + index * ENTRY_SIZE;
+		const type = view.getUint16(entry, littleEndian);
+		if (type === 0) continue;
+		const subtype = view.getUint16(entry + 2, littleEndian);
+		const start = view.getUint32(entry + 12, littleEndian);
+		const length = view.getUint32(entry + 16, littleEndian);
+		requireFlir(start + length <= container.length, `FLIR record 0x${type.toString(16)} is outside the container.`);
+		requireFlir(!records.has(type), `Duplicate FLIR record 0x${type.toString(16)}.`);
+		records.set(type, {
+			type,
+			subtype,
+			data: container.subarray(start, start + length)
+		});
+	}
+	return records;
+};
+/**
+* FLIR records start with a 16-bit value `2` in their own byte order.
+* @returns `true` for little-endian records
+* @throws FlirDecodingError
+*/
+const detectRecordByteOrder = (data, recordName) => {
+	requireFlir(data.length >= 2, `The FLIR ${recordName} record is truncated.`);
+	const isLittleEndian = data[0] === 2 && data[1] === 0;
+	const isBigEndian = data[0] === 0 && data[1] === 2;
+	requireFlir(isLittleEndian || isBigEndian, `Unknown byte order of the FLIR ${recordName} record.`);
+	return isLittleEndian;
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/decoder/cameraInfo.ts
+const OFFSETS = {
+	emissivity: 32,
+	objectDistance: 36,
+	reflectedKelvins: 40,
+	atmosphericKelvins: 44,
+	irWindowKelvins: 48,
+	irWindowTransmission: 52,
+	relativeHumidity: 60,
+	planckR1: 88,
+	planckB: 92,
+	planckF: 96,
+	atmosphericTransAlpha1: 112,
+	atmosphericTransAlpha2: 116,
+	atmosphericTransBeta1: 120,
+	atmosphericTransBeta2: 124,
+	atmosphericTransX: 128,
+	planckO: 776,
+	planckR2: 780,
+	dateTimeSeconds: 900,
+	dateTimeMilliseconds: 904,
+	dateTimeZone: 908
+};
+const MIN_LENGTH = OFFSETS.dateTimeZone + 2;
+/**
+* Read the radiometric parameters and the capture time from the CameraInfo record.
+* @throws FlirDecodingError
+*/
+const readCameraInfo = (record) => {
+	const data = record.data;
+	requireFlir(data.length >= MIN_LENGTH, "The FLIR camera info record is truncated.");
+	const littleEndian = detectRecordByteOrder(data, "camera info");
+	const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+	const float = (offset) => view.getFloat32(offset, littleEndian);
+	const humidity = float(OFFSETS.relativeHumidity);
+	const seconds = view.getUint32(OFFSETS.dateTimeSeconds, littleEndian);
+	const milliseconds = view.getUint32(OFFSETS.dateTimeMilliseconds, littleEndian);
+	return {
+		emissivity: float(OFFSETS.emissivity),
+		objectDistance: float(OFFSETS.objectDistance),
+		reflectedKelvins: float(OFFSETS.reflectedKelvins),
+		atmosphericKelvins: float(OFFSETS.atmosphericKelvins),
+		irWindowKelvins: float(OFFSETS.irWindowKelvins),
+		irWindowTransmission: float(OFFSETS.irWindowTransmission),
+		relativeHumidity: humidity > 1 ? humidity / 100 : humidity,
+		planckR1: float(OFFSETS.planckR1),
+		planckB: float(OFFSETS.planckB),
+		planckF: float(OFFSETS.planckF),
+		planckO: view.getInt32(OFFSETS.planckO, littleEndian),
+		planckR2: float(OFFSETS.planckR2),
+		atmosphericTransAlpha1: float(OFFSETS.atmosphericTransAlpha1),
+		atmosphericTransAlpha2: float(OFFSETS.atmosphericTransAlpha2),
+		atmosphericTransBeta1: float(OFFSETS.atmosphericTransBeta1),
+		atmosphericTransBeta2: float(OFFSETS.atmosphericTransBeta2),
+		atmosphericTransX: float(OFFSETS.atmosphericTransX),
+		timestamp: seconds * 1e3 + (milliseconds < 1e3 ? milliseconds : 0),
+		timezoneOffset: view.getInt16(OFFSETS.dateTimeZone, littleEndian)
+	};
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/decoder/radiometry.ts
+/**
+* Convert detector counts into object temperatures in °C.
+*
+* Uses the commonly published FLIR radiometric model: the counts are
+* corrected for the reflected radiation, the atmosphere (two-band
+* transmission model) and an optional IR window, then the Planck curve
+* calibrated by R1, R2, B, F and O is inverted.
+*
+* Because the input are 16-bit integers, the conversion is computed only
+* once for every distinct count within the measured range.
+*
+* @throws FlirDecodingError when the parameters or the results are not physically valid
+*/
+const computeTemperatures = (counts, camera) => {
+	const { emissivity, objectDistance, reflectedKelvins, atmosphericKelvins, irWindowKelvins, irWindowTransmission, relativeHumidity, planckR1, planckR2, planckB, planckF, planckO, atmosphericTransAlpha1, atmosphericTransAlpha2, atmosphericTransBeta1, atmosphericTransBeta2, atmosphericTransX } = camera;
+	const parameters = Object.values(camera);
+	requireFlir(parameters.every((value) => Number.isFinite(value)), "The FLIR calibration parameters are not finite.");
+	requireFlir(emissivity > 0 && emissivity <= 1, `Invalid emissivity ${emissivity}.`);
+	requireFlir(irWindowTransmission > 0 && irWindowTransmission <= 1, `Invalid IR window transmission ${irWindowTransmission}.`);
+	requireFlir(objectDistance >= 0, `Invalid object distance ${objectDistance}.`);
+	requireFlir(planckR1 !== 0 && planckR2 !== 0 && planckB > 0, "Invalid Planck constants.");
+	requireFlir(reflectedKelvins > 0 && atmosphericKelvins > 0 && irWindowKelvins > 0, "Invalid reference temperatures.");
+	const ambientCelsius = atmosphericKelvins - 273.15;
+	const waterVapour = relativeHumidity * Math.exp(1.5587 + .06939 * ambientCelsius - 27816e-8 * ambientCelsius ** 2 + 6.8455e-7 * ambientCelsius ** 3);
+	const halfDistance = Math.sqrt(objectDistance / 2);
+	const sqrtWater = Math.sqrt(waterVapour);
+	const tau = atmosphericTransX * Math.exp(-halfDistance * (atmosphericTransAlpha1 + atmosphericTransBeta1 * sqrtWater)) + (1 - atmosphericTransX) * Math.exp(-halfDistance * (atmosphericTransAlpha2 + atmosphericTransBeta2 * sqrtWater));
+	requireFlir(tau > 0 && Number.isFinite(tau), "Invalid atmospheric transmission.");
+	const radiance = (kelvins) => planckR1 / (planckR2 * (Math.exp(planckB / kelvins) - planckF)) - planckO;
+	const attenuation = (1 - emissivity) / emissivity * radiance(reflectedKelvins) + (1 - tau) / (emissivity * tau) * radiance(atmosphericKelvins) + (1 - irWindowTransmission) / (emissivity * tau * irWindowTransmission) * radiance(irWindowKelvins) + (1 - tau) / (emissivity * tau * irWindowTransmission * tau) * radiance(atmosphericKelvins);
+	const gain = emissivity * tau * irWindowTransmission * tau;
+	let minCount = 65535;
+	let maxCount = 0;
+	for (let index = 0; index < counts.length; index++) {
+		const count = counts[index];
+		if (count < minCount) minCount = count;
+		if (count > maxCount) maxCount = count;
+	}
+	const lookup = new Float64Array(maxCount - minCount + 1);
+	for (let count = minCount; count <= maxCount; count++) {
+		const objectSignal = count / gain - attenuation + planckO;
+		const kelvins = planckB / Math.log(planckR1 / (planckR2 * objectSignal) + planckF);
+		lookup[count - minCount] = kelvins - 273.15;
+	}
+	const celsius = new Float32Array(counts.length);
+	let min = Infinity;
+	let max = -Infinity;
+	for (let index = 0; index < counts.length; index++) {
+		const value = lookup[counts[index] - minCount];
+		requireFlir(Number.isFinite(value) && value > -273.15, "The FLIR raw data produced an invalid temperature.");
+		celsius[index] = value;
+		const stored = celsius[index];
+		if (stored < min) min = stored;
+		if (stored > max) max = stored;
+	}
+	return {
+		celsius,
+		min,
+		max
+	};
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/decoder/rawData.ts
+const RAW_HEADER_SIZE = 32;
+const MAX_DIMENSION = 8192;
+const PNG_SIGNATURE = [
+	137,
+	80,
+	78,
+	71,
+	13,
+	10,
+	26,
+	10
+];
+const isPng = (data) => data.length > PNG_SIGNATURE.length && PNG_SIGNATURE.every((value, index) => data[index] === value);
+/**
+* Inflate zlib data using the native streaming API (browsers, workers, Node 18+).
+* @throws FlirDecodingError
+*/
+const inflate = async (data) => {
+	requireFlir(typeof DecompressionStream !== "undefined", "This environment cannot decompress FLIR PNG data.");
+	try {
+		const reader = new ReadableStream({ start(controller) {
+			controller.enqueue(data);
+			controller.close();
+		} }).pipeThrough(new DecompressionStream("deflate")).getReader();
+		const parts = [];
+		let length = 0;
+		for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+			parts.push(chunk.value);
+			length += chunk.value.length;
+		}
+		const result = new Uint8Array(length);
+		let offset = 0;
+		for (const part of parts) {
+			result.set(part, offset);
+			offset += part.length;
+		}
+		return result;
+	} catch (error) {
+		throw new FlirDecodingError(`Invalid compressed FLIR PNG data: ${error.message}`);
+	}
+};
+/**
+* Decode the 16-bit grayscale PNG embedded by newer FLIR cameras.
+*
+* FLIR writes the detector counts little-endian although PNG specifies
+* big-endian samples, so each sample is byte-swapped while unfiltering.
+*
+* @throws FlirDecodingError
+*/
+const decodeFlirPng = async (data, expectedWidth, expectedHeight) => {
+	const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+	const compressedParts = [];
+	let compressedLength = 0;
+	let width = 0;
+	let height = 0;
+	let hasHeader = false;
+	let position = PNG_SIGNATURE.length;
+	while (position + 8 <= data.length) {
+		const length = view.getUint32(position);
+		const type = String.fromCharCode(...data.subarray(position + 4, position + 8));
+		const bodyStart = position + 8;
+		const bodyEnd = bodyStart + length;
+		requireFlir(bodyEnd + 4 <= data.length, `Truncated PNG chunk ${type}.`);
+		if (type === "IHDR") {
+			requireFlir(length === 13, "Invalid PNG header.");
+			width = view.getUint32(bodyStart);
+			height = view.getUint32(bodyStart + 4);
+			const bitDepth = data[bodyStart + 8];
+			const colorType = data[bodyStart + 9];
+			const interlace = data[bodyStart + 12];
+			requireFlir(bitDepth === 16 && colorType === 0 && interlace === 0, "Unsupported FLIR PNG format (expected 16-bit grayscale).");
+			hasHeader = true;
+		} else if (type === "IDAT") {
+			compressedParts.push(data.subarray(bodyStart, bodyEnd));
+			compressedLength += length;
+		} else if (type === "IEND") break;
+		position = bodyEnd + 4;
+	}
+	requireFlir(hasHeader, "Missing PNG header.");
+	requireFlir(width === expectedWidth && height === expectedHeight, "PNG dimensions do not match the FLIR raw data header.");
+	requireFlir(compressedLength > 0, "Missing PNG image data.");
+	const compressed = new Uint8Array(compressedLength);
+	let offset = 0;
+	for (const part of compressedParts) {
+		compressed.set(part, offset);
+		offset += part.length;
+	}
+	const inflated = await inflate(compressed);
+	const bytesPerPixel = 2;
+	const stride = width * bytesPerPixel;
+	requireFlir(inflated.length === (stride + 1) * height, "Unexpected size of the decompressed PNG data.");
+	const counts = new Uint16Array(width * height);
+	let previous = new Uint8Array(stride);
+	let current = new Uint8Array(stride);
+	for (let y = 0; y < height; y++) {
+		const rowStart = y * (stride + 1);
+		const filter = inflated[rowStart];
+		requireFlir(filter <= 4, `Invalid PNG filter ${filter}.`);
+		for (let x = 0; x < stride; x++) {
+			const left = x >= bytesPerPixel ? current[x - bytesPerPixel] : 0;
+			const up = previous[x];
+			const diagonal = x >= bytesPerPixel ? previous[x - bytesPerPixel] : 0;
+			let predictor = 0;
+			if (filter === 1) predictor = left;
+			else if (filter === 2) predictor = up;
+			else if (filter === 3) predictor = left + up >> 1;
+			else if (filter === 4) {
+				const estimate = left + up - diagonal;
+				const toLeft = Math.abs(estimate - left);
+				const toUp = Math.abs(estimate - up);
+				const toDiagonal = Math.abs(estimate - diagonal);
+				predictor = toLeft <= toUp && toLeft <= toDiagonal ? left : toUp <= toDiagonal ? up : diagonal;
+			}
+			current[x] = inflated[rowStart + 1 + x] + predictor & 255;
+		}
+		const rowOffset = y * width;
+		for (let x = 0; x < width; x++) counts[rowOffset + x] = current[2 * x] | current[2 * x + 1] << 8;
+		const swap = previous;
+		previous = current;
+		current = swap;
+	}
+	return counts;
+};
+/**
+* Decode the FLIR RawData record into detector counts.
+* @throws FlirDecodingError
+*/
+const decodeRawData = async (record) => {
+	const data = record.data;
+	requireFlir(data.length > RAW_HEADER_SIZE, "The FLIR raw data record is truncated.");
+	const littleEndian = detectRecordByteOrder(data, "raw data");
+	const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+	const width = view.getUint16(2, littleEndian);
+	const height = view.getUint16(4, littleEndian);
+	requireFlir(width > 0 && height > 0 && width <= MAX_DIMENSION && height <= MAX_DIMENSION, `Invalid FLIR raw image dimensions ${width}x${height}.`);
+	const payload = data.subarray(RAW_HEADER_SIZE);
+	if (isPng(payload)) return {
+		width,
+		height,
+		encoding: "PNG16",
+		counts: await decodeFlirPng(payload, width, height)
+	};
+	const pixelCount = width * height;
+	requireFlir(payload.length >= pixelCount * 2, "The FLIR raw image is truncated.");
+	const counts = new Uint16Array(pixelCount);
+	const payloadView = new DataView(payload.buffer, payload.byteOffset, pixelCount * 2);
+	for (let index = 0; index < pixelCount; index++) counts[index] = payloadView.getUint16(index * 2, littleEndian);
+	return {
+		width,
+		height,
+		encoding: "RAW16",
+		counts
+	};
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/decoder/workingBuffer.ts
+/**
+* Layout of the decoded working buffer used by `FlirParser` jobs.
+*
+* The original JPEG is decoded only once while loading. All subsequent
+* parser jobs (that may run in workers and therefore cannot import
+* anything) read this simple little-endian layout.
+*
+* **Keep in sync with the inlined constants in `../jobs/*`.**
+*/
+const FLIR_WORKING_BUFFER = {
+	MAGIC: "FLIRTEMP",
+	VERSION: 1,
+	OFFSET_VERSION: 8,
+	OFFSET_WIDTH: 10,
+	OFFSET_HEIGHT: 12,
+	OFFSET_TIMEZONE: 14,
+	OFFSET_TIMESTAMP: 16,
+	OFFSET_BYTESIZE: 24,
+	OFFSET_MIN: 32,
+	OFFSET_MAX: 36,
+	OFFSET_EMISSIVITY: 40,
+	OFFSET_REFLECTED: 44,
+	OFFSET_ENCODING: 48,
+	HEADER_SIZE: 64
+};
+const createWorkingBuffer = (width, height, encoding, camera, temperatures, originalByteSize) => {
+	const L = FLIR_WORKING_BUFFER;
+	const buffer = new ArrayBuffer(L.HEADER_SIZE + width * height * 4);
+	const view = new DataView(buffer);
+	for (let index = 0; index < L.MAGIC.length; index++) view.setUint8(index, L.MAGIC.charCodeAt(index));
+	view.setUint16(L.OFFSET_VERSION, L.VERSION, true);
+	view.setUint16(L.OFFSET_WIDTH, width, true);
+	view.setUint16(L.OFFSET_HEIGHT, height, true);
+	view.setInt16(L.OFFSET_TIMEZONE, camera.timezoneOffset, true);
+	view.setFloat64(L.OFFSET_TIMESTAMP, camera.timestamp, true);
+	view.setFloat64(L.OFFSET_BYTESIZE, originalByteSize, true);
+	view.setFloat32(L.OFFSET_MIN, temperatures.min, true);
+	view.setFloat32(L.OFFSET_MAX, temperatures.max, true);
+	view.setFloat32(L.OFFSET_EMISSIVITY, camera.emissivity, true);
+	view.setFloat32(L.OFFSET_REFLECTED, camera.reflectedKelvins, true);
+	view.setUint8(L.OFFSET_ENCODING, encoding === "PNG16" ? 1 : 0);
+	new Float32Array(buffer, L.HEADER_SIZE, width * height).set(temperatures.celsius);
+	return buffer;
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/decoder/decodeFlirJpeg.ts
+/**
+* Decode a radiometric FLIR JPEG into a temperature raster.
+* @throws FlirDecodingError
+*/
+const decodeFlirJpeg = async (buffer) => {
+	const container = extractFlirContainer(buffer);
+	const records = readFffRecords(container);
+	const rawRecord = records.get(1);
+	const cameraRecord = records.get(32);
+	requireFlir(rawRecord !== void 0, "The FLIR data do not contain a raw thermal image.");
+	requireFlir(cameraRecord !== void 0, "The FLIR data do not contain calibration parameters.");
+	const camera = readCameraInfo(cameraRecord);
+	const raw = await decodeRawData(rawRecord);
+	const temperatures = computeTemperatures(raw.counts, camera);
+	return {
+		width: raw.width,
+		height: raw.height,
+		encoding: raw.encoding,
+		camera,
+		temperatures
+	};
+};
+/**
+* Decode a FLIR JPEG into the working buffer read by `FlirParser` jobs.
+* @throws FlirDecodingError
+*/
+const prepareFlirWorkingBuffer = async (buffer) => {
+	const decoded = await decodeFlirJpeg(buffer);
+	return createWorkingBuffer(decoded.width, decoded.height, decoded.encoding, decoded.camera, decoded.temperatures, buffer.byteLength);
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/jobs/prepare.ts
+/**
+* Decode the JPEG once into the working buffer used by all other jobs.
+* @throws FileLoadingError
+*/
+const prepare = async (buffer, url) => {
+	try {
+		return await prepareFlirWorkingBuffer(buffer);
+	} catch (error) {
+		throw new FileLoadingError(3, url, `Unable to read FLIR radiometric data from '${url}': ${error.message}`);
+	}
+};
+//#endregion
+//#region src/loading/workers/parsers/flir/FlirParser.ts
+const extensions = [{
+	extension: "jpg",
+	minme: "image/jpeg"
+}, {
+	extension: "jpeg",
+	minme: "image/jpeg"
+}];
+const flir = {
+	manufacturer: "Teledyne FLIR",
+	manufacturerUrl: "https://www.flir.com"
+};
+const dji = {
+	manufacturer: "DJI",
+	manufacturerUrl: "https://www.dji.com"
+};
+/**
+* Radiometric JPEG images from FLIR and FLIR-core based cameras.
+*
+* The JPEG is decoded once while loading (`prepare`), temperatures are
+* computed from the raw detector counts and the calibration stored in the
+* file. All other jobs read the decoded working buffer. The original JPEG
+* is preserved in `ThermalFileReader.fileBuffer`.
+*
+* Only single images are supported. Plain JPEGs and images edited outside
+* of FLIR software (without FLIR APP1 segments) are rejected.
+*/
+const parser = {
+	name: "FLIR Radiometric JPEG (.jpg)",
+	description: "Radiometric JPEG images containing raw thermal data and calibration in the FLIR APP1 segments.",
+	devices: [
+		{
+			deviceName: "FLIR C5",
+			deviceUrl: "https://www.flir.com/products/c5/",
+			deviceDescription: "Compact thermal camera.",
+			...flir
+		},
+		{
+			deviceName: "FLIR E8-XT, E60, T630sc",
+			deviceUrl: "https://www.flir.com/instruments/",
+			deviceDescription: "Handheld thermal cameras of the Ex and Txxx series.",
+			...flir
+		},
+		{
+			deviceName: "FLIR ONE Pro",
+			deviceUrl: "https://www.flir.com/flir-one/",
+			deviceDescription: "Thermal camera for smartphones.",
+			...flir
+		},
+		{
+			deviceName: "FLIR Vue Pro R 640",
+			deviceUrl: "https://www.flir.com/products/vue-pro-r/",
+			deviceDescription: "Radiometric drone camera.",
+			...flir
+		},
+		{
+			deviceName: "DJI Zenmuse XT, XT2",
+			deviceUrl: "https://www.dji.com/zenmuse-xt2",
+			deviceDescription: "Drone thermal cameras with FLIR core.",
+			...dji
+		}
+	],
+	extensions,
 	is,
+	prepare,
 	baseInfo,
 	getFrameSubset,
 	frameData,
 	registryHistogram,
+	histogramPixels,
 	pointAnalysisData,
 	rectAnalysisData,
 	ellipsisAnalysisData
-});
+};
+const FlirParser = Object.freeze(parser);
 //#endregion
 //#region src/loading/workers/parsers/index.ts
-const parsersArray = Object.values({ LrcParser });
+const parsersArray = Object.values({
+	LrcParser,
+	FlirParser
+});
 /**
 * Determines the parser and returns it (throws error if none found)
 * 
@@ -615,6 +1478,29 @@ const determineParser = (buffer, url) => {
 	const parser = parsersArray.find((parser) => parser.is(buffer, url));
 	if (parser === void 0) throw new FileLoadingError(2, url, `No parser found for '${url}'.`);
 	return parser;
+};
+/**
+* Determine the parser and create its working buffer.
+* - formats without `prepare` work directly with the loaded buffer
+* - any failure is reported as `FileLoadingError`
+*
+* @throws FileLoadingError
+*/
+const determineAndPrepare = async (buffer, url) => {
+	const parser = determineParser(buffer, url);
+	if (parser.prepare === void 0) return {
+		parser,
+		workingBuffer: buffer
+	};
+	try {
+		return {
+			parser,
+			workingBuffer: await parser.prepare(buffer, url)
+		};
+	} catch (error) {
+		if (error instanceof FileLoadingError) throw error;
+		throw new FileLoadingError(3, url, error.message);
+	}
 };
 /**
 * Array of all supported file types and extensions
@@ -3668,7 +4554,7 @@ var RecordingDrive = class extends AbstractProperty {
 		const segments = ["from_" + this.parent.group.registry.range.value.from.toFixed(2), "to_" + this.parent.group.registry.range.value.to.toFixed(2)].join("__");
 		const extension = this.fileExt ? this.fileExt : "webm";
 		const replaceWithText = "__" + segments + "." + extension;
-		return originalFileName.replace(/\.lrc$/i, replaceWithText);
+		return originalFileName.replace(/\.(lrc|jpe?g)$/i, replaceWithText);
 	}
 	download() {
 		const blob = new Blob(this.recordedChunks, { type: this.mimeType });
@@ -5334,18 +6220,33 @@ var ThermalFileReader = class extends AbstractFileResult {
 		return this.service.pool;
 	}
 	originalBuffer;
+	/** The file exactly as it was loaded, if the parser works with a converted working buffer */
+	sourceBuffer;
 	_buffer;
+	/** The working buffer passed to all parser methods */
 	get buffer() {
 		return this._buffer;
 	}
 	set buffer(value) {
 		this._buffer = value;
 	}
-	constructor(service, buffer, parser, thermalUrl, visibleUrl, preserveOriginalBuffer) {
+	/** 
+	* The original file content, e.g. for downloads. 
+	* Differs from `buffer` for formats decoded while loading (FLIR JPEG).
+	*/
+	get fileBuffer() {
+		return this.sourceBuffer ?? this.buffer;
+	}
+	/** MIME type of the original file */
+	get fileMimeType() {
+		return this.parser.extensions[0]?.minme ?? "application/octet-stream";
+	}
+	constructor(service, buffer, parser, thermalUrl, visibleUrl, preserveOriginalBuffer, sourceBuffer) {
 		super(thermalUrl, visibleUrl);
 		this.service = service;
 		this.parser = parser;
 		this._buffer = buffer;
+		if (sourceBuffer !== void 0 && sourceBuffer !== buffer) this.sourceBuffer = sourceBuffer;
 		this.fileName = this.thermalUrl.substring(this.thermalUrl.lastIndexOf("/") + 1);
 		if (preserveOriginalBuffer === true) this.originalBuffer = this.copyBuffer(this.buffer);
 	}
@@ -5463,8 +6364,8 @@ var FileRequest = class FileRequest {
 		if (res.status !== 200) return this.pocessTheService(new ThermalFileFailure(this.thermalUrl, 1, `File '${this.thermalUrl}' was not found.`));
 		const buffer = await res.arrayBuffer();
 		try {
-			const parser = determineParser(buffer, this.thermalUrl);
-			return this.pocessTheService(new ThermalFileReader(this.service, buffer, parser, this.thermalUrl, this.visibleUrl));
+			const { parser, workingBuffer } = await determineAndPrepare(buffer, this.thermalUrl);
+			return this.pocessTheService(new ThermalFileReader(this.service, workingBuffer, parser, this.thermalUrl, this.visibleUrl, void 0, buffer));
 		} catch (error) {
 			if (error instanceof FileLoadingError) return this.pocessTheService(ThermalFileFailure.fromError(error));
 			else throw error;
@@ -5523,8 +6424,8 @@ var FilesService = class {
 	async loadUploadedFile(file) {
 		try {
 			const buffer = await file.arrayBuffer();
-			const parser = determineParser(buffer, file.name);
-			return new ThermalFileReader(this, buffer, parser, file.name);
+			const { parser, workingBuffer } = await determineAndPrepare(buffer, file.name);
+			return new ThermalFileReader(this, workingBuffer, parser, file.name, void 0, void 0, buffer);
 		} catch (error) {
 			return new ThermalFileFailure(file.name, 3, error.message);
 		}
@@ -6925,8 +7826,8 @@ var FilesState = class extends AbstractProperty {
 	downloadAllFiles() {
 		const files = [];
 		this.forEveryInstance((instance) => {
-			const blob = new Blob([instance.reader.buffer], { type: "application/octet-stream" });
-			const file = new File([blob], instance.fileName, { type: "application/octet-stream" });
+			const blob = new Blob([instance.reader.fileBuffer], { type: instance.reader.fileMimeType });
+			const file = new File([blob], instance.fileName, { type: instance.reader.fileMimeType });
 			files.push(file);
 		});
 		(0, client_zip.downloadZip)(files).blob().then((blob) => {
@@ -7482,7 +8383,8 @@ var HistogramState = class extends AbstractProperty {
 		this.onCalculationStart.call();
 		this.loading = true;
 		try {
-			const result = await histogramResultCache.getOrCalculate(allFiles.map((instance) => instance.reader), () => this.parent.pool.exec(LrcParser.registryHistogram, [allFiles.map((instance) => instance.reader.buffer)]));
+			const readers = allFiles.map((instance) => instance.reader);
+			const result = await histogramResultCache.getOrCalculate(readers, () => this.calculateHistogram(readers));
 			this.value = result;
 			this.loading = false;
 			this.onCalculationEnd.call(true);
@@ -7491,6 +8393,16 @@ var HistogramState = class extends AbstractProperty {
 			this.onCalculationEnd.call(false);
 			console.error("Error calculating histogram", error);
 		}
+	}
+	/**
+	* Pure LRC registries keep the original LRC calculation. Any other set
+	* collects temperatures of every file with its own parser and bins them
+	* in one shared range.
+	*/
+	async calculateHistogram(readers) {
+		if (readers.every((reader) => reader.parser === LrcParser)) return this.parent.pool.exec(LrcParser.registryHistogram, [readers.map((reader) => reader.buffer)]);
+		const pixelSets = await Promise.all(readers.map((reader) => this.parent.pool.exec(reader.parser.histogramPixels, [reader.buffer])));
+		return this.parent.pool.exec(histogramFromPixels, [pixelSets]);
 	}
 };
 //#endregion

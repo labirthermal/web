@@ -1,6 +1,8 @@
 import { ThermalFileInstance } from "../../file/ThermalFileInstance";
 import { ThermalRegistry, ThermalStatistics } from "../../hierarchy/ThermalRegistry";
 import { LrcParser } from "../../loading/workers/parsers/lrc/LrcParser";
+import { histogramFromPixels } from "../../loading/workers/parsers/histogramFromPixels";
+import type { ThermalFileReader } from "../../loading/workers/ThermalFileReader";
 import { AbstractProperty } from "../abstractProperty";
 import { CallbacksManager } from "../callbacksManager";
 import { histogramResultCache } from "./HistogramResultCache";
@@ -86,12 +88,10 @@ export class HistogramState extends AbstractProperty<ThermalStatistics[], Therma
         this.loading = true;
 
         try {
+            const readers = allFiles.map(instance => instance.reader);
             const result = await histogramResultCache.getOrCalculate(
-                allFiles.map(instance => instance.reader),
-                () => this.parent.pool.exec(
-                    LrcParser.registryHistogram,
-                    [allFiles.map(instance => instance.reader.buffer)]
-                )
+                readers,
+                () => this.calculateHistogram(readers)
             );
             this.value = result;
             this.loading = false;
@@ -101,6 +101,31 @@ export class HistogramState extends AbstractProperty<ThermalStatistics[], Therma
             this.onCalculationEnd.call(false);
             console.error("Error calculating histogram", error);
         }
+
+    }
+
+    /**
+     * Pure LRC registries keep the original LRC calculation. Any other set
+     * collects temperatures of every file with its own parser and bins them
+     * in one shared range.
+     */
+    protected async calculateHistogram(readers: ThermalFileReader[]): Promise<ThermalStatistics[]> {
+
+        if (readers.every(reader => reader.parser === LrcParser)) {
+            return this.parent.pool.exec(
+                LrcParser.registryHistogram,
+                [readers.map(reader => reader.buffer)]
+            );
+        }
+
+        const pixelSets: Float32Array[] = await Promise.all(
+            readers.map(reader => this.parent.pool.exec(
+                reader.parser.histogramPixels,
+                [reader.buffer]
+            ))
+        );
+
+        return this.parent.pool.exec(histogramFromPixels, [pixelSets]);
 
     }
 

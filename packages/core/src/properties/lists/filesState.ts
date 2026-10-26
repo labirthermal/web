@@ -87,12 +87,12 @@ export class FilesState extends AbstractProperty<ThermalFileInstance[], ThermalG
 
         this.forEveryInstance( instance => {
 
-            const blob = new Blob( [ instance.reader.buffer ], { type: "application/octet-stream" } );
+            const blob = new Blob( [ instance.reader.fileBuffer ], { type: instance.reader.fileMimeType } );
 
             const file = new File(
                 [ blob ],
                 instance.fileName,
-                { type: "application/octet-stream" }
+                { type: instance.reader.fileMimeType }
             );
 
             files.push( file );

@@ -16,7 +16,7 @@ The core library can be used:
 
 Step-by-step examples, each shown both in TypeScript and with the equivalent webcomponents:
 
-- [Load a single file](./single-file) – load one LRC file and render it.
+- [Load a single file](./single-file) – load one LRC file and render it. Radiometric FLIR JPEGs (`.jpg`) are loaded the same way.
 - [Load multiple files](./multiple-files) – load several files into one group.
 - [Controls](./controls) – build your own GUI on top of the core classes.
 

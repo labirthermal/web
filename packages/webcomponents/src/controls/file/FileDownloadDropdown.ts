@@ -72,7 +72,7 @@ export class FileDownloadButton extends AbstractFileConsumer {
                 <thermal-btn 
                     slot="option"
                     @click="${() => window.open(this.file!.thermalUrl)}"
-                    pre="LRC"
+                    pre=${this.file.reader.parser.extensions[0].extension.toUpperCase()}
                     align="left"
                 >
                     ${t(T.downloadoriginalfile, { type: this.file.reader.parser.extensions[0].extension.toUpperCase() })}

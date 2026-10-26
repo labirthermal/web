@@ -180,7 +180,7 @@ export class RecordingDrive extends AbstractProperty<boolean, ThermalFileInstanc
 
         const replaceWithText = "__" + segments + "." + extension;
 
-        return originalFileName.replace( /\.lrc$/i, replaceWithText );
+        return originalFileName.replace( /\.(lrc|jpe?g)$/i, replaceWithText );
 
 
     }

@@ -10,6 +10,29 @@ Clinet side classes for work with thermal images.
 - setting of thermal display parameters
 - handling analyses and playback
 
+## Supported file formats
+
+The parser is selected by the file content, not by its extension.
+
+- **LabIR Recording (`.lrc`)** – single images and sequences.
+- **FLIR radiometric JPEG (`.jpg`, `.jpeg`)** – single images from FLIR
+  cameras and FLIR-core based cameras (e.g. DJI Zenmuse XT/XT2). Both raw
+  encodings stored by the cameras are supported (16-bit raw and 16-bit PNG).
+
+FLIR JPEGs are decoded once while loading: temperatures are computed from
+the raw detector counts using the calibration and object parameters stored
+in the file (emissivity, reflected temperature, distance, humidity…). The
+original JPEG is kept untouched in `ThermalFileReader.fileBuffer` and is used
+for downloads, while `ThermalFileReader.buffer` holds the decoded temperatures.
+Decoding of a 640×512 image takes a few milliseconds.
+
+Limitations of the FLIR support:
+
+- JPEGs saved by other software lose the FLIR metadata and are rejected,
+  as are plain (non-radiometric) JPEGs.
+- Sequences (`.seq`, `.csq`), the embedded visible photo, MSX/PiP
+  composition and measurement objects defined in the camera are not read.
+
 ## Pixel updates and WebGL playback
 
 Use `setPixels()` to publish pixel changes, including changes to a reused array.

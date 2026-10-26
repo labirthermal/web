@@ -7,6 +7,7 @@ import { rectAnalysisData } from "./jobs/rectAnalysisData";
 import { registryHistogram } from "./jobs/histogram";
 import { is } from "./jobs/is";
 import { ellipsisAnalysisData } from "./jobs/ellipsisAnalysisData";
+import { histogramPixels } from "./jobs/histogramPixels";
 
 
 
@@ -41,6 +42,7 @@ const parser: IParserObject = {
     getFrameSubset,
     frameData,
     registryHistogram,
+    histogramPixels,
     pointAnalysisData,
     rectAnalysisData,
     ellipsisAnalysisData

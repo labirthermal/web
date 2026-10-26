@@ -2,7 +2,7 @@ import { ThermalFileFailure } from "./ThermalFileFailure";
 import { FileErrors, FileLoadingError } from "./errors";
 import { ThermalFileReader } from "./ThermalFileReader";
 import { AbstractFileResult } from "./AbstractFileResult";
-import { determineParser } from "./parsers";
+import { determineAndPrepare } from "./parsers";
 import { FilesService } from "./FilesService";
 
 export type FileResultListener = ( result: AbstractFileResult ) => void
@@ -83,18 +83,20 @@ export class FileRequest {
         // Read the file data
         const buffer = await res.arrayBuffer();
 
-        // Determine the parser and create the service
+        // Determine the parser, prepare its working buffer and create the service
         try {
 
-            const parser = determineParser( buffer, this.thermalUrl );
+            const { parser, workingBuffer } = await determineAndPrepare( buffer, this.thermalUrl );
 
             return this.pocessTheService( 
                 new ThermalFileReader( 
                     this.service,
-                    buffer, 
+                    workingBuffer, 
                     parser, 
                     this.thermalUrl, 
-                    this.visibleUrl 
+                    this.visibleUrl,
+                    undefined,
+                    buffer
                 )
             );
 

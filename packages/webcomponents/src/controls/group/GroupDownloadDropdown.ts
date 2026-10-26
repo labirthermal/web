@@ -43,7 +43,7 @@ export class GroupDownloadDropdown extends AbstractGroupConsumer {
             
                 <thermal-btn 
                     slot="option" 
-                    pre="LRC" 
+                    pre="ZIP" 
                     @click=${() => this.groupObject.files.downloadAllFiles()}
                     tooltip=${t(T.downloadoriginalfileshint)}
                     tooltip-placement="right"

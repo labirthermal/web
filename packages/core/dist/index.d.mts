@@ -1431,10 +1431,20 @@ export declare class ThermalFileReader extends AbstractFileResult {
   readonly fileName: string;
   private get pool();
   protected originalBuffer?: ArrayBuffer;
+  /** The file exactly as it was loaded, if the parser works with a converted working buffer */
+  protected readonly sourceBuffer?: ArrayBuffer;
   protected _buffer: ArrayBuffer;
+  /** The working buffer passed to all parser methods */
   get buffer(): ArrayBuffer;
   protected set buffer(value: ArrayBuffer);
-  constructor(service: FilesService, buffer: ArrayBuffer, parser: IParserObject, thermalUrl: string, visibleUrl?: string, preserveOriginalBuffer?: boolean);
+  /**
+   * The original file content, e.g. for downloads.
+   * Differs from `buffer` for formats decoded while loading (FLIR JPEG).
+   */
+  get fileBuffer(): ArrayBuffer;
+  /** MIME type of the original file */
+  get fileMimeType(): string;
+  constructor(service: FilesService, buffer: ArrayBuffer, parser: IParserObject, thermalUrl: string, visibleUrl?: string, preserveOriginalBuffer?: boolean, sourceBuffer?: ArrayBuffer);
   isSuccess(): boolean;
   /** @todo This method relies on the functionality of filters. */
   protected copyBuffer(buffer: ArrayBuffer): ArrayBuffer;
@@ -2456,6 +2466,12 @@ declare class HistogramState extends AbstractProperty<ThermalStatistics[], Therm
    */
   recalculateHistogramBufferInWorker(): void;
   protected recalculateHistogram(): Promise<void>;
+  /**
+   * Pure LRC registries keep the original LRC calculation. Any other set
+   * collects temperatures of every file with its own parser and bins them
+   * in one shared range.
+   */
+  protected calculateHistogram(readers: ThermalFileReader[]): Promise<ThermalStatistics[]>;
 }
 //#endregion
 //#region src/properties/states/LoadingState.d.ts
@@ -2630,6 +2646,16 @@ interface IParserObject {
   /** Determine whether the file corresponds to the given parser */
   is(buffer: ArrayBuffer, url: string): boolean;
   /**
+   * Optional one-time conversion of the loaded file into the working buffer
+   * that is passed to all other methods.
+   * - runs in the main thread before the file is reported as loaded
+   * - the original file stays available in `ThermalFileReader.fileBuffer`
+   * - formats that are read directly (LRC) do not implement it
+   *
+   * @throws FileLoadingError
+   */
+  prepare?(buffer: ArrayBuffer, url: string): Promise<ArrayBuffer>;
+  /**
    * Get the basic information necessary for every file
    * - without any pixels!
    * - this sould be called once only
@@ -2653,6 +2679,11 @@ interface IParserObject {
    */
   frameData(frameSubset: ArrayBuffer, dataType: number): Promise<ParsedFileFrame>;
   registryHistogram(files: ArrayBuffer[]): Promise<ThermalStatistics[]>;
+  /**
+   * All temperatures of all frames of one file, used for histograms
+   * of registries combining different file formats.
+   */
+  histogramPixels(file: ArrayBuffer): Promise<Float32Array>;
   pointAnalysisData(file: ArrayBuffer, x: number, y: number): Promise<PointAnalysisData>;
   rectAnalysisData(file: ArrayBuffer, x: number, y: number, width: number, height: number): Promise<AreaAnalysisData>;
   ellipsisAnalysisData(file: ArrayBuffer, x: number, y: number, width: number, height: number): Promise<AreaAnalysisData>;

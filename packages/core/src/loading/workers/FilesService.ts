@@ -4,7 +4,7 @@ import { AbstractFileResult } from "./AbstractFileResult";
 import { DropinElementListener } from "./dropin/DropinElementManager";
 import { FileErrors } from "./errors";
 import { FileRequest } from "./FileRequest";
-import { determineParser } from "./parsers";
+import { determineAndPrepare } from "./parsers";
 import { ThermalFileFailure } from "./ThermalFileFailure";
 import { ThermalFileReader } from "./ThermalFileReader";
 
@@ -67,9 +67,9 @@ export class FilesService {
 
             const buffer = await file.arrayBuffer();
 
-            const parser = determineParser(buffer, file.name);
+            const { parser, workingBuffer } = await determineAndPrepare(buffer, file.name);
 
-            return new ThermalFileReader(this, buffer, parser, file.name)
+            return new ThermalFileReader(this, workingBuffer, parser, file.name, undefined, undefined, buffer)
 
         } catch (error) {
 

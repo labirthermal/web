@@ -27,10 +27,27 @@ export class ThermalFileReader extends AbstractFileResult {
 
     protected originalBuffer?: ArrayBuffer;
 
+    /** The file exactly as it was loaded, if the parser works with a converted working buffer */
+    protected readonly sourceBuffer?: ArrayBuffer;
+
     protected _buffer: ArrayBuffer;
+    /** The working buffer passed to all parser methods */
     public get buffer(): ArrayBuffer { return this._buffer; }
     protected set buffer( value: ArrayBuffer ) {
         this._buffer = value;
+    }
+
+    /** 
+     * The original file content, e.g. for downloads. 
+     * Differs from `buffer` for formats decoded while loading (FLIR JPEG).
+     */
+    public get fileBuffer(): ArrayBuffer {
+        return this.sourceBuffer ?? this.buffer;
+    }
+
+    /** MIME type of the original file */
+    public get fileMimeType(): string {
+        return this.parser.extensions[ 0 ]?.minme ?? "application/octet-stream";
     }
 
     public constructor(
@@ -39,11 +56,16 @@ export class ThermalFileReader extends AbstractFileResult {
         public readonly parser: IParserObject,
         thermalUrl: string,
         visibleUrl?: string,
-        preserveOriginalBuffer?: boolean
+        preserveOriginalBuffer?: boolean,
+        sourceBuffer?: ArrayBuffer
     ) {
         super( thermalUrl, visibleUrl );
 
         this._buffer = buffer;
+
+        if ( sourceBuffer !== undefined && sourceBuffer !== buffer ) {
+            this.sourceBuffer = sourceBuffer;
+        }
 
         this.fileName = this.thermalUrl.substring( this.thermalUrl.lastIndexOf( "/" ) + 1 );
 
@@ -77,7 +99,8 @@ export class ThermalFileReader extends AbstractFileResult {
             this.parser,
             this.thermalUrl,
             this.visibleUrl,
-            true
+            true,
+            this.sourceBuffer
         );
     }
 

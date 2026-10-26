@@ -20,7 +20,7 @@ export class FileLrcButton extends AbstractFileButton {
     }
 
     public getDefaultLabel(): string {
-        return "lrc";
+        return this.file?.reader.parser.extensions[ 0 ]?.extension ?? "lrc";
     }
 
     

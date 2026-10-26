@@ -1,5 +1,6 @@
 import { FileLoadingError, FileErrors } from "../errors";
 import { LrcParser } from "./lrc/LrcParser";
+import { FlirParser } from "./flir/FlirParser";
 
 import { IParserObject } from "./structure";
 
@@ -7,7 +8,8 @@ import { IParserObject } from "./structure";
  * Add parser objects here to register them
  */
 const parsers = {
-    LrcParser
+    LrcParser,
+    FlirParser
 }
 
 const parsersArray = Object.values( parsers );
@@ -27,6 +29,35 @@ export const determineParser = (
         throw new FileLoadingError( FileErrors.MIME_UNSUPPORTED, url, `No parser found for '${url}'.` );
     }
     return parser!;
+}
+
+/**
+ * Determine the parser and create its working buffer.
+ * - formats without `prepare` work directly with the loaded buffer
+ * - any failure is reported as `FileLoadingError`
+ *
+ * @throws FileLoadingError
+ */
+export const determineAndPrepare = async (
+    buffer: ArrayBuffer,
+    url: string
+): Promise<{ parser: IParserObject, workingBuffer: ArrayBuffer }> => {
+
+    const parser = determineParser( buffer, url );
+
+    if ( parser.prepare === undefined ) {
+        return { parser, workingBuffer: buffer };
+    }
+
+    try {
+        return { parser, workingBuffer: await parser.prepare( buffer, url ) };
+    } catch ( error ) {
+        if ( error instanceof FileLoadingError ) {
+            throw error;
+        }
+        throw new FileLoadingError( FileErrors.PARSING_ERROR, url, ( error as Error ).message );
+    }
+
 }
 
 

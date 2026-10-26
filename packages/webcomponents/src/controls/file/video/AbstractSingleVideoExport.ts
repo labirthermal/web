@@ -172,8 +172,8 @@ export abstract class AbstractSingleVideoExport extends AbstractFileConsumer imp
             this.parentHasAnalyses = this.file.analysis.value.length > 0;
 
             const lrcFileName = this.file.fileName;
-            // Odstraň .lrc příponu
-            const baseName = lrcFileName.replace(/\.lrc$/i, "");
+            // Odstraň příponu termogramu
+            const baseName = lrcFileName.replace(/\.(lrc|jpe?g)$/i, "");
             this.renderProps.fileName = baseName;
             this.requestUpdate();
         }
