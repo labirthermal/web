@@ -4,7 +4,7 @@ import { property, state } from "lit/decorators.js";
 import type { FolderInfo } from "../../../client/responseEntities";
 import { AbstractFolderDialog } from "./AbstractFolderDialog";
 
-export class FolderAddDialog extends AbstractFolderDialog {
+export class ConnectedFolderCreateDialog extends AbstractFolderDialog {
 
 
     protected closeLabel: string = "create";

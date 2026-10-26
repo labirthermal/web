@@ -11,7 +11,7 @@ import type { GetGridDataType } from "../../../client/routes/get/GetGrid";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 
 
-export class SubfoldersGrid extends AbstractControlledConsumer {
+export class ConnectedSubfoldersGrid extends AbstractControlledConsumer {
 
     @property({ type: String })
     public slug: string = "default_group";

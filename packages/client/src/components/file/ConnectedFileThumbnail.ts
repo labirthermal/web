@@ -14,7 +14,7 @@ import type { FileInfo, FolderInfo } from "../../client/responseEntities";
 import { FileListDisplayMode } from "../../controllers/DisplayController";
 import { T } from "../../translations/Languages";
 
-export class FileThumbnail extends AbstractControlledConsumer {
+export class ConnectedFileThumbnail extends AbstractControlledConsumer {
 
 
 
@@ -116,7 +116,7 @@ export class FileThumbnail extends AbstractControlledConsumer {
         this.fileObject?.analysis.removeListener(this.UUID);
     }
 
-    updated(changedProperties: PropertyValues<FileThumbnail>): void {
+    updated(changedProperties: PropertyValues<ConnectedFileThumbnail>): void {
         if (changedProperties.has('compact')) {
             if (this.compact) {
                 this.classList.add('compact');

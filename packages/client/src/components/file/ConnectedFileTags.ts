@@ -7,7 +7,7 @@ import { AbstractControlledConsumer } from "../../abstraction/AbstractControlled
 
 type TagSizes = "sm" | "md";
 
-export class ControlledFileTags extends AbstractControlledConsumer {
+export class ConnectedFileTags extends AbstractControlledConsumer {
 
     @property({ type: String, reflect: true })
     public editable: boolean = false;
@@ -301,6 +301,5 @@ export class ControlledFileTags extends AbstractControlledConsumer {
         `;
 
     }
-
 
 }

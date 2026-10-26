@@ -1,13 +1,12 @@
 import { t } from "@labirthermal/webcomponents";
-import type { CSSResultGroup} from "lit";
+import type { CSSResultGroup } from "lit";
 import { css, html, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { T } from "../../../translations/Languages";
+import { property, state } from "lit/decorators.js";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
-import type { FileInfo, FolderInfo, Comment } from "../../../client/responseEntities";
+import type { Comment, FileInfo, FolderInfo } from "../../../client/responseEntities";
+import { T } from "../../../translations/Languages";
 
-@customElement("controlled-file-comment-form")
-export class FileCommentForm extends AbstractControlledConsumer {
+export class ConnectedFileCommentForm extends AbstractControlledConsumer {
 
     @property({ type: Object })
     public comment?: Comment;

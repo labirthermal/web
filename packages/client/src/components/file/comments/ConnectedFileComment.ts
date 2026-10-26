@@ -223,7 +223,7 @@ export class ConnectedFileComment extends AbstractControlledConsumer {
             <main>
             ${this.isEditing
                 ? html`
-                <file-comment-form
+                <connected-file-comment-form
                     .comment=${this.comment}
                     .file=${this.file}
                     .folder=${this.folder}
@@ -231,7 +231,7 @@ export class ConnectedFileComment extends AbstractControlledConsumer {
                         this.isEditing = false;
                         this.onChange?.(file);
                     }}
-                ></file-comment-form>
+                ></connected-file-comment-form>
                 `
                 : html`<p>${this.comment.message}</p>`
             }

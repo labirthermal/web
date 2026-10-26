@@ -99,11 +99,11 @@ export class ConnectedFileComments extends AbstractControlledConsumer {
             <div class="list">
                 ${this.file.comments && this.file.comments.length > 0
                 ? this.file.comments.map((comment) => html`
-                        <file-comment
+                        <connected-file-comment
                             .comment=${comment}
                             .file=${this.file}
                             .folder=${this.folder}
-                        ></file-comment>
+                        ></connected-file-comment>
                     `)
                 : html`<div class="placeholder">
                     <span>${t(T.nocomments)}</span>
@@ -114,7 +114,7 @@ export class ConnectedFileComments extends AbstractControlledConsumer {
             ${this.folder && this.folder.may_manage_files_in
                 ? html`
                     <div class="form-container">
-                        <controlled-file-comment-form 
+                        <connected-file-comment-form 
                             .file=${this.file} 
                             .folder=${this.folder} 
                             .onChange=${() => {
@@ -124,7 +124,7 @@ export class ConnectedFileComments extends AbstractControlledConsumer {
                                 // this.content.updateFileState(file);
                                 setTimeout( () => this.scrollToBottom(), 0 );
                             }}>
-                        </controlled-file-comment-form>
+                        </connected-file-comment-form>
                     </div>
                     `
                 : nothing

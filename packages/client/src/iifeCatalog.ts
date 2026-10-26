@@ -5,11 +5,10 @@ import { ConnectedFolderHeader } from "./components/folder/ConnectedFolderHeader
 import { ConnectedFolderRow } from "./components/folder/thumbs/ConnectedFolderRow";
 import { ConnectedFolderThumbnail } from "./components/folder/thumbs/ConnectedFolderThumbnail";
 import { ConnectedFileList } from "./components/folder/listing/ConnetcedFileList";
-import { SubfoldersGrid } from "./components/folder/listing/ConnectedSubfoldersGrid";
+import { ConnectedSubfoldersGrid } from "./components/folder/listing/ConnectedSubfoldersGrid";
 import { ConnectedFolderFileList } from "./components/folder/listing/ConnectedSubfolderList";
 import { ConnectedLoginForm } from "./components/user/LoginFormNew";
-import { UserButton } from "./components/user/ConnectedUserButton";
-import { FolderEditDialogNew } from "./components/FolderEditDialogNew";
+import { ConnectedUserButton } from "./components/user/ConnectedUserButton";
 import { ConnectedShareDialog } from "./components/ConnectedShareDialog";
 import { ConnectedBreadcrumb } from "./components/ConnectedBreadcrumb";
 import { ConnectedFolderSelectionCheckbox } from "./components/selection/ConnectedFolderSelectionCheckbox";
@@ -18,12 +17,12 @@ import { ConnectedFileSelectionCheckbox } from "./components/selection/Connected
 import { ConnectedFileSelectionActions } from "./components/selection/ConnectedFileSelectionActions";
 import { ConnectedLocationSelector } from "./components/selection/move/ConnectedLocationSelector";
 import { ConnectedFolderMoveDialog } from "./components/folder/crud/ConnectedFolderMoveDialog";
-import { FolderEditDialog } from "./components/folder/crud/ConnectedFolderEditDialog";
-import { FolderDeleteDialog } from "./components/folder/crud/ConnectedFolderDeleteDialog";
-import { FolderAddDialog } from "./components/folder/crud/ConnectedFolderCreateDialog";
+import { ConnectedFolderEditDialog } from "./components/folder/crud/ConnectedFolderEditDialog";
+import { ConnectedFolderDeleteDialog } from "./components/folder/crud/ConnectedFolderDeleteDialog";
+import { ConnectedFolderCreateDialog } from "./components/folder/crud/ConnectedFolderCreateDialog";
 import { ConnectedFolderContentModeSwitch } from "./components/folder/crud/ConnectedFolderContentModeSwitch";
-import { FileThumbnail } from "./components/file/ConnectedFileThumbnail";
-import { ControlledFileTags } from "./components/file/ConnectedFileTags";
+import { ConnectedFileThumbnail } from "./components/file/ConnectedFileThumbnail";
+import { ConnectedFileTags } from "./components/file/ConnectedFileTags";
 import { ConnectedFileMoveDialog } from "./components/file/ConnectedFileMoveDialog";
 import { ConnectedFileHeader } from "./components/file/ConnectedFileHeader";
 import { ConnectedFileEditDialog } from "./components/file/ConnectedFileEditDialog";
@@ -34,8 +33,10 @@ import { ConnectedFileAnalysisButtons } from "./components/file/analysis/Connect
 import { ConnectedConfigSubfolderMode } from "./components/configuration/ConnectedConfigSubfolderMode";
 import { ConnectedConfigFileMode } from "./components/configuration/ConnectedConfigFileDisplayMode";
 import { ConnectedConfigFileContentMode } from "./components/configuration/ConnectedConfigFileContentMode";
+import { ConnectedFileCommentForm } from "./components/file/comments/ControlledFileCommentForm";
 
 const connectedAppElements = {
+    "connected-file-comment-form": ConnectedFileCommentForm,
     "connected-config-file-content-mode": ConnectedConfigFileContentMode,
     "connected-config-file-display-mode": ConnectedConfigFileMode,
     "connected-config-subfolder-mode": ConnectedConfigSubfolderMode,
@@ -46,12 +47,12 @@ const connectedAppElements = {
     "connected-file-edit-dialog": ConnectedFileEditDialog,
     "connected-file-header": ConnectedFileHeader,
     "connected-file-move-dialog": ConnectedFileMoveDialog,
-    "connected-file-tags": ControlledFileTags,
-    "connected-file-thumbnail": FileThumbnail,
+    "connected-file-tags": ConnectedFileTags,
+    "connected-file-thumbnail": ConnectedFileThumbnail,
     "connected-folder-content-mode-switch": ConnectedFolderContentModeSwitch,
-    "connected-folder-create-dialog": FolderAddDialog,
-    "connected-folder-delete-dialog": FolderDeleteDialog,
-    "connected-folder-edit-dialog": FolderEditDialog,
+    "connected-folder-create-dialog": ConnectedFolderCreateDialog,
+    "connected-folder-delete-dialog": ConnectedFolderDeleteDialog,
+    "connected-folder-edit-dialog": ConnectedFolderEditDialog,
     "connected-folder-move-dialog": ConnectedFolderMoveDialog,
     "connected-location-selector": ConnectedLocationSelector,
     "connected-file-selection-actions": ConnectedFileSelectionActions,
@@ -60,11 +61,10 @@ const connectedAppElements = {
     "connected-folder-selection-checkbox": ConnectedFolderSelectionCheckbox,
     "connected-breadcrumb": ConnectedBreadcrumb,
     "connected-share-dialog": ConnectedShareDialog,
-    "folder-edit-dialog-new": FolderEditDialogNew,
-    "connected-user-button": UserButton,
+    "connected-user-button": ConnectedUserButton,
     "connected-login-form": ConnectedLoginForm,
     "connected-subfolder-list": ConnectedFolderFileList,
-    "connected-subfolders-grid": SubfoldersGrid,
+    "connected-subfolders-grid": ConnectedSubfoldersGrid,
     "connected-file-list": ConnectedFileList,
     "connected-folder-thumbnail": ConnectedFolderThumbnail,
     "connected-folder-row": ConnectedFolderRow,

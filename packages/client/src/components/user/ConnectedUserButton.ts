@@ -6,7 +6,7 @@ import { property, state } from "lit/decorators.js";
 import { T } from "../../translations/Languages";
 import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
 
-export class UserButton extends AbstractControlledConsumer {
+export class ConnectedUserButton extends AbstractControlledConsumer {
 
     @state()
     protected message?: string;
