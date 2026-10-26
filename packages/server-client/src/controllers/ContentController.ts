@@ -660,7 +660,7 @@ export class ContentController extends AbstractConnectedController implements Re
     ): void {
         this.onFilesUpdate.set(
             element.UUID,
-            ( files?: FileInfo[] ) => {
+            () => {
                 element.requestUpdate();
             }
         );
@@ -693,7 +693,7 @@ export class ContentController extends AbstractConnectedController implements Re
     ): void {
         this.onGridUpdate.set(
             element.UUID,
-            ( grid?: GetGridDataType ) => {
+            () => {
                 element.requestUpdate();
             }
         );
@@ -704,7 +704,7 @@ export class ContentController extends AbstractConnectedController implements Re
     ): void {
         this.onTree.set(
             element.UUID,
-            ( tree?: TreeItem[] ) => {
+            () => {
                 element.requestUpdate();
             }
         );
