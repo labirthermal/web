@@ -755,3 +755,9 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
     }
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-thumbnail": ConnectedFileThumbnail;
+    }
+}

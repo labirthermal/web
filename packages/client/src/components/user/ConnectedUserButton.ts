@@ -271,3 +271,9 @@ export class ConnectedUserButton extends AbstractControlledConsumer {
     }
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-user-button": ConnectedUserButton;
+    }
+}

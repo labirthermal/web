@@ -220,3 +220,9 @@ export class ConnectedFolderContentModeSwitch extends AbstractControlledConsumer
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-folder-content-mode-switch": ConnectedFolderContentModeSwitch;
+    }
+}

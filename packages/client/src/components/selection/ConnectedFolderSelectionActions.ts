@@ -289,3 +289,9 @@ export class ConnectedFolderSelectionActions extends AbstractControlledConsumer 
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-folder-selection-actions": ConnectedFolderSelectionActions;
+    }
+}

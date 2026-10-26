@@ -59,3 +59,9 @@ export class ConnectedFileMoveDialog extends AbstractControlledConsumer {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-move-dialog": ConnectedFileMoveDialog;
+    }
+}

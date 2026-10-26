@@ -32,3 +32,9 @@ export class ConnectedConfigFileContentMode extends AbstractConfigElement {
     }
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-config-file-content-mode": ConnectedConfigFileContentMode;
+    }
+}

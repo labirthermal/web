@@ -235,3 +235,9 @@ ${this.errorMessage ? html`<div class="error">${this.errorMessage}</div>` : ''}`
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-folder-create-dialog": ConnectedFolderCreateDialog;
+    }
+}

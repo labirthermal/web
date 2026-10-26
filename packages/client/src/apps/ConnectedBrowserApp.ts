@@ -179,3 +179,9 @@ export class ConnectedBrowserApp extends AbstractConnectedApp {
     }
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-browser-app": ConnectedBrowserApp;
+    }
+}

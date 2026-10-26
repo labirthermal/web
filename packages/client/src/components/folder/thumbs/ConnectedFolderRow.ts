@@ -232,3 +232,9 @@ export class ConnectedFolderRow extends AbstractFolderThumbnail {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-folder-row": ConnectedFolderRow;
+    }
+}

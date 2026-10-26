@@ -203,3 +203,9 @@ export class ConnectedLoginForm extends AbstractControlledConsumer {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-login-form": ConnectedLoginForm;
+    }
+}

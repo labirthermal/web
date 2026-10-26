@@ -235,3 +235,9 @@ export class ConnectedBreadcrumb extends AbstractControlledConsumer {
     }
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-breadcrumb": ConnectedBreadcrumb;
+    }
+}

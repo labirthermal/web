@@ -303,3 +303,9 @@ export class ConnectedFileTags extends AbstractControlledConsumer {
     }
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-tags": ConnectedFileTags;
+    }
+}

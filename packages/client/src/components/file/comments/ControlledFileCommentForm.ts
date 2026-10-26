@@ -211,3 +211,9 @@ export class ConnectedFileCommentForm extends AbstractControlledConsumer {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-comment-form": ConnectedFileCommentForm;
+    }
+}

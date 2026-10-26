@@ -160,3 +160,9 @@ export class ConnectedFolderThumbnail extends AbstractFolderThumbnail {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-folder-thumbnail": ConnectedFolderThumbnail;
+    }
+}

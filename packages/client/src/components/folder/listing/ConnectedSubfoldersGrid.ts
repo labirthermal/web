@@ -599,3 +599,9 @@ export class ConnectedSubfoldersGrid extends AbstractControlledConsumer {
     }
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-subfolders-grid": ConnectedSubfoldersGrid;
+    }
+}

@@ -242,3 +242,9 @@ export class ConnectedFileComment extends AbstractControlledConsumer {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-comment": ConnectedFileComment;
+    }
+}

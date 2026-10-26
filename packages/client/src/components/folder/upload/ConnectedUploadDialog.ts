@@ -705,3 +705,9 @@ export class ConnectedUploadDialog extends AbstractControlledConsumer {
 
     }
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-upload-dialog": ConnectedUploadDialog;
+    }
+}

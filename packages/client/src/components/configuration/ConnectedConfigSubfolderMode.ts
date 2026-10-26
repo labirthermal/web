@@ -51,3 +51,9 @@ export class ConnectedConfigSubfolderMode extends AbstractConfigElement {
     }
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-config-subfolder-mode": ConnectedConfigSubfolderMode;
+    }
+}

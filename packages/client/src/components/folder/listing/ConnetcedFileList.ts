@@ -124,3 +124,9 @@ export class ConnectedFileList extends AbstractControlledConsumer {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-list": ConnectedFileList;
+    }
+}

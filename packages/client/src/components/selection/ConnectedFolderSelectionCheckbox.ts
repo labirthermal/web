@@ -91,3 +91,9 @@ export class ConnectedFolderSelectionCheckbox extends AbstractControlledConsumer
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-folder-selection-checkbox": ConnectedFolderSelectionCheckbox;
+    }
+}

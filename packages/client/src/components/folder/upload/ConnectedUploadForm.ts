@@ -1049,3 +1049,9 @@ ${this.pairedFiles.map((pair, index) => this.renderPairedFileRow(pair, index))}
 
     }
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-upload-form": ConnectedUploadForm;
+    }
+}

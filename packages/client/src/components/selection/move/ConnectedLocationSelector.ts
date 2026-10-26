@@ -561,3 +561,9 @@ export class ConnectedLocationSelector extends AbstractControlledConsumer {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-location-selector": ConnectedLocationSelector;
+    }
+}

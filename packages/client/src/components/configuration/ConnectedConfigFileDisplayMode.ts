@@ -50,3 +50,9 @@ export class ConnectedConfigFileMode extends AbstractConfigElement {
     }
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-config-file-display-mode": ConnectedConfigFileMode;
+    }
+}

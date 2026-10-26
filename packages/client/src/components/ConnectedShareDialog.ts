@@ -302,3 +302,9 @@ export class ConnectedShareDialog extends AbstractControlledConsumer {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-share-dialog": ConnectedShareDialog;
+    }
+}

@@ -215,3 +215,9 @@ ${this.renderUpButton()}
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-header": ConnectedFileHeader;
+    }
+}

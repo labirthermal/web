@@ -172,3 +172,9 @@ export class ConnectedFileEditDialog extends AbstractControlledConsumer {
 
     }
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-edit-dialog": ConnectedFileEditDialog;
+    }
+}

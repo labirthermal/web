@@ -158,3 +158,9 @@ export class ConnectedFolderHeader extends AbstractControlledConsumer {
     }
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-folder-header": ConnectedFolderHeader;
+    }
+}

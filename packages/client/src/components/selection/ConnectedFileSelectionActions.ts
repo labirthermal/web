@@ -445,3 +445,9 @@ export class ConnectedFileSelectionActions extends AbstractControlledConsumer {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-selection-actions": ConnectedFileSelectionActions;
+    }
+}

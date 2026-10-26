@@ -164,3 +164,9 @@ export class ConnectedFileDeleteDialog extends AbstractControlledConsumer {
         `;
     }
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-delete-dialog": ConnectedFileDeleteDialog;
+    }
+}

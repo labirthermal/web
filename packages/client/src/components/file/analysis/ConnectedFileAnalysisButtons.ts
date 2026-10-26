@@ -307,3 +307,9 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-file-analysis-buttons": ConnectedFileAnalysisButtons;
+    }
+}

@@ -93,3 +93,9 @@ export class ConnectedFolderFileList extends AbstractControlledConsumer {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "connected-subfolder-list": ConnectedFolderFileList;
+    }
+}
