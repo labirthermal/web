@@ -9,11 +9,10 @@ import { property, state } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
-import type { FileInfo, FolderInfo } from "../../client/responseEntities";
-import { syncAnalysisContext } from "../../connection/ClientContext";
-import { T } from "../../translations/Languages";
 import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
+import type { FileInfo, FolderInfo } from "../../client/responseEntities";
 import { FileListDisplayMode } from "../../controllers/DisplayController";
+import { T } from "../../translations/Languages";
 
 export class FileThumbnail extends AbstractControlledConsumer {
 
@@ -74,9 +73,6 @@ export class FileThumbnail extends AbstractControlledConsumer {
         attribute: "editable-tags"
     })
     public editableTags: boolean = false;
-
-    @consume({ context: syncAnalysisContext, subscribe: true })
-    protected syncAnalyses = false;
 
     @state()
     protected hasDisplayedAnalysis: boolean = false;
@@ -335,7 +331,7 @@ export class FileThumbnail extends AbstractControlledConsumer {
             content = html`<div class="analyses-inner">
                 
                 <file-analysis-complex showhint="false">
-                    ${hasStoredAnalyses && !this.syncAnalyses ? html`<thermal-btn 
+                    ${hasStoredAnalyses ? html`<thermal-btn 
                         @click=${this.restoreAnalyses.bind(this)}
                         size="md"
                         variant="primary"
