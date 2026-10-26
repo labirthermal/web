@@ -11,7 +11,6 @@ import { consume } from "@lit/context";
 import type { ThermalDialogElement } from "@labirthermal/webcomponents";
 import { groupObjectContext } from "@labirthermal/webcomponents";
 
-@customElement("connected-file-selection-actions")
 export class ConnectedFileSelectionActions extends AbstractControlledConsumer {
 
     @state()

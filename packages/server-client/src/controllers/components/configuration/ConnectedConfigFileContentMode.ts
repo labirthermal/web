@@ -1,8 +1,7 @@
 import { customElement } from "lit/decorators.js";
 import { AbstractConfigElement } from "./AbstractConfigElement";
 
-@customElement("connected-config-file-content-mode")
-export class ConnectedConfigFileMode extends AbstractConfigElement {
+export class ConnectedConfigFileContentMode extends AbstractConfigElement {
 
     connectedCallback(): void {
 

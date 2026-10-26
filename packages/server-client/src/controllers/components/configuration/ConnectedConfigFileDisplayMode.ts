@@ -1,9 +1,6 @@
-import { css, CSSResultGroup, html } from "lit";
-import { customElement } from "lit/decorators.js";
 import { FileListDisplayMode } from "../../DisplayController";
 import { AbstractConfigElement } from "./AbstractConfigElement";
 
-@customElement("connected-config-file-display-mode")
 export class ConnectedConfigFileMode extends AbstractConfigElement {
 
     connectedCallback(): void {

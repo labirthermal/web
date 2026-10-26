@@ -1,4 +1,4 @@
-import { t } from "i18next";
+import { t } from "@labirthermal/webcomponents";
 import type { CSSResultGroup} from "lit";
 import { css, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
@@ -6,8 +6,7 @@ import { T } from "../../translations/Languages";
 import { AbstractFolderDialog } from "./folder/crud/AbstractFolderDialog";
 import type { FolderInfo } from "../../client/responseEntities";
 
-@customElement("folder-edit-dialog-new")
-export class FolderEditDialog extends AbstractFolderDialog {
+export class FolderEditDialogNew extends AbstractFolderDialog {
 
     protected closeLabel: string = T.savechanges;
 

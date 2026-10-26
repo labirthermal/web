@@ -1,13 +1,12 @@
+import { booleanConverter, icons } from "@labirthermal/webcomponents";
 import type { CSSResultGroup, TemplateResult } from "lit";
 import { css, html, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
+import type { FileInfo } from "../../../../client/responseEntities";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 import type { FileListDisplayMode } from "../../../DisplayController";
-import { booleanConverter, icons } from "@labirthermal/webcomponents";
-import type { FileInfo } from "../../../../client/responseEntities";
 
-@customElement("connected-file-list")
-export class ConnectedFolderFileList extends AbstractControlledConsumer {
+export class ConnectedFileList extends AbstractControlledConsumer {
 
     @property({
         type: Function

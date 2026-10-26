@@ -1,12 +1,11 @@
 import { TimeFormat } from "@labirthermal/core";
-import type { CSSResultGroup} from "lit";
+import type { CSSResultGroup } from "lit";
 import { css, html, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
+import type { Comment, FileInfo, FolderInfo } from "../../../../client/responseEntities";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
-import type { FileInfo, FolderInfo, Comment } from "../../../../client/responseEntities";
 
-@customElement("connected-file-comment")
-export class FileComment extends AbstractControlledConsumer {
+export class ConnectedFileComment extends AbstractControlledConsumer {
 
     @property({ type: Object })
     public comment!: Comment;

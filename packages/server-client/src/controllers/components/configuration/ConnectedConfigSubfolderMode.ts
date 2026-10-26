@@ -1,10 +1,6 @@
-import { css, CSSResultGroup, html } from "lit";
-import { customElement } from "lit/decorators.js";
-import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
 import { FolderListDisplayMode } from "../../DisplayController";
 import { AbstractConfigElement } from "./AbstractConfigElement";
 
-@customElement("connected-config-subfolder-mode")
 export class ConnectedConfigSubfolderMode extends AbstractConfigElement {
 
     connectedCallback(): void {

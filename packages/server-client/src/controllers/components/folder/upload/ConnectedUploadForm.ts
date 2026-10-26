@@ -1,13 +1,12 @@
 
-import { t } from "i18next";
-import type { CSSResultGroup} from "lit";
-import { css, html, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { T } from "../../../../translations/Languages";
-import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
-import type { FolderInfo } from "../../../../client/responseEntities";
 import type { ThermalBtnElement } from "@labirthermal/webcomponents";
 import { booleanConverter } from "@labirthermal/webcomponents";
+import type { CSSResultGroup } from "lit";
+import { css, html, nothing } from "lit";
+import { property, state } from "lit/decorators.js";
+import type { FolderInfo } from "../../../../client/responseEntities";
+import { T } from "../../../../translations/Languages";
+import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 
 interface PairedFiles {
     lrc: File;
@@ -23,14 +22,13 @@ interface UnmatchedPng {
     url: string;
 }
 
-@customElement("connected-upload-form")
 export class ConnectedUploadForm extends AbstractControlledConsumer {
 
     @property({ type: Object })
     public folder!: FolderInfo;
 
     @property({ type: String })
-    public label: string = t(T.upload);
+    public label: string = this.t(T.upload);
 
     @property({ type: String })
     public prompt?: string;
@@ -550,7 +548,7 @@ export class ConnectedUploadForm extends AbstractControlledConsumer {
 
             const renamedFile = new File([originalFile], newFileName, { type: originalFile.type });
 
-            this.addFiles([renamedFile] as any);
+            this.addFiles([renamedFile] as unknown as FileList);
         }
         target.value = '';
     }
@@ -909,7 +907,7 @@ ${this.pairedFiles.map((pair, index) => this.renderPairedFileRow(pair, index))}
                 ${this.unmatchedPngs.map(item => html`
             <tr class="file-item">
                 <td>
-                    <thermal-btn tooltip="${t(T.remove)}" plain="true" variant="background" icon="close" iconStyle="micro" @click=${() => this.removeUnmatchedPng(item.file)}></thermal-btn>
+                    <thermal-btn tooltip="${this.t(T.remove)}" plain="true" variant="background" icon="close" iconStyle="micro" @click=${() => this.removeUnmatchedPng(item.file)}></thermal-btn>
                 </td>
                 <td style="position:relative;">
                     <img src=${item.url} alt="Unmatched file preview" />
@@ -1030,10 +1028,6 @@ ${this.pairedFiles.map((pair, index) => this.renderPairedFileRow(pair, index))}
 
 
     protected render(): unknown {
-
-        const label = this.label !== undefined
-            ? this.label
-            : t(T.uploadafile);
 
         if (!this.client.isLoggedIn || !this.folder.may_manage_files_in) {
             return nothing

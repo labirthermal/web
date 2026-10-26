@@ -2507,7 +2507,7 @@ instance.reloadResources;
 instance.use;
 instance.changeLanguage;
 instance.getFixedT;
-const t = instance.t;
+const t$1 = instance.t;
 instance.exists;
 instance.setDefaultNamespace;
 instance.hasLoadedNamespace;
@@ -4416,7 +4416,7 @@ var AbstractThermalElement = class extends lit.LitElement {
 	* @see {@link T}
 	*/
 	t(key) {
-		return t(T[key]);
+		return t$1(T[key]);
 	}
 	willUpdate(changedProperties) {
 		super.willUpdate?.(changedProperties);
@@ -7075,9 +7075,9 @@ var ThermalAppElement = class ThermalAppElement extends AbstractThermalElement {
 	}
 	renderCredits() {
 		if (this.author || this.license || this.recorded) return lit.html`<div class="credits">
-    ${this.renderCreditField(t("recordedat"), this.recorded)}
-    ${this.renderCreditField(t("author"), this.author)}
-    ${this.renderCreditField(t("license"), this.license)}
+    ${this.renderCreditField(t$1("recordedat"), this.recorded)}
+    ${this.renderCreditField(t$1("author"), this.author)}
+    ${this.renderCreditField(t$1("license"), this.license)}
 </div>`;
 		return lit.nothing;
 	}
@@ -7110,7 +7110,7 @@ var ThermalAppElement = class ThermalAppElement extends AbstractThermalElement {
     @click=${this.toggleFullscreen.bind(this)}
     icon=${this.fullscreen === "on" ? "smaller" : "bigger"}
     iconStyle="mini"
-    tooltip=${this.fullscreen === "on" ? t("close") : "Fullscreen"}
+    tooltip=${this.fullscreen === "on" ? t$1("close") : "Fullscreen"}
 ></thermal-btn>`;
 	}
 	renderOverflowToggle() {
@@ -7889,7 +7889,7 @@ __decorate([(0, lit_decorators_js.property)({
 var ThermalDialogElement = class extends lit.LitElement {
 	constructor(..._args) {
 		super(..._args);
-		this.button = t("close");
+		this.button = t$1("close");
 		this.dialogRef = (0, lit_directives_ref_js.createRef)();
 		this.closeButtonRef = (0, lit_directives_ref_js.createRef)();
 		this.invokerRef = (0, lit_directives_ref_js.createRef)();
@@ -9521,7 +9521,7 @@ var DisplayPanel = class extends AbstractThermalElement {
 	}
 	render() {
 		return lit.html`
-        <thermal-field label="${t("colourpalette")}" hint="Zvolte, jaké chcete používat palety.">
+        <thermal-field label="${t$1("colourpalette")}" hint="Zvolte, jaké chcete používat palety.">
             <thermal-btn-group>
                 <thermal-btn 
                     variant="${!this.advancedPalettes ? "foreground" : "default"}"
@@ -9535,10 +9535,10 @@ var DisplayPanel = class extends AbstractThermalElement {
                 >Pokročilé</thermal-btn>
             </thermal-btn-group>
         </thermal-field>
-        <thermal-field label="${t("filerendering")}" hint="${t("filerenderinghint")}">
+        <thermal-field label="${t$1("filerendering")}" hint="${t$1("filerenderinghint")}">
             <manager-image-smooth-switch></manager-image-smooth-switch>
         </thermal-field>
-        <thermal-field label="${t("graphlines")}" hint="${t("graphlineshint")}">
+        <thermal-field label="${t$1("graphlines")}" hint="${t$1("graphlineshint")}">
             <manager-graph-smooth-switch></manager-graph-smooth-switch>
         </thermal-field>
         `;
@@ -9859,22 +9859,22 @@ var ManagerExportPanel = class extends AbstractThermalElement {
 		const { png, group } = this.configController.settings.export;
 		return lit.html`
 
-        ${this.renderGroup(t("exportcontent"), lit.html`
-            ${this.renderCheckbox("pngExportAnalyses", t("analyses"), png.analyses, (value) => this.configController.setPngAnalyses(value))}
-            ${this.renderCheckbox("pngExportScale", t("thermalscale"), png.thermalScale, (value) => this.configController.setPngThermalScale(value))}
-            ${this.renderCheckbox("pngExportFileName", t("exportfilenames"), png.fileName, (value) => this.configController.setPngFileName(value))}
-            ${this.renderCheckbox("pngExportFileDate", t("filedate"), png.fileDate, (value) => this.configController.setPngFileDate(value))}
+        ${this.renderGroup(t$1("exportcontent"), lit.html`
+            ${this.renderCheckbox("pngExportAnalyses", t$1("analyses"), png.analyses, (value) => this.configController.setPngAnalyses(value))}
+            ${this.renderCheckbox("pngExportScale", t$1("thermalscale"), png.thermalScale, (value) => this.configController.setPngThermalScale(value))}
+            ${this.renderCheckbox("pngExportFileName", t$1("exportfilenames"), png.fileName, (value) => this.configController.setPngFileName(value))}
+            ${this.renderCheckbox("pngExportFileDate", t$1("filedate"), png.fileDate, (value) => this.configController.setPngFileDate(value))}
         `)}
 
-        ${this.renderGroup(t("exportdimensions"), lit.html`
-            ${this.renderSlider("pngWidth", t("exportimagewidth"), png.width, "px", 500, 2e3, 50, (value) => this.configController.setPngWidth(value))}
+        ${this.renderGroup(t$1("exportdimensions"), lit.html`
+            ${this.renderSlider("pngWidth", t$1("exportimagewidth"), png.width, "px", 500, 2e3, 50, (value) => this.configController.setPngWidth(value))}
 
-            ${this.renderSlider("pngFs", t("exportimagefontsize"), png.fontSize, "px", 10, 50, 1, (value) => this.configController.setPngFontSize(value))}
+            ${this.renderSlider("pngFs", t$1("exportimagefontsize"), png.fontSize, "px", 10, 50, 1, (value) => this.configController.setPngFontSize(value))}
         `)}
 
-        ${this.renderGroup(t("exportgroup"), lit.html`
-            ${this.renderCheckbox("pngExportGroupName", t("exportgroupname"), group.groupName, (value) => this.configController.setGroupGroupName(value))}
-            ${this.renderSlider("pngColumns", t("exportfilenames"), group.columns, "sloupců", 1, 5, 1, (value) => this.configController.setGroupColumns(value))}
+        ${this.renderGroup(t$1("exportgroup"), lit.html`
+            ${this.renderCheckbox("pngExportGroupName", t$1("exportgroupname"), group.groupName, (value) => this.configController.setGroupGroupName(value))}
+            ${this.renderSlider("pngColumns", t$1("exportfilenames"), group.columns, "sloupců", 1, 5, 1, (value) => this.configController.setGroupColumns(value))}
         `)}
 
         `;
@@ -9906,11 +9906,11 @@ var ManagerGraphSmoothSwitch = class extends AbstractManagerConsumer {
                 <thermal-btn
                     variant=${this.smooth ? "default" : "foreground"}
                     @click=${() => this.managerObject.graphSmooth.setGraphSmooth(false)}
-                >${t("straightlines")}</thermal-btn>
+                >${t$1("straightlines")}</thermal-btn>
                 <thermal-btn
                     variant=${this.smooth ? "foreground" : "default"}
                     @click=${() => this.managerObject.graphSmooth.setGraphSmooth(true)}
-                >${t("smoothlines")}</thermal-btn>
+                >${t$1("smoothlines")}</thermal-btn>
             </thermal-btn-group>
         `;
 	}
@@ -9936,12 +9936,12 @@ var ManagerImageSmoothSwitch = class extends AbstractManagerConsumer {
             <thermal-btn
     variant=${this.smooth ? "default" : "foreground"}
     @click=${() => this.managerObject.smooth.setSmooth(false)}
->${t("pixelated")}</thermal-btn>
+>${t$1("pixelated")}</thermal-btn>
 
 <thermal-btn
     variant=${this.smooth ? "foreground" : "default"}
     @click=${() => this.managerObject.smooth.setSmooth(true)}
->${t("smooth")}</thermal-btn>
+>${t$1("smooth")}</thermal-btn>
         </thermal-btn-group>`;
 	}
 };
@@ -10026,7 +10026,7 @@ var ManagerPaletteButtons = class extends AbstractPaletteSwitch {
 		return this.palettes.map(((palette) => lit.html`<thermal-btn 
     @click=${() => this.onSelect(palette.slug)} 
     variant="${palette.name === this.managerObject.palette.currentPalette.name ? "background" : "default"}"
-    tooltip="${t("palettename", { name: palette.name })}"
+    tooltip="${t$1("palettename", { name: palette.name })}"
 >
     ${this.paletteTemplate(palette)}
 </thermal-btn>`));
@@ -10058,7 +10058,7 @@ var ManagerPaletteDropdown = class extends AbstractPaletteSwitch {
 	render() {
 		return lit.html`
 
-            <thermal-dropdown .tooltip=${t("colourpalette")}>
+            <thermal-dropdown .tooltip=${t$1("colourpalette")}>
                     <span slot="invoker" class="palette" style="background:${this.managerObject.palette.currentPalette.gradient}"></span>
 
                 ${this.palettes.map((palette) => lit.html`
@@ -10116,7 +10116,7 @@ thermal-btn {
 			active: tool.key === this.value.key
 		};
 		return lit.html`<thermal-btn 
-    tooltip=${t(T[tool.name])}
+    tooltip=${t$1(T[tool.name])}
     tooltip-placement="right"
     class=${(0, lit_directives_class_map_js.classMap)(classes)} 
     @click=${() => {
@@ -10915,7 +10915,7 @@ var RegistryRangeForm = class extends AbstractRegistryConsumer {
 
         <div class="fields fields__separated fields__buttons">
             <thermal-btn
-                tooltip=${t("fullrange")}
+                tooltip=${t$1("fullrange")}
                 @click=${this.handleFullRangeClick}
                 @mouseenter=${this.handleFullRangeMouseEnter}
                 @mouseleave=${this.handleHighlightMouseLeave}
@@ -10939,7 +10939,7 @@ var RegistryRangeForm = class extends AbstractRegistryConsumer {
             </thermal-btn>
             
             <thermal-btn
-                tooltip=${t("automaticrange")}
+                tooltip=${t$1("automaticrange")}
                 @click=${this.handleAutoRangeClick}
                 @mouseenter=${this.handleAutoRangeMouseEnter}
                 @mouseleave=${this.handleHighlightMouseLeave}
@@ -11810,7 +11810,7 @@ var RegistryRangeFullButton = class extends AbstractRegistryConsumer {
     @focus="${this.mouseenter}"
     @blur="${this.mouseleave}"
     tooltip="${(0, lit_directives_if_defined_js.ifDefined)(this.value)}"
->${t("fullrange")}</thermal-btn>`;
+>${t$1("fullrange")}</thermal-btn>`;
 	}
 };
 __decorate([(0, lit_decorators_state_js.state)(), __decorateMetadata("design:type", String)], RegistryRangeFullButton.prototype, "value", void 0);
@@ -11843,7 +11843,7 @@ var RegistryRangeAutoButton = class extends AbstractRegistryConsumer {
             @onfocus=${this.onHighlight}
             @onblur=${this.onOut}
             tooltip="${(0, lit_directives_if_defined_js.ifDefined)(this.value)}"
-        >${t("automaticrange")}</thermal-btn>`;
+        >${t$1("automaticrange")}</thermal-btn>`;
 	}
 };
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], RegistryRangeAutoButton.prototype, "value", void 0);
@@ -12149,7 +12149,7 @@ var GroupAnalysisSyncButton = class extends AbstractGroupConsumer {
 	render() {
 		return lit.html`  
         <span><i></i></span>      
-        <div>${t("analysissync")}</div>
+        <div>${t$1("analysissync")}</div>
         `;
 	}
 };
@@ -12176,26 +12176,26 @@ var GroupDownloadDropdown = class extends AbstractGroupConsumer {
         
             <thermal-dropdown class="download ${dropdownClass}" .variant=${this.variant} .icon=${this.icon} .iconStyle=${this.iconStyle}>
             
-                <span slot="invoker">${t("download")}</span>
+                <span slot="invoker">${t$1("download")}</span>
             
                 <thermal-btn 
                     slot="option" 
                     pre="LRC" 
                     @click=${() => this.groupObject.files.downloadAllFiles()}
-                    tooltip=${t("downloadoriginalfileshint")}
+                    tooltip=${t$1("downloadoriginalfileshint")}
                     tooltip-placement="right"
                 >
-                    ${t("downloadoriginalfiles")}
+                    ${t$1("downloadoriginalfiles")}
                 </thermal-btn>
 
                 <thermal-btn 
                     slot="option" 
                     pre="PNG" 
                     @click=${() => this.groupObject.forEveryInstance((instance) => instance.export.downloadPng())}
-                    tooltip=${t("pngofindividualimageshint")}
+                    tooltip=${t$1("pngofindividualimageshint")}
                     tooltip-placement="right"
                 >
-                    ${t("pngofindividualimages")}
+                    ${t$1("pngofindividualimages")}
                 </thermal-btn>
 
                 <thermal-btn 
@@ -12211,10 +12211,10 @@ var GroupDownloadDropdown = class extends AbstractGroupConsumer {
 			showThermalScale: png?.thermalScale ?? true,
 			width: png?.width ?? 800
 		})}
-                    tooltip="${t("pngofentiregrouphint")}"
+                    tooltip="${t$1("pngofentiregrouphint")}"
                     tooltip-placement="right"
                 >
-                    ${t("pngofentiregroup")}
+                    ${t$1("pngofentiregroup")}
                 </thermal-btn>
 
                 <thermal-btn 
@@ -12223,10 +12223,10 @@ var GroupDownloadDropdown = class extends AbstractGroupConsumer {
                     @click=${() => {
 			this.groupObject.analysisSync.csv.downloadAsCsv();
 		}}
-                    tooltip=${t("csvofanalysisdatahint")}
+                    tooltip=${t$1("csvofanalysisdatahint")}
                     tooltip-placement="right"
                 >
-                    ${t("csvofanalysisdata")}
+                    ${t$1("csvofanalysisdata")}
                 </thermal-btn>
             
             </thermal-dropdown>
@@ -12290,9 +12290,9 @@ var GroupDownloadButtons = class extends AbstractGroupConsumer {
 		const group = this.configController?.settings.export.group;
 		return lit.html`
         
-                <button class="default" @click=${() => this.groupObject.files.downloadAllFiles()}>${t("downloadoriginalfiles")}</button>
+                <button class="default" @click=${() => this.groupObject.files.downloadAllFiles()}>${t$1("downloadoriginalfiles")}</button>
             
-                <button class="default" @click=${() => this.groupObject.forEveryInstance((instance) => instance.export.downloadPng())}>${t("pngofindividualimages")}</button>
+                <button class="default" @click=${() => this.groupObject.forEveryInstance((instance) => instance.export.downloadPng())}>${t$1("pngofindividualimages")}</button>
             
             
                 <button class="default" @click=${() => this.groupObject.analysisSync.png.downloadPng({
@@ -12304,11 +12304,11 @@ var GroupDownloadButtons = class extends AbstractGroupConsumer {
 			showGroupName: group?.groupName,
 			label: this.label,
 			fontSize: png?.fontSize
-		})}>${t("pngofentiregroup")}</button>
+		})}>${t$1("pngofentiregroup")}</button>
             
                 <button class="default" @click=${() => {
 			this.groupObject.analysisSync.csv.downloadAsCsv();
-		}}>${t("csvofanalysisdata")}</button>
+		}}>${t$1("csvofanalysisdata")}</button>
         
         `;
 	}
@@ -12509,12 +12509,12 @@ var GroupDropinElement = class extends AbstractGroupDropin {
                     <div class="dropin-gradient"></div>
 
                     <div class="dropin-content">
-                        <div>${t("dragorselectfile")}</div>
+                        <div>${t$1("dragorselectfile")}</div>
                         <thermal-btn 
                             variant="foreground"
                             icon="upload"
                             iconStyle="micro"
-                        >${t("selectfile")}</thermal-btn>
+                        >${t$1("selectfile")}</thermal-btn>
                     </div>
 
                     <div class="dropin-uploading">
@@ -12654,7 +12654,7 @@ var GroupDropinInputElement = class extends AbstractGroupDropin {
 		}
 	}
 	render() {
-		const title = this.uploading === false ? t("uploadafile") : lit.html`<div class="lds-ellipsis">
+		const title = this.uploading === false ? t$1("uploadafile") : lit.html`<div class="lds-ellipsis">
                 <div></div>
                 <div></div>
                 <div></div>
@@ -12798,7 +12798,7 @@ var GroupRangePropagatorElement = class extends AbstractGroupConsumer {
                     icon="range"
                     iconStyle="solid"
                     tooltip="${(0, lit_directives_if_defined_js.ifDefined)(this.value)}"
-                >${t("range").toLowerCase()}</thermal-btn>
+                >${t$1("range").toLowerCase()}</thermal-btn>
             </slot>
         `;
 	}
@@ -13355,7 +13355,7 @@ var FileCanvasElement = class extends AbstractFileConsumer {
     ></thermal-icon>
 
     <div class="error-title">
-        ${t("fileloadingerror")}
+        ${t$1("fileloadingerror")}
     </div>
     <div class="error-url">
         ${this.failure?.thermalUrl}
@@ -13525,7 +13525,7 @@ var FilePlaybackSpeedDropdown = class extends AbstractFileConsumer {
 		if (this.file === void 0) return lit.nothing;
 		return lit.html`<thermal-dropdown 
             interactive="${this.enabled}" 
-            .tooltip=${t("playbackspeed")}
+            .tooltip=${t$1("playbackspeed")}
         >
 
             <div slot="invoker" class="button">
@@ -13579,7 +13579,7 @@ var FileDownloadButton = class extends AbstractFileConsumer {
 
                 <slot name="invoker" slot="invoker">
                     <div class="button">
-                        ${this.file ? t("download") : "..."}
+                        ${this.file ? t$1("download") : "..."}
                     </div>
                 </slot>
 
@@ -13589,7 +13589,7 @@ var FileDownloadButton = class extends AbstractFileConsumer {
                     pre="LRC"
                     align="left"
                 >
-                    ${t("downloadoriginalfile", { type: this.file.reader.parser.extensions[0].extension.toUpperCase() })}
+                    ${t$1("downloadoriginalfile", { type: this.file.reader.parser.extensions[0].extension.toUpperCase() })}
                 </thermal-btn>
 
                 <thermal-btn 
@@ -13605,7 +13605,7 @@ var FileDownloadButton = class extends AbstractFileConsumer {
                     pre="PNG"
                     align="left"
                 >
-                    ${t("exportcurrentframeaspng")}
+                    ${t$1("exportcurrentframeaspng")}
                 </thermal-btn>
 
                 <file-video-export-button 
@@ -13623,7 +13623,7 @@ var FileDownloadButton = class extends AbstractFileConsumer {
                             pre="CSV"
                             align="left"
                     >
-                        ${t("csvofanalysisdata")}
+                        ${t$1("csvofanalysisdata")}
                     </thermal-btn>` : lit.nothing}
             
             </thermal-dropdown>
@@ -13921,7 +13921,7 @@ __decorate([
 var FileRangePropagator = class extends AbstractFileButton {
 	constructor(..._args) {
 		super(..._args);
-		this.tooltip = t("range");
+		this.tooltip = t$1("range");
 		this.hideLabel = false;
 	}
 	onInstanceCreated(file) {
@@ -13949,7 +13949,7 @@ var FileRangePropagator = class extends AbstractFileButton {
 	}
 	getDefaultLabel() {
 		if (this.hideLabel) return "";
-		return t("range").toLowerCase();
+		return t$1("range").toLowerCase();
 	}
 };
 __decorate([(0, lit_decorators_js.property)({
@@ -14095,7 +14095,7 @@ var FileAnalysisComplexElement = class extends AbstractFileConsumer {
                             ${(0, lit_directives_unsafe_html_js.unsafeHTML)(tool.icon)}
                         </div>
                         <div>
-                            ${t(T[tool.name])}
+                            ${t$1(T[tool.name])}
                         </div>
                     </div>
                 </thermal-btn>`;
@@ -14107,16 +14107,16 @@ var FileAnalysisComplexElement = class extends AbstractFileConsumer {
         `;
 	}
 	renderCurrentTooltip() {
-		return lit.html`${t(T[this.managerObject.tool.value.description])}`;
+		return lit.html`${t$1(T[this.managerObject.tool.value.description])}`;
 	}
 	renderAddAnalysis() {
 		return lit.html`<div class="addanalysis">
 
             ${this.showhint ? lit.html`<div>
-                    <strong>${t("analysis")}</strong>
+                    <strong>${t$1("analysis")}</strong>
                 </div>
 
-                <div>${t("analysishint")}</div>` : lit.nothing}
+                <div>${t$1("analysishint")}</div>` : lit.nothing}
 
 
             ${this.isDrawingAnalysis === true ? this.renderCurrentTooltip() : this.renderButtons()}
@@ -14131,15 +14131,15 @@ var FileAnalysisComplexElement = class extends AbstractFileConsumer {
             </div>`;
 		else if (this.hasAnalysis === true) return lit.html`<div class="graph graph-prompt">
                     <div>
-                        <strong>${t("graph")}</strong>
+                        <strong>${t$1("graph")}</strong>
                     </div>
-                    <div class="hint">${(0, lit_directives_unsafe_html_js.unsafeHTML)(t("graphhint2"))}</div>
+                    <div class="hint">${(0, lit_directives_unsafe_html_js.unsafeHTML)(t$1("graphhint2"))}</div>
                 </div>`;
 		else return lit.html`<div class="graph graph-prompt">
                     <div>
-                        <strong>${t("graph")}</strong>
+                        <strong>${t$1("graph")}</strong>
                     </div>
-                    <div class="hint">${t("graphhint1")}</div>
+                    <div class="hint">${t$1("graphhint1")}</div>
                 </div>`;
 	}
 	static {
@@ -14444,10 +14444,10 @@ var FileAnalysisDisplayElement = class extends AbstractFileConsumer {
 
                     <tr>
                         <th></th>
-                        <th>${t("avg")}</th>
-                        <th>${t("min")}</th>
-                        <th>${t("max")}</th>
-                        <th>${t("size")}</th>
+                        <th>${t$1("avg")}</th>
+                        <th>${t$1("min")}</th>
+                        <th>${t$1("max")}</th>
+                        <th>${t$1("size")}</th>
                     </tr>
                 
                 </thead>
@@ -14532,13 +14532,13 @@ var FileAnalisisEditDialog = class extends AbstractThermalElement {
 	render() {
 		return lit.html`
 
-            <thermal-dialog label="${t("editsth", { what: t(T[this.type]) })}">
+            <thermal-dialog label="${t$1("editsth", { what: t$1(T[this.type]) })}">
                 <slot name="invoker" slot="invoker">
                     <thermal-btn 
                         icon="settings" 
                         iconStyle="solid" 
                         size="md" 
-                        tooltip="${t("editsth", { what: this.analysis.name })}"
+                        tooltip="${t$1("editsth", { what: this.analysis.name })}"
                     >
                     </thermal-btn>
                 </slot>
@@ -14717,14 +14717,14 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 			p: { html: true }
 		}])], ...rows.map((row) => {
 			const relativeTime = row[0].getTime();
-			return [relativeTime, ...row.slice(1).flatMap((value, index) => [value, `<div style="padding: 6px 8px"><div>${this.escapeHtml(t("time"))}: <strong>${_labirthermal_core.TimeFormat.duration(relativeTime)}</strong></div><div>${this.escapeHtml(headers[index + 1])}: <strong>${this.escapeHtml(String(value))} °C</strong></div></div>`])];
+			return [relativeTime, ...row.slice(1).flatMap((value, index) => [value, `<div style="padding: 6px 8px"><div>${this.escapeHtml(t$1("time"))}: <strong>${_labirthermal_core.TimeFormat.duration(relativeTime)}</strong></div><div>${this.escapeHtml(headers[index + 1])}: <strong>${this.escapeHtml(String(value))} °C</strong></div></div>`])];
 		})];
 		return this.chartDataCache;
 	}
 	getChartOptions() {
 		const duration = this.file?.duration ?? 0;
-		const timeLabel = t("time");
-		const temperatureLabel = `${t("temperature")} °C`;
+		const timeLabel = t$1("time");
+		const temperatureLabel = `${t$1("temperature")} °C`;
 		const key = JSON.stringify([
 			this.graphs.colors,
 			this.graphSmooth,
@@ -14861,8 +14861,8 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 			this.graphWidth,
 			this.graphHeight,
 			this.file?.duration,
-			t("time"),
-			t("temperature")
+			t$1("time"),
+			t$1("temperature")
 		], () => this.getChartOptions())}
                         ></thermal-chart>` : lit.nothing}
             </div>
@@ -14909,7 +14909,7 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
                     @click=${() => this.file?.analysisData.downloadData()}
                     variant="background"
                     plain="true"
-                    tooltip="${t("downloadgraphdataascsv")}"
+                    tooltip="${t$1("downloadgraphdataascsv")}"
                 >CSV</thermal-btn>
             </div>`;
 	}
@@ -15145,14 +15145,14 @@ var FileAnalysisRowElement = class extends AbstractThermalElement {
                         size=${size}
                         icon="settings"
                         iconStyle="solid"
-                        tooltip=${t("editsth", { what: analysis.name })}
+                        tooltip=${t$1("editsth", { what: analysis.name })}
                     ></thermal-btn>
                 </file-analysis-edit>
                 <thermal-btn
                     size=${size}
                     icon="trash"
                     iconStyle="micro"
-                    tooltip="${t("delete")} ${analysis.name}"
+                    tooltip="${t$1("delete")} ${analysis.name}"
                     @click=${() => analysis.file.analysis.layers.removeAnalysis(analysis.key)}
                 ></thermal-btn>
             ` : lit.nothing}
@@ -15161,7 +15161,7 @@ var FileAnalysisRowElement = class extends AbstractThermalElement {
                     size=${size}
                     icon="range"
                     iconStyle="outline"
-                    tooltip="${t("range")}: ${analysis.name}"
+                    tooltip="${t$1("range")}: ${analysis.name}"
                     disabled=${this.range === void 0}
                     @click=${() => {
 			const range = this.range;
@@ -15207,7 +15207,7 @@ var FileAnalysisRowElement = class extends AbstractThermalElement {
                 <thermal-btn
                     size=${this.tableMode === "compact" ? "sm" : "md"}
                     aria-pressed=${active}
-                    tooltip="${t("graph")}: ${t(T[statistic])}"
+                    tooltip="${t$1("graph")}: ${t$1(T[statistic])}"
                     style="background-color: ${background}; color: ${foreground}; --bg: ${background}; --bg-hover: ${background}; --color: ${foreground}; --color-hover: ${foreground};"
                     @click=${() => {
 			if (statistic === "avg") analysis.graph.setAvgActivation(!active);
@@ -15403,8 +15403,8 @@ var FileAnalysisTableElement = class extends AbstractFileConsumer {
 		if (this.file === void 0 || this.analysis.length === 0) return lit.nothing;
 		const compact = this.tableMode === "compact";
 		return lit.html`
-            <div class="overflow" tabindex="0" role="region" aria-label=${t("analysis")}>
-                <table class=${compact ? "compact" : "full"} aria-label=${t("analysis")}>
+            <div class="overflow" tabindex="0" role="region" aria-label=${t$1("analysis")}>
+                <table class=${compact ? "compact" : "full"} aria-label=${t$1("analysis")}>
                     <thead>
                         <tr>
                             <th scope="col">
@@ -15419,14 +15419,14 @@ var FileAnalysisTableElement = class extends AbstractFileConsumer {
 		}}
                                     >
                                         <span class="selection-indicator" aria-hidden="true"></span>
-                                        ${t("analysis")}
+                                        ${t$1("analysis")}
                                     </button>
-                                ` : t("analysis")}
+                                ` : t$1("analysis")}
                             </th>
-                            <th scope="col">${t("avg")}</th>
-                            <th scope="col">${t("min")}</th>
-                            <th scope="col">${t("max")}</th>
-                            ${compact ? lit.nothing : lit.html`<th scope="col">${t("size")}</th>`}
+                            <th scope="col">${t$1("avg")}</th>
+                            <th scope="col">${t$1("min")}</th>
+                            <th scope="col">${t$1("max")}</th>
+                            ${compact ? lit.nothing : lit.html`<th scope="col">${t$1("size")}</th>`}
                             ${!compact && (this.allowsEdit || this.showsRangePropagator) ? lit.html`<th scope="col"></th>` : lit.nothing}
                         </tr>
                     </thead>
@@ -15665,15 +15665,15 @@ var AreaEditTable = class extends AbstractThermalElement {
 
             <div class="table">
 
-                <thermal-field label=${t("name")}>
+                <thermal-field label=${t$1("name")}>
                     <analysis-name .analysis=${this.analysis}></analysis-name>
                 </thermal-field>
 
-                <thermal-field label=${t("color")}>
+                <thermal-field label=${t$1("color")}>
                     <analysis-color .analysis=${this.analysis}></analysis-color>
                 </thermal-field>
 
-                <thermal-field label=${t("left")}>
+                <thermal-field label=${t$1("left")}>
                     <input 
                         name="left" 
                         value=${this.left} 
@@ -15687,7 +15687,7 @@ var AreaEditTable = class extends AbstractThermalElement {
                     />
                 </thermal-field>
 
-                <thermal-field label=${t("right")}>
+                <thermal-field label=${t$1("right")}>
                     <input 
                         name="right" 
                         value=${this.right} 
@@ -15701,7 +15701,7 @@ var AreaEditTable = class extends AbstractThermalElement {
                     />
                 </thermal-field>
 
-                <thermal-field label=${t("top")}>
+                <thermal-field label=${t$1("top")}>
                     <input 
                         name="top" 
                         value=${this.top} 
@@ -15715,7 +15715,7 @@ var AreaEditTable = class extends AbstractThermalElement {
                     />
                 </thermal-field>
 
-                <thermal-field label=${t("bottom")}>
+                <thermal-field label=${t$1("bottom")}>
                     <input 
                         name="bottom" 
                         value=${this.bottom} 
@@ -15806,15 +15806,15 @@ var EditpointTable = class extends AbstractThermalElement {
 
             <div class="table">
 
-                <thermal-field label=${t("name")}>
+                <thermal-field label=${t$1("name")}>
                     <analysis-name .analysis=${this.analysis}></analysis-name>
                 </thermal-field>
 
-                <thermal-field label=${t("color")}>
+                <thermal-field label=${t$1("color")}>
                     <analysis-color .analysis=${this.analysis}></analysis-color>
                 </thermal-field>
 
-                <thermal-field label=${t("top")} hint=${t("fromto", {
+                <thermal-field label=${t$1("top")} hint=${t$1("fromto", {
 			from: 0,
 			to: this.maxX
 		})}>
@@ -15831,7 +15831,7 @@ var EditpointTable = class extends AbstractThermalElement {
                     />
                 </thermal-field>
 
-                <thermal-field label=${t("left")} hint=${t("fromto", {
+                <thermal-field label=${t$1("left")} hint=${t$1("fromto", {
 			from: 0,
 			to: this.maxX
 		})}>
@@ -16389,11 +16389,11 @@ const defineWebcomponent = (name, version, tag, cls) => {
 	customElements.define(tag, cls);
 	console.info(name, version, "✅", ...debugclsName(tag, cls));
 };
-const tagNameMaxLength = 30;
-const tagline = ".....................................";
+const tagNameMaxLength = 50;
+const tagline = ".........................................................";
 const debugclsName = (tag, cls) => {
 	const tagLength = tag.length;
-	if (tagLength > tagNameMaxLength) tag = tag.substring(0, 27) + "...";
+	if (tagLength > tagNameMaxLength) tag = tag.substring(0, 47) + "...";
 	return [
 		tag,
 		tagline.substring(0, tagNameMaxLength - tagLength),
@@ -16650,12 +16650,12 @@ var AatAppElement = class extends AbstractThermalElement {
 			app: apparentTemperature.toFixed(2),
 			t: temperature
 		};
-		const summary = t("apparenttemperatureverbose", prop);
-		const comment = diff < 0 ? t("youfeelcolder", prop) : t("youfeelwarmer", prop);
+		const summary = t$1("apparenttemperatureverbose", prop);
+		const comment = diff < 0 ? t$1("youfeelcolder", prop) : t$1("youfeelwarmer", prop);
 		const result = apparentTemperature.toFixed(2);
 		return lit.html`<div class="result">
 
-            <p class="result_label">${t("apparenttemperature")}</p>
+            <p class="result_label">${t$1("apparenttemperature")}</p>
 
             <p class="result_value">
                 ${result} °C
@@ -16670,15 +16670,15 @@ var AatAppElement = class extends AbstractThermalElement {
 	render() {
 		return lit.html`
             <thermal-app 
-                label=${t("apparenttemperature")} 
+                label=${t$1("apparenttemperature")} 
                 author="LabIR Edu" 
                 license="CC BY-SA 4.0"
             >
 
-                <thermal-dialog label=${t("info")} slot="bar-pre">
-                    <thermal-btn slot="invoker">${t("info")}</thermal-btn>
+                <thermal-dialog label=${t$1("info")} slot="bar-pre">
+                    <thermal-btn slot="invoker">${t$1("info")}</thermal-btn>
                     <div slot="content">
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(t("apparenttemperaturehint", { href: "https://en.wikipedia.org/wiki/Wind_chill#Australian_apparent_temperature" }))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(t$1("apparenttemperaturehint", { href: "https://en.wikipedia.org/wiki/Wind_chill#Australian_apparent_temperature" }))}
                     </div>
                 </thermal-dialog>
 
@@ -16694,9 +16694,9 @@ var AatAppElement = class extends AbstractThermalElement {
 
                 <section class="table">
 
-                ${this.renderNumberField(this.tRef, "temperature", t("airtemperature"), "°C", this.temperature, -273.15, 100, .1)}
+                ${this.renderNumberField(this.tRef, "temperature", t$1("airtemperature"), "°C", this.temperature, -273.15, 100, .1)}
 
-                ${this.renderNumberField(this.vRef, "v", t("windspeed"), lit.html`<select 
+                ${this.renderNumberField(this.vRef, "v", t$1("windspeed"), lit.html`<select 
                     @change=${(event) => {
 			const value = event.target.value;
 			this.vunits = value;
@@ -16708,7 +16708,7 @@ var AatAppElement = class extends AbstractThermalElement {
                     <option value="kph">km/h</option>
                 </select>`, this.v, 0, void 0, .1)}
 
-                ${this.renderNumberField(this.haRef, "ha", t("relativeairhumidity"), "%", this.ha, 0, 100, .1)}
+                ${this.renderNumberField(this.haRef, "ha", t$1("relativeairhumidity"), "%", this.ha, 0, 100, .1)}
 
                 </section>
                 <div  class="tabindex" tabindex="0">
@@ -16906,8 +16906,8 @@ var DropinAppElement = class extends AbstractApp {
 		if (this.displayMode === "list") elements.push(lit.html`${this.groupListingController.renderListHeader("bar-header")}`);
 		if (this.displayMode === "detail") elements.push(lit.html`${this.groupListingController.renderDetailHeader(this.groupObject.files.value[0], "bar-pre")}`);
 		if (this.displayMode !== "input") {
-			elements.push(lit.html`<thermal-dialog label="${t("config")}" slot="bar-pre">
-                <thermal-btn slot="invoker" tooltip="${t("config")}" icon="settings" iconStyle="solid"></thermal-btn>
+			elements.push(lit.html`<thermal-dialog label="${t$1("config")}" slot="bar-pre">
+                <thermal-btn slot="invoker" tooltip="${t$1("config")}" icon="settings" iconStyle="solid"></thermal-btn>
                 <div slot="content">
                     <table>
                         <manager-export-panel></manager-export-panel>
@@ -17351,10 +17351,10 @@ var FileInfoButton = class extends AbstractFileConsumer {
 	render() {
 		if (!this.file) return lit.nothing;
 		return lit.html`
-            <thermal-dialog label=${t("fileinfo")}>
+            <thermal-dialog label=${t$1("fileinfo")}>
                 <slot name="invoker" slot="invoker">
                     <thermal-btn
-                        tooltip=${t("fileinfo")}
+                        tooltip=${t$1("fileinfo")}
                         icon="info"
                         iconStyle="mini"
                     >
@@ -17364,35 +17364,35 @@ var FileInfoButton = class extends AbstractFileConsumer {
 
                     <table>
 
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderRow(t("thermalfilename"), this.file.fileName))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderRow(t$1("thermalfilename"), this.file.fileName))}
 
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderDownloadRow(t("thermalfileurl"), this.file.thermalUrl, this.file.thermalUrl, t("thermalfiledownload")))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderDownloadRow(t$1("thermalfileurl"), this.file.thermalUrl, this.file.thermalUrl, t$1("thermalfiledownload")))}
 
-                        ${this.file.visibleUrl ? (0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderDownloadRow(t("visiblefileurl"), this.file.visibleUrl, this.file.visibleUrl, t("visiblefiledownload"))) : lit.nothing}
+                        ${this.file.visibleUrl ? (0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderDownloadRow(t$1("visiblefileurl"), this.file.visibleUrl, this.file.visibleUrl, t$1("visiblefiledownload"))) : lit.nothing}
 
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderRow(t("time"), _labirthermal_core.TimeFormat.human(this.file.timestamp)))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderRow(t$1("time"), _labirthermal_core.TimeFormat.human(this.file.timestamp)))}
 
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t("duration"), this.file.duration, 0, "ms"))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t$1("duration"), this.file.duration, 0, "ms"))}
 
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderRow(t("resolution"), `${this.file.width} x ${this.file.height}<small class="opaque">${this.file.pixels.length} pixels</small>`))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderRow(t$1("resolution"), `${this.file.width} x ${this.file.height}<small class="opaque">${this.file.pixels.length} pixels</small>`))}
 
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t("bytesize"), this.file.bytesize, 0))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t$1("bytesize"), this.file.bytesize, 0))}
                         
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t("minimaltemperature"), this.file.min, 10, "°C"))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t$1("minimaltemperature"), this.file.min, 10, "°C"))}
 
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t("maximaltemperature"), this.file.max, 10, "°C"))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t$1("maximaltemperature"), this.file.max, 10, "°C"))}
 
                         
 
                     </table>
 
-                    <h2>${t("filetype")}</h2>
+                    <h2>${t$1("filetype")}</h2>
                     <table>
-                    ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderRow(t("type"), this.file.reader.parser.name))}
-                    ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderRow(t("description"), this.file.reader.parser.description))}
+                    ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderRow(t$1("type"), this.file.reader.parser.name))}
+                    ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderRow(t$1("description"), this.file.reader.parser.description))}
 
                     <tr>
-                        <td>${t("supporteddevices")}</td>
+                        <td>${t$1("supporteddevices")}</td>
                         <td><ul>${this.file.reader.parser.devices.map((device) => lit.html`<li>
                             <h3><a href="${device.deviceUrl}" target="_blank">${device.deviceName}</a></h3>
                             <div class="small">${device.deviceDescription}</div>
@@ -17630,7 +17630,7 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
         @click=${() => {
 			file.timeline.prev();
 		}}
-    >${t("prev")}</thermal-btn>
+    >${t$1("prev")}</thermal-btn>
 
 
     <thermal-btn 
@@ -17644,12 +17644,12 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
     <thermal-btn 
         @click=${() => file.timeline.next()}
         disabled="${disabled}"
-    >${t("next")}</thermal-btn>
+    >${t$1("next")}</thermal-btn>
 
     <thermal-btn 
         @click=${() => file.timeline.setRelativeTime(0)}
         disabled="${disabled}"
-    >${t("back")}</thermal-btn>
+    >${t$1("back")}</thermal-btn>
 
     <file-playback-speed-dropdown enabled="${this.mayStop ? "on" : "off"}" class="item"></file-playback-speed-dropdown>
 
@@ -17717,15 +17717,15 @@ ${this.hasPlayButton === true ? this.renderControls(file, disabled, playButtonCl
 
 ${this.currentFrame !== void 0 && this.hasInfo === true ? lit.html`<div class="small real ${this.collapsed ? "collapsed" : ""}">
         <div>
-            <span class="label">${t("date")}:</span> 
+            <span class="label">${t$1("date")}:</span> 
             <span class="inline" data-video-dynamic>${(0, date_fns.format)(this.currentFrame.absolute, "d. L. y")}</span>
         </div>
         <div>
-            <span class="label">${t("time")}:</span> 
+            <span class="label">${t$1("time")}:</span> 
             <span class="inline" data-video-dynamic>${(0, date_fns.format)(this.currentFrame.absolute, "H'h' mm'm' ss:SSS")}</span>
         </div>
         <div>
-            <span class="label">${t("frame")}:</span> 
+            <span class="label">${t$1("frame")}:</span> 
             <span class="inline" data-video-dynamic>${this.currentFrame.index + 1} / ${this.file?.frameCount}</span>
         </div>
     </div>` : lit.nothing}
@@ -18690,7 +18690,7 @@ var DirectiveHelpers = class {
 //#region src/directives/AbstractThermalDirective.ts
 var AbstractThermalDirective = class extends lit_directive_js.Directive {
 	t(key) {
-		return t(T[key]);
+		return t$1(T[key]);
 	}
 	update(_part, props) {
 		return this.render(...props);
@@ -18714,7 +18714,7 @@ var SlotOrNothing = class extends AbstractThermalDirective {
 	render(label, content) {
 		if (!this.unknownContainsSomething(content)) return lit.nothing;
 		return lit.html`<thermal-slot
-            label=${t(T[label])}
+            label=${t$1(T[label])}
         >${content}</thermal-slot>`;
 	}
 };
@@ -19680,7 +19680,7 @@ var FileDetailElement = class extends AbstractFileConsumer {
         @click=${() => {
 			if (this.onback) this.onback();
 		}}
-        tooltip=${t("back")}
+        tooltip=${t$1("back")}
         icon="close"
         iconStyle="micro"
     ></thermal-btn>
@@ -19779,11 +19779,11 @@ var FileThumbnailElement = class extends AbstractFileConsumer {
                     <file-label label="${(0, lit_directives_if_defined_js.ifDefined)(this.label)}" grouping="${(0, lit_directives_if_defined_js.ifDefined)(this.grouping)}"></file-label>
                 </h2>
                 <div>
-                    <thermal-btn size="sm" variant="background" @click=${() => this.ondetail?.(this.file)}>${t("detail").toLocaleLowerCase()}</thermal-btn>
+                    <thermal-btn size="sm" variant="background" @click=${() => this.ondetail?.(this.file)}>${t$1("detail").toLocaleLowerCase()}</thermal-btn>
                     <file-range-propagator></file-range-propagator>
                     <file-dropdown>
                         <file-info-button>
-                            <file-button slot="invoker" label=${t("info").toLowerCase()}></file-button>
+                            <file-button slot="invoker" label=${t$1("info").toLowerCase()}></file-button>
                         </file-info-button>
                         <file-download-lrc></file-download-lrc>
                         <file-download-png></file-download-png>
@@ -19959,6 +19959,9 @@ const defineBaseWebcomponents = () => {
 	defineAllWebcomponents(name, version$1, elementsAll);
 };
 //#endregion
+//#region src/index.export.ts
+const t = i18webcomponents.t;
+//#endregion
 exports.AbstractApp = AbstractApp;
 exports.AbstractFileConsumer = AbstractFileConsumer;
 exports.AbstractFileProvider = AbstractFileProvider;
@@ -20098,5 +20101,6 @@ exports.registryOpacityContext = registryOpacityContext;
 exports.registryRangeFromContext = registryRangeFromContext;
 exports.registryRangeToContext = registryRangeToContext;
 exports.stringOrUndefinedConverter = stringOrUndefinedConverter;
+exports.t = t;
 
 //# sourceMappingURL=index.export.cjs.map

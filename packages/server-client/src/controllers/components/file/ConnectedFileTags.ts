@@ -1,14 +1,12 @@
-import { t } from "i18next";
+import { icons, t } from "@labirthermal/webcomponents";
 import { css, html, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
+import type { FileInfo, FolderInfo, TagInfo } from "../../../client/responseEntities";
 import { T } from "../../../translations/Languages";
 import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
-import { icons } from "@labirthermal/webcomponents";
-import type { FileInfo, FolderInfo, TagInfo } from "../../../client/responseEntities";
 
 type TagSizes = "sm" | "md";
 
-@customElement("connected-file-tags")
 export class ControlledFileTags extends AbstractControlledConsumer {
 
     @property({ type: String, reflect: true })

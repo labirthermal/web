@@ -1,4 +1,4 @@
-import { t } from "i18next";
+import { t } from "@labirthermal/webcomponents";
 import type { CSSResultGroup} from "lit";
 import { css, html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
@@ -9,8 +9,7 @@ import type { BtnSizes, BtnVariants } from "@labirthermal/webcomponents";
 import { booleanConverter } from "@labirthermal/webcomponents";
 import type { FileInfo, FolderInfo } from "../../../client/responseEntities";
 
-@customElement("connected-file-delete-dialog")
-export class FileDeleteDialog extends AbstractControlledConsumer {
+export class ConnectedFileDeleteDialog extends AbstractControlledConsumer {
 
     @property({ type: String, converter: booleanConverter(false) })
     public showLabel: boolean = false;

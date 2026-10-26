@@ -1,13 +1,11 @@
-import { t } from "i18next";
-import type { CSSResultGroup, TemplateResult } from "lit";
-import { css, html, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { T } from "../../../../translations/Languages";
-import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
 import type { ThermalDialogElement } from "@labirthermal/webcomponents";
 import { booleanConverter } from "@labirthermal/webcomponents";
+import type { CSSResultGroup, TemplateResult } from "lit";
+import { css, html, nothing } from "lit";
+import { property, state } from "lit/decorators.js";
+import { T } from "../../../translations/Languages";
+import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
 
-@customElement("connected-user-button")
 export class UserButton extends AbstractControlledConsumer {
 
     @state()
@@ -152,7 +150,7 @@ export class UserButton extends AbstractControlledConsumer {
             <input 
                 type="password" 
                 name="password" 
-                placeholder="${t(T.password)}" 
+                placeholder="${this.t(T.password)}" 
                 required
                 @keydown=${this.handleKeyDown}
             ></input>
@@ -170,7 +168,7 @@ export class UserButton extends AbstractControlledConsumer {
 
     private renderTriggerButton(): unknown {
 
-        const buttonLabel = this.client.identity?.meta.name ?? this.client.identity?.meta.login ?? t(T.login);
+        const buttonLabel = this.client.identity?.meta.name ?? this.client.identity?.meta.login ?? this.t(T.login);
         const variant = this.client.isLoggedIn
             ? "primary"
             : "default";
@@ -214,12 +212,12 @@ export class UserButton extends AbstractControlledConsumer {
     private renderDialog(): unknown {
 
         const label = this.client.isLoggedIn
-            ? t(T.logout)
-            : t(T.login);
+            ? this.t(T.logout)
+            : this.t(T.login);
 
         const submitLabel = this.client.isLoggedIn
-            ? t(T.logout)
-            : t(T.login);
+            ? this.t(T.logout)
+            : this.t(T.login);
 
         const content = this.client.isLoggedIn === true
             ? this.renderUserLogoutNotice()

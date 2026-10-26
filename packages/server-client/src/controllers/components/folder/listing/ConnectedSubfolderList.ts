@@ -1,11 +1,10 @@
-import type { CSSResultGroup} from "lit";
+import type { CSSResultGroup } from "lit";
 import { css, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
+import type { FolderInfo } from "../../../../client/responseEntities";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 import { FolderListDisplayMode } from "../../../DisplayController";
-import type { FolderInfo } from "../../../../client/responseEntities";
 
-@customElement("connected-subfolder-list")
 export class ConnectedFolderFileList extends AbstractControlledConsumer {
 
 

@@ -1,6 +1,6 @@
 import type { AvailableThermalPalette } from "@labirthermal/core";
 import { consume } from "@lit/context";
-import { t } from "i18next";
+import { t } from "@labirthermal/webcomponents";
 import type { CSSResultGroup} from "lit";
 import { css, html, nothing } from "lit";
 import { customElement } from "lit/decorators.js";
@@ -11,7 +11,6 @@ import { DisplayState } from "../DisplayController";
 import { managerPaletteContext, registryRangeFromContext, registryRangeToContext } from "@labirthermal/webcomponents";
 import type { FileInfo, FolderInfo } from "../../client/responseEntities";
 
-@customElement("connected-share-dialog")
 export class ConnectedShareDialog extends AbstractControlledConsumer {
 
     @consume({

@@ -18,7 +18,6 @@ export enum LocationSelectorMode {
     FILE = "file"
 }
 
-@customElement( "connected-location-selector" )
 export class ConnectedLocationSelector extends AbstractControlledConsumer {
 
     private dialogRef: Ref<ThermalDialogElement> = createRef<ThermalDialogElement>();

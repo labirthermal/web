@@ -5,7 +5,6 @@ import { AbstractControlledConsumer } from "../../abstraction/AbstractControlled
 import type { FolderInfo } from "../../../client/responseEntities";
 
 /** Connected folder selection checkbox component */
-@customElement("connected-folder-selection-checkbox")
 export class ConnectedFolderSelectionCheckbox extends AbstractControlledConsumer {
 
     @property({ type: Object })

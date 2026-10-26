@@ -5,7 +5,6 @@ import { AbstractControlledConsumer } from "../../abstraction/AbstractControlled
 import type { FileInfo } from "../../../client/responseEntities";
 
 /** Connected file selection checkbox component */
-@customElement("connected-file-selection-checkbox")
 export class ConnectedFileSelectionCheckbox extends AbstractControlledConsumer {
 
     @property({ type: Object })

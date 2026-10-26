@@ -11,13 +11,9 @@ import { userFolders } from "./directives/layout/UserFoldersDirective";
 import type { ManagerProviderElement } from "@labirthermal/webcomponents";
 import type { Identity } from "../../client/responseEntities";
 
-export class ControllerApp extends AbstractConnectedApp {
+export class ConnectedBrowserApp extends AbstractConnectedApp {
 
     private managerProviderRef = createRef<ManagerProviderElement>();
-
-    constructor() {
-        super();
-    }
 
 
 

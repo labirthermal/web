@@ -4,7 +4,6 @@ import { customElement, property, state } from "lit/decorators.js";
 import { AbstractFolderDialog } from "./AbstractFolderDialog";
 import type { FolderInfo } from "../../../../client/responseEntities";
 
-@customElement("connected-folder-create-dialog")
 export class FolderAddDialog extends AbstractFolderDialog {
 
 

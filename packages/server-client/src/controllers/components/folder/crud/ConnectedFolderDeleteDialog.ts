@@ -4,7 +4,6 @@ import { customElement, property } from "lit/decorators.js";
 import { AbstractFolderDialog } from "./AbstractFolderDialog";
 import type { FolderInfo } from "../../../../client/responseEntities";
 
-@customElement("connected-folder-delete-dialog")
 export class FolderDeleteDialog extends AbstractFolderDialog {
 
     protected closeLabel: string = "deletefolder";

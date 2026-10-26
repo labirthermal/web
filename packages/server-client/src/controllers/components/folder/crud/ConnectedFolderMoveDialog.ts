@@ -7,7 +7,6 @@ import type { ConnectedLocationSelector} from "../../selection/move/ConnectedLoc
 import { LocationSelectorMode } from "../../selection/move/ConnectedLocationSelector";
 import type { FolderInfo } from "../../../../client/responseEntities";
 
-@customElement("connected-folder-move-dialog")
 export class ConnectedFolderMoveDialog extends AbstractControlledConsumer {
 
     @property({ type: Object })

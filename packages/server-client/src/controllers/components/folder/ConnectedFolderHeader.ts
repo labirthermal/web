@@ -1,12 +1,11 @@
-import type { CSSResultGroup} from "lit";
-import { css, html, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
 import { icons } from "@labirthermal/webcomponents";
+import type { CSSResultGroup } from "lit";
+import { css, html, nothing } from "lit";
+import { property } from "lit/decorators.js";
 import type { BreadcrumbItem } from "../../../client/responseEntities";
+import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
 
-@customElement("connected-folder-header")
-export class FolderBaseInfo extends AbstractControlledConsumer {
+export class ConnectedFolderHeader extends AbstractControlledConsumer {
 
 
     @property({ type: Function })

@@ -1,14 +1,13 @@
 import type { ThermalFileInstance } from "@labirthermal/core";
+import { fileContext } from "@labirthermal/webcomponents";
 import { consume } from "@lit/context";
 import type { CSSResultGroup, PropertyValues } from "lit";
 import { css, html, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
+import type { FileInfo } from "../../../../client/responseEntities";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 import { slotOrNothing } from "../../../apps/directives/SlotOrNothing";
-import type { FileInfo } from "../../../../client/responseEntities";
-import { fileContext } from "@labirthermal/webcomponents";
 
-@customElement("connected-file-analysis-buttons")
 export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
 
     public label = "";

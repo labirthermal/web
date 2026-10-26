@@ -1,12 +1,10 @@
-import { t } from "i18next";
-import type { CSSResultGroup} from "lit";
+import type { CSSResultGroup } from "lit";
 import { css, html, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
+import type { Identity } from "../../../client/responseEntities";
 import { T } from "../../../translations/Languages";
 import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
-import type { Identity } from "../../../client/responseEntities";
 
-@customElement("connected-login-form")
 export class ConnectedLoginForm extends AbstractControlledConsumer {
 
     @property({ type: String, reflect: true })
@@ -174,7 +172,7 @@ export class ConnectedLoginForm extends AbstractControlledConsumer {
                 <input 
                     type="password" 
                     name="password" 
-                    placeholder="${t(T.password)}" 
+                    placeholder="${this.t(T.password)}" 
                     required 
                     @input=${(event: InputEvent) => this.validateFieldInput(event, "password")}
                     @keydown=${this.handleKeyDown}
@@ -191,7 +189,7 @@ export class ConnectedLoginForm extends AbstractControlledConsumer {
                     variant=${this.mayLogIn ? "primary" : "black"}
                     tooltip=${!this.mayLogIn ? "Vyplňte přihlašovací údaje" : undefined}
                 >
-                    ${this.isLoggingIn ? t(T.login) + "..." : t(T.login)}
+                    ${this.isLoggingIn ? this.t(T.login) + "..." : this.t(T.login)}
                 </thermal-btn>
     
             </div>

@@ -5,12 +5,10 @@ import { css, html, nothing } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
-import { groupObjectContext } from "../../../../hierarchy/controllers/GroupController";
-import type { ThermalDialogElement } from "../../../../index.export";
 import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
 import type { ConnectedLocationSelector } from "./move/ConnectedLocationSelector";
+import { groupObjectContext, ThermalDialogElement } from "@labirthermal/webcomponents";
 
-@customElement("connected-folder-selection-actions")
 export class ConnectedFolderSelectionActions extends AbstractControlledConsumer {
 
     @state()

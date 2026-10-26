@@ -40,8 +40,8 @@ export const defineWebcomponent = (
 
 }
 
-const tagNameMaxLength = 30;
-const tagline = ".....................................";
+const tagNameMaxLength = 50;
+const tagline = ".........................................................";
 
 const debugclsName = (
     tag: string,

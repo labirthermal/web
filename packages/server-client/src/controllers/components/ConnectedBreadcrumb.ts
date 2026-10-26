@@ -1,4 +1,4 @@
-import { t } from "i18next";
+import { t } from "@labirthermal/webcomponents";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import { css, html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
@@ -19,8 +19,6 @@ type BreadcrumbItemInternal = {
 }
 
 
-
-@customElement("connected-breadcrumb")
 export class ConnectedBreadcrumb extends AbstractControlledConsumer {
 
     @property({ type: Function })

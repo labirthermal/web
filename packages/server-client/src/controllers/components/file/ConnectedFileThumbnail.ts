@@ -1,22 +1,20 @@
-import type { ThermalGroup} from "@labirthermal/core";
+import type { ThermalGroup } from "@labirthermal/core";
 import { TimeFormat } from "@labirthermal/core";
+import type { FileProviderElement } from "@labirthermal/webcomponents";
+import { booleanConverter, groupObjectContext, icons, t } from "@labirthermal/webcomponents";
 import { consume } from "@lit/context";
-import { t } from "i18next";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import { css, html, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
-import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
-import { FileListDisplayMode } from "../../DisplayController";
-import type { FileProviderElement} from "@labirthermal/webcomponents";
-import { booleanConverter, groupObjectContext, icons } from "@labirthermal/webcomponents";
 import type { FileInfo, FolderInfo } from "../../../client/responseEntities";
 import { syncAnalysisContext } from "../../../connection/ClientContext";
 import { T } from "../../../translations/Languages";
+import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
+import { FileListDisplayMode } from "../../DisplayController";
 
-@customElement("connected-file-thumbnail")
 export class FileThumbnail extends AbstractControlledConsumer {
 
 

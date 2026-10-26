@@ -1,11 +1,9 @@
-import type { CSSResultGroup} from "lit";
+import type { CSSResultGroup } from "lit";
 import { css, html, nothing } from "lit";
-import { customElement } from "lit/decorators.js";
-import type { T } from "../../../../../translations/Languages";
+import type { T } from "../../../../translations/Languages";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 import { DirectiveHelpers } from "../../../apps/directives/DirectiveHelpers";
 
-@customElement("connected-folder-content-mode-switch")
 export class ConnectedFolderContentModeSwitch extends AbstractControlledConsumer {
 
     connectedCallback(): void {

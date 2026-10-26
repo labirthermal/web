@@ -1,16 +1,16 @@
-import type { ThermalRegistry} from "@labirthermal/core";
+import type { ThermalRegistry } from "@labirthermal/core";
 import { TimeFormat } from "@labirthermal/core";
+import type { RegistryController } from "@labirthermal/webcomponents";
+import { registryControllerContext, registryObjectContext } from "@labirthermal/webcomponents";
 import { consume } from "@lit/context";
 import type { CSSResultGroup, PropertyValues } from "lit";
 import { css, html, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
-import type { RegistryController} from "@labirthermal/webcomponents";
-import { registryControllerContext, registryObjectContext } from "@labirthermal/webcomponents";
+import { property, state } from "lit/decorators.js";
 import type { FileInfo, FolderInfo } from "../../../../client/responseEntities";
 import type { GetGridDataType } from "../../../../client/routes/get/GetGrid";
+import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 
-@customElement("connected-subfolders-grid")
+
 export class SubfoldersGrid extends AbstractControlledConsumer {
 
     @property({ type: String })

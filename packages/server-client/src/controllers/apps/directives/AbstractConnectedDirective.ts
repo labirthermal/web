@@ -1,4 +1,4 @@
-import { t } from "i18next";
+import { t } from "@labirthermal/webcomponents";
 import type { Part } from "lit";
 import { html } from "lit";
 import { Directive } from "lit/directive.js";

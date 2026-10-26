@@ -1,13 +1,12 @@
 import { html, nothing } from "lit";
-import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
+import { property } from "lit/decorators.js";
 import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
-import type { ConnectedLocationSelector} from "../selection/move/ConnectedLocationSelector";
-import { LocationSelectorMode } from "../selection/move/ConnectedLocationSelector";
-import { customElement, property } from "lit/decorators.js";
 import type { FileInfo } from "../../../client/responseEntities";
+import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
+import type { ConnectedLocationSelector } from "../selection/move/ConnectedLocationSelector";
+import { LocationSelectorMode } from "../selection/move/ConnectedLocationSelector";
 
-@customElement("connected-file-move-dialog")
 export class ConnectedFileMoveDialog extends AbstractControlledConsumer {
 
     @property({ type: Object })

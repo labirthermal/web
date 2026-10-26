@@ -15,6 +15,9 @@ export { icons }
 import i18nWebcomponents from "./translations/i18n";
 export { i18nWebcomponents };
 
+const t = i18nWebcomponents.t;
+export { t };
+
 import { addInlineStyles } from "./styles/defaultStyles";
 export { addInlineStyles };
 

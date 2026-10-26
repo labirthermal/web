@@ -1,4 +1,4 @@
-import { t } from "i18next";
+import { t } from "@labirthermal/webcomponents";
 import type { CSSResultGroup} from "lit";
 import { css, html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
@@ -21,7 +21,6 @@ interface UnmatchedPng {
     url: string;
 }
 
-@customElement("connected-upload-dialog")
 export class ConnectedUploadDialog extends AbstractControlledConsumer {
 
     @property({ type: Object })

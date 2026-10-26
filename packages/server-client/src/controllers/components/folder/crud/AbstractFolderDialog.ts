@@ -1,4 +1,4 @@
-import { t } from "i18next";
+import { t } from "@labirthermal/webcomponents";
 import type { CSSResultGroup} from "lit";
 import { css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";

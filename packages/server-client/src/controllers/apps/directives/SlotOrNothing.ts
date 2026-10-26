@@ -1,7 +1,7 @@
 import { html, nothing } from "lit";
 import { T } from "../../../translations/Languages";
 import { AbstractConnectedDirective } from "./AbstractConnectedDirective";
-import { t } from "i18next";
+import { t } from "@labirthermal/webcomponents";
 import { directive } from "lit/directive.js";
 
 class SlotOrNothing extends AbstractConnectedDirective {
