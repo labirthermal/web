@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@labirthermal/webcomponents</title>
+  <style>
+  </style>
+</head>
+
+<body style="padding: 1rem; background: #ffffff">
+
+
+
+  <connected-browser-app
+    server-url="http://localhost:8080" 
+    server-api-root="/api/"
+    label="Test"
+    files-display="asTable"
+    label-variant="background"
+    label-icon="folder"
+    label-icon-style="micro"
+    label-tooltip="Toto je tooltip k labelu"
+  >
+  </connected-browser-app>
+
+   <!--
+
+  <script>
+
+    window.addEventListener("labirthermal-webcomponents-loaded", () => {
+      console.log("LabIR Thermal Webcomponents loaded");
+      console.log( document.querySelectorAll( "thermal-file-app" ) );
+    });
+
+  </script>
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+
+
+<thermal-expandable
+  label="Podrobnosti"
+  style="--spacing: 5px;--border-color:transparent; --padding: .5em;"
+  icon="info"
+  iconStyle="solid"
+  variant="primary"
+  variantExpanded="foreground"
+  plain="true"
+  closeIcon="true"
+>
+  Tady je nějaká prasečina
+  <button onclick="alert('Ahoj!')">Klikni na mě!</button>
+</thermal-expandable>
+-->
+  <!--
+<playground-element
+  title="Toto je titulek!"
+  
+  subtitle="LabIR Embed Package Playground"
+  style="--playground-foreground: navy;
+  --playground-background: rgb(228, 228, 188);"
+>
+  <code slot="code"><p>Prasátko</p>
+<button onclick="alert('WAS??')">Něco vytiskni</button></code>
+</playground-element>
+
+
+
+
+
+  <h1>Thermal File App</h1>
+
+  <thermal-file-app url="sequence.lrc" label="LabIR Edu Analyser" license="CC BY-SA 4.0" author="Jan Jáchim"
+    palette="jet" layout="advanced" analysis1="Analýza A;rectangle;color:Blue;top:14;left:8;width:65;height:31"
+    analysis2="Analýza B;ellipsis;color:Green;top:34;left:102;width:34;height:47;avg;min" opacity="1" showscale="true"
+    showshare="true" showhistogram="true" showlayout="false" interactiveanalysis="true" locale="cs"
+    showfullscreen="false" skin="darkhc"></thermal-file-app>
+
+
+  <h1>Thermal Group App</h1>
+
+  <thermal-group-app
+    label="Skupina obrázků"
+    skin="solarized"
+    lines="big"
+    corners="narrow"
+  >
+    <thermal-file lrc="/soustruh.lrc" label="Soustruh"></thermal-file>
+    <thermal-file lrc="/testing_sequence.lrc" label="Testing Sequence"></thermal-file>
+    <thermal-file lrc="/tucnaci_04.lrc" label="Tučňáci"></thermal-file>
+    <thermal-file lrc="/nosorozec_01.lrc" label="Nosorožec 1"></thermal-file>
+    <thermal-file lrc="/zelvy_01.lrc" label="Želvy 1"></thermal-file>
+    <thermal-file lrc="/zelvy_02.lrc" label="Želvy 2"></thermal-file>
+    <thermal-file lrc="/zelvy_03.lrc" label="Želvy 3"></thermal-file>
+    <thermal-file lrc="/nosorozec_02.lrc" label="Nosorožec 2"></thermal-file>
+</thermal-group-app>
+
+
+
+<apparent-temperature-aat></apparent-temperature-aat>
+
+<thermal-group-app label="Skupina souborů" group-files="thermal~/soustruh.lrc;thermal~/tucnaci_04.lrc;"></thermal-group-app>
+
+  <h1>Dropin App</h1>
+
+  <thermal-dropin-app tool="edit" label="Zkušební aplikace" advanced-palettes="true">
+    <thermal-dialog slot="bar-pre">
+      <thermal-btn slot="invoker">O aplikaci</thermal-btn>
+      <div slot="content">Tady je informace o našem nástroji.</div>
+    </thermal-dialog>
+    <thermal-btn-group slot="bar-pre">
+      <thermal-btn>Button 1</thermal-btn>
+      <thermal-btn>Button 2</thermal-btn>
+      <thermal-btn>Button 3</thermal-btn>
+      <thermal-btn>Button 4</thermal-btn>
+    </thermal-btn-group>
+  </thermal-dropin-app>
+
+
+  <h1>Thermal File App</h1>
+
+  <thermal-file-app thermal="/sequence.lrc" palette="jet" visible="/kitten.jpg" label="Lekce o něčem"
+    author="Jan Jáchim" license="CC BY-SA 4.0" smooth-thermograms="true" manager-slug="main-manager"
+    registry-slug="registry-sample" group-slug="smrt" tool="edit" advanced-palettes="false" opacity="0.3"
+    show-fullscreen="true" analysis1="Rectangle 0;rectangle;color:Blue;top:19;left:14;width:65;height:45;min" from="25"
+    to="33" ms="5000"></thermal-file-app>
+
+-->
+
+  <!--
+
+  <h1>Thermal File App - version 2</h1>
+
+  <thermal-file-app url="/sequence.lrc" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
+    showhistogram="true" from="22" to="32"
+    analysis1="Bod A; ellipsis; color:yellow; top:10;left:20;width:30;height:40;max"
+    analysis7="První jméno obdélníku; rectangle; color:lightblue; top:0;left:0;width:100;height:100;max;avg"
+    label="Lekce o něčem" author="Jan Jáchim" license="CC BY-SA 4.0" showlayout="true">
+
+    <notation-entry label="Popiska entry" say="toto se přečte při aktivaci" slot="notation" from="0:00:00" to="0:01:500"
+      image="/kitten.jpg"></notation-entry>
+
+    <notation-entry label="Popiska entry" say="toto se přečte při aktivaci" slot="notation" from="0:20:00" to="1:01:500"
+      image="/kitten.jpg"></notation-entry>
+
+  </thermal-file-app>
+
+
+  <h1>Thermal File App - version 3</h1>
+
+  <thermal-file-app url="/sequence.lrc" palette="iron" visible="/kitten.jpg" showshare="true" showhistogram="true"
+    from="22" to="32" analysis1="Bod A; ellipsis; color:yellow; top:10;left:20;width:30;height:40;max"
+    analysis7="První jméno obdélníku; rectangle; color:lightblue; top:0;left:0;width:100;height:100;max;avg"
+    label="Lekce o něčem" author="Jan Jáchim" license="CC BY-SA 4.0" showlayout="true" layout="lesson">
+
+    <notation-entry label="Popiska entry 1" say="toto se přečte při aktivaci" slot="notation" from="0:00:00"
+      to="0:01:500" image="/kitten.jpg"></notation-entry>
+
+    <notation-entry label="Popiska entry 2" say="toto se přečte při aktivaci" slot="notation" from="0:20:00"
+      to="1:01:500" image="/kitten.jpg" color="red"></notation-entry>
+
+  </thermal-file-app>
+
+  -->
+
+
+
+
+
+
+  <!--
+
+
+  <h1>Apparent Temperature</h1>
+
+  <apparent-temperature-aat skin="dark" lines="big_" corners="narrow_"></apparent-temperature-aat>
+
+
+
+  <h1>Gallery</h1>
+
+  <thermal-gallery-app skin="solarized" lines="big" corners="narrow">
+    <thermal-group label="1. skupina">
+      <thermal-file lrc="/soustruh.lrc"></thermal-file>
+      <thermal-file lrc="/testing_sequence.lrc"></thermal-file>
+    </thermal-group>
+    <thermal-group label="2. skupina">
+      <thermal-file lrc="/tucnaci_04.lrc"></thermal-file>
+      <thermal-file lrc="/nosorozec_01.lrc"></thermal-file>
+      <thermal-file lrc="/zelvy_01.lrc"></thermal-file>
+      <thermal-file lrc="/zelvy_02.lrc"></thermal-file>
+      <thermal-file lrc="/zelvy_03.lrc"></thermal-file>
+      <thermal-file lrc="/nosorozec_02.lrc"></thermal-file>
+    </thermal-group>
+    <thermal-group label="5. skupina">
+      <thermal-file lrc="/pokus_voda_proudeni_sklenice.lrc"></thermal-file>
+      <thermal-file lrc="/nosorozec_01.lrc"></thermal-file>
+      <thermal-file lrc="/zelvy_01.lrc"></thermal-file>
+      <thermal-file lrc="/zelvy_02.lrc"></thermal-file>
+      <thermal-file lrc="/zelvy_03.lrc"></thermal-file>
+      <thermal-file lrc="/nosorozec_02.lrc"></thermal-file>
+    </thermal-group>
+    <thermal-group label="22. skupina se" description="Toto je popiska skupiny">
+      <thermal-file lrc="/kudlanka.lrc"></thermal-file>
+    </thermal-group>
+  </thermal-gallery-app>
+
+  -->
+
+
+  <script type="module" src="/index.iife.ts"></script>
+
+</body>
+
+</html>

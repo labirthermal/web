@@ -29,7 +29,7 @@ let dom_to_image = require("dom-to-image");
 dom_to_image = __toESM(dom_to_image, 1);
 let client_zip = require("client-zip");
 //#region package.json
-var version = "1.3.4";
+var version = "2.0.0";
 //#endregion
 //#region src/properties/callbacksManager.ts
 /**

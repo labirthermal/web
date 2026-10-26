@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": [
+      "esnext",
+      "DOM"
+    ],
+    "jsx": "preserve",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+    "useDefineForClassFields": false,
+    "allowArbitraryExtensions": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": {
+      "@labirthermal/core": [
+        "../core/src"
+      ],
+      "@labirthermal/server": [
+        "../server/client/src"
+      ],
+      "@labirthermal/client": [
+        "../client/src"
+      ]
+    }
+  },
+  "exclude": [
+    "dist",
+    "lib"
+  ]
+}

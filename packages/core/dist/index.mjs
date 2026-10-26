@@ -4,7 +4,7 @@ import { addDays, addHours, addMonths, addYears, endOfDay, endOfHour, endOfMonth
 import domtoimage from "dom-to-image";
 import { downloadZip } from "client-zip";
 //#region package.json
-var version = "1.3.4";
+var version = "2.0.0";
 //#endregion
 //#region src/properties/callbacksManager.ts
 /**

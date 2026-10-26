@@ -3663,7 +3663,7 @@ const i18webcomponents = instance;
 //#endregion
 //#region package.json
 var name = "@labirthermal/webcomponents";
-var version$1 = "1.3.4";
+var version$1 = "2.0.0";
 window.matchMedia("(prefers-color-scheme: dark)");
 const DARK_MODE_CLASS = "thermal-dark-mode";
 //#endregion
