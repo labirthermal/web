@@ -36,7 +36,6 @@ export class FilesState extends AbstractProperty<ThermalFileInstance[], ThermalG
         // Create the new values in the index
         value.forEach(instance => this._map.set(instance.thermalUrl, instance));
 
-        console.log( "afterSetEffect", this._map );
     }
 
     public addFile(file: ThermalFileInstance) {

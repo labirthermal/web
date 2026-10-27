@@ -20,8 +20,12 @@ import "./translations/i18n";
 
 // Append default styles
 import { addInlineStyles } from "./styles/defaultStyles";
+import { ContextRoot } from "@lit/context";
 
 addInlineStyles();
+
+const localRoot = new ContextRoot();
+localRoot.attach(document.body);
 
 /**
  * Define all included webcomponents right away.

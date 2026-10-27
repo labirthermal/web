@@ -4,6 +4,7 @@ import { AatAppElement } from "./apps/AustralianApparentTemperature";
 import { DropinAppElement } from "./apps/ThermalDropinApp";
 import { ThermalFileAppElement } from "./apps/ThermalFileApp";
 import { ThermalGroupAppElement } from "./apps/ThermalGroupApp";
+import { ThermalSlottedAppElement } from "./apps/ThermalSlottedApp";
 import { ThermalChartElement } from "./controls/file/analysis/chart/chart";
 import { AnalysisColorDropdown } from "./controls/file/analysis/edit/analysisColorDropdown";
 import { AnalysisNameInput } from "./controls/file/analysis/edit/analysisNameInput";
@@ -187,7 +188,8 @@ const elementsApplications = {
     "apparent-temperature-aat": AatAppElement,
     "thermal-dropin-app": DropinAppElement,
     "thermal-file-app": ThermalFileAppElement,
-    "thermal-group-app": ThermalGroupAppElement
+    "thermal-group-app": ThermalGroupAppElement,
+    "thermal-simple-app": ThermalSlottedAppElement
 } as const;
 
 /** 
@@ -195,8 +197,8 @@ const elementsApplications = {
  * @see {@link defineBaseWebcomponents}
  */
 export const elementsAll = {
-    ...elementsUi,
     ...elementsProviders,
+    ...elementsUi,
     ...elementsManagerControls,
     ...elementsRegistryControls,
     ...elementsGroupControls,

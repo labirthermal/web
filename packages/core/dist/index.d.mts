@@ -2509,7 +2509,7 @@ export declare class ThermalRegistry extends BaseStructureObject {
     [index: string]: ThermalFileRequest[];
   }): Promise<(false | ThermalFileInstance)[][]>;
   /** Load the registry with only one file. @deprecated */
-  loadFullOneFile(file: ThermalFileRequest, groupId: string): Promise<ThermalFileInstance | ThermalFileFailure>;
+  loadFullOneFile(file: ThermalFileRequest, groupId: string): Promise<ThermalFileFailure | ThermalFileInstance>;
   private _batch?;
   get batch(): BatchLoader;
   /** @deprecated use batch member class instead */

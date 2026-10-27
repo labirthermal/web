@@ -11,9 +11,20 @@
 </head>
 
 <body style="padding: 1rem; background: #ffffff">
+  <thermal-simple-app thermal="/flir/flir_vue_pro_640_1.jpg" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
+    showhistogram="true"
+    analysis1="Bod A; ellipsis; color:yellow; top:10;left:20;width:30;height:40;max"
+    analysis7="První jméno obdélníku; rectangle; color:lightblue; top:0;left:0;width:100;height:100;max;avg"
+    label="Lekce o něčem" author="Jan Jáchim" license="CC BY-SA 4.0" showlayout="true">
+    <file-info-button slot="left"></file-info-button>
+    <registry-histogram slot="top"></registry-histogram>
+    <registry-range-slider slot="top"></registry-range-slider>
+    <registry-ticks-bar slot="top"></registry-ticks-bar>
+    <file-info-button></file-info-button>
+  </thermal-simple-app>
 
 
-   <!--
+  <!--
   <connected-browser-app
     server-url="http://localhost:8080" 
     server-api-root="/api/"
@@ -128,19 +139,27 @@
 
   <h1>Thermal File App</h1>
 
-  <thermal-file-app thermal="/flir_c5_1.jpg" palette="jet" visible="/kitten.jpg" label="Lekce o něčem"
+  <thermal-file-app thermal="/flir/flir_c5_2.jpg" palette="jet" label="Lekce o něčem"
     author="Jan Jáchim" license="CC BY-SA 4.0" smooth-thermograms="true" manager-slug="main-manager"
     registry-slug="registry-sample" group-slug="smrt" tool="edit" advanced-palettes="false" opacity="0.3"
-    show-fullscreen="true" analysis1="Rectangle 0;rectangle;color:Blue;top:19;left:14;width:65;height:45;min" from="25"
-    to="33" ms="5000"></thermal-file-app>
+    show-fullscreen="true" analysis1="Rectangle 0;rectangle;color:Blue;top:19;left:14;width:65;height:45;min" ms="5000"></thermal-file-app>
 
--->
+
+  <thermal-file-app thermal="/flir/dji_xt2_1.jpg" palette="jet" label="Lekce o něčem"
+    author="Jan Jáchim" license="CC BY-SA 4.0" smooth-thermograms="true" manager-slug="main-manager"
+    registry-slug="registry-sample" group-slug="smrt" tool="edit" advanced-palettes="false" opacity="0.3"
+    show-fullscreen="true" analysis1="Rectangle 0;rectangle;color:Blue;top:19;left:14;width:65;height:45;min" ms="5000"></thermal-file-app>
+
+  <thermal-file-app thermal="/flir/flir_one_pro_next_gen_3_misaligned.jpg" palette="jet" label="Lekce o něčem"
+    author="Jan Jáchim" license="CC BY-SA 4.0" smooth-thermograms="true"
+    registry-slug="registry-sample" group-slug="smrt" tool="edit" advanced-palettes="false" opacity="0.3"
+    show-fullscreen="true" analysis1="Rectangle 0;rectangle;color:Blue;top:19;left:14;width:65;height:45;min" ms="5000"></thermal-file-app>
 
 
   <h1>Thermal File App - version 2</h1>
 
-  <thermal-file-app thermal="/sequence.lrc" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
-    showhistogram="true" from="22" to="32"
+  <thermal-file-app thermal="/flir/flir_vue_pro_640_1.jpg" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
+    showhistogram="true"
     analysis1="Bod A; ellipsis; color:yellow; top:10;left:20;width:30;height:40;max"
     analysis7="První jméno obdélníku; rectangle; color:lightblue; top:0;left:0;width:100;height:100;max;avg"
     label="Lekce o něčem" author="Jan Jáchim" license="CC BY-SA 4.0" showlayout="true">
