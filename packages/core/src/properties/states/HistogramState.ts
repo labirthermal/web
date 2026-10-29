@@ -1,7 +1,6 @@
 import { ThermalFileInstance } from "../../file/ThermalFileInstance";
 import { ThermalRegistry, ThermalStatistics } from "../../hierarchy/ThermalRegistry";
-import { LrcParser } from "../../loading/workers/parsers/lrc/LrcParser";
-import { histogramFromPixels } from "../../loading/workers/parsers/histogramFromPixels";
+import { histogramFromPixels } from "../../parsers/histogramFromPixels";
 import type { ThermalFileReader } from "../../loading/workers/ThermalFileReader";
 import { AbstractProperty } from "../abstractProperty";
 import { CallbacksManager } from "../callbacksManager";
@@ -105,18 +104,10 @@ export class HistogramState extends AbstractProperty<ThermalStatistics[], Therma
     }
 
     /**
-     * Pure LRC registries keep the original LRC calculation. Any other set
-     * collects temperatures of every file with its own parser and bins them
-     * in one shared range.
+     * Collect temperatures of every file with its own parser and bin them
+     * in one shared range with the shared `histogramFromPixels`.
      */
     protected async calculateHistogram(readers: ThermalFileReader[]): Promise<ThermalStatistics[]> {
-
-        if (readers.every(reader => reader.parser === LrcParser)) {
-            return this.parent.pool.exec(
-                LrcParser.registryHistogram,
-                [readers.map(reader => reader.buffer)]
-            );
-        }
 
         const pixelSets: Float32Array[] = await Promise.all(
             readers.map(reader => this.parent.pool.exec(

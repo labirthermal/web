@@ -1,4 +1,4 @@
-import { ParsedFileBaseInfo } from "../../loading/workers/parsers/structure";
+import { ParsedFileBaseInfo } from "../../parsers/structure";
 import { CallbacksManager } from "../../properties/callbacksManager";
 
 /**

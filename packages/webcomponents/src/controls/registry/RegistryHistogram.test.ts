@@ -57,6 +57,40 @@ describe("RegistryHistogram expandable", () => {
         vi.restoreAllMocks();
     });
 
+    it("renders a histogram calculated before the element connects", async () => {
+        manager.append(provider);
+        document.body.append(manager);
+        await manager.updateComplete;
+        await provider.updateComplete;
+
+        vi.spyOn(provider.registryObject.histogram, "value", "get").mockReturnValue([
+            { from: 10, to: 20, count: 100, percentage: 100, height: 100 }
+        ]);
+        histogram = new RegistryHistogram();
+        provider.append(histogram);
+        await settle();
+
+        expect(chart().querySelectorAll(".histogram-bar")).toHaveLength(1);
+        expect(histogram.shadowRoot?.querySelector(".container")?.classList.contains("ready"))
+            .toBe(true);
+    });
+
+    it("subscribes again after reconnecting", async () => {
+        await mount();
+        const state = provider.registryObject.histogram;
+        histogram.remove();
+        vi.spyOn(state, "value", "get").mockReturnValue([
+            { from: 10, to: 20, count: 100, percentage: 100, height: 100 }
+        ]);
+        provider.append(histogram);
+        await settle();
+        expect(chart().querySelectorAll(".histogram-bar")).toHaveLength(1);
+
+        state.reset();
+        await settle();
+        expect(chart().querySelectorAll(".histogram-bar")).toHaveLength(0);
+    });
+
     it("defaults to non-expandable without reflecting a false string", async () => {
         await mount();
         expect(histogram.expandable).toBe(false);

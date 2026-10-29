@@ -3,11 +3,14 @@
 import { describe, expect, test, vi } from "vitest";
 import { ThermalFileInstance } from "../../file/ThermalFileInstance";
 import { ThermalManager } from "../../hierarchy/ThermalManager";
-import { LrcParser } from "../../loading/workers/parsers/lrc/LrcParser";
+import { LrcParser } from "../../parsers/lrc/LrcParser";
+import { histogramFromPixels } from "../../parsers/histogramFromPixels";
 import { getPool } from "../../utils/pool";
-import { FlirParser } from "../../loading/workers/parsers/flir/FlirParser";
+import { FlirParser } from "../../parsers/flir/FlirParser";
 import { FLIR_REFERENCE, readFlirFixture } from "../../../devserver/node/flirFixtures";
 import { ThermalRegistry } from "../../hierarchy/ThermalRegistry";
+import { readLrcFixture } from "../../../devserver/node/mocks";
+import { ThermalFileReader } from "../../loading/workers/ThermalFileReader";
 
 const createHistogramInputBuffer = (): ArrayBuffer => {
     const buffer = new ArrayBuffer(25 + 57 + 8);
@@ -61,21 +64,53 @@ describe("HistogramState", async () => {
         await copyRegistry.postLoadedProcessing();
         await copyHistogramReady;
 
-        const parserCalls = execSpy.mock.calls.filter(([task]) => task === LrcParser.registryHistogram);
-        expect(parserCalls).toHaveLength(1);
+        const binningCalls = execSpy.mock.calls.filter(([task]) => task === histogramFromPixels);
+        expect(binningCalls).toHaveLength(1);
         expect(copyRegistry.histogram.value).toEqual(sourceRegistry.histogram.value);
+        // Every LRC pixel is counted exactly once
+        expect(sourceRegistry.histogram.value.reduce((sum, bar) => sum + bar.count, 0)).toBe(2);
 
         execSpy.mockRestore();
     });
 
     const calculate = async (registry: ThermalRegistry) => {
-        const ready = new Promise<void>(resolve => {
-            registry.histogram.onCalculationEnd.set("test", () => resolve());
+        const ready = new Promise<void>((resolve, reject) => {
+            registry.histogram.onCalculationEnd.set("test", success => {
+                if (success) resolve();
+                else reject(new Error("Histogram calculation failed"));
+            });
         });
         await registry.postLoadedProcessing();
         await ready;
         return registry.histogram.value;
     };
+
+    test.each([
+        "sequence_uint16_small_short.lrc",
+        "sequence_uint16_small_long.lrc",
+        "sequence_uint16_large_20frames.lrc",
+    ])("calculates every frame of %s through the worker pool", async name => {
+        const registry = new ThermalManager(pool).addOrGetRegistry(name);
+        const group = registry.groups.addOrGetGroup("sequence");
+        const reader = new ThermalFileReader(
+            registry.service, readLrcFixture(name), LrcParser, name
+        );
+        await reader.createInstance(group);
+        const info = await reader.baseInfo();
+        const histogram = await calculate(registry);
+
+        expect(info.frameCount).toBeGreaterThan(1);
+        expect(histogram).toHaveLength(255);
+        expect(histogram.reduce((sum, bar) => sum + bar.count, 0))
+            .toBe(info.width * info.height * info.frameCount);
+        // Quantised pixels need not reach the exact extrema stored in the header.
+        const tolerance = (info.max - info.min) / 65535 + 0.00001;
+        expect(Math.abs(histogram[0].from - info.min)).toBeLessThanOrEqual(tolerance);
+        expect(Math.abs(histogram[histogram.length - 1].to - info.max))
+            .toBeLessThanOrEqual(tolerance);
+        expect(histogram.every(bar => Number.isFinite(bar.height))).toBe(true);
+        expect(registry.histogram.loading).toBe(false);
+    });
 
     const flirInstance = async (name: string) => {
         const buffer = await FlirParser.prepare!(readFlirFixture(name), name);
@@ -94,14 +129,13 @@ describe("HistogramState", async () => {
         const execSpy = vi.spyOn(pool, "exec");
 
         const flirRegistry = new ThermalManager(pool).addOrGetRegistry("flir-registry");
-        flirRegistry.groups.addOrGetGroup("flir").files.addFile(await flirInstance("flir_c5_2.jpg"));
+        flirRegistry.groups.addOrGetGroup("flir").files.addFile(await flirInstance("flir_01.jpg"));
         const flirHistogram = await calculate(flirRegistry);
 
-        const reference = FLIR_REFERENCE["flir_c5_2.jpg"];
+        const reference = FLIR_REFERENCE["flir_01.jpg"];
         expect(flirHistogram.reduce((sum, bar) => sum + bar.count, 0)).toBe(reference.width * reference.height);
         expect(flirHistogram[0].from).toBeCloseTo(reference.min, 2);
         expect(flirHistogram[flirHistogram.length - 1].to).toBeCloseTo(reference.max, 2);
-        expect(execSpy.mock.calls.some(([task]) => task === LrcParser.registryHistogram)).toBe(false);
 
         const mixedRegistry = new ThermalManager(pool).addOrGetRegistry("mixed-registry");
         const group = mixedRegistry.groups.addOrGetGroup("mixed");
@@ -113,7 +147,7 @@ describe("HistogramState", async () => {
             draw: () => undefined,
             reader: { buffer: createHistogramInputBuffer(), parser: LrcParser }
         } as unknown as ThermalFileInstance);
-        group.files.addFile(await flirInstance("flir_c5_2.jpg"));
+        group.files.addFile(await flirInstance("flir_01.jpg"));
         const mixedHistogram = await calculate(mixedRegistry);
 
         // One shared range covering both the LRC pixels (10, 20 °C) and the FLIR image

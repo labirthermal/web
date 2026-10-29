@@ -1,7 +1,7 @@
 import { CallbacksManager } from "../../../properties/callbacksManager";
 import { AbstractFileResult } from "../AbstractFileResult";
 import { FilesService } from "../FilesService";
-import { supportedFileTypesInputProperty } from "../parsers";
+import { supportedFileTypesInputProperty } from "../../../parsers";
 
 /** Turn any element into a dropzone! */
 export class DropinElementListener {

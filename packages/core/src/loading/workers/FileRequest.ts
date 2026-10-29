@@ -2,7 +2,7 @@ import { ThermalFileFailure } from "./ThermalFileFailure";
 import { FileErrors, FileLoadingError } from "./errors";
 import { ThermalFileReader } from "./ThermalFileReader";
 import { AbstractFileResult } from "./AbstractFileResult";
-import { determineAndPrepare } from "./parsers";
+import { determineAndPrepare } from "../../parsers";
 import { FilesService } from "./FilesService";
 
 export type FileResultListener = ( result: AbstractFileResult ) => void
@@ -43,17 +43,16 @@ export class FileRequest {
      * - the promise is stored internally
      * - if the request is already loading/processing, any subsequent calls use the stored promise object
      */
-    async load(): Promise<AbstractFileResult> {
+    load(): Promise<AbstractFileResult> {
 
+        // The promise must be stored synchronously, before any `await`,
+        // otherwise concurrent calls would each start their own fetch.
         if ( this.response === undefined ) {
-
-            // Fetch the file
-            this.response = this.processResponse( await fetch( this.thermalUrl ) );
+            this.response = fetch( this.thermalUrl )
+                .then( response => this.processResponse( response ) );
         }
 
         return this.response;
-
-        
 
     }
 

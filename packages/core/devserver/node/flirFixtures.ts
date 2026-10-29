@@ -3,11 +3,16 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
- * Real radiometric FLIR JPEGs with reference values computed independently
- * and cross-checked against the Python library flyr.
+ * Real radiometric FLIR JPEGs shared by the monorepo in `<repo>/public/flir`.
+ * Reference values are computed independently with the Python library flyr,
+ * see `devserver/fixtures/flir/generate_reference.py`.
  */
 
-export const FLIR_FIXTURES_DIR = join( dirname( fileURLToPath( import.meta.url ) ), "../fixtures/flir" );
+const here = dirname( fileURLToPath( import.meta.url ) );
+
+export const FLIR_FIXTURES_DIR = join( here, "../../../../public/flir" );
+
+const FLIR_REFERENCE_FILE = join( here, "../fixtures/flir/reference.json" );
 
 export type FlirReference = {
     width: number,
@@ -28,7 +33,7 @@ export type FlirReference = {
 };
 
 export const FLIR_REFERENCE: Record<string, FlirReference> = JSON.parse(
-    readFileSync( join( FLIR_FIXTURES_DIR, "reference.json" ), "utf8" )
+    readFileSync( FLIR_REFERENCE_FILE, "utf8" )
 );
 
 export const FLIR_FIXTURE_NAMES = Object.keys( FLIR_REFERENCE );

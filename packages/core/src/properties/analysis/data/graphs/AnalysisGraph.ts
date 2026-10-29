@@ -1,4 +1,4 @@
-import { AreaAnalysisData, PointAnalysisData } from "../../../../loading/workers/parsers/structure";
+import { AreaAnalysisData, PointAnalysisData } from "../../../../parsers/structure";
 import { CallbacksManager } from "../../../callbacksManager";
 import { AbstractAnalysis } from "../../analysis/internals/AbstractAnalysis";
 import { PointAnalysis } from "../../analysis/internals/point/PointAnalysis";

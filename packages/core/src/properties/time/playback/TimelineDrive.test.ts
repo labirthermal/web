@@ -36,7 +36,7 @@ describe("ReTimelineDrive", async () => {
         // expect( timeline.buffer.currentFrame.timestamp ).toEqual( instance.timestamp );
 
         // Instance consistency
-        expect( instance.frameCount ).toEqual( 518 );
+        expect( instance.frameCount ).toEqual( 51 );
 
         // Searching for the steps
         expect( timeline.findPreviousRelative(1).relative ).toEqual( 0 );
@@ -62,7 +62,7 @@ describe("ReTimelineDrive", async () => {
 
         const result_after_too_much = await timeline.setRelativeTime( 999 * 9999 );
 
-        expect( timeline.value ).toEqual( 61085 );
+        expect( timeline.value ).toEqual( 5698 );
         expect( timeline.currentFrameIndex ).toEqual( timeline.relativeSteps.length - 1 );
         expect( timeline.value ).toEqual( instance.duration );
         expect( result_after_too_much.preloaded ).toEqual( false );
@@ -70,8 +70,8 @@ describe("ReTimelineDrive", async () => {
 
         expect( result_after_too_much.absoluteTime ).toEqual( result_after_too_much.currentFrame.timestamp );
 
-        expect( result_after_too_much.relativeTime ).toEqual( 61085 );
-        expect( result_after_too_much.currentStep.index ).toEqual( 517 );
+        expect( result_after_too_much.relativeTime ).toEqual( 5698 );
+        expect( result_after_too_much.currentStep.index ).toEqual( 50 );
         expect( result_after_too_much.preloaded ).toEqual( false );
         expect( result_after_too_much.hasChanged ).toEqual( true );
 
@@ -93,7 +93,8 @@ describe("ReTimelineDrive", async () => {
 
         expect( result_in_half.currentFrame.timestamp ).toEqual( result_in_half.currentStep.absolute );
 
-        expect( result_in_half.currentStep.index ).toEqual( 249 );
+        // The fixture has regular 114 ms steps, the half lands on the nearest one
+        expect( Math.abs( result_in_half.currentStep.relative - instance.duration / 2 ) ).toBeLessThanOrEqual( 114 / 2 );
 
         expect( result_in_half.preloaded ).toEqual( true );
 

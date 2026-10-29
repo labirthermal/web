@@ -3,7 +3,7 @@ import { ThermalFileFailure, ThermalFileReader, ThermalRegistry } from "@labirth
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FilesService } from "@labirthermal/core/src/loading/workers/FilesService";
 import { FileErrors } from "@labirthermal/core/src/loading/workers/errors";
-import { LrcParser } from "@labirthermal/core/src/loading/workers/parsers/lrc/LrcParser";
+import { LrcParser } from "@labirthermal/core/src/parsers/lrc/LrcParser";
 import { ThermalGroupAppElement } from "./ThermalGroupApp";
 
 customElements.define("test-preloaded-group-app", ThermalGroupAppElement);

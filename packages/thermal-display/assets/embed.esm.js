@@ -11680,6 +11680,10 @@ var RegistryHistogram = class extends AbstractRegistryConsumer {
 	connectedCallback() {
 		super.connectedCallback();
 		this.loading = this.registryObject.histogram.loading;
+		this.histogram = this.registryObject.histogram.value;
+		this.registryObject.histogram.addListener(this.UUID, (value) => {
+			this.histogram = value;
+		});
 		this.registryObject.histogram.onCalculationStart.set(this.UUID, () => {
 			this.loading = true;
 			this.error = false;
@@ -11690,12 +11694,6 @@ var RegistryHistogram = class extends AbstractRegistryConsumer {
 		});
 		this.registryObject.loading.addListener(this.UUID, (value) => {
 			if (value === true) this.loading = true;
-		});
-	}
-	firstUpdated(_changedProperties) {
-		super.firstUpdated(_changedProperties);
-		this.registryObject.histogram.addListener(this.UUID, (value) => {
-			this.histogram = value;
 		});
 	}
 	disconnectedCallback() {

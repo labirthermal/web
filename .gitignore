@@ -7,3 +7,5 @@ packages/docs/.vitepress/dist/
 public/materialy/
 public/fen-a-ruka/
 public/zihle/
+
+*.*_20frames.lrc

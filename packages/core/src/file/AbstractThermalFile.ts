@@ -1,6 +1,6 @@
 import { BaseStructureObject } from "../base/BaseStructureObject";
 import { ThermalGroup } from "../hierarchy/ThermalGroup";
-import { ParsedFileBaseInfo } from "../loading/workers/parsers/structure";
+import { ParsedFileBaseInfo } from "../parsers/structure";
 import { AnalysisDrive } from "../properties/analysis/analysis/AnalysisDrive";
 import { CallbacksManager } from "../properties/callbacksManager";
 import { CursorValueDrive } from "../properties/cursor/CursorValueDrive";

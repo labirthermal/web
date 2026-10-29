@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { THERMOGRAM_PATHS } from '../../../devserver/node/mocks';
 import { ThermalManager } from '../../hierarchy/ThermalManager';
 
@@ -199,20 +199,22 @@ describe( "BatchLoader", () => {
 
         expect( loadingCounter ).toEqual(1);
 
-        // After another tick
+        // After another tick both batches are loading in parallel
+        // and the registry stays loading until all of them finish
         await sleep(0);
 
-        expect( loader.numberOfBatches ).toEqual(1);
-        expect( loader.numLoadingBatches ).toEqual(1);
+        expect( loader.numberOfBatches ).toEqual(2);
+        expect( loader.numLoadingBatches ).toEqual(2);
         expect( loader.currentOpenBatch ).toBeUndefined();
 
-        expect( registry.loading.value ).toEqual( false );
+        expect( registry.loading.value ).toEqual( true );
 
-        expect( loadingCounter ).toEqual(2);
+        expect( loadingCounter ).toEqual(1);
 
         // Wait for all batches to load
-
-        await sleep( 1000 );
+        await vi.waitFor( () => {
+            expect( loader.numberOfBatches ).toEqual(0);
+        }, { timeout: 5000 } );
 
         expect( loader.numberOfBatches ).toEqual(0);
         expect( instanceCounter ).toEqual(5);

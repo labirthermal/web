@@ -14,11 +14,11 @@
 
 
   <thermal-group-app
-    group-files="thermal~./flir/dji_xt2_1.jpg"
+    group-files="thermal~./flir/flir_01.jpg"
   ></thermal-group-app>
 
 
-  <thermal-simple-app thermal="/flir/flir_vue_pro_640_1.jpg" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
+  <thermal-simple-app thermal="/flir/flir_02.jpg" palette="iron" layout="simple" showshare="true"
     showhistogram="true"
     analysis1="Bod A; ellipsis; color:yellow; top:10;left:20;width:30;height:40;max"
     analysis7="První jméno obdélníku; rectangle; color:lightblue; top:0;left:0;width:100;height:100;max;avg"
@@ -146,18 +146,18 @@
 
   <h1>Thermal File App</h1>
 
-  <thermal-file-app thermal="/flir/flir_c5_2.jpg" palette="jet" label="Lekce o něčem"
+  <thermal-file-app thermal="/flir/flir_03.jpg" palette="jet" label="Lekce o něčem"
     author="Jan Jáchim" license="CC BY-SA 4.0" smooth-thermograms="true" manager-slug="main-manager"
     registry-slug="registry-sample" group-slug="smrt" tool="edit" advanced-palettes="false" opacity="0.3"
     show-fullscreen="true" analysis1="Rectangle 0;rectangle;color:Blue;top:19;left:14;width:65;height:45;min" ms="5000"></thermal-file-app>
 
 
-  <thermal-file-app thermal="/flir/dji_xt2_1.jpg" palette="jet" label="Lekce o něčem"
+  <thermal-file-app thermal="/lrc/image_float32_large.lrc" palette="jet" label="Lekce o něčem"
     author="Jan Jáchim" license="CC BY-SA 4.0" smooth-thermograms="true" manager-slug="main-manager"
     registry-slug="registry-sample" group-slug="smrt" tool="edit" advanced-palettes="false" opacity="0.3"
     show-fullscreen="true" analysis1="Rectangle 0;rectangle;color:Blue;top:19;left:14;width:65;height:45;min" ms="5000"></thermal-file-app>
 
-  <thermal-file-app thermal="/flir/flir_one_pro_next_gen_3_misaligned.jpg" palette="jet" label="Lekce o něčem"
+  <thermal-file-app thermal="/lrc/sequence_uint16_small_long.lrc" palette="jet" label="Lekce o něčem"
     author="Jan Jáchim" license="CC BY-SA 4.0" smooth-thermograms="true"
     registry-slug="registry-sample" group-slug="smrt" tool="edit" advanced-palettes="false" opacity="0.3"
     show-fullscreen="true" analysis1="Rectangle 0;rectangle;color:Blue;top:19;left:14;width:65;height:45;min" ms="5000"></thermal-file-app>
@@ -165,20 +165,33 @@
 
   <h1>Thermal File App - version 2</h1>
 
-  <thermal-file-app thermal="/flir/flir_vue_pro_640_1.jpg" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
+  <thermal-file-app thermal="/lrc/image_uint16_large.lrc" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
     showhistogram="true"
     analysis1="Bod A; ellipsis; color:yellow; top:10;left:20;width:30;height:40;max"
     analysis7="První jméno obdélníku; rectangle; color:lightblue; top:0;left:0;width:100;height:100;max;avg"
     label="Lekce o něčem" author="Jan Jáchim" license="CC BY-SA 4.0" showlayout="true">
-
-    <notation-entry label="Popiska entry" say="toto se přečte při aktivaci" slot="notation" from="0:00:00" to="0:01:500"
-      image="/kitten.jpg"></notation-entry>
-
-    <notation-entry label="Popiska entry" say="toto se přečte při aktivaci" slot="notation" from="0:20:00" to="1:01:500"
-      image="/kitten.jpg"></notation-entry>
-
   </thermal-file-app>
 
+  <thermal-file-app thermal="/lrc/image_float32_large.lrc" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
+    showhistogram="true"
+    analysis1="Bod A; ellipsis; color:yellow; top:10;left:20;width:30;height:40;max"
+    analysis7="První jméno obdélníku; rectangle; color:lightblue; top:0;left:0;width:100;height:100;max;avg"
+    label="Lekce o něčem" author="Jan Jáchim" license="CC BY-SA 4.0" showlayout="true">
+  </thermal-file-app>
+
+  <thermal-file-app thermal="/lrc/sequence_uint16_large_20frames.lrc" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
+    showhistogram="true"
+    analysis1="Bod A; ellipsis; color:yellow; top:10;left:20;width:30;height:40;max"
+    analysis7="První jméno obdélníku; rectangle; color:lightblue; top:0;left:0;width:100;height:100;max;avg"
+    label="Lekce o něčem" author="Jan Jáchim" license="CC BY-SA 4.0" showlayout="true">
+  </thermal-file-app>
+
+  <thermal-file-app thermal="/lrc/sequence_float32_large_20frames.lrc" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
+    showhistogram="true"
+    analysis1="Bod A; ellipsis; color:yellow; top:10;left:20;width:30;height:40;max"
+    analysis7="První jméno obdélníku; rectangle; color:lightblue; top:0;left:0;width:100;height:100;max;avg"
+    label="Lekce o něčem" author="Jan Jáchim" license="CC BY-SA 4.0" showlayout="true">
+  </thermal-file-app>
   <!--
 
 

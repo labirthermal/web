@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { ThermalFileInstance, ThermalFileReader } from "@labirthermal/core";
-import type { IParserObject } from "@labirthermal/core/src/loading/workers/parsers/structure";
+import type { IParserObject } from "@labirthermal/core/src/parsers/structure";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AbstractFileProvider } from "../../hierarchy/abstraction/AbstractFileProvider";
 import { GroupProviderElement } from "../../hierarchy/providers/GroupProvider";
@@ -113,7 +113,6 @@ describe("FileTimelineElement", () => {
             baseInfo: async () => info,
             getFrameSubset: buffer => ({ array: buffer, dataType: 0 }),
             frameData: async () => frame,
-            registryHistogram: async () => [],
             histogramPixels: async () => new Float32Array(frame.pixels),
             pointAnalysisData: async () => ({ 0: 10, 120000: 11 }),
             rectAnalysisData: async () => ({ 0: { min: 10, max: 25, avg: 17.5 } }),

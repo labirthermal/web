@@ -8,6 +8,16 @@ Set of JS/TS packages for work with recordings from thermal cameras:
 - `@labir/embed` - webcomponents on top of `@labir/core`
 - `@labir/thermal-display` - a Wordpress plugin using `@labir/embed`
 
+## Features
+
+- reads and displays multiple file formats
+    - LRC files - documentation of the open [LabIR Recording](https://github.com/labirthermal/lrc-recording/blob/master/docs/LRC-FORMAT.md) file format
+    - FLIR jpegs - implementation is inspired by the Python library [flyr](https://pypi.org/project/flyr/) 
+- provides set of [webcomponents](https://labirthermal.github.io/web/webcomponents/list.html) that enables to build various and complex interfaces
+- capable to work with multiple files at once
+- optional integration to our server storage system
+- a WordPress plugin that brings the webcomponents to the publishing platform
+
 ## Development
 
 Use **PNPM** package manager - this monorepo relies on its workspaces functionality.

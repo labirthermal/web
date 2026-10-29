@@ -1,5 +1,5 @@
 import { ThermalFileInstance } from "../../../../../file/ThermalFileInstance";
-import { PointAnalysisData } from "../../../../../loading/workers/parsers/structure";
+import { PointAnalysisData } from "../../../../../parsers/structure";
 import { AnalysisGraph } from "../../../data/graphs/AnalysisGraph";
 import { AbstractAnalysis } from "../AbstractAnalysis";
 import { PointPoint } from "./PointPoint";

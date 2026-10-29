@@ -2,7 +2,7 @@ import { AbstractFilter } from "../filters/AbstractFilter";
 import { FilterContainer } from "../filters/FilterContainer";
 import { ThermalGroup } from "../hierarchy/ThermalGroup";
 import { ThermalFileReader } from "../loading/workers/ThermalFileReader";
-import { ParsedFileBaseInfo, ParsedFileFrame } from "../loading/workers/parsers/structure";
+import { ParsedFileBaseInfo, ParsedFileFrame } from "../parsers/structure";
 import { AnalysisDrive } from "../properties/analysis/analysis/AnalysisDrive";
 import { AnalysisDataState } from "../properties/analysis/data/AnalysisDataState";
 import { AnalysisSlotsState } from "../properties/analysis/slots/AnalysisSlotsDrive";

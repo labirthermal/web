@@ -1,6 +1,7 @@
 import { HttpResponse, http } from "msw";
 import fs from "node:fs";
 import path from "path";
+import { fileURLToPath } from "node:url";
 
 
 export const delay = ( time: number ) => {
@@ -8,24 +9,33 @@ export const delay = ( time: number ) => {
 }
 
 
+/** LRC fixtures shared by the monorepo in `<repo>/public/lrc` */
+const fixture = ( name: string ) => fs.readFileSync( path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), "../../../../public/lrc", name ) );
+
+/** Read an LRC fixture from `<repo>/public/lrc` as an ArrayBuffer */
+export const readLrcFixture = ( name: string ): ArrayBuffer => {
+    const file = fixture( name );
+    return file.buffer.slice( file.byteOffset, file.byteOffset + file.byteLength ) as ArrayBuffer;
+};
+
 export enum THERMOGRAM_PATHS {
     
-    /** A thermogram produced by TIMI Edu camera */
+    /** A 160×120 Float32 image (`image_float32_small.lrc`) */
     SOUSTRUH = "https://edu.labir.cz/thermogram.lrc",
 
-    /** Tušňáci ze ZOO by Jiří Tesač. Not from TIMI Edu camera. */
+    /** A 1024×768 Uint16 image (`image_uint16_large.lrc`) */
     TUCNACI = "https://edu.labir.cz/tucnaci.lrc",
     
-    /** A thermogram produced by TIMI Edu camera */
+    /** A 160×120 Uint16 image (`image_uint16_small.lrc`) */
     CAS = "https://edu.labir.cz/cas.lrc",
 
     /** A non existing route */
     ERR404 = "https://edu.labir.cz/error/404",
 
-    /** A LRC file containing a sequence of frames */
+    /** A 160×120 Float32 sequence of 51 frames (`sequence_float32_small_short.lrc`) */
     SEQUENCE = "https://edu.labir.cz/sequence.lrc",
 
-    /** A LRC file containing a sequence of frames */
+    /** The same sequence as `SEQUENCE`, responding after 200 ms */
     DELAYED_SEQUENCE = "https://edu.labir.cz/sequence_delayed.lrc"
 
 }
@@ -33,7 +43,7 @@ export enum THERMOGRAM_PATHS {
 const thermogramMockHandlers =  [
 
     http.get( THERMOGRAM_PATHS.SOUSTRUH, () => {
-        const file = fs.readFileSync( path.resolve( "../../public/soustruh.lrc" ) );
+        const file = readLrcFixture( "image_float32_small.lrc" );
 
         return HttpResponse.arrayBuffer( file, {
             headers: {
@@ -43,7 +53,7 @@ const thermogramMockHandlers =  [
     } ),
 
     http.get( THERMOGRAM_PATHS.SEQUENCE, () => {
-        const file = fs.readFileSync( path.resolve( "../../public/sequence.lrc" ) );
+        const file = readLrcFixture( "sequence_float32_small_short.lrc" );
 
         return HttpResponse.arrayBuffer( file, {
             headers: {
@@ -54,7 +64,7 @@ const thermogramMockHandlers =  [
 
     http.get( THERMOGRAM_PATHS.DELAYED_SEQUENCE, async () => {
 
-        const file = fs.readFileSync( path.resolve( "../../public/sequence.lrc" ) );
+        const file = readLrcFixture( "sequence_float32_small_short.lrc" );
 
         await delay( 200 );
 
@@ -67,7 +77,7 @@ const thermogramMockHandlers =  [
 
 
     http.get( THERMOGRAM_PATHS.TUCNACI, () => {
-        const file = fs.readFileSync( path.resolve( "../../public/tucnaci_04.lrc" ) );
+        const file = readLrcFixture( "image_uint16_large.lrc" );
 
         return HttpResponse.arrayBuffer( file, {
             headers: {
@@ -77,7 +87,7 @@ const thermogramMockHandlers =  [
     } ),
 
     http.get( THERMOGRAM_PATHS.CAS, () => {
-        const file = fs.readFileSync( path.resolve( "../../public/image-thermal 2024-01-12 14-09-37.lrc" ) );
+        const file = readLrcFixture( "image_uint16_small.lrc" );
 
         return HttpResponse.arrayBuffer( file, {
             headers: {

@@ -28,6 +28,14 @@ Reference of the classes forming the [hierarchy](#key-concepts):
 - [ThermalRegistry](./thermal-registry)
 - [ThermalGroup](./thermal-group)
 
+### Supported files
+
+Formats that can be loaded, and how to add another one:
+
+- [Supported files](./supported-files/) – overview of the supported formats.
+- [LRC files](./supported-files/lrc) and [FLIR files](./supported-files/flir).
+- [Writing a custom parser](./supported-files/custom-parser).
+
 ## Key concepts
 
 One of the main ambitions of the `@labirthermal` packages is to work with multiple files at once. For that reason, the library works with a hierarchical structure of classes:
