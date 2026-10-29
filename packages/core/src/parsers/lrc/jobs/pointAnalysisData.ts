@@ -88,7 +88,7 @@ export const pointAnalysisData: IParserObject["pointAnalysisData"] = async (enti
         const timestamp = readTimestamp(frameView, 0);
         const min = frameView.getFloat32(8, true);
         const max = frameView.getFloat32(12, true);
-        const range = max - min;
+        const distance = Math.abs(min - max);
 
         const frameHeaderByteSize = 57;
 
@@ -100,11 +100,11 @@ export const pointAnalysisData: IParserObject["pointAnalysisData"] = async (enti
             temperature = frameView.getFloat32(pointIndex, true);
         } else if ( dataType === 0 ) {
 
-            const rawtemperature = frameView.getInt16(pointIndex, true);
+            const rawtemperature = frameView.getUint16(pointIndex, true);
             const UINT16_MAX = 65535;
             const mappedValue = rawtemperature / UINT16_MAX;
 
-            temperature = min + (range * mappedValue);
+            temperature = min + (distance * mappedValue);
 
         }
 

@@ -89,7 +89,7 @@ var FileLoadingError = class extends Error {
 	}
 };
 //#endregion
-//#region src/loading/workers/parsers/lrc/jobs/baseInfo.ts
+//#region src/parsers/lrc/jobs/baseInfo.ts
 const baseInfo$1 = async (entireFileBuffer) => {
 	const view = new DataView(entireFileBuffer);
 	const width = view.getUint16(17, true);
@@ -189,7 +189,7 @@ const baseInfo$1 = async (entireFileBuffer) => {
 	};
 };
 //#endregion
-//#region src/loading/workers/parsers/lrc/jobs/getFrameSubset.ts
+//#region src/parsers/lrc/jobs/getFrameSubset.ts
 const getFrameSubset$1 = (entireFileBuffer, index) => {
 	const headerView = new DataView(entireFileBuffer.slice(0, 25));
 	const dataType = headerView.getUint8(15);
@@ -245,7 +245,7 @@ const frameData$1 = async (frameSubset, dataType) => {
 	};
 };
 //#endregion
-//#region src/loading/workers/parsers/lrc/jobs/pointAnalysisData.ts
+//#region src/parsers/lrc/jobs/pointAnalysisData.ts
 const pointAnalysisData$1 = async (entireFileBuffer, x, y) => {
 	const view = new DataView(entireFileBuffer);
 	const width = view.getUint16(17, true);
@@ -279,11 +279,12 @@ const pointAnalysisData$1 = async (entireFileBuffer, x, y) => {
 		const frameView = new DataView(frameArrayBuffer);
 		const timestamp = readTimestamp(frameView, 0);
 		const min = frameView.getFloat32(8, true);
-		const range = frameView.getFloat32(12, true) - min;
+		const max = frameView.getFloat32(12, true);
+		const distance = Math.abs(min - max);
 		const pointIndex = 57 + y * pixelByteSize * width + x * pixelByteSize;
 		let temperature = 0;
 		if (dataType === 1) temperature = frameView.getFloat32(pointIndex, true);
-		else if (dataType === 0) temperature = min + range * (frameView.getInt16(pointIndex, true) / 65535);
+		else if (dataType === 0) temperature = min + distance * (frameView.getUint16(pointIndex, true) / 65535);
 		return {
 			timestamp,
 			temperature
@@ -298,7 +299,7 @@ const pointAnalysisData$1 = async (entireFileBuffer, x, y) => {
 	return output;
 };
 //#endregion
-//#region src/loading/workers/parsers/lrc/jobs/rectAnalysisData.ts
+//#region src/parsers/lrc/jobs/rectAnalysisData.ts
 const rectAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) => {
 	const view = new DataView(entireFileBuffer);
 	const fileWidth = view.getUint16(17, true);
@@ -332,7 +333,8 @@ const rectAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) 
 		const frameView = new DataView(frameArrayBuffer);
 		const timestamp = readTimestamp(frameView, 0);
 		const min = frameView.getFloat32(8, true);
-		const range = frameView.getFloat32(12, true) - min;
+		const max = frameView.getFloat32(12, true);
+		const distance = Math.abs(min - max);
 		const frameHeaderByteSize = 57;
 		const fromX = left;
 		const toX = left + _width;
@@ -348,7 +350,7 @@ const rectAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) 
 				const pointIndex = frameHeaderByteSize + (rowOffset + x) * pixelByteSize;
 				let value = NaN;
 				if (dataType === 1) value = frameView.getFloat32(pointIndex, true);
-				else value = min + range * (frameView.getInt16(pointIndex, true) / 65535);
+				else value = min + distance * (frameView.getUint16(pointIndex, true) / 65535);
 				if (value < _min) _min = value;
 				if (value > _max) _max = value;
 				sum += value;
@@ -374,7 +376,7 @@ const rectAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) 
 	return output;
 };
 //#endregion
-//#region src/loading/workers/parsers/lrc/jobs/histogram.ts
+//#region src/parsers/lrc/jobs/histogram.ts
 const registryHistogram$1 = async (files) => {
 	let pixels = [];
 	const readFile = async (file) => {
@@ -460,14 +462,14 @@ const registryHistogram$1 = async (files) => {
 	});
 };
 //#endregion
-//#region src/loading/workers/parsers/lrc/jobs/is.ts
+//#region src/parsers/lrc/jobs/is.ts
 const is$1 = (data, url) => {
 	const hasCorrectExtension = url.endsWith("lrc");
 	const hasCorrectSignature = new TextDecoder().decode(data.slice(0, 4)) === "LRC\0";
 	return hasCorrectExtension && hasCorrectSignature;
 };
 //#endregion
-//#region src/loading/workers/parsers/lrc/jobs/ellipsisAnalysisData.ts
+//#region src/parsers/lrc/jobs/ellipsisAnalysisData.ts
 const ellipsisAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) => {
 	const view = new DataView(entireFileBuffer);
 	const fileWidth = view.getUint16(17, true);
@@ -508,7 +510,8 @@ const ellipsisAnalysisData$1 = async (entireFileBuffer, left, top, _width, _heig
 		const frameView = new DataView(frameArrayBuffer);
 		const timestamp = readTimestamp(frameView, 0);
 		const min = frameView.getFloat32(8, true);
-		const range = frameView.getFloat32(12, true) - min;
+		const max = frameView.getFloat32(12, true);
+		const distance = Math.abs(min - max);
 		const frameHeaderByteSize = 57;
 		const fromX = left;
 		const toX = left + _width;
@@ -524,7 +527,7 @@ const ellipsisAnalysisData$1 = async (entireFileBuffer, left, top, _width, _heig
 				const pointIndex = frameHeaderByteSize + (rowOffset + x) * pixelByteSize;
 				let value = NaN;
 				if (dataType === 1) value = frameView.getFloat32(pointIndex, true);
-				else value = min + range * (frameView.getInt16(pointIndex, true) / 65535);
+				else value = min + distance * (frameView.getUint16(pointIndex, true) / 65535);
 				if (value < _min) _min = value;
 				if (value > _max) _max = value;
 				sum += value;
@@ -550,7 +553,7 @@ const ellipsisAnalysisData$1 = async (entireFileBuffer, left, top, _width, _heig
 	return output;
 };
 //#endregion
-//#region src/loading/workers/parsers/lrc/jobs/histogramPixels.ts
+//#region src/parsers/lrc/jobs/histogramPixels.ts
 /**
 * All temperatures of all frames as one array.
 * **Must stay self-contained, it is executed in a worker.**
@@ -610,7 +613,7 @@ const LrcParser = Object.freeze({
 	ellipsisAnalysisData: ellipsisAnalysisData$1
 });
 //#endregion
-//#region src/loading/workers/parsers/flir/jobs/analysisData.ts
+//#region src/parsers/flir/jobs/analysisData.ts
 const pointAnalysisData = async (workingBuffer, x, y) => {
 	const view = new DataView(workingBuffer);
 	const width = view.getUint16(10, true);
@@ -693,7 +696,7 @@ const ellipsisAnalysisData = async (workingBuffer, left, top, areaWidth, areaHei
 	return output;
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/jobs/baseInfo.ts
+//#region src/parsers/flir/jobs/baseInfo.ts
 /**
 * Reads the working buffer header.
 * **Must stay self-contained, it is executed in a worker.**
@@ -723,7 +726,7 @@ const baseInfo = async (workingBuffer) => {
 	};
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/jobs/frameData.ts
+//#region src/parsers/flir/jobs/frameData.ts
 /** A FLIR JPEG has one frame only, the subset is a copy of the working buffer. */
 const getFrameSubset = (workingBuffer) => {
 	return {
@@ -748,7 +751,7 @@ const frameData = async (frameSubset) => {
 	};
 };
 //#endregion
-//#region src/loading/workers/parsers/histogramFromPixels.ts
+//#region src/parsers/histogramFromPixels.ts
 /**
 * Build a histogram over several pixel sets in one shared temperature range
 * and with shared bins, so that files of different formats are comparable.
@@ -802,7 +805,7 @@ const histogramFromPixels = async (pixelSets) => {
 	}));
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/jobs/histogram.ts
+//#region src/parsers/flir/jobs/histogram.ts
 /**
 * Copy of the temperatures for histogram calculation.
 * **Must stay self-contained, it is executed in a worker.**
@@ -824,7 +827,7 @@ const registryHistogram = async (files) => {
 	return histogramFromPixels(pixelSets);
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/decoder/FlirDecodingError.ts
+//#region src/parsers/flir/decoder/FlirDecodingError.ts
 /** Raised whenever a FLIR JPEG cannot be decoded into a valid temperature raster. */
 var FlirDecodingError = class extends Error {
 	constructor(message) {
@@ -836,7 +839,7 @@ const requireFlir = (condition, message) => {
 	if (!condition) throw new FlirDecodingError(message);
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/decoder/jpeg.ts
+//#region src/parsers/flir/decoder/jpeg.ts
 const SOI = 216;
 const SOS = 218;
 const EOI = 217;
@@ -931,11 +934,11 @@ const extractFlirContainer = (buffer) => {
 	return container;
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/jobs/is.ts
+//#region src/parsers/flir/jobs/is.ts
 /** Detects radiometric FLIR JPEGs by content, regardless of the file extension. */
 const is = (buffer) => hasFlirSegment(buffer);
 //#endregion
-//#region src/loading/workers/parsers/flir/decoder/fff.ts
+//#region src/parsers/flir/decoder/fff.ts
 const DIRECTORY_OFFSET = 24;
 const DIRECTORY_COUNT = 28;
 const FFF_HEADER_SIZE = 64;
@@ -993,7 +996,7 @@ const detectRecordByteOrder = (data, recordName) => {
 	return isLittleEndian;
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/decoder/cameraInfo.ts
+//#region src/parsers/flir/decoder/cameraInfo.ts
 const OFFSETS = {
 	emissivity: 32,
 	objectDistance: 36,
@@ -1053,7 +1056,7 @@ const readCameraInfo = (record) => {
 	};
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/decoder/radiometry.ts
+//#region src/parsers/flir/decoder/radiometry.ts
 /**
 * Convert detector counts into object temperatures in °C.
 *
@@ -1116,7 +1119,7 @@ const computeTemperatures = (counts, camera) => {
 	};
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/decoder/rawData.ts
+//#region src/parsers/flir/decoder/rawData.ts
 const RAW_HEADER_SIZE = 32;
 const MAX_DIMENSION = 8192;
 const PNG_SIGNATURE = [
@@ -1272,7 +1275,7 @@ const decodeRawData = async (record) => {
 	};
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/decoder/workingBuffer.ts
+//#region src/parsers/flir/decoder/workingBuffer.ts
 /**
 * Layout of the decoded working buffer used by `FlirParser` jobs.
 *
@@ -1318,7 +1321,7 @@ const createWorkingBuffer = (width, height, encoding, camera, temperatures, orig
 	return buffer;
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/decoder/decodeFlirJpeg.ts
+//#region src/parsers/flir/decoder/decodeFlirJpeg.ts
 /**
 * Decode a radiometric FLIR JPEG into a temperature raster.
 * @throws FlirDecodingError
@@ -1350,7 +1353,7 @@ const prepareFlirWorkingBuffer = async (buffer) => {
 	return createWorkingBuffer(decoded.width, decoded.height, decoded.encoding, decoded.camera, decoded.temperatures, buffer.byteLength);
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/jobs/prepare.ts
+//#region src/parsers/flir/jobs/prepare.ts
 /**
 * Decode the JPEG once into the working buffer used by all other jobs.
 * @throws FileLoadingError
@@ -1363,7 +1366,7 @@ const prepare = async (buffer, url) => {
 	}
 };
 //#endregion
-//#region src/loading/workers/parsers/flir/FlirParser.ts
+//#region src/parsers/flir/FlirParser.ts
 const extensions = [{
 	extension: "jpg",
 	minme: "image/jpeg"
@@ -1439,7 +1442,7 @@ const parser = {
 };
 const FlirParser = Object.freeze(parser);
 //#endregion
-//#region src/loading/workers/parsers/index.ts
+//#region src/parsers/index.ts
 const parsersArray = Object.values({
 	LrcParser,
 	FlirParser

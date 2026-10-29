@@ -88,15 +88,15 @@ export const rectAnalysisData: IParserObject["rectAnalysisData"] = async (entire
         const timestamp = readTimestamp(frameView, 0);
         const min = frameView.getFloat32(8, true);
         const max = frameView.getFloat32(12, true);
-        const range = max - min;
+        const distance = Math.abs(min - max);
 
         const frameHeaderByteSize = 57;
 
 
-        const fromX = left;
-        const toX = left + _width;
-        const fromY = top;
-        const toY = top + _height;
+        const fromX = Math.max(0, Math.ceil(left));
+        const toX = Math.min(fileWidth - 1, Math.floor(left + _width));
+        const fromY = Math.max(0, Math.ceil(top));
+        const toY = Math.min(fileHeight - 1, Math.floor(top + _height));
 
         let _min = Infinity;
         let _max = -Infinity;
@@ -116,10 +116,10 @@ export const rectAnalysisData: IParserObject["rectAnalysisData"] = async (entire
                 if ( dataType === 1 ) {
                     value = frameView.getFloat32(pointIndex, true);
                 } else {
-                    const valueRaw = frameView.getInt16(pointIndex, true);
+                    const valueRaw = frameView.getUint16(pointIndex, true);
                     const UINT16_MAX = 65535;
                     const mappedValue = valueRaw / UINT16_MAX;
-                    value  = min + ( range * mappedValue );
+                    value  = min + ( distance * mappedValue );
                 }
 
                 if ( value < _min ) {
