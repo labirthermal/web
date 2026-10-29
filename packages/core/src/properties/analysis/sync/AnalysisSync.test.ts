@@ -3,8 +3,6 @@ import { THERMOGRAM_PATHS } from "../../../../devserver/node/mocks";
 import { ThermalManager } from "../../../hierarchy/ThermalManager";
 import { ThermalFileReader } from "../../../loading/workers/ThermalFileReader";
 
-global.document = window.document;
-
 describe( "Analysis Sync", () => {
 
     test.skip( "Synchronisation of analysis", async () => {

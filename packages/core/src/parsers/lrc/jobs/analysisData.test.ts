@@ -3,6 +3,8 @@ import { frameData, getFrameSubset } from "./getFrameSubset";
 import { ellipsisAnalysisData } from "./ellipsisAnalysisData";
 import { pointAnalysisData } from "./pointAnalysisData";
 import { rectAnalysisData } from "./rectAnalysisData";
+import { histogramPixels } from "./histogramPixels";
+import { histogramFromPixels } from "../../histogramFromPixels";
 
 const createUint16Lrc = () => {
     const width = 3;
@@ -105,6 +107,24 @@ describe( "LRC uint16 analysis", () => {
 
         const huge = ( await ellipsisAnalysisData( buffer, -100, -100, width + 200, height + 200 ) )[ 0 ];
         expect( huge.count ).toBe( width * height );
+    } );
+
+} );
+
+describe( "LRC histogram", () => {
+
+    test( "pixels agree with frameData and every pixel is binned exactly once", async () => {
+        const { buffer, pixels } = createUint16Lrc();
+        const subset = getFrameSubset( buffer, 0 );
+        const frame = await frameData( subset.array, subset.dataType );
+        const temperatures = await histogramPixels( buffer );
+
+        expect( Array.from( temperatures ) ).toEqual( frame.pixels.map( Math.fround ) );
+
+        const histogram = await histogramFromPixels( [ temperatures ] );
+        expect( histogram.reduce( ( sum, bar ) => sum + bar.count, 0 ) ).toBe( pixels.length );
+        expect( histogram[ 0 ].from ).toBeCloseTo( -20, 4 );
+        expect( histogram[ histogram.length - 1 ].to ).toBeCloseTo( 80, 4 );
     } );
 
 } );

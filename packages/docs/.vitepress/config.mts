@@ -136,6 +136,16 @@ export default defineConfig({
               { text: 'ThermalRegistry', link: '/core/thermal-registry' },
               { text: 'ThermalGroup', link: '/core/thermal-group' }
             ]
+          },
+          {
+            text: "Supported files",
+            collapsed: true,
+            items: [
+              { text: 'Overview', link: '/core/supported-files/' },
+              { text: 'LRC files', link: '/core/supported-files/lrc' },
+              { text: 'FLIR files', link: '/core/supported-files/flir' },
+              { text: 'Writing a custom parser', link: '/core/supported-files/custom-parser' }
+            ]
           }
         ]
       },

@@ -2,7 +2,9 @@ import { describe, expect, test } from 'vitest';
 import { LrcParser } from './LrcParser';
 import { FilesService } from '../../loading/workers/FilesService';
 import { ThermalFileReader } from '../../loading/workers/ThermalFileReader';
-import { THERMOGRAM_PATHS } from '../../../devserver/node/mocks';
+import { THERMOGRAM_PATHS, readLrcFixture } from '../../../devserver/node/mocks';
+import { readFlirFixture } from '../../../devserver/node/flirFixtures';
+import { determineParser } from '../index';
 import { getPool } from '../../utils/pool';
 
 describe("LrcParser", async () => {
@@ -23,7 +25,7 @@ describe("LrcParser", async () => {
 
     });
 
-    test("reads base info of the file from TIMI Edu camera", async () => {
+    test("reads base info of a Float32 image", async () => {
 
         const {service} = FilesService.isolatedInstance(pool);
 
@@ -33,7 +35,7 @@ describe("LrcParser", async () => {
 
         expect(baseInfo.width).toEqual(160);
         expect(baseInfo.height).toEqual(120);
-        expect(baseInfo.timestamp).toEqual(1637749100497);
+        expect(baseInfo.timestamp).toEqual(1733746366146);
         expect(baseInfo.bytesize).toEqual(76882);
         expect(baseInfo.frameCount).toEqual(1);
         expect(baseInfo.fps).toEqual(Infinity);
@@ -44,7 +46,7 @@ describe("LrcParser", async () => {
 
     });
 
-    test("reads base info of a TIMI Edu camera sequence", async () => {
+    test("reads base info of a Float32 sequence", async () => {
 
         const {service} = FilesService.isolatedInstance(pool);
 
@@ -54,21 +56,20 @@ describe("LrcParser", async () => {
 
         expect(baseInfo.width).toEqual(160);
         expect(baseInfo.height).toEqual(120);
-        expect(baseInfo.timestamp).toEqual(1713882139914);
-        expect(baseInfo.bytesize).toEqual(39811951);
-        expect(baseInfo.frameCount).toEqual(518);
+        expect(baseInfo.timestamp).toEqual(1713882170343);
+        expect(baseInfo.bytesize).toEqual(3919732);
+        expect(baseInfo.frameCount).toEqual(51);
         expect(baseInfo.averageEmissivity).toEqual(0.97998046875);
         expect(baseInfo.averageReflectedKelvins).toEqual(295.1499938964844);
-        expect(baseInfo.min).toEqual(21.170000076293945);
-        // eslint-disable-next-line no-loss-of-precision
-        expect(baseInfo.max).toEqual(126.83999633789062);
-        expect(baseInfo.duration).toEqual(61085);
+        expect(baseInfo.min).toEqual(23.28999900817871);
+        expect(baseInfo.max).toEqual(80.72999572753906);
+        expect(baseInfo.duration).toEqual(5698);
 
         // Test FPS calculation
         expect(baseInfo.frameInterval * baseInfo.frameCount).toEqual(baseInfo.duration);
     });
 
-    test("reads base info of a file from Vario Cam", async () => {
+    test("reads base info of a Uint16 image", async () => {
 
         const {service} = FilesService.isolatedInstance(pool);
 
@@ -78,7 +79,7 @@ describe("LrcParser", async () => {
 
         expect(baseInfo.width).toEqual(1024);
         expect(baseInfo.height).toEqual(768);
-        expect(baseInfo.timestamp).toEqual(1590143917267);
+        expect(baseInfo.timestamp).toEqual(1590143982744);
         expect(baseInfo.bytesize).toEqual(1572946);
         expect(baseInfo.frameCount).toEqual(1);
         expect(baseInfo.fps).toEqual(Infinity);
@@ -106,7 +107,7 @@ describe("LrcParser", async () => {
 
     } );
 
-    test("read frames of a TIMI Edu sequence", async () => {
+    test("reads frames of a Float32 sequence", async () => {
 
         const {service} = FilesService.isolatedInstance(pool);
 
@@ -119,22 +120,22 @@ describe("LrcParser", async () => {
         // The pixel length needs to fit to dimensions
         expect(frame0.pixels.length).toEqual(baseInfo.width * baseInfo.height);
         // Make sure the frame properties are as they should be
-        expect(frame0.timestamp).toEqual(1713882139914);
-        expect(frame0.min).toEqual(22.420000076293945);
-        expect(frame0.max).toEqual(25.56999969482422);
+        expect(frame0.timestamp).toEqual(1713882170343);
+        expect(frame0.min).toEqual(24.670000076293945);
+        expect(frame0.max).toEqual(34.88999938964844);
         expect(frame0.emissivity).toEqual(0.97998046875);
         expect(frame0.reflectedKelvins).toEqual(295.1499938964844);
 
         // Try another frame
-        const frame200 = await file.frameData(0);
-        expect(frame200.timestamp).toEqual(1713882139914);
+        const frame1 = await file.frameData(1);
+        expect(frame1.timestamp).toEqual(1713882170343 + 114);
 
         // A frame outside the range should throw an error
         // expect( async () => await file.getFrameData( 1000 ) ).toThrowError( 'Offset is outside the bounds of the DataView' )
 
     });
 
-    test("read a frame from Vario Cam", async () => {
+    test("reads a frame of a Uint16 image", async () => {
 
         const {service} = FilesService.isolatedInstance(pool);
 
@@ -153,6 +154,49 @@ describe("LrcParser", async () => {
         expect(baseInfo.averageReflectedKelvins).toEqual(frame.reflectedKelvins);
         expect(baseInfo.min).toEqual(frame.min);
         expect(baseInfo.max).toEqual(frame.max);
+
+    });
+
+    test("detects LRC by content, regardless of the file name", () => {
+
+        const lrc = readLrcFixture("image_float32_small.lrc");
+
+        expect(LrcParser.is(lrc, "renamed-without-extension")).toBe(true);
+        expect(LrcParser.is(lrc, "image.jpg")).toBe(true);
+        expect(determineParser(lrc, "renamed-without-extension")).toBe(LrcParser);
+
+        // A signature without a complete header is not recognised
+        expect(LrcParser.is(lrc.slice(0, 24), "image.lrc")).toBe(false);
+        // Neither is another format with an LRC extension
+        expect(LrcParser.is(readFlirFixture("flir_01.jpg"), "image.lrc")).toBe(false);
+
+    });
+
+    test.each([
+        ["image_float32_small.lrc", "image_uint16_small.lrc"],
+        ["sequence_float32_small_short.lrc", "sequence_uint16_small_short.lrc"],
+    ])("Float32 %s and Uint16 %s decode the same scene", async (float32, uint16) => {
+
+        const read = async (name: string, index: number) => {
+            const subset = LrcParser.getFrameSubset(readLrcFixture(name), index);
+            return LrcParser.frameData(subset.array, subset.dataType);
+        };
+
+        const { frameCount } = await LrcParser.baseInfo(readLrcFixture(float32));
+        expect((await LrcParser.baseInfo(readLrcFixture(uint16))).frameCount).toEqual(frameCount);
+
+        for (const index of new Set([0, frameCount - 1])) {
+            const reference = await read(float32, index);
+            const quantised = await read(uint16, index);
+
+            // Uint16 pixels differ by at most one quantisation step
+            const step = (quantised.max - quantised.min) / 65535;
+            const difference = reference.pixels.reduce((max, pixel, i) => Math.max(max, Math.abs(pixel - quantised.pixels[i])), 0);
+
+            expect(quantised.timestamp).toEqual(reference.timestamp);
+            expect(quantised.pixels).toHaveLength(reference.pixels.length);
+            expect(difference).toBeLessThanOrEqual(step * 1.01);
+        }
 
     });
 

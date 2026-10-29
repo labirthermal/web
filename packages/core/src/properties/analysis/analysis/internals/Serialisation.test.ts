@@ -1,7 +1,8 @@
-import { describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { THERMOGRAM_PATHS } from '../../../../../devserver/node/mocks';
 import { loadFileForTests } from '../../../../../devserver/node/scaffold';
 import { ThermalFileInstance } from '../../../../file/ThermalFileInstance';
+import { AbstractRenderer } from '../../../../file/render/AbstractRenderer';
 import { AbstractAreaAnalysis } from './area/AbstractAreaAnalysis';
 
 const left = 10;
@@ -45,12 +46,21 @@ const resetVertical = (analysis: AbstractAreaAnalysis) => {
 
 describe("Serialisation of analysis", () => {
 
-    test("serializes name", async () => {
+    let instance: ThermalFileInstance;
 
-        // Init fake timer in this test
+    beforeEach(async () => {
+        // Serialization needs the analysis DOM, not canvas rendering in a worker.
+        vi.spyOn(AbstractRenderer.prototype, "render").mockResolvedValue(undefined);
+        instance = await loadFileForTests(THERMOGRAM_PATHS.SOUSTRUH);
         vi.useFakeTimers();
+    });
 
-        const instance = await loadFileForTests(THERMOGRAM_PATHS.SOUSTRUH);
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    test("serializes name", async () => {
 
         const analysis = getEllipsisAnalysis("ABCDEFG", instance);
 
@@ -70,11 +80,6 @@ describe("Serialisation of analysis", () => {
 
     test("serializes color", async () => {
 
-        // Init fake timer in this test
-        vi.useFakeTimers();
-
-        const instance = await loadFileForTests(THERMOGRAM_PATHS.SOUSTRUH);
-
         const analysis = getRectAnalysis("ABCDEFG", instance);
 
         const slot = instance.slots.assignAnalysisToSlot( 1, analysis );
@@ -93,12 +98,6 @@ describe("Serialisation of analysis", () => {
     });
 
     test("serialisation dimensions", async () => {
-
-        
-        // Init fake timer in this test
-        vi.useFakeTimers();
-
-        const instance = await loadFileForTests(THERMOGRAM_PATHS.SOUSTRUH);
 
         const analysis = getRectAnalysis("ABCDEFG", instance);
 
@@ -135,11 +134,6 @@ describe("Serialisation of analysis", () => {
     });
 
     test("serialisation of analysis", async () => {
-
-        // Init fake timer in this test
-        vi.useFakeTimers();
-
-        const instance = await loadFileForTests(THERMOGRAM_PATHS.SOUSTRUH);
 
         const analysis = getRectAnalysis("ABCDEFG", instance);
 
@@ -185,11 +179,6 @@ describe("Serialisation of analysis", () => {
     });
 
     test("parsing of serialized color", async () => {
-
-        // Init fake timer in this test
-        vi.useFakeTimers();
-
-        const instance = await loadFileForTests(THERMOGRAM_PATHS.SOUSTRUH);
 
         const analysis = getRectAnalysis("ABCDEFG", instance);
 
@@ -277,11 +266,6 @@ describe("Serialisation of analysis", () => {
 
     test("point analysis", async () => {
 
-        // Init fake timer in this test
-        vi.useFakeTimers();
-
-        const instance = await loadFileForTests(THERMOGRAM_PATHS.SOUSTRUH);
-
         const analysis = getPointAnalysis("ABCDEFG", instance);
 
         const slot = instance.slots.assignAnalysisToSlot( 1, analysis );
@@ -315,11 +299,6 @@ describe("Serialisation of analysis", () => {
     });
 
     test("Invalid input", async () => {
-
-        // Init fake timer in this test
-        vi.useFakeTimers();
-
-        const instance = await loadFileForTests(THERMOGRAM_PATHS.SOUSTRUH);
 
         const analysis = getRectAnalysis("AbCdEfGhIjKlMnOpQrStUvWxYz", instance);
 

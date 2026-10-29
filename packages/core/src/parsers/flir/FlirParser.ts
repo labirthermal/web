@@ -2,7 +2,7 @@ import { IParserObject } from "../structure";
 import { ellipsisAnalysisData, pointAnalysisData, rectAnalysisData } from "./jobs/analysisData";
 import { baseInfo } from "./jobs/baseInfo";
 import { frameData, getFrameSubset } from "./jobs/frameData";
-import { histogramPixels, registryHistogram } from "./jobs/histogram";
+import { histogramPixels } from "./jobs/histogram";
 import { is } from "./jobs/is";
 import { prepare } from "./jobs/prepare";
 
@@ -79,7 +79,6 @@ const parser: IParserObject = {
     baseInfo,
     getFrameSubset,
     frameData,
-    registryHistogram,
     histogramPixels,
     pointAnalysisData,
     rectAnalysisData,

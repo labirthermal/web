@@ -1,5 +1,3 @@
-import { ThermalStatistics } from "../hierarchy/ThermalRegistry"
-
 /** Timing of one frame in file order. All time values are in milliseconds. */
 export type ParsedTimelineFrame = {
     /** Zero-based frame index, also used by `IParserObject.getFrameSubset`. */
@@ -142,8 +140,8 @@ export type AreaAnalysisData = {
  * Worker execution is a caller concern, not a consequence of returning a
  * Promise. `baseInfo`, `frameData`, `histogramPixels` and the analysis jobs must
  * remain self-contained when serialised by workerpool: no captured values or
- * runtime imports. Type-only references are fine. `is`, `prepare`,
- * `getFrameSubset` and `registryHistogram` have no blanket worker guarantee.
+ * runtime imports. Type-only references are fine. `is`, `prepare` and
+ * `getFrameSubset` have no blanket worker guarantee.
  *
  * ArrayBuffers can be cloned or transferred between threads. Transferring
  * detaches the sender's buffer: callers must not transfer a retained working
@@ -180,8 +178,8 @@ export interface IParserObject {
      * not reject otherwise recognised supported content. `url` identifies the
      * source and may also be an uploaded filename rather than a URL.
      *
-     * @todo LRC still requires `url.endsWith("lrc")` as well as its signature;
-     * FLIR already detects by content regardless of the filename.
+     * Both parsers conform: LRC checks its `LRC\0` signature and a complete
+     * header, FLIR checks for a FLIR APP1 segment in the JPEG.
      */
     is(buffer: ArrayBuffer, url: string): boolean,
 
@@ -242,31 +240,19 @@ export interface IParserObject {
 
 
     /**
-     * Calculate a combined histogram from working buffers belonging to this
-     * parser. Temperature bin boundaries are in degrees Celsius; counts are
-     * pixel counts and percentages are on a 0-100 scale.
-     *
-     * Do not pass buffers from different parsers. For mixed formats, collect
-     * each parser's `histogramPixels` and use the shared `histogramFromPixels`.
-     *
-     * @remarks The implementations are not equivalent yet: LRC uses its legacy
-     * sorting/binning algorithm; FLIR composes pixel extraction and the shared
-     * histogram algorithm. Only the LRC implementation is self-contained for
-     * worker execution. Bin-edge, empty-input and height-normalisation behavior
-     * must not currently be assumed identical.
-     */
-    registryHistogram( files: ArrayBuffer[] ): Promise<ThermalStatistics[]>,
-
-    /**
      * Copy all frame temperatures from one working buffer into a Float32Array,
-     * in frame order and row-major order within each frame.
+     * in frame order and row-major order within each frame. The values must
+     * agree with `frameData`, allowing for Float32 rounding.
      * The result must not share storage with the working buffer.
      * Must be self-contained for worker execution.
      *
-     * Used with `histogramFromPixels` to combine different file formats.
-     * @remarks LRC currently emits `NaN` for unsupported pixel encodings;
-     * the shared histogram ignores non-finite values. This is not a general
-     * validation guarantee for malformed working buffers.
+     * This is the parser's only histogram responsibility. Binning is format
+     * independent and done by the shared `histogramFromPixels`, so histograms
+     * of one format and of mixed formats follow the same rules.
+     *
+     * Values that do not represent a temperature (e.g. pixels of an unsupported
+     * encoding) must be `NaN`; the shared histogram ignores non-finite values.
+     * This is not a general validation guarantee for malformed working buffers.
      */
     histogramPixels( file: ArrayBuffer ): Promise<Float32Array>,
 

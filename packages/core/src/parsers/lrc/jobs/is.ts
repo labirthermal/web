@@ -1,15 +1,23 @@
 import { IParserObject } from "../../structure";
 
-export const is: IParserObject["is"] = (data, url) => {
+/** Length of the LRC file header preceding the first frame. */
+const HEADER_BYTE_SIZE = 25;
 
-    // Check if the URL has appropriate extension
-    const hasCorrectExtension = url.endsWith("lrc");
+/**
+ * Detects LRC files by content, regardless of the file name or extension:
+ * the `LRC\0` signature followed by a complete file header.
+ */
+export const is: IParserObject["is"] = ( buffer ) => {
 
-    // Check if the file contains correct signature
-    const decoder = new TextDecoder();
-    const hasCorrectSignature = decoder.decode(data.slice(0, 4)) === "LRC\0";
+    if ( buffer.byteLength < HEADER_BYTE_SIZE ) {
+        return false;
+    }
 
-    // Return value
-    return hasCorrectExtension && hasCorrectSignature;
+    const signature = new Uint8Array( buffer, 0, 4 );
+
+    return signature[ 0 ] === 0x4C // L
+        && signature[ 1 ] === 0x52 // R
+        && signature[ 2 ] === 0x43 // C
+        && signature[ 3 ] === 0x00;
 
 };

@@ -78,7 +78,7 @@ describe("GroupAnalysisSyncController", () => {
             name: "fixture", description: "fixture", devices: [], extensions: [],
             is: () => true, baseInfo: async () => info,
             getFrameSubset: buffer => ({ array: buffer, dataType: 0 }),
-            frameData: async () => frame, registryHistogram: async () => [],
+            frameData: async () => frame, histogramPixels: async () => new Float32Array(frame.pixels),
             pointAnalysisData: async () => ({ 0: 10 }),
             rectAnalysisData: async () => data, ellipsisAnalysisData: async () => data,
         };

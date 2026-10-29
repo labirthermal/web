@@ -1,4 +1,3 @@
-import type { PropertyValueMap } from "lit";
 import { css, html, nothing } from "lit";
 
 import type { ThermalRegistry } from "@labirthermal/core";
@@ -37,6 +36,11 @@ export class RegistryHistogram extends AbstractRegistryConsumer {
     connectedCallback(): void {
         super.connectedCallback();
         this.loading = this.registryObject.histogram.loading;
+        this.histogram = this.registryObject.histogram.value;
+
+        this.registryObject.histogram.addListener( this.UUID, value => {
+            this.histogram = value;
+        } );
 
         this.registryObject.histogram.onCalculationStart.set( this.UUID, () => {
             this.loading = true;
@@ -53,17 +57,6 @@ export class RegistryHistogram extends AbstractRegistryConsumer {
                 this.loading = true;
             }
         })
-
-    }
-
-    protected firstUpdated(_changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>): void {
-        super.firstUpdated( _changedProperties );
-
-        this.registryObject.histogram.addListener( this.UUID, value => {
-            this.histogram = value;
-        } );
-
-        
 
     }
 

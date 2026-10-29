@@ -4,8 +4,17 @@ import type { ThermalStatistics } from "../hierarchy/ThermalRegistry";
  * Build a histogram over several pixel sets in one shared temperature range
  * and with shared bins, so that files of different formats are comparable.
  *
- * Linear complexity, no sorting. The output shape is the same as the one
- * produced by `LrcParser.registryHistogram`.
+ * This is the only histogram algorithm. Parsers only provide temperatures
+ * via `IParserObject.histogramPixels`.
+ *
+ * - 255 bins of equal width spanning the finite minimum to maximum, in °C
+ * - every finite value is counted exactly once; the maximum falls in the last bin
+ * - non-finite values are ignored; no finite value yields an empty array
+ * - a constant input puts all values in the first bin
+ * - `percentage` is on a 0-100 scale; `height` scales percentages by the
+ *   spread between the lowest and highest bar (100 when all bars are equal)
+ *
+ * Linear complexity, no sorting.
  *
  * **Must stay self-contained, it is executed in a worker.**
  */

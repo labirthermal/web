@@ -361,10 +361,10 @@ const rectAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) 
 		const max = frameView.getFloat32(12, true);
 		const distance = Math.abs(min - max);
 		const frameHeaderByteSize = 57;
-		const fromX = left;
-		const toX = left + _width;
-		const fromY = top;
-		const toY = top + _height;
+		const fromX = Math.max(0, Math.ceil(left));
+		const toX = Math.min(fileWidth - 1, Math.floor(left + _width));
+		const fromY = Math.max(0, Math.ceil(top));
+		const toY = Math.min(fileHeight - 1, Math.floor(top + _height));
 		let _min = Infinity;
 		let _max = -Infinity;
 		let count = 0;
@@ -401,97 +401,17 @@ const rectAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) 
 	return output;
 };
 //#endregion
-//#region src/parsers/lrc/jobs/histogram.ts
-const registryHistogram$1 = async (files) => {
-	let pixels = [];
-	const readFile = async (file) => {
-		const headerView = new DataView(file.slice(0, 25));
-		const dataType = headerView.getUint8(15);
-		const width = headerView.getUint16(17, true);
-		const height = headerView.getUint16(19, true);
-		const pixelByteSize = dataType === 1 ? 4 : 2;
-		const frameHeaderSize = 57;
-		const framePixelsSize = width * height * pixelByteSize;
-		const frameSize = frameHeaderSize + framePixelsSize;
-		const streamSubset = file.slice(25);
-		const frameCount = streamSubset.byteLength / frameSize;
-		let filePixels = [];
-		for (let i = 0; i < frameCount; i++) {
-			const frameStart = i * frameSize;
-			const pixelsSubsetStart = frameStart + 57;
-			const pixelsSubsetEnd = pixelsSubsetStart + framePixelsSize;
-			const pixelsSubset = streamSubset.slice(pixelsSubsetStart, pixelsSubsetEnd);
-			if (dataType === 0) {
-				const frameHeaderView = new DataView(streamSubset.slice(frameStart, 56));
-				const min = frameHeaderView.getFloat32(8, true);
-				const max = frameHeaderView.getFloat32(12, true);
-				const array = new Uint16Array(pixelsSubset);
-				const distance = Math.abs(min - max);
-				const UINT16_MAX = 65535;
-				array.forEach((pixel) => {
-					const mappedValue = pixel / UINT16_MAX;
-					filePixels.push(min + distance * mappedValue);
-				});
-			} else if (dataType === 1) filePixels = filePixels.concat(Array.from(new Float32Array(pixelsSubset)));
-		}
-		return filePixels;
-	};
-	(await Promise.all(files.map((file) => readFile(file)))).forEach((fileResult) => {
-		pixels = pixels.concat(fileResult);
-	});
-	pixels.sort((a, b) => {
-		return a - b;
-	});
-	const min = pixels[0];
-	const max = pixels[pixels.length - 1];
-	const distance = Math.abs(min - max);
-	const resolution = 255;
-	const step = distance / resolution;
-	const bars = [];
-	let buf = [...pixels];
-	for (let i = 0; i < resolution; i++) {
-		const from = min + step * i;
-		const to = from + step;
-		const nextUpIndex = buf.findIndex((pixel) => pixel > to);
-		if (nextUpIndex === 0) {
-			const bar = {
-				from,
-				to,
-				count: 0,
-				percentage: 0
-			};
-			bars.push(bar);
-		} else {
-			const count = buf.slice(0, nextUpIndex - 1).length;
-			const bar = {
-				from,
-				to,
-				count,
-				percentage: count / pixels.length * 100
-			};
-			bars.push(bar);
-			buf = buf.slice(nextUpIndex);
-		}
-	}
-	const sortedByPercentage = [...bars].sort((a, b) => {
-		return a.percentage - b.percentage;
-	});
-	const minPercent = sortedByPercentage[0].percentage;
-	const maxPercent = sortedByPercentage[sortedByPercentage.length - 1].percentage;
-	const percentDistance = Math.abs(minPercent - maxPercent);
-	return bars.map((bar) => {
-		return {
-			...bar,
-			height: bar.percentage / percentDistance * 100
-		};
-	});
-};
-//#endregion
 //#region src/parsers/lrc/jobs/is.ts
-const is$1 = (data, url) => {
-	const hasCorrectExtension = url.endsWith("lrc");
-	const hasCorrectSignature = new TextDecoder().decode(data.slice(0, 4)) === "LRC\0";
-	return hasCorrectExtension && hasCorrectSignature;
+/** Length of the LRC file header preceding the first frame. */
+const HEADER_BYTE_SIZE = 25;
+/**
+* Detects LRC files by content, regardless of the file name or extension:
+* the `LRC\0` signature followed by a complete file header.
+*/
+const is$1 = (buffer) => {
+	if (buffer.byteLength < HEADER_BYTE_SIZE) return false;
+	const signature = new Uint8Array(buffer, 0, 4);
+	return signature[0] === 76 && signature[1] === 82 && signature[2] === 67 && signature[3] === 0;
 };
 //#endregion
 //#region src/parsers/lrc/jobs/ellipsisAnalysisData.ts
@@ -538,10 +458,10 @@ const ellipsisAnalysisData$1 = async (entireFileBuffer, left, top, _width, _heig
 		const max = frameView.getFloat32(12, true);
 		const distance = Math.abs(min - max);
 		const frameHeaderByteSize = 57;
-		const fromX = left;
-		const toX = left + _width;
-		const fromY = top;
-		const toY = top + _height;
+		const fromX = Math.max(0, Math.ceil(left));
+		const toX = Math.min(fileWidth - 1, Math.floor(left + _width));
+		const fromY = Math.max(0, Math.ceil(top));
+		const toY = Math.min(fileHeight - 1, Math.floor(top + _height));
 		let _min = Infinity;
 		let _max = -Infinity;
 		let count = 0;
@@ -631,7 +551,6 @@ const LrcParser = Object.freeze({
 	baseInfo: baseInfo$1,
 	getFrameSubset: getFrameSubset$1,
 	frameData: frameData$1,
-	registryHistogram: registryHistogram$1,
 	histogramPixels: histogramPixels$1,
 	pointAnalysisData: pointAnalysisData$1,
 	rectAnalysisData: rectAnalysisData$1,
@@ -776,60 +695,6 @@ const frameData = async (frameSubset) => {
 	};
 };
 //#endregion
-//#region src/parsers/histogramFromPixels.ts
-/**
-* Build a histogram over several pixel sets in one shared temperature range
-* and with shared bins, so that files of different formats are comparable.
-*
-* Linear complexity, no sorting. The output shape is the same as the one
-* produced by `LrcParser.registryHistogram`.
-*
-* **Must stay self-contained, it is executed in a worker.**
-*/
-const histogramFromPixels = async (pixelSets) => {
-	const resolution = 255;
-	let min = Infinity;
-	let max = -Infinity;
-	let total = 0;
-	for (const pixels of pixelSets) for (let index = 0; index < pixels.length; index++) {
-		const value = pixels[index];
-		if (!Number.isFinite(value)) continue;
-		if (value < min) min = value;
-		if (value > max) max = value;
-		total++;
-	}
-	if (total === 0) return [];
-	const distance = max - min;
-	const step = distance / resolution;
-	const counts = new Array(resolution).fill(0);
-	for (const pixels of pixelSets) for (let index = 0; index < pixels.length; index++) {
-		const value = pixels[index];
-		if (!Number.isFinite(value)) continue;
-		const bin = distance === 0 ? 0 : Math.min(254, Math.floor((value - min) / step));
-		counts[bin]++;
-	}
-	const bars = counts.map((count, index) => {
-		const from = min + step * index;
-		return {
-			from,
-			to: from + step,
-			count,
-			percentage: count / total * 100
-		};
-	});
-	let minPercentage = Infinity;
-	let maxPercentage = -Infinity;
-	for (const bar of bars) {
-		if (bar.percentage < minPercentage) minPercentage = bar.percentage;
-		if (bar.percentage > maxPercentage) maxPercentage = bar.percentage;
-	}
-	const percentageDistance = maxPercentage - minPercentage;
-	return bars.map((bar) => ({
-		...bar,
-		height: percentageDistance === 0 ? 100 : bar.percentage / percentageDistance * 100
-	}));
-};
-//#endregion
 //#region src/parsers/flir/jobs/histogram.ts
 /**
 * Copy of the temperatures for histogram calculation.
@@ -840,16 +705,6 @@ const histogramPixels = async (workingBuffer) => {
 	const width = view.getUint16(10, true);
 	const height = view.getUint16(12, true);
 	return new Float32Array(workingBuffer.slice(64, 64 + width * height * 4));
-};
-/**
-* Histogram of FLIR working buffers.
-*
-* Composed of other jobs and therefore **not** serialisable into a worker.
-* `HistogramState` runs `histogramPixels` and `histogramFromPixels` in the pool separately.
-*/
-const registryHistogram = async (files) => {
-	const pixelSets = await Promise.all(files.map((file) => histogramPixels(file)));
-	return histogramFromPixels(pixelSets);
 };
 //#endregion
 //#region src/parsers/flir/decoder/FlirDecodingError.ts
@@ -1459,7 +1314,6 @@ const parser = {
 	baseInfo,
 	getFrameSubset,
 	frameData,
-	registryHistogram,
 	histogramPixels,
 	pointAnalysisData,
 	rectAnalysisData,
@@ -6352,8 +6206,8 @@ var FileRequest = class FileRequest {
 	* - the promise is stored internally
 	* - if the request is already loading/processing, any subsequent calls use the stored promise object
 	*/
-	async load() {
-		if (this.response === void 0) this.response = this.processResponse(await fetch(this.thermalUrl));
+	load() {
+		if (this.response === void 0) this.response = fetch(this.thermalUrl).then((response) => this.processResponse(response));
 		return this.response;
 	}
 	/** 
@@ -8260,6 +8114,69 @@ var RangeDriver = class extends AbstractProperty {
 	}
 };
 //#endregion
+//#region src/parsers/histogramFromPixels.ts
+/**
+* Build a histogram over several pixel sets in one shared temperature range
+* and with shared bins, so that files of different formats are comparable.
+*
+* This is the only histogram algorithm. Parsers only provide temperatures
+* via `IParserObject.histogramPixels`.
+*
+* - 255 bins of equal width spanning the finite minimum to maximum, in °C
+* - every finite value is counted exactly once; the maximum falls in the last bin
+* - non-finite values are ignored; no finite value yields an empty array
+* - a constant input puts all values in the first bin
+* - `percentage` is on a 0-100 scale; `height` scales percentages by the
+*   spread between the lowest and highest bar (100 when all bars are equal)
+*
+* Linear complexity, no sorting.
+*
+* **Must stay self-contained, it is executed in a worker.**
+*/
+const histogramFromPixels = async (pixelSets) => {
+	const resolution = 255;
+	let min = Infinity;
+	let max = -Infinity;
+	let total = 0;
+	for (const pixels of pixelSets) for (let index = 0; index < pixels.length; index++) {
+		const value = pixels[index];
+		if (!Number.isFinite(value)) continue;
+		if (value < min) min = value;
+		if (value > max) max = value;
+		total++;
+	}
+	if (total === 0) return [];
+	const distance = max - min;
+	const step = distance / resolution;
+	const counts = new Array(resolution).fill(0);
+	for (const pixels of pixelSets) for (let index = 0; index < pixels.length; index++) {
+		const value = pixels[index];
+		if (!Number.isFinite(value)) continue;
+		const bin = distance === 0 ? 0 : Math.min(254, Math.floor((value - min) / step));
+		counts[bin]++;
+	}
+	const bars = counts.map((count, index) => {
+		const from = min + step * index;
+		return {
+			from,
+			to: from + step,
+			count,
+			percentage: count / total * 100
+		};
+	});
+	let minPercentage = Infinity;
+	let maxPercentage = -Infinity;
+	for (const bar of bars) {
+		if (bar.percentage < minPercentage) minPercentage = bar.percentage;
+		if (bar.percentage > maxPercentage) maxPercentage = bar.percentage;
+	}
+	const percentageDistance = maxPercentage - minPercentage;
+	return bars.map((bar) => ({
+		...bar,
+		height: percentageDistance === 0 ? 100 : bar.percentage / percentageDistance * 100
+	}));
+};
+//#endregion
 //#region src/properties/states/HistogramResultCache.ts
 const MAX_CACHE_ENTRIES = 64;
 const HISTOGRAM_ALGORITHM_VERSION = 1;
@@ -8397,12 +8314,10 @@ var HistogramState = class extends AbstractProperty {
 		}
 	}
 	/**
-	* Pure LRC registries keep the original LRC calculation. Any other set
-	* collects temperatures of every file with its own parser and bins them
-	* in one shared range.
+	* Collect temperatures of every file with its own parser and bin them
+	* in one shared range with the shared `histogramFromPixels`.
 	*/
 	async calculateHistogram(readers) {
-		if (readers.every((reader) => reader.parser === LrcParser)) return this.parent.pool.exec(LrcParser.registryHistogram, [readers.map((reader) => reader.buffer)]);
 		const pixelSets = await Promise.all(readers.map((reader) => this.parent.pool.exec(reader.parser.histogramPixels, [reader.buffer])));
 		return this.parent.pool.exec(histogramFromPixels, [pixelSets]);
 	}

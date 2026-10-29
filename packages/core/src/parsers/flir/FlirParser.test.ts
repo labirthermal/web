@@ -42,7 +42,7 @@ describe( "FlirParser", () => {
     } );
 
     test( "wraps decoding errors of a damaged FLIR JPEG into FileLoadingError", async () => {
-        const source = new Uint8Array( readFlirFixture( "flir_e60_4.jpg" ) );
+        const source = new Uint8Array( readFlirFixture( "flir_01.jpg" ) );
         // Cut the file in the middle of the FLIR segments
         const damaged = source.slice( 0, 30000 ).buffer;
         await expect( FlirParser.prepare!( damaged, "damaged.jpg" ) ).rejects.toBeInstanceOf( FileLoadingError );
@@ -128,7 +128,7 @@ describe( "FlirParser", () => {
 
     test( "matches flyr wherever flyr can read the file", () => {
         const compared = FLIR_FIXTURE_NAMES.filter( name => FLIR_REFERENCE[ name ].flyrMaxAbsDiff !== null );
-        expect( compared.length ).toBeGreaterThanOrEqual( 14 );
+        expect( compared ).toEqual( FLIR_FIXTURE_NAMES );
         for ( const name of compared ) {
             expect( FLIR_REFERENCE[ name ].flyrMaxAbsDiff ).toBeLessThan( 0.001 );
         }
@@ -146,7 +146,7 @@ describe( "FlirParser jobs in workers", async () => {
     } );
 
     test( "worker jobs return the same results as on the main thread", async () => {
-        const working = await getWorkingBuffer( "flir_e8xt_wifi_1.jpg" );
+        const working = await getWorkingBuffer( "flir_01.jpg" );
 
         expect( await pool.exec( FlirParser.baseInfo, [ working ] ) ).toEqual( await FlirParser.baseInfo( working ) );
         expect( await pool.exec( FlirParser.pointAnalysisData, [ working, 10, 20 ] ) ).toEqual( await FlirParser.pointAnalysisData( working, 10, 20 ) );
@@ -158,7 +158,7 @@ describe( "FlirParser jobs in workers", async () => {
     } );
 
     test( "histogram of several images uses one shared range", async () => {
-        const names = [ "flir_c5_2.jpg", "flir_t630sc_4_plantcv.jpg" ];
+        const names = [ "flir_01.jpg", "flir_03.jpg" ];
         const sets = await Promise.all( names.map( async name => pool.exec( FlirParser.histogramPixels, [ await getWorkingBuffer( name ) ] ) ) );
         const histogram = await pool.exec( histogramFromPixels, [ sets ] );
 

@@ -18,7 +18,7 @@ describe( "Loading FLIR JPEGs", async () => {
 
     const pool = await getPool();
 
-    test.each( [ "flir_e60_4.jpg", "flir_t630sc_4_plantcv.jpg" ] )( "uploaded %s becomes a thermal file instance", async name => {
+    test.each( [ "flir_01.jpg", "flir_03.jpg" ] )( "uploaded %s becomes a thermal file instance", async name => {
         const reference = FLIR_REFERENCE[ name ];
         const original = readFlirFixture( name );
         const { service, registry } = FilesService.isolatedInstance( pool, `flir-upload-${name}` );
@@ -47,7 +47,7 @@ describe( "Loading FLIR JPEGs", async () => {
     } );
 
     test( "the instance reader keeps the original file for downloads", async () => {
-        const name = "flir_c5_2.jpg";
+        const name = "flir_02.jpg";
         const original = readFlirFixture( name );
         const { service, registry } = FilesService.isolatedInstance( pool, "flir-instance-reader" );
         const reader = await service.loadUploadedFile( upload( name, original ) ) as ThermalFileReader;
@@ -64,7 +64,7 @@ describe( "Loading FLIR JPEGs", async () => {
         expect( plain ).toBeInstanceOf( ThermalFileFailure );
         expect( ( plain as ThermalFileFailure ).code ).toBe( FileErrors.PARSING_ERROR );
 
-        const damaged = readFlirFixture( "flir_e60_4.jpg" ).slice( 0, 30000 );
+        const damaged = readFlirFixture( "flir_01.jpg" ).slice( 0, 30000 );
         const failure = await service.loadUploadedFile( upload( "damaged.jpg", damaged ) );
         expect( failure ).toBeInstanceOf( ThermalFileFailure );
         expect( ( failure as ThermalFileFailure ).code ).toBe( FileErrors.PARSING_ERROR );
@@ -74,8 +74,8 @@ describe( "Loading FLIR JPEGs", async () => {
 
 describe( "FLIR performance", () => {
 
-    /** Generous limit for slow CI machines; typical decoding takes 2-10 ms */
-    const LIMIT_MS = 50;
+    /** Generous limit for slow CI machines; a 1024×768 fixture typically decodes in about 30 ms */
+    const LIMIT_MS = 150;
 
     const measure = async ( name: string ) => {
         const buffer = readFlirFixture( name );
@@ -90,9 +90,9 @@ describe( "FLIR performance", () => {
         return times.sort( ( a, b ) => a - b )[ 2 ];
     };
 
+    // All available fixtures store PNG16; RAW16 is covered by synthetic decoder tests
     test.each( [
-        [ "the largest RAW16 image", "flir_vue_pro_640_1.jpg" ],
-        [ "the largest PNG16 image", "flir_t630sc_4_plantcv.jpg" ]
+        [ "the largest PNG16 image", "flir_02.jpg" ]
     ] )( "decodes %s within the limit", async ( _, name ) => {
         expect( await measure( name ) ).toBeLessThan( LIMIT_MS );
     } );
@@ -102,7 +102,7 @@ describe( "FLIR performance", () => {
         const { service, registry } = FilesService.isolatedInstance( pool, "flir-performance" );
         const spy = vi.spyOn( decoder, "decodeFlirJpeg" );
 
-        const reader = await service.loadUploadedFile( upload( "dji_xt2_1.jpg" ) ) as ThermalFileReader;
+        const reader = await service.loadUploadedFile( upload( "flir_01.jpg" ) ) as ThermalFileReader;
         const instance = await reader.createInstance( registry.groups.addOrGetGroup( "performance" ) );
         const decodedOnLoad = spy.mock.calls.length;
 
@@ -119,7 +119,7 @@ describe( "FLIR performance", () => {
     } );
 
     test( "the working buffer is released together with the reader", async () => {
-        const name = "dji_xt2_1.jpg";
+        const name = "flir_01.jpg";
         const working = await FlirParser.prepare!( readFlirFixture( name ), name );
         // Header + Float32 pixels, no copy of the JPEG is kept in the working buffer
         expect( working.byteLength ).toBe( 64 + FLIR_REFERENCE[ name ].width * FLIR_REFERENCE[ name ].height * 4 );

@@ -50,7 +50,8 @@ describe("RangeDriverTest", () => {
         expect(range.value).toBeUndefined();
         expect(imposingCounter).toEqual(0);
 
-        range.imposeRange({ from: 17, to: 20 });
+        // The imposed range must lie within the file range (20.95 - 34.62 °C)
+        range.imposeRange({ from: 25, to: 30 });
 
         expect(imposingCounter).toEqual(1);
 
@@ -64,10 +65,10 @@ describe("RangeDriverTest", () => {
 
         expect(range.value).not.toBeUndefined();
 
-        expect(range.value?.from).toEqual(17);
-        expect(range.value?.to).toEqual(20);
-        expect(instance.group.registry.range.value?.from).toEqual(17);
-        expect(instance.group.registry.range.value?.to).toEqual(20);
+        expect(range.value?.from).toEqual(25);
+        expect(range.value?.to).toEqual(30);
+        expect(instance.group.registry.range.value?.from).toEqual(25);
+        expect(instance.group.registry.range.value?.to).toEqual(30);
 
         expect(imposingCounter).toEqual(1);
 

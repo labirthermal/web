@@ -16,6 +16,298 @@ export declare class CallbacksManager<CallbackType extends (...args: any[]) => a
 //#region src/utils/pool.d.ts
 export declare const getPool: () => Promise<Pool>;
 //#endregion
+//#region src/parsers/structure.d.ts
+/** Timing of one frame in file order. All time values are in milliseconds. */
+type ParsedTimelineFrame = {
+  /** Zero-based frame index, also used by `IParserObject.getFrameSubset`. */
+  index: number;
+  /** Frame timestamp as milliseconds since the Unix epoch (UTC). */
+  absolute: number;
+  /** Elapsed time since the first frame: `absolute - file.timestamp`. */
+  relative: number;
+  /** Time until the next frame; zero for the last frame. Not a byte offset. */
+  offset: number;
+};
+/**
+ * Format-independent metadata for a non-empty thermal image or sequence.
+ * Temperatures are in degrees Celsius unless a property explicitly says Kelvin.
+ */
+type ParsedFileBaseInfo = {
+  /** Raster width in pixels, shared by all frames. */
+  width: number;
+  /** Raster height in pixels, shared by all frames. */
+  height: number;
+  /** First frame timestamp as milliseconds since the Unix epoch (UTC). */
+  timestamp: number;
+  /** Number of frames; a still image has one frame. */
+  frameCount: number;
+  /** Last frame timestamp minus the first, in milliseconds; zero for a still. */
+  duration: number;
+  /**
+   * Current convention: `duration / frameCount`, in milliseconds.
+   * This is not the mean of the `frameCount - 1` gaps between frames.
+   */
+  frameInterval: number;
+  /** `1000 / frameInterval`; currently `Infinity` when the interval is zero. */
+  fps: number;
+  /** Minimum temperature across all frames, in degrees Celsius. */
+  min: number;
+  /** Maximum temperature across all frames, in degrees Celsius. */
+  max: number;
+  /** One timing entry per frame, in file order. */
+  timeline: ParsedTimelineFrame[];
+  /** Arithmetic mean of frame emissivities, dimensionless. */
+  averageEmissivity: number;
+  /** Arithmetic mean of frame reflected apparent temperatures, in Kelvin. */
+  averageReflectedKelvins: number;
+  /** Original file size in bytes, not the size of a decoded working buffer. */
+  bytesize: number;
+};
+/** Decoded data of one frame, independent of the source file encoding. */
+type ParsedFileFrame = {
+  /** Frame timestamp as milliseconds since the Unix epoch (UTC). */
+  timestamp: number;
+  /** Minimum temperature of the frame, in degrees Celsius. */
+  min: number;
+  /** Maximum temperature of the frame, in degrees Celsius. */
+  max: number;
+  /** Frame emissivity, dimensionless. */
+  emissivity: number;
+  /** Frame reflected apparent temperature, in Kelvin. */
+  reflectedKelvins: number;
+  /**
+   * Temperatures in degrees Celsius, row-major from the top-left corner.
+   * Contains `width * height` entries; pixel `(x, y)` is at `y * width + x`.
+   */
+  pixels: number[];
+};
+/**
+ * Definition of a supported file type
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+ */
+type ParserFileType = {
+  /** File extension, lowercase and without starting dots */
+  extension: string;
+  /** MIME type of the original file. The property name is retained for compatibility. */
+  minme: string;
+};
+/** Descriptive device metadata; not used to detect or validate a file. */
+type SupportedDeviceType = {
+  /** Display name of the device or device family. */
+  deviceName: string;
+  /** Human-readable description of the device. */
+  deviceDescription: string;
+  /** Device information URL. */
+  deviceUrl: string;
+  /** Manufacturer display name. */
+  manufacturer: string;
+  /** Manufacturer website URL. */
+  manufacturerUrl: string;
+};
+/**
+ * Point temperatures in degrees Celsius keyed by elapsed milliseconds since
+ * the first frame, not by frame index or absolute timestamp.
+ * A still image uses key `0`. Equal relative timestamps share the same key.
+ */
+type PointAnalysisData = {
+  [time: number]: number;
+};
+/**
+ * Area statistics keyed by elapsed milliseconds since the first frame.
+ * A still image uses key `0`. Equal relative timestamps share the same key.
+ *
+ * An empty selection yields `min = Infinity`, `max = -Infinity`,
+ * `avg = NaN` and `count = 0`.
+ */
+type AreaAnalysisData = {
+  [time: number]: {
+    /** Minimum selected temperature, in degrees Celsius. */
+    min: number;
+    /** Maximum selected temperature, in degrees Celsius. */
+    max: number;
+    /** Arithmetic mean of selected temperatures, in degrees Celsius. */
+    avg: number;
+    /** Number of pixels included in the statistics. */
+    count: number;
+  };
+};
+/**
+ * Public behavioral contract for a thermal file format adapter.
+ *
+ * Lifecycle: `is(source, url)` -> optional `prepare(source, url)` -> data jobs.
+ * Only `is` and `prepare` receive the original source file. Subsequent methods
+ * receive the working buffer, except `frameData`, which receives a frame subset.
+ * Without `prepare`, the original source is also the working buffer (LRC).
+ * FLIR decodes its JPEG once into a separate working buffer of temperatures.
+ * The working layout is private to each parser, not shared between formats.
+ *
+ * Data jobs must not mutate their input buffers. Frame, point, area and
+ * histogram reads should describe the same temperatures, allowing for Float32
+ * rounding. Known implementation gaps are called out below; documentation alone
+ * does not make the current parsers conform.
+ *
+ * Worker execution is a caller concern, not a consequence of returning a
+ * Promise. `baseInfo`, `frameData`, `histogramPixels` and the analysis jobs must
+ * remain self-contained when serialised by workerpool: no captured values or
+ * runtime imports. Type-only references are fine. `is`, `prepare` and
+ * `getFrameSubset` have no blanket worker guarantee.
+ *
+ * ArrayBuffers can be cloned or transferred between threads. Transferring
+ * detaches the sender's buffer: callers must not transfer a retained working
+ * buffer. A dedicated frame subset or pixel copy can be transferred instead.
+ *
+ * @remarks The invalid-point and invalid-frame-index policies are not yet
+ * unified. Their current differences are documented on the relevant methods.
+ * Area analyses already share one clipping policy.
+ * Other than preparation errors, malformed-buffer errors are not normalised
+ * across parsers; callers must not rely on a common error class or message.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects#transferring_objects_between_threads
+ */
+interface IParserObject {
+  /** Name of the file format */
+  name: string;
+  /** Description of the file format */
+  description: string;
+  /** List of supported devices */
+  devices: SupportedDeviceType[];
+  /** Original file extensions and MIME types for display and file input hints. */
+  extensions: ParserFileType[];
+  /**
+   * Synchronously recognise the original file by its content, without mutation.
+   * Return `false` for unrecognised content. Recognition is not full validation:
+   * preparing or reading a recognised but damaged file can still fail.
+   *
+   * The target rule is content-based detection: a filename or extension must
+   * not reject otherwise recognised supported content. `url` identifies the
+   * source and may also be an uploaded filename rather than a URL.
+   *
+   * Both parsers conform: LRC checks its `LRC\0` signature and a complete
+   * header, FLIR checks for a FLIR APP1 segment in the JPEG.
+   */
+  is(buffer: ArrayBuffer, url: string): boolean;
+  /**
+   * Optionally convert the original file into the parser's working buffer.
+   * Called once by the loading pipeline after recognition and before the
+   * reader is created. The source must remain unchanged.
+   *
+   * Currently awaited on the main thread. FLIR performs decoding and
+   * radiometry here; LRC omits it and reads its source buffer directly.
+   * `ThermalFileReader.fileBuffer` preserves the original file for downloads.
+   *
+   * @param buffer Original source file, not an already prepared buffer.
+   * @param url Source URL or uploaded filename, used for error reporting.
+   * @returns The working buffer for metadata, frame selection and analyses.
+   * @throws FileLoadingError when preparation fails. The loading pipeline
+   * also wraps other preparation errors as `FileErrors.PARSING_ERROR`.
+   */
+  prepare?(buffer: ArrayBuffer, url: string): Promise<ArrayBuffer>;
+  /**
+   * Read format-independent metadata from the working buffer, without
+   * returning pixel arrays. Repeat calls must give equivalent metadata;
+   * caching belongs to the reader, not to the parser.
+   *
+   * Must be self-contained for worker execution.
+   * @param entireFileBuffer The full working buffer, not necessarily the source file.
+   */
+  baseInfo(entireFileBuffer: ArrayBuffer): Promise<ParsedFileBaseInfo>;
+  /**
+   * Synchronously create an independently owned buffer for one frame.
+   * Keep it as small as the format permits; transferring it must not detach
+   * or modify the retained working buffer. Currently called on the main thread.
+   *
+   * @param entireFileBuffer The full working buffer.
+   * @param frameIndex Zero-based integer in `[0, frameCount)`.
+   * @returns `array` is the frame subset; `dataType` is an opaque parser-local
+   * encoding hint. Pass both unchanged to this same parser's `frameData`.
+   * LRC uses its pixel encoding byte; FLIR returns `0` and ignores the hint.
+   *
+   * @remarks Invalid indices have no shared policy yet. LRC slices according
+   * to the supplied index without validation; the later frame read can fail.
+   * FLIR ignores the index and always returns its single frame.
+   */
+  getFrameSubset(entireFileBuffer: ArrayBuffer, frameIndex: number): {
+    array: ArrayBuffer;
+    dataType: number;
+  };
+  /**
+   * Decode the subset returned by this parser's `getFrameSubset`.
+   * Must be self-contained for worker execution.
+   *
+   * @param frameSubset Independently owned frame data, not the full source file.
+   * @param dataType Parser-local hint returned together with the subset.
+   * @returns Metadata and row-major temperatures for the selected frame.
+   */
+  frameData(frameSubset: ArrayBuffer, dataType: number): Promise<ParsedFileFrame>;
+  /**
+   * Copy all frame temperatures from one working buffer into a Float32Array,
+   * in frame order and row-major order within each frame. The values must
+   * agree with `frameData`, allowing for Float32 rounding.
+   * The result must not share storage with the working buffer.
+   * Must be self-contained for worker execution.
+   *
+   * This is the parser's only histogram responsibility. Binning is format
+   * independent and done by the shared `histogramFromPixels`, so histograms
+   * of one format and of mixed formats follow the same rules.
+   *
+   * Values that do not represent a temperature (e.g. pixels of an unsupported
+   * encoding) must be `NaN`; the shared histogram ignores non-finite values.
+   * This is not a general validation guarantee for malformed working buffers.
+   */
+  histogramPixels(file: ArrayBuffer): Promise<Float32Array>;
+  /**
+   * Read one pixel across all frames of the working buffer.
+   * Coordinates are zero-based from the top-left: x is column, y is row.
+   * For an in-bounds integer point, temperatures must agree with `frameData`.
+   * Must be self-contained for worker execution.
+   *
+   * @returns Temperatures keyed by elapsed milliseconds since the first frame.
+   * @remarks No common invalid-coordinate policy has been selected. FLIR
+   * returns `NaN` for non-integer or out-of-bounds points. LRC computes a byte
+   * offset without coordinate validation, which can read an unintended value
+   * or throw `RangeError`.
+   */
+  pointAnalysisData(file: ArrayBuffer, x: number, y: number): Promise<PointAnalysisData>;
+  /**
+   * Calculate rectangular area statistics for every frame of the working buffer.
+   * `(x, y)` is the top-left corner in pixel coordinates. Boundaries are
+   * inclusive: the area covers x through x + width and y through y + height,
+   * so width=height=0 selects one in-bounds pixel.
+   *
+   * Pixel selection is shared by all parsers:
+   * - only integer pixel coordinates are read: columns
+   *   `ceil(x)`..`floor(x + width)` and rows `ceil(y)`..`floor(y + height)`;
+   * - the selection is clipped to the raster, pixels outside it are ignored
+   *   and never cause an error;
+   * - an area entirely outside the raster, or one containing no integer
+   *   coordinate, selects no pixels and yields the empty statistics
+   *   described in `AreaAnalysisData`.
+   *
+   * Must be self-contained for worker execution.
+   *
+   * @returns Statistics keyed by elapsed milliseconds since the first frame.
+   */
+  rectAnalysisData(file: ArrayBuffer, x: number, y: number, width: number, height: number): Promise<AreaAnalysisData>;
+  /**
+   * Calculate elliptical area statistics for every frame of the working buffer.
+   * `(x, y, width, height)` defines its bounding rectangle in pixel coordinates;
+   * the centre is `(x + width / 2, y + height / 2)` and radii are half the extents.
+   * Pixels on the ellipse boundary are included.
+   *
+   * Candidate pixels are selected and clipped exactly as in `rectAnalysisData`;
+   * of those, only pixels inside the ellipse contribute. The part of the
+   * ellipse outside the raster is therefore ignored.
+   *
+   * Must be self-contained for worker execution.
+   *
+   * @returns Statistics keyed by elapsed milliseconds since the first frame.
+   * @remarks A zero radius currently selects no pixels because the ellipse
+   * test divides by that radius; the result is then the empty statistics.
+   * A policy for degenerate ellipses has not been selected yet.
+   */
+  ellipsisAnalysisData(file: ArrayBuffer, x: number, y: number, width: number, height: number): Promise<AreaAnalysisData>;
+}
+//#endregion
 //#region src/filters/AbstractFilter.d.ts
 type AbstractFilterParameters = {
   key: number;
@@ -41,105 +333,202 @@ export declare abstract class AbstractFileResult {
   abstract isSuccess(): boolean;
 }
 //#endregion
-//#region src/loading/workers/errors.d.ts
-/** Codes of errors */
-declare enum FileErrors {
-  NOT_SPECIFIED = 0,
-  FILE_NOT_FOUND = 1,
-  MIME_UNSUPPORTED = 2,
-  PARSING_ERROR = 3,
-  OUT_OF_MEMORY = 4
-}
-/** The error that is thrown anytime something happens during the loading */
-declare class FileLoadingError extends Error {
-  readonly code: FileErrors;
-  readonly url: string;
-  constructor(code: FileErrors, url: string, message?: string);
+//#region src/loading/workers/dropin/DropinElementManager.d.ts
+/** Turn any element into a dropzone! */
+export declare class DropinElementListener {
+  readonly service: FilesService;
+  readonly element: HTMLElement;
+  protected _hover: boolean;
+  get hover(): boolean;
+  readonly onMouseEnter: CallbacksManager<() => void>;
+  readonly onMouseLeave: CallbacksManager<() => void>;
+  readonly onDrop: CallbacksManager<() => void>;
+  readonly onProcessingEnd: CallbacksManager<(results: AbstractFileResult[], event: Event | DragEvent) => void>;
+  /** An invissible input element */
+  input?: HTMLInputElement;
+  protected hydrated: boolean;
+  protected multiple: boolean;
+  protected bindedEnterListener: DropinElementListener["handleEnter"];
+  protected bindedLeaveListener: DropinElementListener["handleLeave"];
+  protected bindedDropListener: DropinElementListener["handleDrop"];
+  protected bindedInputChangeListener: DropinElementListener["handleInputChange"];
+  protected bindedDragoverListener: DropinElementListener["handleDragover"];
+  protected bindedClickListener: DropinElementListener["handleClick"];
+  protected constructor(service: FilesService, element: HTMLElement, multiple?: boolean);
+  static listenOnElement(service: FilesService, element: HTMLElement, multiple?: boolean): DropinElementListener;
+  /** Bind all event listeners to the provided element */
+  hydrate(): void;
+  /** Remove all event listeners from the element */
+  dehydrate(): void;
+  handleClick(event: PointerEvent): void;
+  handleDragover(event: DragEvent): void;
+  protected handleFiles(files: File[]): Promise<AbstractFileResult[]>;
+  handleDrop(event: DragEvent): Promise<{
+    results: AbstractFileResult[];
+    event: DragEvent;
+  }>;
+  handleInputChange(event: Event): Promise<{
+    results: AbstractFileResult[];
+    event: Event;
+  }>;
+  handleEnter(): void;
+  handleLeave(): void;
+  /** Build the internal input */
+  protected getInput(): HTMLInputElement;
+  openFileDialog(multiple?: boolean): void;
 }
 //#endregion
-//#region src/loading/workers/ThermalFileFailure.d.ts
-export declare class ThermalFileFailure extends AbstractFileResult {
-  readonly code: FileErrors;
-  readonly message: string;
-  constructor(thermalUrl: string, code: FileErrors, message: string);
-  isSuccess(): boolean;
-  static fromError(error: FileLoadingError): ThermalFileFailure;
-}
-//#endregion
-//#region src/loading/batch/BatchLoader.d.ts
+//#region src/loading/workers/FileRequest.d.ts
 /**
- * Handle batch loading of thermal files.
- *
- * This class should be used as a lazy-loaded member of a thermal registry.
+ * Internal member of `FilesService`
+ * - `FileService` members may listen to resolving of this object
+ * - `load()` method effcently handles the fetch and processing of the file
  */
-declare class BatchLoader {
-  readonly registry: ThermalRegistry;
-  readonly onBatchStart: CallbacksManager<() => void>;
-  readonly onBatchComplete: CallbacksManager<(result: (ThermalFileInstance | ThermalFileFailure)[]) => void>;
-  private set;
-  get numberOfBatches(): number;
-  get currentOpenBatch(): Batch | undefined;
-  get hasLoadingBatches(): boolean;
-  get numLoadingBatches(): number;
-  constructor(registry: ThermalRegistry);
-  getBatchById(id: string): Batch;
-  createBatch(id?: string): Batch;
+declare class FileRequest {
+  protected readonly service: FilesService;
+  readonly thermalUrl: string;
+  readonly visibleUrl?: string | undefined;
+  protected constructor(service: FilesService, thermalUrl: string, visibleUrl?: string | undefined);
+  static fromUrl(service: FilesService, thermalUrl: string, visibleUrl?: string): FileRequest;
   /**
-   * Request a file through a batch
-   *
-   * If there is an open batch, register the request in it.
-   * Else open a new batch.
-   *
-   * The batch will execute automatically in the next tick.
+   * The request is stored internally, so that multiple calls of `load` will allways result in one single `Promise` - to this one.
    */
-  request(thermalUrl: string, visibleUrl: string | undefined, group: ThermalGroup, callback: BatchLoadingCallback, id?: string): Batch;
-  closeBatch(): void;
+  response?: Promise<AbstractFileResult>;
   /**
-   * This method is called from the inside of a batch object
-   * to indicate its completion.
-   *
-   * Upon completion, the batch object is deleted and if there
-   * are no other batches, mark the registry as loaded.
+   * Fetch a file, process the response and return the promise
+   * - the promise is stored internally
+   * - if the request is already loading/processing, any subsequent calls use the stored promise object
    */
-  batchFinished(batch: Batch): void;
+  load(): Promise<AbstractFileResult>;
+  /**
+   * Process the raw response:
+   * - decide if the file exists
+   * - assign parser to the file
+   * - create the service
+   */
+  protected processResponse(response: Response): Promise<AbstractFileResult>;
+  /**
+   * Actions taken on the `AbstractFileResult` object
+   * @todo because there are no side effects, this method might appear redundant
+   */
+  protected pocessTheService(result: AbstractFileResult): AbstractFileResult;
 }
 //#endregion
-//#region src/loading/batch/Batch.d.ts
+//#region src/loading/workers/FilesService.d.ts
 /**
- * A single batch object
- *
- * A batch is created from all requests registered in a single tick.
- * The Batch creation and requests registration is handled completely
- * by `BatchLoader.request` method.
- *
- * Internally, this object stores an array of file requests along
- * with all the necessary additional information: the target group
- * and a callback that will be fired AFTER ALL FILES OF THE BATCH ARE LOADED.
- *
+ * A singleton instance handling file loading
  */
-export declare class Batch {
-  protected readonly loader: BatchLoader;
-  readonly id?: string | undefined;
-  private _loading;
-  get loading(): boolean;
-  readonly onResolve: CallbacksManager<(result: (ThermalFileInstance | ThermalFileFailure)[]) => void>;
-  /** The current timeout fn that is being overriden by every call of the `request` method */
-  private timeout?;
-  /** Array of currently queued requests */
-  private queue;
-  get size(): number;
-  protected constructor(loader: BatchLoader, id?: string | undefined);
-  static init(loader: BatchLoader, id?: string): Batch;
-  static initWithRequest(loader: BatchLoader, thermalUrl: string, visibleUrl: undefined | string, group: ThermalGroup, callback: BatchLoadingCallback): Batch;
-  /**
-   * Request a thermal file
-   *
-   * Requesting adds new record to the queue and creates a new
-   * timeout closure.
-   */
-  request(thermalUrl: string, visibleUrl: string | undefined, group: ThermalGroup, callback: BatchLoadingCallback): void;
-  close(): void;
+declare class FilesService {
+  readonly manager: ThermalManager;
+  get pool(): Pool;
+  constructor(manager: ThermalManager);
+  /** @deprecated Intended only for tests & other internal purposes */
+  static isolatedInstance(pool: Pool, registryName?: string): {
+    service: FilesService;
+    registry: ThermalRegistry;
+  };
+  /** Map of pending requests */
+  protected readonly requestsByUrl: Map<string, FileRequest>;
+  /** Number of currently pending requests */
+  get requestsCount(): number;
+  /** Is an URL currently pending? */
+  fileIsPending(url: string): boolean;
+  /** Cache of loaded files */
+  protected readonly cacheByUrl: Map<string, AbstractFileResult>;
+  /** Number of cached results */
+  get cachedServicesCount(): number;
+  /** Is the URL already in the cache? */
+  fileIsInCache(url: string): boolean;
+  /** Process a file obrained from anywhere */
+  loadUploadedFile(file: File): Promise<AbstractFileResult>;
+  /** Create a dropzone listener on a HTML element */
+  handleDropzone(element: HTMLElement, multiple?: boolean): DropinElementListener;
+  /** Load a file from URL, eventually using already cached result */
+  loadFile(thermalUrl: string, visibleUrl?: string): Promise<AbstractFileResult>;
+  /** Load multiple images at once using  */
+  loadFiles(files: {
+    lrc: string;
+    png?: string;
+    callback?: (result: AbstractFileResult) => Promise<void>;
+  }[]): Promise<AbstractFileResult[]>;
 }
+//#endregion
+//#region src/properties/scale/palettes.d.ts
+/** Definition of a palette containing its name, gradient and pixels value. */
+type ThermalPaletteType = {
+  /** Actial pixels that shall be ised for drawings of thermograms. */
+  pixels: string[];
+  /** Human-readable name of the palette. */
+  name: string;
+  /** A CSS gradient representing the color scale in the UI. */
+  gradient: string;
+  /** The CSS slug */
+  slug: AvailableThermalPalette;
+  /** Float array containing color values for WebGL2 texture */
+  texturePixels: Float32Array;
+};
+declare const PALETTES: {
+  readonly iron: {
+    readonly name: "IRON";
+    readonly gradient: string;
+    readonly pixels: string[];
+    readonly texturePixels: Float32Array<ArrayBufferLike>;
+    readonly slug: "iron";
+  };
+  readonly jet: {
+    readonly name: "JET";
+    readonly gradient: string;
+    readonly pixels: string[];
+    readonly texturePixels: Float32Array<ArrayBufferLike>;
+    readonly slug: "jet";
+  };
+  readonly white_hot: {
+    readonly name: "White Hot";
+    readonly gradient: string;
+    readonly pixels: string[];
+    readonly texturePixels: Float32Array<ArrayBufferLike>;
+    readonly slug: "white_hot";
+  };
+  readonly black_hot: {
+    readonly name: "Black Hot";
+    readonly gradient: string;
+    readonly pixels: string[];
+    readonly texturePixels: Float32Array<ArrayBufferLike>;
+    readonly slug: "black_hot";
+  };
+  readonly lava: {
+    readonly name: "Lava";
+    readonly gradient: string;
+    readonly pixels: string[];
+    readonly texturePixels: Float32Array<ArrayBufferLike>;
+    readonly slug: "lava";
+  };
+  readonly arctic: {
+    readonly name: "Arctic";
+    readonly gradient: string;
+    readonly pixels: string[];
+    readonly texturePixels: Float32Array<ArrayBufferLike>;
+    readonly slug: "arctic";
+  };
+  readonly rainbow: {
+    readonly name: "Rainbow";
+    readonly gradient: string;
+    readonly pixels: string[];
+    readonly texturePixels: Float32Array<ArrayBufferLike>;
+    readonly slug: "rainbow";
+  };
+  readonly rainbow_hc: {
+    readonly name: "Rainbow HC";
+    readonly gradient: string;
+    readonly pixels: string[];
+    readonly texturePixels: Float32Array<ArrayBufferLike>;
+    readonly slug: "rainbow_hc";
+  };
+};
+/** Keys of palettes available in `@labirthermal/core`. */
+type AvailableThermalPalette = keyof typeof PALETTES;
+/** Palette definitions available in `@labirthermal/core`. */
+export declare const ThermalPalettes: Record<AvailableThermalPalette, ThermalPaletteType>;
 //#endregion
 //#region src/properties/scale/abstractMinmaxProperty.d.ts
 interface ThermalMinmaxType {
@@ -1116,6 +1505,24 @@ declare class RangeDriver extends AbstractProperty<ThermalRangeOrUndefined, Ther
   recalculateAutoValue(): ThermalRangeOrUndefined;
 }
 //#endregion
+//#region src/properties/analysis/group/AnalysisGroupGraph.d.ts
+type ThermalGroupGraphData = [string[], ...[Date, ...number[]][]];
+type ThermalGraphDefinition = {
+  data: ThermalGroupGraphData;
+  colors: string[];
+};
+type ThermalGraphGroupDataOrUndefined = ThermalGraphDefinition | undefined;
+declare class AnalysisGroupGraph extends AbstractProperty<ThermalGraphGroupDataOrUndefined, ThermalGroup> {
+  static LISTENER_ID: string;
+  constructor(parent: ThermalGroup);
+  protected timeout?: ReturnType<typeof setTimeout>;
+  protected calculateData(): void;
+  turnOn(): void;
+  turnOff(): void;
+  protected validate(value: ThermalGraphGroupDataOrUndefined): ThermalGraphGroupDataOrUndefined;
+  protected afterSetEffect(): void;
+}
+//#endregion
 //#region src/properties/abstractProperty.d.ts
 /** All available property data types */
 type PropertyListenersTypes = boolean | number | string | ThermalRangeOrUndefined | ThermalMinmaxOrUndefined | ThermalCursorPositionOrUndefined | ThermalGroup[] | ThermalStatistics[] | ThermalFileInstance[] | AbstractAnalysis[] | AbstractTool | AnalysisDataStateValue | AnalysisSlotsMap | ThermalGraphGroupDataOrUndefined;
@@ -1176,22 +1583,354 @@ declare abstract class AbstractProperty<ValueType extends PropertyListenersTypes
   protected callAllListenersWithCurrentValue(): void;
 }
 //#endregion
-//#region src/properties/analysis/group/AnalysisGroupGraph.d.ts
-type ThermalGroupGraphData = [string[], ...[Date, ...number[]][]];
-type ThermalGraphDefinition = {
-  data: ThermalGroupGraphData;
-  colors: string[];
-};
-type ThermalGraphGroupDataOrUndefined = ThermalGraphDefinition | undefined;
-declare class AnalysisGroupGraph extends AbstractProperty<ThermalGraphGroupDataOrUndefined, ThermalGroup> {
-  static LISTENER_ID: string;
-  constructor(parent: ThermalGroup);
-  protected timeout?: ReturnType<typeof setTimeout>;
-  protected calculateData(): void;
-  turnOn(): void;
-  turnOff(): void;
-  protected validate(value: ThermalGraphGroupDataOrUndefined): ThermalGraphGroupDataOrUndefined;
+//#region src/properties/scale/PaletteDrive.d.ts
+declare class PaletteDrive extends AbstractProperty<AvailableThermalPalette, ThermalManager> {
+  private get availablePalettes();
+  /** All the current palette properties should be accessed through this property. */
+  get currentPalette(): ThermalPaletteType;
+  protected validate(value: AvailableThermalPalette): AvailableThermalPalette;
+  /** Any changes to the value should propagate directly to every instance. */
   protected afterSetEffect(): void;
+  /** Set a palette value and propagate the change to all instances. */
+  setPalette(key: AvailableThermalPalette): void;
+  /** Takes any string input and converts it to a valid AvailableThermalPalettes key */
+  sanitizeInputKey(input: string | null | undefined): AvailableThermalPalette;
+}
+//#endregion
+//#region src/loading/workers/errors.d.ts
+/** Codes of errors */
+declare enum FileErrors {
+  NOT_SPECIFIED = 0,
+  FILE_NOT_FOUND = 1,
+  MIME_UNSUPPORTED = 2,
+  PARSING_ERROR = 3,
+  OUT_OF_MEMORY = 4
+}
+/** The error that is thrown anytime something happens during the loading */
+declare class FileLoadingError extends Error {
+  readonly code: FileErrors;
+  readonly url: string;
+  constructor(code: FileErrors, url: string, message?: string);
+}
+//#endregion
+//#region src/loading/workers/ThermalFileFailure.d.ts
+export declare class ThermalFileFailure extends AbstractFileResult {
+  readonly code: FileErrors;
+  readonly message: string;
+  constructor(thermalUrl: string, code: FileErrors, message: string);
+  isSuccess(): boolean;
+  static fromError(error: FileLoadingError): ThermalFileFailure;
+}
+//#endregion
+//#region src/loading/batch/BatchLoader.d.ts
+/**
+ * Handle batch loading of thermal files.
+ *
+ * This class should be used as a lazy-loaded member of a thermal registry.
+ */
+declare class BatchLoader {
+  readonly registry: ThermalRegistry;
+  readonly onBatchStart: CallbacksManager<() => void>;
+  readonly onBatchComplete: CallbacksManager<(result: (ThermalFileInstance | ThermalFileFailure)[]) => void>;
+  private set;
+  get numberOfBatches(): number;
+  get currentOpenBatch(): Batch | undefined;
+  get hasLoadingBatches(): boolean;
+  get numLoadingBatches(): number;
+  constructor(registry: ThermalRegistry);
+  getBatchById(id: string): Batch;
+  createBatch(id?: string): Batch;
+  /**
+   * Request a file through a batch
+   *
+   * If there is an open batch, register the request in it.
+   * Else open a new batch.
+   *
+   * The batch will execute automatically in the next tick.
+   */
+  request(thermalUrl: string, visibleUrl: string | undefined, group: ThermalGroup, callback: BatchLoadingCallback, id?: string): Batch;
+  closeBatch(): void;
+  /**
+   * This method is called from the inside of a batch object
+   * to indicate its completion.
+   *
+   * Upon completion, the batch object is deleted and if there
+   * are no other batches, mark the registry as loaded.
+   */
+  batchFinished(batch: Batch): void;
+}
+//#endregion
+//#region src/loading/ThermalRequest.d.ts
+/** A stupid object containing only requested URLS. Does not perform any further logic. */
+type ThermalFileRequest = {
+  thermalUrl: string;
+  visibleUrl?: string;
+};
+//#endregion
+//#region src/properties/display/OpacityDrive.d.ts
+declare class OpacityDrive extends AbstractProperty<number, ThermalRegistry> {
+  /** Make sure the value is allways between 0 and 1 */
+  protected validate(value: number): number;
+  /**
+   * Whenever the opacity changes, propagate the value to all instances
+   */
+  protected afterSetEffect(value: number): void;
+  /** Impose an opacity to all instances */
+  imposeOpacity(value: number): number;
+}
+//#endregion
+//#region src/properties/lists/GroupsState.d.ts
+/** Handles group creation and removal */
+declare class GroupsState extends AbstractProperty<ThermalGroup[], ThermalRegistry> {
+  protected _map: Map<string, ThermalGroup>;
+  get map(): Map<string, ThermalGroup>;
+  protected validate(value: ThermalGroup[]): ThermalGroup[];
+  protected afterSetEffect(value: ThermalGroup[]): void;
+  addExistingGroup(group: ThermalGroup): void;
+  addOrGetGroup(groupId: string, name?: string, description?: string): ThermalGroup;
+  removeGroup(groupId: string): void;
+  removeAllGroups(): void;
+}
+//#endregion
+//#region src/properties/scale/MinmaxRegistryState.d.ts
+declare class MinmaxRegistryProperty extends AbstractMinmaxProperty<ThermalRegistry> {
+  protected validate(value: ThermalMinmaxOrUndefined): ThermalMinmaxOrUndefined;
+  protected afterSetEffect(): void;
+  recalculateFromGroups(): ThermalMinmaxOrUndefined;
+  protected _getMinmaxFromAllGroups(groups: ThermalGroup[]): ThermalMinmaxOrUndefined;
+}
+//#endregion
+//#region src/loading/workers/ThermalFileReader.d.ts
+/**
+ * Stores the file's `ArrayBuffer` and provides all the data for instance
+ * - this service is registered in FilesService
+ * - the instances are retrieved using `FilesService.loadOneFile`
+ */
+export declare class ThermalFileReader extends AbstractFileResult {
+  readonly service: FilesService;
+  readonly parser: IParserObject;
+  /** For the purpose of testing we have a unique ID */
+  readonly id: number;
+  /** In-memory cache of the `baseInfo` request. This request might be expensive in larger files or in Vario Cam files. Because the return value is allways the same, there is no need to make the call repeatedly. */
+  protected baseInfoCache?: ParsedFileBaseInfo;
+  readonly fileName: string;
+  private get pool();
+  protected originalBuffer?: ArrayBuffer;
+  /** The file exactly as it was loaded, if the parser works with a converted working buffer */
+  protected readonly sourceBuffer?: ArrayBuffer;
+  protected _buffer: ArrayBuffer;
+  /** The working buffer passed to all parser methods */
+  get buffer(): ArrayBuffer;
+  protected set buffer(value: ArrayBuffer);
+  /**
+   * The original file content, e.g. for downloads.
+   * Differs from `buffer` for formats decoded while loading (FLIR JPEG).
+   */
+  get fileBuffer(): ArrayBuffer;
+  /** MIME type of the original file */
+  get fileMimeType(): string;
+  constructor(service: FilesService, buffer: ArrayBuffer, parser: IParserObject, thermalUrl: string, visibleUrl?: string, preserveOriginalBuffer?: boolean, sourceBuffer?: ArrayBuffer);
+  isSuccess(): boolean;
+  /** @todo This method relies on the functionality of filters. */
+  protected copyBuffer(buffer: ArrayBuffer): ArrayBuffer;
+  /** Create copy of the self so that the instance refers to its own ThermalFileReader */
+  protected cloneForInstance(): ThermalFileReader;
+  /** Read the fundamental data of the file. If this method had been called before, return the cached result. */
+  baseInfo(): ReturnType<IParserObject["baseInfo"]>;
+  /**
+   * Before requesting a frame, create a dedicated `ArrayBuffer` containing only the frame's data
+   *
+   * **THIS IS SYNCHRONOUSE AND MIGHT BE EXPENSIVE**
+   */
+  protected getFrameSubset(frameIndex: number): ReturnType<IParserObject["getFrameSubset"]>;
+  /** Read a given frame
+   * @todo Implement index range check
+   */
+  frameData(index: number): ReturnType<IParserObject["frameData"]>;
+  pointAnalysisData(x: number, y: number): ReturnType<IParserObject["pointAnalysisData"]>;
+  rectAnalysisData(x: number, y: number, width: number, height: number): ReturnType<IParserObject["rectAnalysisData"]>;
+  ellipsisAnalysisData(x: number, y: number, width: number, height: number): ReturnType<IParserObject["ellipsisAnalysisData"]>;
+  /**
+   * Recalculates the core array buffer using all available filters.
+   *
+   * This method does not emit anything - it only changes the array buffer.
+   */
+  applyFilters(filters: AbstractFilter[]): Promise<ThermalFileReader>;
+  createInstance(group: ThermalGroup, doAdd?: boolean): Promise<ThermalFileInstance>;
+}
+//#endregion
+//#region src/properties/states/HistogramState.d.ts
+/**
+ * Handles the histogram creation and subscription.
+ * - should be used only in registries
+ */
+declare class HistogramState extends AbstractProperty<ThermalStatistics[], ThermalRegistry> {
+  protected _resolution: number;
+  get resolution(): number;
+  /** Map of temperature => countOfPixels in the scaled down resolution @deprecated */
+  protected buffer: Map<number, number>;
+  /** Total countOfPixels in every image @deprecated */
+  protected bufferPixelsCount: number;
+  /** @deprecated */
+  protected _bufferResolution: number;
+  set bufferResolution(value: number);
+  get bufferResolution(): number;
+  protected _loading: boolean;
+  get loading(): boolean;
+  protected set loading(value: boolean);
+  readonly onCalculationStart: CallbacksManager<() => void>;
+  readonly onCalculationEnd: CallbacksManager<(success: boolean) => void>;
+  /** Set the historgam resolution
+   * - does not recalculate the value!
+   * - to recalculate value, call `recalculateWithCurrentSetting`
+   *
+   * @notice Higher the number, lower the resolution.
+   * @deprecated Resolution is calculated in a separate thread, no resolution changes allowed
+   */
+  setResolution(value: number): void;
+  /** If incorrect resolution is being set, set empty array @todo there may be an error in +1*/
+  protected validate(value: ThermalStatistics[]): ThermalStatistics[];
+  protected afterSetEffect(): void;
+  /**
+   * Keep the legacy entry point while recalculating the displayed histogram
+   * through the shared result cache.
+   */
+  recalculateHistogramBufferInWorker(): void;
+  protected recalculateHistogram(): Promise<void>;
+  /**
+   * Collect temperatures of every file with its own parser and bin them
+   * in one shared range with the shared `histogramFromPixels`.
+   */
+  protected calculateHistogram(readers: ThermalFileReader[]): Promise<ThermalStatistics[]>;
+}
+//#endregion
+//#region src/properties/states/LoadingState.d.ts
+declare class LoadingState extends AbstractProperty<boolean, ThermalRegistry> {
+  protected validate(value: boolean): boolean;
+  protected afterSetEffect(): void;
+  markAsLoading(): void;
+  markAsLoaded(): void;
+}
+//#endregion
+//#region src/hierarchy/ThermalRegistry.d.ts
+type ThermalRegistryOptions = {
+  histogramResolution?: number;
+};
+type BatchLoadingCallback = (result: ThermalFileFailure | ThermalFileInstance) => Promise<void>;
+/**
+ * The global thermal registry
+ * @todo implementing EventTarget
+ */
+export declare class ThermalRegistry extends BaseStructureObject {
+  readonly id: string;
+  readonly manager: ThermalManager;
+  readonly hash: number;
+  constructor(id: string, manager: ThermalManager, options?: ThermalRegistryOptions);
+  /** Service */
+  get service(): FilesService;
+  get pool(): import("workerpool/types/Pool");
+  /** Groups are stored in an observable property */
+  readonly groups: GroupsState;
+  /** Iterator methods */
+  forEveryGroup(fn: ((group: ThermalGroup) => void)): void;
+  forEveryInstance(fn: (instance: ThermalFileInstance) => void): void;
+  /** Full load of the registry with multiple files @deprecated */
+  loadFullMultipleFiles(files: {
+    [index: string]: ThermalFileRequest[];
+  }): Promise<(false | ThermalFileInstance)[][]>;
+  /** Load the registry with only one file. @deprecated */
+  loadFullOneFile(file: ThermalFileRequest, groupId: string): Promise<ThermalFileInstance | ThermalFileFailure>;
+  private _batch?;
+  get batch(): BatchLoader;
+  /** @deprecated use batch member class instead */
+  registerRequest(thermalUrl: string, visibleUrl: undefined | string, group: ThermalGroup, callback: BatchLoadingCallback): void;
+  readonly onProcessingStart: CallbacksManager<() => void>;
+  readonly onProcessingEnd: CallbacksManager<() => void>;
+  /**
+   * Actions to take after the registry is loaded
+   * - recalculate the minmax of groups
+   * - recalculate minmax of registry
+   * - impose new minmax as new range
+   * - recalculate the histogram
+   */
+  postLoadedProcessing(): Promise<void>;
+  reset(): void;
+  removeAllChildren(): void;
+  destroySelfAndBelow(): void;
+  destroySelfInTheManager(): void;
+  /**
+   * Observable properties and drives
+   */
+  /**
+   * Opacity property
+   */
+  readonly opacity: OpacityDrive;
+  /**
+   * Minmax property
+   */
+  readonly minmax: MinmaxRegistryProperty;
+  /**
+   * Loading
+   */
+  readonly loading: LoadingState;
+  /**
+   * Range
+   */
+  readonly range: RangeDriver;
+  /**
+   * Histogram
+   */
+  readonly histogram: HistogramState;
+  /**
+   * Palette
+   */
+  readonly palette: PaletteDrive;
+  readonly filters: FilterContainer;
+  getInstances(): ThermalFileInstance[];
+}
+type ThermalStatistics = {
+  from: number;
+  to: number;
+  percentage: number;
+  count: number;
+  height: number;
+};
+//#endregion
+//#region src/loading/batch/Batch.d.ts
+/**
+ * A single batch object
+ *
+ * A batch is created from all requests registered in a single tick.
+ * The Batch creation and requests registration is handled completely
+ * by `BatchLoader.request` method.
+ *
+ * Internally, this object stores an array of file requests along
+ * with all the necessary additional information: the target group
+ * and a callback that will be fired AFTER ALL FILES OF THE BATCH ARE LOADED.
+ *
+ */
+export declare class Batch {
+  protected readonly loader: BatchLoader;
+  readonly id?: string | undefined;
+  private _loading;
+  get loading(): boolean;
+  readonly onResolve: CallbacksManager<(result: (ThermalFileInstance | ThermalFileFailure)[]) => void>;
+  /** The current timeout fn that is being overriden by every call of the `request` method */
+  private timeout?;
+  /** Array of currently queued requests */
+  private queue;
+  get size(): number;
+  protected constructor(loader: BatchLoader, id?: string | undefined);
+  static init(loader: BatchLoader, id?: string): Batch;
+  static initWithRequest(loader: BatchLoader, thermalUrl: string, visibleUrl: undefined | string, group: ThermalGroup, callback: BatchLoadingCallback): Batch;
+  /**
+   * Request a thermal file
+   *
+   * Requesting adds new record to the queue and creates a new
+   * timeout closure.
+   */
+  request(thermalUrl: string, visibleUrl: string | undefined, group: ThermalGroup, callback: BatchLoadingCallback): void;
+  close(): void;
 }
 //#endregion
 //#region src/properties/analysis/sync/utils/GroupExportCSV.d.ts
@@ -1413,65 +2152,6 @@ declare class AnalysisSyncDrive extends AbstractProperty<boolean, ThermalGroup> 
    * - this action deletes any existing slots in the affected instances and creates new ones from the serialised data
    */
   copyAllSlotsToAllInstances(instance: ThermalFileInstance): void;
-}
-//#endregion
-//#region src/loading/workers/ThermalFileReader.d.ts
-/**
- * Stores the file's `ArrayBuffer` and provides all the data for instance
- * - this service is registered in FilesService
- * - the instances are retrieved using `FilesService.loadOneFile`
- */
-export declare class ThermalFileReader extends AbstractFileResult {
-  readonly service: FilesService;
-  readonly parser: IParserObject;
-  /** For the purpose of testing we have a unique ID */
-  readonly id: number;
-  /** In-memory cache of the `baseInfo` request. This request might be expensive in larger files or in Vario Cam files. Because the return value is allways the same, there is no need to make the call repeatedly. */
-  protected baseInfoCache?: ParsedFileBaseInfo;
-  readonly fileName: string;
-  private get pool();
-  protected originalBuffer?: ArrayBuffer;
-  /** The file exactly as it was loaded, if the parser works with a converted working buffer */
-  protected readonly sourceBuffer?: ArrayBuffer;
-  protected _buffer: ArrayBuffer;
-  /** The working buffer passed to all parser methods */
-  get buffer(): ArrayBuffer;
-  protected set buffer(value: ArrayBuffer);
-  /**
-   * The original file content, e.g. for downloads.
-   * Differs from `buffer` for formats decoded while loading (FLIR JPEG).
-   */
-  get fileBuffer(): ArrayBuffer;
-  /** MIME type of the original file */
-  get fileMimeType(): string;
-  constructor(service: FilesService, buffer: ArrayBuffer, parser: IParserObject, thermalUrl: string, visibleUrl?: string, preserveOriginalBuffer?: boolean, sourceBuffer?: ArrayBuffer);
-  isSuccess(): boolean;
-  /** @todo This method relies on the functionality of filters. */
-  protected copyBuffer(buffer: ArrayBuffer): ArrayBuffer;
-  /** Create copy of the self so that the instance refers to its own ThermalFileReader */
-  protected cloneForInstance(): ThermalFileReader;
-  /** Read the fundamental data of the file. If this method had been called before, return the cached result. */
-  baseInfo(): ReturnType<IParserObject["baseInfo"]>;
-  /**
-   * Before requesting a frame, create a dedicated `ArrayBuffer` containing only the frame's data
-   *
-   * **THIS IS SYNCHRONOUSE AND MIGHT BE EXPENSIVE**
-   */
-  protected getFrameSubset(frameIndex: number): ReturnType<IParserObject["getFrameSubset"]>;
-  /** Read a given frame
-   * @todo Implement index range check
-   */
-  frameData(index: number): ReturnType<IParserObject["frameData"]>;
-  pointAnalysisData(x: number, y: number): ReturnType<IParserObject["pointAnalysisData"]>;
-  rectAnalysisData(x: number, y: number, width: number, height: number): ReturnType<IParserObject["rectAnalysisData"]>;
-  ellipsisAnalysisData(x: number, y: number, width: number, height: number): ReturnType<IParserObject["ellipsisAnalysisData"]>;
-  /**
-   * Recalculates the core array buffer using all available filters.
-   *
-   * This method does not emit anything - it only changes the array buffer.
-   */
-  applyFilters(filters: AbstractFilter[]): Promise<ThermalFileReader>;
-  createInstance(group: ThermalGroup, doAdd?: boolean): Promise<ThermalFileInstance>;
 }
 //#endregion
 //#region src/properties/lists/filesState.d.ts
@@ -2131,103 +2811,12 @@ declare abstract class BaseStructureObject {
   abstract reset(): void;
 }
 //#endregion
-//#region src/properties/scale/palettes.d.ts
-/** Definition of a palette containing its name, gradient and pixels value. */
-type ThermalPaletteType = {
-  /** Actial pixels that shall be ised for drawings of thermograms. */
-  pixels: string[];
-  /** Human-readable name of the palette. */
-  name: string;
-  /** A CSS gradient representing the color scale in the UI. */
-  gradient: string;
-  /** The CSS slug */
-  slug: AvailableThermalPalette;
-  /** Float array containing color values for WebGL2 texture */
-  texturePixels: Float32Array;
-};
-declare const PALETTES: {
-  readonly iron: {
-    readonly name: "IRON";
-    readonly gradient: string;
-    readonly pixels: string[];
-    readonly texturePixels: Float32Array<ArrayBufferLike>;
-    readonly slug: "iron";
-  };
-  readonly jet: {
-    readonly name: "JET";
-    readonly gradient: string;
-    readonly pixels: string[];
-    readonly texturePixels: Float32Array<ArrayBufferLike>;
-    readonly slug: "jet";
-  };
-  readonly white_hot: {
-    readonly name: "White Hot";
-    readonly gradient: string;
-    readonly pixels: string[];
-    readonly texturePixels: Float32Array<ArrayBufferLike>;
-    readonly slug: "white_hot";
-  };
-  readonly black_hot: {
-    readonly name: "Black Hot";
-    readonly gradient: string;
-    readonly pixels: string[];
-    readonly texturePixels: Float32Array<ArrayBufferLike>;
-    readonly slug: "black_hot";
-  };
-  readonly lava: {
-    readonly name: "Lava";
-    readonly gradient: string;
-    readonly pixels: string[];
-    readonly texturePixels: Float32Array<ArrayBufferLike>;
-    readonly slug: "lava";
-  };
-  readonly arctic: {
-    readonly name: "Arctic";
-    readonly gradient: string;
-    readonly pixels: string[];
-    readonly texturePixels: Float32Array<ArrayBufferLike>;
-    readonly slug: "arctic";
-  };
-  readonly rainbow: {
-    readonly name: "Rainbow";
-    readonly gradient: string;
-    readonly pixels: string[];
-    readonly texturePixels: Float32Array<ArrayBufferLike>;
-    readonly slug: "rainbow";
-  };
-  readonly rainbow_hc: {
-    readonly name: "Rainbow HC";
-    readonly gradient: string;
-    readonly pixels: string[];
-    readonly texturePixels: Float32Array<ArrayBufferLike>;
-    readonly slug: "rainbow_hc";
-  };
-};
-/** Keys of palettes available in `@labirthermal/core`. */
-type AvailableThermalPalette = keyof typeof PALETTES;
-/** Palette definitions available in `@labirthermal/core`. */
-export declare const ThermalPalettes: Record<AvailableThermalPalette, ThermalPaletteType>;
-//#endregion
 //#region src/properties/display/GraphSmoothDrive.d.ts
 /** Controls image smoothing */
 declare class GraphSmoothDrive extends AbstractProperty<boolean, ThermalManager> {
   protected validate(value: boolean): boolean;
   protected afterSetEffect(): void;
   setGraphSmooth(value: boolean): void;
-}
-//#endregion
-//#region src/properties/scale/PaletteDrive.d.ts
-declare class PaletteDrive extends AbstractProperty<AvailableThermalPalette, ThermalManager> {
-  private get availablePalettes();
-  /** All the current palette properties should be accessed through this property. */
-  get currentPalette(): ThermalPaletteType;
-  protected validate(value: AvailableThermalPalette): AvailableThermalPalette;
-  /** Any changes to the value should propagate directly to every instance. */
-  protected afterSetEffect(): void;
-  /** Set a palette value and propagate the change to all instances. */
-  setPalette(key: AvailableThermalPalette): void;
-  /** Takes any string input and converts it to a valid AvailableThermalPalettes key */
-  sanitizeInputKey(input: string | null | undefined): AvailableThermalPalette;
 }
 //#endregion
 //#region src/properties/display/SmoothDrive.d.ts
@@ -2266,600 +2855,6 @@ export declare class ThermalManager extends BaseStructureObject {
   destroySelfAndBelow(): void;
   removeAllChildren(): void;
   reset(): void;
-}
-//#endregion
-//#region src/loading/workers/dropin/DropinElementManager.d.ts
-/** Turn any element into a dropzone! */
-export declare class DropinElementListener {
-  readonly service: FilesService;
-  readonly element: HTMLElement;
-  protected _hover: boolean;
-  get hover(): boolean;
-  readonly onMouseEnter: CallbacksManager<() => void>;
-  readonly onMouseLeave: CallbacksManager<() => void>;
-  readonly onDrop: CallbacksManager<() => void>;
-  readonly onProcessingEnd: CallbacksManager<(results: AbstractFileResult[], event: Event | DragEvent) => void>;
-  /** An invissible input element */
-  input?: HTMLInputElement;
-  protected hydrated: boolean;
-  protected multiple: boolean;
-  protected bindedEnterListener: DropinElementListener["handleEnter"];
-  protected bindedLeaveListener: DropinElementListener["handleLeave"];
-  protected bindedDropListener: DropinElementListener["handleDrop"];
-  protected bindedInputChangeListener: DropinElementListener["handleInputChange"];
-  protected bindedDragoverListener: DropinElementListener["handleDragover"];
-  protected bindedClickListener: DropinElementListener["handleClick"];
-  protected constructor(service: FilesService, element: HTMLElement, multiple?: boolean);
-  static listenOnElement(service: FilesService, element: HTMLElement, multiple?: boolean): DropinElementListener;
-  /** Bind all event listeners to the provided element */
-  hydrate(): void;
-  /** Remove all event listeners from the element */
-  dehydrate(): void;
-  handleClick(event: PointerEvent): void;
-  handleDragover(event: DragEvent): void;
-  protected handleFiles(files: File[]): Promise<AbstractFileResult[]>;
-  handleDrop(event: DragEvent): Promise<{
-    results: AbstractFileResult[];
-    event: DragEvent;
-  }>;
-  handleInputChange(event: Event): Promise<{
-    results: AbstractFileResult[];
-    event: Event;
-  }>;
-  handleEnter(): void;
-  handleLeave(): void;
-  /** Build the internal input */
-  protected getInput(): HTMLInputElement;
-  openFileDialog(multiple?: boolean): void;
-}
-//#endregion
-//#region src/loading/workers/FileRequest.d.ts
-/**
- * Internal member of `FilesService`
- * - `FileService` members may listen to resolving of this object
- * - `load()` method effcently handles the fetch and processing of the file
- */
-declare class FileRequest {
-  protected readonly service: FilesService;
-  readonly thermalUrl: string;
-  readonly visibleUrl?: string | undefined;
-  protected constructor(service: FilesService, thermalUrl: string, visibleUrl?: string | undefined);
-  static fromUrl(service: FilesService, thermalUrl: string, visibleUrl?: string): FileRequest;
-  /**
-   * The request is stored internally, so that multiple calls of `load` will allways result in one single `Promise` - to this one.
-   */
-  response?: Promise<AbstractFileResult>;
-  /**
-   * Fetch a file, process the response and return the promise
-   * - the promise is stored internally
-   * - if the request is already loading/processing, any subsequent calls use the stored promise object
-   */
-  load(): Promise<AbstractFileResult>;
-  /**
-   * Process the raw response:
-   * - decide if the file exists
-   * - assign parser to the file
-   * - create the service
-   */
-  protected processResponse(response: Response): Promise<AbstractFileResult>;
-  /**
-   * Actions taken on the `AbstractFileResult` object
-   * @todo because there are no side effects, this method might appear redundant
-   */
-  protected pocessTheService(result: AbstractFileResult): AbstractFileResult;
-}
-//#endregion
-//#region src/loading/workers/FilesService.d.ts
-/**
- * A singleton instance handling file loading
- */
-declare class FilesService {
-  readonly manager: ThermalManager;
-  get pool(): Pool;
-  constructor(manager: ThermalManager);
-  /** @deprecated Intended only for tests & other internal purposes */
-  static isolatedInstance(pool: Pool, registryName?: string): {
-    service: FilesService;
-    registry: ThermalRegistry;
-  };
-  /** Map of pending requests */
-  protected readonly requestsByUrl: Map<string, FileRequest>;
-  /** Number of currently pending requests */
-  get requestsCount(): number;
-  /** Is an URL currently pending? */
-  fileIsPending(url: string): boolean;
-  /** Cache of loaded files */
-  protected readonly cacheByUrl: Map<string, AbstractFileResult>;
-  /** Number of cached results */
-  get cachedServicesCount(): number;
-  /** Is the URL already in the cache? */
-  fileIsInCache(url: string): boolean;
-  /** Process a file obrained from anywhere */
-  loadUploadedFile(file: File): Promise<AbstractFileResult>;
-  /** Create a dropzone listener on a HTML element */
-  handleDropzone(element: HTMLElement, multiple?: boolean): DropinElementListener;
-  /** Load a file from URL, eventually using already cached result */
-  loadFile(thermalUrl: string, visibleUrl?: string): Promise<AbstractFileResult>;
-  /** Load multiple images at once using  */
-  loadFiles(files: {
-    lrc: string;
-    png?: string;
-    callback?: (result: AbstractFileResult) => Promise<void>;
-  }[]): Promise<AbstractFileResult[]>;
-}
-//#endregion
-//#region src/loading/ThermalRequest.d.ts
-/** A stupid object containing only requested URLS. Does not perform any further logic. */
-type ThermalFileRequest = {
-  thermalUrl: string;
-  visibleUrl?: string;
-};
-//#endregion
-//#region src/properties/display/OpacityDrive.d.ts
-declare class OpacityDrive extends AbstractProperty<number, ThermalRegistry> {
-  /** Make sure the value is allways between 0 and 1 */
-  protected validate(value: number): number;
-  /**
-   * Whenever the opacity changes, propagate the value to all instances
-   */
-  protected afterSetEffect(value: number): void;
-  /** Impose an opacity to all instances */
-  imposeOpacity(value: number): number;
-}
-//#endregion
-//#region src/properties/lists/GroupsState.d.ts
-/** Handles group creation and removal */
-declare class GroupsState extends AbstractProperty<ThermalGroup[], ThermalRegistry> {
-  protected _map: Map<string, ThermalGroup>;
-  get map(): Map<string, ThermalGroup>;
-  protected validate(value: ThermalGroup[]): ThermalGroup[];
-  protected afterSetEffect(value: ThermalGroup[]): void;
-  addExistingGroup(group: ThermalGroup): void;
-  addOrGetGroup(groupId: string, name?: string, description?: string): ThermalGroup;
-  removeGroup(groupId: string): void;
-  removeAllGroups(): void;
-}
-//#endregion
-//#region src/properties/scale/MinmaxRegistryState.d.ts
-declare class MinmaxRegistryProperty extends AbstractMinmaxProperty<ThermalRegistry> {
-  protected validate(value: ThermalMinmaxOrUndefined): ThermalMinmaxOrUndefined;
-  protected afterSetEffect(): void;
-  recalculateFromGroups(): ThermalMinmaxOrUndefined;
-  protected _getMinmaxFromAllGroups(groups: ThermalGroup[]): ThermalMinmaxOrUndefined;
-}
-//#endregion
-//#region src/properties/states/HistogramState.d.ts
-/**
- * Handles the histogram creation and subscription.
- * - should be used only in registries
- */
-declare class HistogramState extends AbstractProperty<ThermalStatistics[], ThermalRegistry> {
-  protected _resolution: number;
-  get resolution(): number;
-  /** Map of temperature => countOfPixels in the scaled down resolution @deprecated */
-  protected buffer: Map<number, number>;
-  /** Total countOfPixels in every image @deprecated */
-  protected bufferPixelsCount: number;
-  /** @deprecated */
-  protected _bufferResolution: number;
-  set bufferResolution(value: number);
-  get bufferResolution(): number;
-  protected _loading: boolean;
-  get loading(): boolean;
-  protected set loading(value: boolean);
-  readonly onCalculationStart: CallbacksManager<() => void>;
-  readonly onCalculationEnd: CallbacksManager<(success: boolean) => void>;
-  /** Set the historgam resolution
-   * - does not recalculate the value!
-   * - to recalculate value, call `recalculateWithCurrentSetting`
-   *
-   * @notice Higher the number, lower the resolution.
-   * @deprecated Resolution is calculated in a separate thread, no resolution changes allowed
-   */
-  setResolution(value: number): void;
-  /** If incorrect resolution is being set, set empty array @todo there may be an error in +1*/
-  protected validate(value: ThermalStatistics[]): ThermalStatistics[];
-  protected afterSetEffect(): void;
-  /**
-   * Keep the legacy entry point while recalculating the displayed histogram
-   * through the shared result cache.
-   */
-  recalculateHistogramBufferInWorker(): void;
-  protected recalculateHistogram(): Promise<void>;
-  /**
-   * Pure LRC registries keep the original LRC calculation. Any other set
-   * collects temperatures of every file with its own parser and bins them
-   * in one shared range.
-   */
-  protected calculateHistogram(readers: ThermalFileReader[]): Promise<ThermalStatistics[]>;
-}
-//#endregion
-//#region src/properties/states/LoadingState.d.ts
-declare class LoadingState extends AbstractProperty<boolean, ThermalRegistry> {
-  protected validate(value: boolean): boolean;
-  protected afterSetEffect(): void;
-  markAsLoading(): void;
-  markAsLoaded(): void;
-}
-//#endregion
-//#region src/hierarchy/ThermalRegistry.d.ts
-type ThermalRegistryOptions = {
-  histogramResolution?: number;
-};
-type BatchLoadingCallback = (result: ThermalFileFailure | ThermalFileInstance) => Promise<void>;
-/**
- * The global thermal registry
- * @todo implementing EventTarget
- */
-export declare class ThermalRegistry extends BaseStructureObject {
-  readonly id: string;
-  readonly manager: ThermalManager;
-  readonly hash: number;
-  constructor(id: string, manager: ThermalManager, options?: ThermalRegistryOptions);
-  /** Service */
-  get service(): FilesService;
-  get pool(): import("workerpool/types/Pool");
-  /** Groups are stored in an observable property */
-  readonly groups: GroupsState;
-  /** Iterator methods */
-  forEveryGroup(fn: ((group: ThermalGroup) => void)): void;
-  forEveryInstance(fn: (instance: ThermalFileInstance) => void): void;
-  /** Full load of the registry with multiple files @deprecated */
-  loadFullMultipleFiles(files: {
-    [index: string]: ThermalFileRequest[];
-  }): Promise<(false | ThermalFileInstance)[][]>;
-  /** Load the registry with only one file. @deprecated */
-  loadFullOneFile(file: ThermalFileRequest, groupId: string): Promise<ThermalFileInstance | ThermalFileFailure>;
-  private _batch?;
-  get batch(): BatchLoader;
-  /** @deprecated use batch member class instead */
-  registerRequest(thermalUrl: string, visibleUrl: undefined | string, group: ThermalGroup, callback: BatchLoadingCallback): void;
-  readonly onProcessingStart: CallbacksManager<() => void>;
-  readonly onProcessingEnd: CallbacksManager<() => void>;
-  /**
-   * Actions to take after the registry is loaded
-   * - recalculate the minmax of groups
-   * - recalculate minmax of registry
-   * - impose new minmax as new range
-   * - recalculate the histogram
-   */
-  postLoadedProcessing(): Promise<void>;
-  reset(): void;
-  removeAllChildren(): void;
-  destroySelfAndBelow(): void;
-  destroySelfInTheManager(): void;
-  /**
-   * Observable properties and drives
-   */
-  /**
-   * Opacity property
-   */
-  readonly opacity: OpacityDrive;
-  /**
-   * Minmax property
-   */
-  readonly minmax: MinmaxRegistryProperty;
-  /**
-   * Loading
-   */
-  readonly loading: LoadingState;
-  /**
-   * Range
-   */
-  readonly range: RangeDriver;
-  /**
-   * Histogram
-   */
-  readonly histogram: HistogramState;
-  /**
-   * Palette
-   */
-  readonly palette: PaletteDrive;
-  readonly filters: FilterContainer;
-  getInstances(): ThermalFileInstance[];
-}
-type ThermalStatistics = {
-  from: number;
-  to: number;
-  percentage: number;
-  count: number;
-  height: number;
-};
-//#endregion
-//#region src/parsers/structure.d.ts
-/** Timing of one frame in file order. All time values are in milliseconds. */
-type ParsedTimelineFrame = {
-  /** Zero-based frame index, also used by `IParserObject.getFrameSubset`. */
-  index: number;
-  /** Frame timestamp as milliseconds since the Unix epoch (UTC). */
-  absolute: number;
-  /** Elapsed time since the first frame: `absolute - file.timestamp`. */
-  relative: number;
-  /** Time until the next frame; zero for the last frame. Not a byte offset. */
-  offset: number;
-};
-/**
- * Format-independent metadata for a non-empty thermal image or sequence.
- * Temperatures are in degrees Celsius unless a property explicitly says Kelvin.
- */
-type ParsedFileBaseInfo = {
-  /** Raster width in pixels, shared by all frames. */
-  width: number;
-  /** Raster height in pixels, shared by all frames. */
-  height: number;
-  /** First frame timestamp as milliseconds since the Unix epoch (UTC). */
-  timestamp: number;
-  /** Number of frames; a still image has one frame. */
-  frameCount: number;
-  /** Last frame timestamp minus the first, in milliseconds; zero for a still. */
-  duration: number;
-  /**
-   * Current convention: `duration / frameCount`, in milliseconds.
-   * This is not the mean of the `frameCount - 1` gaps between frames.
-   */
-  frameInterval: number;
-  /** `1000 / frameInterval`; currently `Infinity` when the interval is zero. */
-  fps: number;
-  /** Minimum temperature across all frames, in degrees Celsius. */
-  min: number;
-  /** Maximum temperature across all frames, in degrees Celsius. */
-  max: number;
-  /** One timing entry per frame, in file order. */
-  timeline: ParsedTimelineFrame[];
-  /** Arithmetic mean of frame emissivities, dimensionless. */
-  averageEmissivity: number;
-  /** Arithmetic mean of frame reflected apparent temperatures, in Kelvin. */
-  averageReflectedKelvins: number;
-  /** Original file size in bytes, not the size of a decoded working buffer. */
-  bytesize: number;
-};
-/** Decoded data of one frame, independent of the source file encoding. */
-type ParsedFileFrame = {
-  /** Frame timestamp as milliseconds since the Unix epoch (UTC). */
-  timestamp: number;
-  /** Minimum temperature of the frame, in degrees Celsius. */
-  min: number;
-  /** Maximum temperature of the frame, in degrees Celsius. */
-  max: number;
-  /** Frame emissivity, dimensionless. */
-  emissivity: number;
-  /** Frame reflected apparent temperature, in Kelvin. */
-  reflectedKelvins: number;
-  /**
-   * Temperatures in degrees Celsius, row-major from the top-left corner.
-   * Contains `width * height` entries; pixel `(x, y)` is at `y * width + x`.
-   */
-  pixels: number[];
-};
-/**
- * Definition of a supported file type
- * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
- */
-type ParserFileType = {
-  /** File extension, lowercase and without starting dots */
-  extension: string;
-  /** MIME type of the original file. The property name is retained for compatibility. */
-  minme: string;
-};
-/** Descriptive device metadata; not used to detect or validate a file. */
-type SupportedDeviceType = {
-  /** Display name of the device or device family. */
-  deviceName: string;
-  /** Human-readable description of the device. */
-  deviceDescription: string;
-  /** Device information URL. */
-  deviceUrl: string;
-  /** Manufacturer display name. */
-  manufacturer: string;
-  /** Manufacturer website URL. */
-  manufacturerUrl: string;
-};
-/**
- * Point temperatures in degrees Celsius keyed by elapsed milliseconds since
- * the first frame, not by frame index or absolute timestamp.
- * A still image uses key `0`. Equal relative timestamps share the same key.
- */
-type PointAnalysisData = {
-  [time: number]: number;
-};
-/**
- * Area statistics keyed by elapsed milliseconds since the first frame.
- * A still image uses key `0`. Equal relative timestamps share the same key.
- *
- * An empty selection yields `min = Infinity`, `max = -Infinity`,
- * `avg = NaN` and `count = 0`.
- */
-type AreaAnalysisData = {
-  [time: number]: {
-    /** Minimum selected temperature, in degrees Celsius. */
-    min: number;
-    /** Maximum selected temperature, in degrees Celsius. */
-    max: number;
-    /** Arithmetic mean of selected temperatures, in degrees Celsius. */
-    avg: number;
-    /** Number of pixels included in the statistics. */
-    count: number;
-  };
-};
-/**
- * Public behavioral contract for a thermal file format adapter.
- *
- * Lifecycle: `is(source, url)` -> optional `prepare(source, url)` -> data jobs.
- * Only `is` and `prepare` receive the original source file. Subsequent methods
- * receive the working buffer, except `frameData`, which receives a frame subset.
- * Without `prepare`, the original source is also the working buffer (LRC).
- * FLIR decodes its JPEG once into a separate working buffer of temperatures.
- * The working layout is private to each parser, not shared between formats.
- *
- * Data jobs must not mutate their input buffers. Frame, point, area and
- * histogram reads should describe the same temperatures, allowing for Float32
- * rounding. Known implementation gaps are called out below; documentation alone
- * does not make the current parsers conform.
- *
- * Worker execution is a caller concern, not a consequence of returning a
- * Promise. `baseInfo`, `frameData`, `histogramPixels` and the analysis jobs must
- * remain self-contained when serialised by workerpool: no captured values or
- * runtime imports. Type-only references are fine. `is`, `prepare`,
- * `getFrameSubset` and `registryHistogram` have no blanket worker guarantee.
- *
- * ArrayBuffers can be cloned or transferred between threads. Transferring
- * detaches the sender's buffer: callers must not transfer a retained working
- * buffer. A dedicated frame subset or pixel copy can be transferred instead.
- *
- * @remarks Invalid-coordinate and invalid-frame-index policies are not yet
- * unified. Their current differences are documented on the relevant methods.
- * Other than preparation errors, malformed-buffer errors are not normalised
- * across parsers; callers must not rely on a common error class or message.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects#transferring_objects_between_threads
- */
-interface IParserObject {
-  /** Name of the file format */
-  name: string;
-  /** Description of the file format */
-  description: string;
-  /** List of supported devices */
-  devices: SupportedDeviceType[];
-  /** Original file extensions and MIME types for display and file input hints. */
-  extensions: ParserFileType[];
-  /**
-   * Synchronously recognise the original file by its content, without mutation.
-   * Return `false` for unrecognised content. Recognition is not full validation:
-   * preparing or reading a recognised but damaged file can still fail.
-   *
-   * The target rule is content-based detection: a filename or extension must
-   * not reject otherwise recognised supported content. `url` identifies the
-   * source and may also be an uploaded filename rather than a URL.
-   *
-   * @todo LRC still requires `url.endsWith("lrc")` as well as its signature;
-   * FLIR already detects by content regardless of the filename.
-   */
-  is(buffer: ArrayBuffer, url: string): boolean;
-  /**
-   * Optionally convert the original file into the parser's working buffer.
-   * Called once by the loading pipeline after recognition and before the
-   * reader is created. The source must remain unchanged.
-   *
-   * Currently awaited on the main thread. FLIR performs decoding and
-   * radiometry here; LRC omits it and reads its source buffer directly.
-   * `ThermalFileReader.fileBuffer` preserves the original file for downloads.
-   *
-   * @param buffer Original source file, not an already prepared buffer.
-   * @param url Source URL or uploaded filename, used for error reporting.
-   * @returns The working buffer for metadata, frame selection and analyses.
-   * @throws FileLoadingError when preparation fails. The loading pipeline
-   * also wraps other preparation errors as `FileErrors.PARSING_ERROR`.
-   */
-  prepare?(buffer: ArrayBuffer, url: string): Promise<ArrayBuffer>;
-  /**
-   * Read format-independent metadata from the working buffer, without
-   * returning pixel arrays. Repeat calls must give equivalent metadata;
-   * caching belongs to the reader, not to the parser.
-   *
-   * Must be self-contained for worker execution.
-   * @param entireFileBuffer The full working buffer, not necessarily the source file.
-   */
-  baseInfo(entireFileBuffer: ArrayBuffer): Promise<ParsedFileBaseInfo>;
-  /**
-   * Synchronously create an independently owned buffer for one frame.
-   * Keep it as small as the format permits; transferring it must not detach
-   * or modify the retained working buffer. Currently called on the main thread.
-   *
-   * @param entireFileBuffer The full working buffer.
-   * @param frameIndex Zero-based integer in `[0, frameCount)`.
-   * @returns `array` is the frame subset; `dataType` is an opaque parser-local
-   * encoding hint. Pass both unchanged to this same parser's `frameData`.
-   * LRC uses its pixel encoding byte; FLIR returns `0` and ignores the hint.
-   *
-   * @remarks Invalid indices have no shared policy yet. LRC slices according
-   * to the supplied index without validation; the later frame read can fail.
-   * FLIR ignores the index and always returns its single frame.
-   */
-  getFrameSubset(entireFileBuffer: ArrayBuffer, frameIndex: number): {
-    array: ArrayBuffer;
-    dataType: number;
-  };
-  /**
-   * Decode the subset returned by this parser's `getFrameSubset`.
-   * Must be self-contained for worker execution.
-   *
-   * @param frameSubset Independently owned frame data, not the full source file.
-   * @param dataType Parser-local hint returned together with the subset.
-   * @returns Metadata and row-major temperatures for the selected frame.
-   * @todo LRC encoding `0` is read as unsigned here, but signed in its point
-   * and area analyses. Those reads must be reconciled to return the same values.
-   */
-  frameData(frameSubset: ArrayBuffer, dataType: number): Promise<ParsedFileFrame>;
-  /**
-   * Calculate a combined histogram from working buffers belonging to this
-   * parser. Temperature bin boundaries are in degrees Celsius; counts are
-   * pixel counts and percentages are on a 0-100 scale.
-   *
-   * Do not pass buffers from different parsers. For mixed formats, collect
-   * each parser's `histogramPixels` and use the shared `histogramFromPixels`.
-   *
-   * @remarks The implementations are not equivalent yet: LRC uses its legacy
-   * sorting/binning algorithm; FLIR composes pixel extraction and the shared
-   * histogram algorithm. Only the LRC implementation is self-contained for
-   * worker execution. Bin-edge, empty-input and height-normalisation behavior
-   * must not currently be assumed identical.
-   */
-  registryHistogram(files: ArrayBuffer[]): Promise<ThermalStatistics[]>;
-  /**
-   * Copy all frame temperatures from one working buffer into a Float32Array,
-   * in frame order and row-major order within each frame.
-   * The result must not share storage with the working buffer.
-   * Must be self-contained for worker execution.
-   *
-   * Used with `histogramFromPixels` to combine different file formats.
-   * @remarks LRC currently emits `NaN` for unsupported pixel encodings;
-   * the shared histogram ignores non-finite values. This is not a general
-   * validation guarantee for malformed working buffers.
-   */
-  histogramPixels(file: ArrayBuffer): Promise<Float32Array>;
-  /**
-   * Read one pixel across all frames of the working buffer.
-   * Coordinates are zero-based from the top-left: x is column, y is row.
-   * For an in-bounds integer point, temperatures must agree with `frameData`.
-   * Must be self-contained for worker execution.
-   *
-   * @returns Temperatures keyed by elapsed milliseconds since the first frame.
-   * @remarks No common invalid-coordinate policy has been selected. FLIR
-   * returns `NaN` for non-integer or out-of-bounds points. LRC computes a byte
-   * offset without coordinate validation, which can read an unintended value
-   * or throw `RangeError`.
-   */
-  pointAnalysisData(file: ArrayBuffer, x: number, y: number): Promise<PointAnalysisData>;
-  /**
-   * Calculate rectangular area statistics for every frame of the working buffer.
-   * `(x, y)` is the top-left corner in pixel coordinates. Boundaries are
-   * inclusive: integer coordinates cover x through x + width and y through
-   * y + height, so width=height=0 selects one in-bounds pixel.
-   * Must be self-contained for worker execution.
-   *
-   * @returns Statistics keyed by elapsed milliseconds since the first frame.
-   * @remarks No shared clipping or invalid-coordinate policy is selected.
-   * FLIR clips to the raster and selects integer pixel coordinates using
-   * ceil/floor. LRC iterates directly from the supplied coordinates without
-   * clipping or integer validation. FLIR returns min=Infinity, max=-Infinity,
-   * avg=NaN and count=0 when no pixels are selected.
-   */
-  rectAnalysisData(file: ArrayBuffer, x: number, y: number, width: number, height: number): Promise<AreaAnalysisData>;
-  /**
-   * Calculate elliptical area statistics for every frame of the working buffer.
-   * `(x, y, width, height)` defines its bounding rectangle in pixel coordinates;
-   * the centre is `(x + width / 2, y + height / 2)` and radii are half the extents.
-   * Pixels on the ellipse boundary are included.
-   * Must be self-contained for worker execution.
-   *
-   * @returns Statistics keyed by elapsed milliseconds since the first frame.
-   * @remarks Clipping and coordinate handling differ as in `rectAnalysisData`.
-   * Currently a zero radius selects no pixels because the ellipse calculation
-   * divides by that radius. Both implementations then return min=Infinity,
-   * max=-Infinity, avg=NaN and count=0. Degenerate-ellipse and invalid
-   * extent policies have not been selected for a unified contract.
-   */
-  ellipsisAnalysisData(file: ArrayBuffer, x: number, y: number, width: number, height: number): Promise<AreaAnalysisData>;
 }
 //#endregion
 //#region src/parsers/index.d.ts

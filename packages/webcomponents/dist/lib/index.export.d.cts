@@ -4423,7 +4423,6 @@ export declare class RegistryHistogram extends AbstractRegistryConsumer {
   protected error: boolean;
   protected getClassName(): string;
   connectedCallback(): void;
-  protected firstUpdated(_changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>): void;
   disconnectedCallback(): void;
   static styles: import("lit").CSSResult;
   protected render(): unknown;

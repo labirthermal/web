@@ -4,7 +4,6 @@ import { baseInfo } from "./jobs/baseInfo";
 import { frameData, getFrameSubset } from "./jobs/getFrameSubset";
 import { pointAnalysisData } from "./jobs/pointAnalysisData";
 import { rectAnalysisData } from "./jobs/rectAnalysisData";
-import { registryHistogram } from "./jobs/histogram";
 import { is } from "./jobs/is";
 import { ellipsisAnalysisData } from "./jobs/ellipsisAnalysisData";
 import { histogramPixels } from "./jobs/histogramPixels";
@@ -41,7 +40,6 @@ const parser: IParserObject = {
     baseInfo,
     getFrameSubset,
     frameData,
-    registryHistogram,
     histogramPixels,
     pointAnalysisData,
     rectAnalysisData,

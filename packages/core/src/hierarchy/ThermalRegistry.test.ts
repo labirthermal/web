@@ -82,14 +82,15 @@ describe("ThermalRegistry", async () => {
 
         await registry.loadFullMultipleFiles({
             ["new_group"]: [
-                { thermalUrl: THERMOGRAM_PATHS.CAS },
-                { thermalUrl: THERMOGRAM_PATHS.SOUSTRUH },
+                { thermalUrl: THERMOGRAM_PATHS.TUCNACI },
+                { thermalUrl: THERMOGRAM_PATHS.SEQUENCE },
                 // { thermalUrl: THERMOGRAM_PATHS.CAS }
             ]
         });
 
-        expect( registry.minmax.value!.min ).toEqual( -19.139999389648438 );
-        expect( registry.minmax.value!.max ).toEqual( 26.37557029724121 );
+        // The minimum comes from the image, the maximum from the sequence
+        expect( registry.minmax.value!.min ).toEqual( 12.4560546875 );
+        expect( registry.minmax.value!.max ).toEqual( 80.72999572753906 );
         expect( registry.loading.value ).toEqual( false );
 
     });

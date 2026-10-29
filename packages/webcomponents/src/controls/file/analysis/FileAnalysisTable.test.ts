@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ThermalFileInstance, ThermalFileReader, ThermalFileFailure } from "@labirthermal/core";
 import { FileErrors } from "@labirthermal/core/src/loading/workers/errors";
 import type { AbstractAnalysis } from "@labirthermal/core";
-import type { IParserObject } from "@labirthermal/core/src/loading/workers/parsers/structure";
+import type { IParserObject } from "@labirthermal/core/src/parsers/structure";
 import { AbstractFileProvider } from "../../../hierarchy/abstraction/AbstractFileProvider";
 import { GroupProviderElement } from "../../../hierarchy/providers/GroupProvider";
 import { ManagerProviderElement } from "../../../hierarchy/providers/ManagerProvider";
@@ -91,7 +91,7 @@ describe("FileAnalysisTable", () => {
             baseInfo: async () => info,
             getFrameSubset: buffer => ({ array: buffer, dataType: 0 }),
             frameData: async () => frame,
-            registryHistogram: async () => [],
+            histogramPixels: async () => new Float32Array(frame.pixels),
             pointAnalysisData: async () => ({ 0: 10, 100: 11 }),
             rectAnalysisData: async () => data,
             ellipsisAnalysisData: async () => data,
