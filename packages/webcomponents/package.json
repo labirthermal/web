@@ -1,6 +1,6 @@
 {
   "name": "@labirthermal/webcomponents",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": "Jan Jáchim <jachim@ntc.zcu.cz>",
   "description": "Foundation of webcomponents for the purpose of embedding thermal images in various contexts.",
   "main": "./dist/lib/index.export.cjs",
