@@ -1,15 +1,14 @@
 import { t } from "i18next";
-import type { CSSResultGroup} from "lit";
+import type { CSSResultGroup } from "lit";
 import { css, html } from "lit";
 import { property } from "lit/decorators.js";
 import { AbstractGroupConsumer } from "../../hierarchy/consumers/AbstractGroupConsumer";
 import { T } from "../../translations/Languages";
-import { booleanConverter } from "../../utils/converters/booleanConverter";
 
 export class GroupAnalysisSyncButton extends AbstractGroupConsumer {
 
-    @property({ type: Boolean, reflect: true, converter: booleanConverter(false) })
-    public on!: boolean;
+    @property({ type: Boolean, reflect: true })
+    public on: boolean = false;
 
     connectedCallback(): void {
         super.connectedCallback();

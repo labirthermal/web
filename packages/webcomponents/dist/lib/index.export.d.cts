@@ -5,7 +5,6 @@ import { Ref } from "lit/directives/ref.js";
 import { Placement } from "@floating-ui/dom";
 import { AbstractFileResult as AbstractFileResult$1 } from "@labirthermal/core/src/loading/workers/AbstractFileResult";
 import { Quality } from "mediabunny";
-import { GridGrouping } from "@labirthermal/client";
 //#region ../../node_modules/.pnpm/i18next@26.4.5_typescript@5.9.3/node_modules/i18next/typescript/helpers.d.ts
 // Types
 type $Dictionary<T = unknown> = {
@@ -1569,6 +1568,10 @@ export declare const numberRangeConverter: (emptyValue: number, min: number, max
 };
 //#endregion
 //#region src/utils/converters/booleanConverter.d.ts
+/**
+ *
+ * @deprecated Use the recommended boolean conventions by LIT.
+ */
 export declare const booleanConverter: (emptyValue: boolean) => {
   fromAttribute: (value: string | null) => boolean;
   toAttribute: (value: boolean) => "true" | "false";
@@ -2794,6 +2797,29 @@ type IHostProperties$1 = {
    * - The `group-files` attribute takes the encoded list of file requests.
    * - Whenever the `group-files` attribute changes, the `GroupLoadController` will load the files.
    * - Internal changes to the files ARE NOT synced to the `group-files` attribute. Meaning: any internal state changes will not be reflected to the attribute. But the attribute change will always trigger the reload.
+   *
+   * Syntax:
+   * - Records (files) are separated by `;`.
+   * - Segments inside a record are separated by `|`.
+   * - Key and value of a segment are separated by `~`.
+   * - Keys: `thermal` (required), `visible` (optional), `label` (optional). Records without `thermal` are ignored.
+   *
+   * @example Single thermal file
+   * ```html
+   * <thermal-group-app group-files="thermal~./record.lrc"></thermal-group-app>
+   * ```
+   *
+   * @example Two files, the first one with a visible image and a label, the second one with a label only
+   * ```html
+   * <thermal-group-app
+   *   group-files="thermal~./t1.lrc|visible~./v1.jpg|label~Pre-test;thermal~./t2.lrc|label~Post-test">
+   * </thermal-group-app>
+   * ```
+   *
+   * @example Setting the property programmatically
+   * ```ts
+   * element.filesString = "thermal~https://example.com/a.lrc|label~Motor;thermal~https://example.com/b.lrc";
+   * ```
    */
   filesString?: string;
 };
@@ -3050,8 +3076,10 @@ export declare class ThermalBtnElement extends AbstractThermalElement {
   size?: BtnSizes;
   icon?: string;
   iconStyle: string;
-  disabled?: string;
-  interactive?: string;
+  /** Disables the button: blocks clicks and keyboard activation and renders it dimmed. */
+  disabled: boolean;
+  /** Renders the button as a static label without hover/focus feedback. */
+  nonInteractive: boolean;
   plain?: boolean;
   tooltip?: string;
   tabindex: number;
@@ -3061,6 +3089,7 @@ export declare class ThermalBtnElement extends AbstractThermalElement {
   private arrowElement?;
   private cleanupAutoUpdate?;
   private highlightTimeout?;
+  connectedCallback(): void;
   firstUpdated(): void;
   updated(changedProperties: Map<string | number | symbol, unknown>): void;
   private removeTooltip;
@@ -3095,7 +3124,7 @@ export declare class ThermalAppElement extends AbstractThermalElement {
   private _hasPreBar;
   private _hasBarHeader;
   fullscreen: string;
-  showfullscreen: boolean;
+  showFullscreen: boolean;
   author?: string;
   recorded?: string;
   license?: string;
@@ -4061,8 +4090,10 @@ declare global {
  */
 export declare class RegistryRangeForm extends AbstractRegistryConsumer {
   /**
-   * Whether to arrange the form controls in a stacked layout. Reflected to
-   * the `stacked` attribute; defaults to `false`.
+   * Whether to arrange the form controls in a stacked layout. Standard
+   * boolean attribute: presence of `stacked` (with any value, including
+   * `"false"`) means `true`, absence means `false`. Reflected to the
+   * `stacked` attribute; defaults to `false`.
    */
   stacked: boolean;
   /** The registry minimum, or `undefined` until bounds are available. */
@@ -4374,6 +4405,7 @@ export declare class RegistryHistogram extends AbstractRegistryConsumer {
   protected histogram: ThermalRegistry["histogram"]["value"];
   height: string;
   heightExpanded: string;
+  /** Enables click-to-expand when present; defaults to false and reflects as a boolean attribute. */
   expandable: boolean;
   protected expanded: boolean;
   protected loading: boolean;
@@ -4734,7 +4766,7 @@ declare abstract class AbstractFileButton extends AbstractFileConsumer {
   size?: BtnSizes;
   icon?: string;
   iconStyle?: string;
-  plain?: boolean;
+  plain: boolean;
   protected abstract tooltip?: string;
   protected ref: import("lit/directives/ref.js").Ref<HTMLElement>;
   abstract getDefaultLabel(): string;
@@ -4840,7 +4872,7 @@ type AnalysisTableMode = "full" | "compact";
 //#region src/controls/file/analysis/FileAnalysisComplex.d.ts
 export declare class FileAnalysisComplexElement extends AbstractFileConsumer {
   tableMode: AnalysisTableMode;
-  forceinteractiveanalysis: boolean;
+  interactiveAnalysis: boolean;
   graphActivationEnabled: boolean;
   protected mayHaveGraph: boolean;
   protected hasAnalysis: boolean;
@@ -4854,7 +4886,7 @@ export declare class FileAnalysisComplexElement extends AbstractFileConsumer {
   private readonly watchedAnalyses;
   private listenerLayer?;
   private observedGraph?;
-  showhint: boolean;
+  hideHint: boolean;
   connectedCallback(): void;
   disconnectedCallback(): void;
   onInstanceCreated(): void;
@@ -5301,9 +5333,13 @@ declare global {
 export declare class FileAnalysisRowElement extends AbstractThermalElement {
   analysis?: AbstractAnalysis;
   tableMode: AnalysisTableMode;
-  interactiveanalysis: boolean;
-  editEnabled?: boolean;
-  graphActivationEnabled: boolean;
+  /** Prevents selecting this analysis. */
+  selectionDisabled: boolean;
+  /** Prevents editing and deleting this analysis, independently of selection. */
+  editDisabled: boolean;
+  /** Prevents toggling graph values from this row. */
+  graphActivationDisabled: boolean;
+  /** Shows the action that applies the analysis range to the registry. */
   showRangePropagator: boolean;
   protected selected: boolean;
   private registryController;
@@ -5342,21 +5378,35 @@ declare global {
 }
 //#endregion
 //#region src/controls/file/analysis/FileAnalysisTable.d.ts
+/**
+ * Table of the analyses of the enclosing file provider.
+ *
+ * The table is interactive when the manager context enables interactive
+ * analyses or when the `force-interactive` attribute is present. Selection
+ * and editing follow the interactivity unless opted out. The range
+ * propagator and the opt-outs are independent boolean attributes that
+ * default to `false`.
+ */
 export declare class FileAnalysisTableElement extends AbstractFileConsumer {
   tableMode: AnalysisTableMode;
-  showRangePropagator?: boolean;
-  selectionEnabled?: boolean;
-  editEnabled?: boolean;
-  graphActivationEnabled: boolean;
-  interactiveanalysis: boolean;
-  forceinteractiveanalysis: boolean;
+  /** Shows the button applying the analysis MIN/MAX to the registry range, independently of interactivity. */
+  showRangePropagator: boolean;
+  /** Disables selection of individual rows and select/deselect all, even when the table is interactive. */
+  selectionDisabled: boolean;
+  /** Hides editing and deletion actions, even when the table is interactive. */
+  editDisabled: boolean;
+  /** Disables toggling the graph lines from the value cells. */
+  graphActivationDisabled: boolean;
+  /** Makes the table interactive regardless of the manager context. */
+  forceInteractive: boolean;
+  /** Interactivity provided by the manager context only. */
+  protected interactiveFromContext: boolean;
   protected analysis: AbstractAnalysis[];
   private boundFile?;
   private readonly selectionChanged;
-  protected get interactive(): boolean;
+  protected get isInteractive(): boolean;
   protected get allowsSelection(): boolean;
   protected get allowsEdit(): boolean;
-  protected get showsRangePropagator(): boolean;
   private get allSelected();
   onInstanceCreated(): void;
   onFailure(): void;
@@ -5634,8 +5684,11 @@ declare class DropinAppElement extends AbstractApp implements IWithlocale, IElem
   protected render(): unknown;
 }
 //#endregion
-//#region src/apps/ThermalFileApp.d.ts
-declare class ThermalFileAppElement extends AbstractApp implements IElementWithManagerController, IElementWithRegistryController, IElementWithGroupController, IElementWithFileController, IElementWithFileLoadController {
+//#region src/apps/AbstractSingleFileApp.d.ts
+/**
+ * Common foundation for apps that handle a single thermal file loaded from the URL.
+ */
+declare abstract class AbstractSingleFileAppElement extends AbstractApp implements IElementWithManagerController, IElementWithRegistryController, IElementWithGroupController, IElementWithFileController, IElementWithFileLoadController {
   static properties: {
     thermal: import("lit").PropertyDeclaration<unknown, unknown>;
     visible: import("lit").PropertyDeclaration<unknown, unknown>;
@@ -5676,7 +5729,7 @@ declare class ThermalFileAppElement extends AbstractApp implements IElementWithM
     tool: import("lit").PropertyDeclaration<unknown, unknown>;
   };
   /** Enables selecting, editing and removing the analyses in the tables. Provided to all descendants. */
-  interactiveanalysis: boolean;
+  interactiveAnalysis: boolean;
   managerSlug: string;
   managerObject: ThermalManager;
   managerController: ManagerController;
@@ -5715,6 +5768,10 @@ declare class ThermalFileAppElement extends AbstractApp implements IElementWithM
   fileLoadController: FileLoadController;
   thermal: string | undefined;
   visible: string | undefined;
+}
+//#endregion
+//#region src/apps/ThermalFileApp.d.ts
+declare class ThermalFileAppElement extends AbstractSingleFileAppElement {
   /** Observes the interactive layout's content width; released on disconnect. */
   private layoutObserver?;
   connectedCallback(): void;
@@ -5815,6 +5872,16 @@ declare class ThermalGroupAppElement extends AbstractApp implements IElementWith
   protected render(): unknown;
 }
 //#endregion
+//#region src/apps/ThermalSlottedApp.d.ts
+/**
+ * Places left and right slot content beside the canvas, sized to their content.
+ * Top, bottom and unnamed slot content span the full width.
+ */
+declare class ThermalSlottedAppElement extends AbstractSingleFileAppElement {
+  static styles: import("lit").CSSResult;
+  render(): import("lit").TemplateResult<1>;
+}
+//#endregion
 //#region src/controls/file/FileInfoButton.d.ts
 declare class FileInfoButton extends AbstractFileConsumer {
   protected onFileLoaded(): void;
@@ -5855,18 +5922,28 @@ declare class FileTimelineElement extends AbstractFileConsumer {
   protected cursor: typeof fileTimeCursorContext["__context__"];
   protected timelineRef: Ref<HTMLDivElement>;
   protected barRef: Ref<HTMLDivElement>;
-  protected containerRef: Ref<HTMLDivElement>;
-  protected observer: ResizeObserver;
-  hasPlayButton: boolean;
-  hasInfo: boolean;
-  interactive: boolean;
+  protected containerRef: Ref<HTMLElement>;
+  protected observer?: ResizeObserver;
+  private observedContainer?;
+  /**
+   * Hides the playback controls when present. Defaults to `false` and
+   * reflects as a boolean attribute. Replaces `hasPlayButton` with inverted meaning.
+   */
+  disablePlayButton: boolean;
+  /**
+   * Hides the frame information when present. Defaults to `false` and
+   * reflects as a boolean attribute. Replaces `hasInfo` with inverted meaning.
+   */
+  disableInfo: boolean;
   protected collapsed: boolean;
   static collapseWidth: number;
   protected ticks: Tick[];
   protected pointerMs?: number;
   onInstanceCreated(instance: ThermalFileInstance): void;
   onFailure(): void;
-  protected update(changedProperties: PropertyValues): void;
+  connectedCallback(): void;
+  disconnectedCallback(): void;
+  update(changedProperties: PropertyValues): void;
   /** Handlers */
   /** Handle playback buttons */
   protected handlePlayButtonClick(): void;
@@ -6035,7 +6112,6 @@ declare class FileDetailElement extends AbstractFileConsumer {
   onback?: () => void;
   norender: boolean;
   label?: string;
-  grouping?: GridGrouping;
   onInstanceCreated(): void;
   onFailure(): void;
   static styles?: CSSResultGroup | undefined;
@@ -6047,7 +6123,6 @@ declare class FileThumbnailElement extends AbstractFileConsumer {
   ondetail?: (file: ThermalFileInstance) => void;
   norender: boolean;
   label?: string;
-  grouping?: GridGrouping;
   onInstanceCreated(): void;
   onFailure(): void;
   static styles?: CSSResultGroup | undefined;
@@ -6086,6 +6161,7 @@ export declare const elementsAll: {
   readonly "thermal-dropin-app": typeof DropinAppElement;
   readonly "thermal-file-app": typeof ThermalFileAppElement;
   readonly "thermal-group-app": typeof ThermalGroupAppElement;
+  readonly "thermal-simple-app": typeof ThermalSlottedAppElement;
   readonly "file-canvas": typeof FileCanvasElement;
   readonly "file-download-dropdown": typeof FileDownloadButton;
   readonly "file-info-button": typeof FileInfoButton;
@@ -6136,11 +6212,6 @@ export declare const elementsAll: {
   readonly "manager-tool-bar": typeof ManagerToolBar;
   /** @deprecated This sort of export should never be used. Please, do export thermal images only through the LIT components instead of the `@labirthermal/core` export. */
   readonly "manager-export-panel": typeof ManagerExportPanel;
-  readonly "manager-provider": typeof ManagerProviderElement;
-  readonly "registry-provider": typeof RegistryProviderElement;
-  readonly "group-provider": typeof GroupProviderElement;
-  readonly "file-provider": typeof FileProviderElement;
-  readonly "file-copy": typeof FileCopyElement;
   readonly "thermal-app": typeof ThermalAppElement;
   readonly "thermal-bar": typeof ThermalBarElement;
   readonly "thermal-btn": typeof ThermalBtnElement;
@@ -6156,6 +6227,11 @@ export declare const elementsAll: {
   readonly "thermal-slot": typeof ThermalSlotElement;
   readonly "thermal-spinner": typeof ThermalSpinnerElement;
   readonly "thermal-tip": typeof ThermalTipElement;
+  readonly "manager-provider": typeof ManagerProviderElement;
+  readonly "registry-provider": typeof RegistryProviderElement;
+  readonly "group-provider": typeof GroupProviderElement;
+  readonly "file-provider": typeof FileProviderElement;
+  readonly "file-copy": typeof FileCopyElement;
 };
 export declare const isLabirthermalWebcomponent: (tag: string) => boolean;
 /** Define all webcomponents from the @labirthermal/webcomponents package */

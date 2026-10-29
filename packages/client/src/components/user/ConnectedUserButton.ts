@@ -199,7 +199,7 @@ export class ConnectedUserButton extends AbstractControlledConsumer {
         return html`<thermal-btn 
         slot="invoker" 
         variant="background" 
-        disabled="true" 
+        disabled
         tooltip="Aktuálně přihlášený uživatel" 
         icon="user" 
         iconStyle="micro"

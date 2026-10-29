@@ -10,6 +10,7 @@ import type { StyleInfo } from "lit/directives/style-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 import type { BreadcrumbItem, FolderInfo } from "../../../client/responseEntities";
+import { ifDefined } from "lit/directives/if-defined.js";
 
 
 
@@ -242,8 +243,8 @@ export class ConnectedLocationSelector extends AbstractControlledConsumer {
         }
 
         return html`<thermal-btn 
-            variant="text"
-            tooltip=${tooltip}  
+            variant="breadcrumb"
+            tooltip=${ifDefined(tooltip)}  
             @click=${onClick}
             style=${styleMap( style )}
         >
@@ -337,15 +338,15 @@ export class ConnectedLocationSelector extends AbstractControlledConsumer {
 
         const subselectButton: unknown = disabled 
         ? html`<thermal-btn 
-            plain="true"
-            disabled="true"
+            ?plain=${true}
+            ?disabled=${true}
             variant="background"
             tooltip="Složka ''${folderInfo.name}'' je určena pro soubory"
         >Neplatné umístění</thermal-btn>`
         : html`<thermal-btn
             icon="right"
             iconStyle="micro"
-            plain="true"
+            ?plain=${true}
             variant="background"
             tooltip="Přejít do složky '${folderInfo.name}'"
             @click=${clickAction.bind(this)}

@@ -13,6 +13,8 @@ import { FileAnalysisTableElement } from "./FileAnalysisTable";
 import { FileAnalysisRowElement } from "./FileAnalysisRow";
 import { FileAnalysisComplexElement } from "./FileAnalysisComplex";
 import { FileCanvasElement } from "../FileCanvas";
+import { ContextProvider } from "@lit/context";
+import { managerInteractiveAnalysesContext } from "../../../controllers/ManagerController";
 
 vi.mock("../../../index.export", async () => ({
     ...await import("../../../utils/converters/booleanConverter"),
@@ -112,7 +114,7 @@ describe("FileAnalysisTable", () => {
         group.groupSlug = "analyses";
         provider = new TestFileProvider();
         table = new FileAnalysisTableElement();
-        table.forceinteractiveanalysis = true;
+        table.forceInteractive = true;
         provider.append(table);
         group.append(provider);
         registry.append(group);
@@ -139,12 +141,15 @@ describe("FileAnalysisTable", () => {
         expect(row.shadowRoot?.querySelectorAll("td")).toHaveLength(expected);
         expect(row.shadowRoot?.textContent).toContain(area.name);
         expect(row.shadowRoot?.querySelectorAll("file-analysis-edit")).toHaveLength(1);
-        expect(row.shadowRoot?.querySelectorAll('[icon="range"]')).toHaveLength(1);
+        expect(row.shadowRoot?.querySelector('[icon="range"]')).toBeNull();
         expect(row.shadowRoot?.querySelectorAll("td")[1].textContent).toContain(area.avg?.toFixed(2));
 
-        table.editEnabled = false;
         table.showRangePropagator = true;
-        table.selectionEnabled = false;
+        await settle();
+        expect(row.shadowRoot?.querySelectorAll('[icon="range"]')).toHaveLength(1);
+
+        table.editDisabled = true;
+        table.selectionDisabled = true;
         await settle();
         expect(row.shadowRoot?.querySelector("file-analysis-edit")).toBeNull();
         expect(row.shadowRoot?.querySelector('[icon="trash"]')).toBeNull();
@@ -171,7 +176,7 @@ describe("FileAnalysisTable", () => {
     it("forwards full, forced interactivity and graph activation through the complex control", async () => {
         const complex = new FileAnalysisComplexElement();
         complex.tableMode = "full";
-        complex.forceinteractiveanalysis = true;
+        complex.interactiveAnalysis = true;
         complex.graphActivationEnabled = true;
         provider.append(complex);
         for (let i = 0; i < 4; i++) {
@@ -183,8 +188,8 @@ describe("FileAnalysisTable", () => {
         }
         const nestedTable = element<FileAnalysisTableElement>(complex.shadowRoot, "file-analysis-table");
         expect(nestedTable.tableMode).toBe("full");
-        expect(nestedTable.forceinteractiveanalysis).toBe(true);
-        expect(nestedTable.graphActivationEnabled).toBe(true);
+        expect(nestedTable.forceInteractive).toBe(true);
+        expect(nestedTable.graphActivationDisabled).toBe(false);
         complex.remove();
     });
 
@@ -202,12 +207,13 @@ describe("FileAnalysisTable", () => {
         element<HTMLButtonElement>(table.shadowRoot, "button.selection").click();
         await settle();
         expect(instance.analysis.layers.selectedOnly).toHaveLength(0);
-        table.selectionEnabled = false;
+        table.selectionDisabled = true;
         await settle();
         expect(rows()[0].shadowRoot?.querySelector("button.name")).toBeNull();
     });
 
     it("gates graph toggles by sequence, analysis type and explicit permission", async () => {
+        table.showRangePropagator = true;
         instance.analysis.layers.placePointAt("point", 1, 1);
         await settle();
         expect(rows()[0].shadowRoot?.querySelectorAll('thermal-btn[aria-pressed]')).toHaveLength(3);
@@ -217,13 +223,13 @@ describe("FileAnalysisTable", () => {
         await settle();
         expect(area.graph.state.AVG).toBe(true);
         expect(element(rows()[0].shadowRoot, 'td:nth-child(2) thermal-btn').getAttribute("aria-pressed")).toBe("true");
-        table.graphActivationEnabled = false;
+        table.graphActivationDisabled = true;
         await settle();
         expect(rows()[0].shadowRoot?.querySelector('thermal-btn[aria-pressed]')).toBeNull();
 
         const still = fixture(false);
         still.analysis.layers.placeRectAt("still", 0, 0, 2, 2);
-        table.graphActivationEnabled = true;
+        table.graphActivationDisabled = false;
         provider.fileController.receiveInstance(still);
         await settle();
         expect(rows()[0].shadowRoot?.querySelector('thermal-btn[aria-pressed]')).toBeNull();
@@ -249,6 +255,8 @@ describe("FileAnalysisTable", () => {
     });
 
     it("disables propagation of missing or invalid values and keeps highlights current", async () => {
+        table.showRangePropagator = true;
+        await settle();
         const row = rows()[0];
         const highlight = vi.spyOn(registry.registryController, "setHighlight");
         const name = element<HTMLElement>(row.shadowRoot, ".name");
@@ -473,24 +481,93 @@ describe("FileAnalysisTable", () => {
         late.remove();
     });
 
-    it("parses boolean attributes and restores inherited defaults when overrides are removed", async () => {
-        table.setAttribute("edit-enabled", "false");
-        table.setAttribute("selection-enabled", "false");
+    it("uses presence boolean attributes that default to false", async () => {
+        const attributes = {
+            "show-range-propagator": "showRangePropagator",
+            "selection-disabled": "selectionDisabled",
+            "edit-disabled": "editDisabled",
+            "graph-activation-disabled": "graphActivationDisabled",
+            "force-interactive": "forceInteractive",
+        } as const;
+        const fresh = new FileAnalysisTableElement();
+        for (const property of Object.values(attributes)) {
+            expect(fresh[property]).toBe(false);
+        }
+        for (const [attribute, property] of Object.entries(attributes)) {
+            for (const value of ["", "false", "true"]) {
+                table.setAttribute(attribute, value);
+                await settle();
+                expect(table[property]).toBe(true);
+            }
+            table.removeAttribute(attribute);
+            await settle();
+            expect(table[property]).toBe(false);
+            expect(table.hasAttribute(attribute)).toBe(false);
+        }
+        for (const property of Object.values(attributes)) {
+            table[property] = true;
+            await settle();
+            expect(Array.from(table.attributes).map(attribute => attribute.name)).not.toContain(property);
+        }
+    });
+
+    it("applies opt-outs set by attributes to the rendered rows", async () => {
+        table.setAttribute("edit-disabled", "");
+        table.setAttribute("selection-disabled", "");
+        table.setAttribute("graph-activation-disabled", "");
         table.setAttribute("show-range-propagator", "");
-        table.setAttribute("graph-activation-enabled", "false");
         await settle();
-        expect(table.editEnabled).toBe(false);
-        expect(table.selectionEnabled).toBe(false);
-        expect(table.showRangePropagator).toBe(true);
-        expect(table.graphActivationEnabled).toBe(false);
-        table.removeAttribute("edit-enabled");
-        table.removeAttribute("selection-enabled");
-        table.removeAttribute("show-range-propagator");
+        const row = rows()[0];
+        expect(row.editEnabled).toBe(false);
+        expect(row.interactiveanalysis).toBe(false);
+        expect(row.graphActivationEnabled).toBe(false);
+        expect(row.showRangePropagator).toBe(true);
+        expect(row.shadowRoot?.querySelector("file-analysis-edit")).toBeNull();
+        expect(row.shadowRoot?.querySelector("button.name")).toBeNull();
+        expect(row.shadowRoot?.querySelector('thermal-btn[aria-pressed]')).toBeNull();
+        expect(row.shadowRoot?.querySelector('[icon="range"]')).not.toBeNull();
+
+        for (const attribute of ["edit-disabled", "selection-disabled", "graph-activation-disabled", "show-range-propagator"]) {
+            table.removeAttribute(attribute);
+        }
         await settle();
-        expect(table.editEnabled).toBeUndefined();
-        expect(table.showRangePropagator).toBeUndefined();
+        expect(row.editEnabled).toBe(true);
+        expect(row.interactiveanalysis).toBe(true);
+        expect(row.graphActivationEnabled).toBe(true);
+        expect(row.showRangePropagator).toBe(false);
+        expect(row.shadowRoot?.querySelector("file-analysis-edit")).not.toBeNull();
+        expect(row.shadowRoot?.querySelector("button.name")).not.toBeNull();
+        expect(row.shadowRoot?.querySelector('[icon="range"]')).toBeNull();
+        expect(element(table.shadowRoot, "button.selection").getAttribute("aria-pressed")).toBe("false");
+    });
+
+    it("combines interactivity from the manager context with force-interactive", async () => {
+        table.forceInteractive = false;
+        await settle();
+        expect(rows()[0].shadowRoot?.querySelector("file-analysis-edit")).toBeNull();
+        expect(table.shadowRoot?.querySelector("button.selection")).toBeNull();
+
+        const context = new ContextProvider(manager, { context: managerInteractiveAnalysesContext, initialValue: true });
+        table.remove();
+        table = new FileAnalysisTableElement();
+        provider.append(table);
+        await settle();
+        expect(table.hasAttribute("force-interactive")).toBe(false);
         expect(rows()[0].shadowRoot?.querySelector("file-analysis-edit")).not.toBeNull();
-        expect(rows()[0].shadowRoot?.querySelector("button.name")).not.toBeNull();
+        expect(table.shadowRoot?.querySelector("button.selection")).not.toBeNull();
+        expect(rows()[0].shadowRoot?.querySelector('[icon="range"]')).toBeNull();
+
+        table.editDisabled = true;
+        await settle();
+        expect(rows()[0].shadowRoot?.querySelector("file-analysis-edit")).toBeNull();
+
+        context.setValue(false);
+        table.setAttribute("force-interactive", "");
+        await settle();
+        expect(table.shadowRoot?.querySelector("button.selection")).not.toBeNull();
+        table.removeAttribute("force-interactive");
+        await settle();
+        expect(table.shadowRoot?.querySelector("button.selection")).toBeNull();
     });
 
     it("provides a keyboard-focusable scrolling region", () => {

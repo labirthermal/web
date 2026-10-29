@@ -205,7 +205,7 @@ export class ConnectedFileComment extends AbstractControlledConsumer {
                         variant="${this.isEditing ? "foreground" : "default"}"
                         icon="${this.isEditing ? "close" : "edit"}"
                         iconStyle="micro"
-                        plain="true"
+                        ?plain=${true}
                     ></thermal-btn>
 
                     <thermal-btn 
@@ -213,7 +213,7 @@ export class ConnectedFileComment extends AbstractControlledConsumer {
                         icon="trash" iconStyle="micro"
                         size="sm"
                         variant="default"
-                        plain="true"
+                        ?plain=${true}
                     ></thermal-btn>
 
                 </aside>

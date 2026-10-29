@@ -4,7 +4,6 @@ import { ContextProvider, createContext } from "@lit/context";
 import type { PropertyValues } from "lit";
 import type { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
 import { createOrGetManager } from "../hierarchy/providers/getters";
-import { booleanConverter } from "../utils/converters/booleanConverter";
 import { paletteConverter } from "../utils/converters/paletteConverter";
 import type { HostReactiveProperties } from "./AbstractHierarchyController";
 import { AbstractHierarchyController, INTERNAL_STATE_DECLARATION } from "./AbstractHierarchyController";
@@ -68,9 +67,9 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
         managerObject: INTERNAL_STATE_DECLARATION,
         managerController: INTERNAL_STATE_DECLARATION,
         palette: { type: String, reflect: true, attribute: "palette", converter: paletteConverter },
-        advancedPalettes: { reflect: true, attribute: "advanced-palettes", converter: booleanConverter(false) },
-        smoothThermograms: { reflect: true, attribute: "smooth-thermograms", converter: booleanConverter(false) },
-        smoothGraph: { reflect: true, attribute: "smooth-graph", converter: booleanConverter(false) },
+        advancedPalettes: { reflect: true, attribute: "advanced-palettes", type: Boolean },
+        smoothThermograms: { reflect: true, attribute: "smooth-thermograms", type: Boolean},
+        smoothGraph: { reflect: true, attribute: "smooth-graph", type: Boolean },
         tool: { type: String, reflect: true, attribute: "tool"}
     }
 

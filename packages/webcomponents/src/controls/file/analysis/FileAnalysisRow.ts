@@ -9,9 +9,7 @@ import { AbstractThermalElement } from "../../../hierarchy/AbstractThermalElemen
 import { registryControllerContext } from "../../../controllers/RegistryController";
 import type { RegistryController } from "../../../controllers/RegistryController";
 import { T } from "../../../translations/Languages";
-import { booleanConverter } from "../../../utils/converters/booleanConverter";
 import { getContrastColor } from "../../../utils/getContrastColor";
-import { optionalBooleanConverter } from "./AnalysisTableOptions";
 import type { AnalysisTableMode } from "./AnalysisTableOptions";
 
 export class FileAnalysisRowElement extends AbstractThermalElement {
@@ -22,17 +20,21 @@ export class FileAnalysisRowElement extends AbstractThermalElement {
     @property({ attribute: "table-mode" })
     public tableMode: AnalysisTableMode = "full";
 
-    @property({ converter: booleanConverter(true) })
-    public interactiveanalysis: boolean = true;
+    /** Prevents selecting this analysis. */
+    @property({ type: Boolean, attribute: "selection-disabled" })
+    public selectionDisabled: boolean = false;
 
-    @property({ attribute: "edit-enabled", converter: optionalBooleanConverter })
-    public editEnabled?: boolean;
+    /** Prevents editing and deleting this analysis, independently of selection. */
+    @property({ type: Boolean, attribute: "edit-disabled" })
+    public editDisabled: boolean = false;
 
-    @property({ attribute: "graph-activation-enabled", converter: booleanConverter(true) })
-    public graphActivationEnabled: boolean = true;
+    /** Prevents toggling graph values from this row. */
+    @property({ type: Boolean, attribute: "graph-activation-disabled" })
+    public graphActivationDisabled: boolean = false;
 
-    @property({ attribute: "show-range-propagator", converter: booleanConverter(true) })
-    public showRangePropagator: boolean = true;
+    /** Shows the action that applies the analysis range to the registry. */
+    @property({ type: Boolean, attribute: "show-range-propagator" })
+    public showRangePropagator: boolean = false;
 
     @property({ type: Boolean, reflect: true })
     protected selected: boolean = false;
@@ -48,7 +50,7 @@ export class FileAnalysisRowElement extends AbstractThermalElement {
     private focused: boolean = false;
 
     protected get allowsEdit(): boolean {
-        return this.editEnabled ?? this.interactiveanalysis;
+        return !this.editDisabled;
     }
 
     private readonly refresh = () => {
@@ -303,7 +305,7 @@ export class FileAnalysisRowElement extends AbstractThermalElement {
             <span class="color" aria-hidden="true" style="background-color: ${analysis.initialColor}"></span>
             <span>${analysis.name}</span>
         `;
-        return this.interactiveanalysis ? html`
+        return !this.selectionDisabled ? html`
             <button
                 type="button"
                 class="name"
@@ -330,7 +332,7 @@ export class FileAnalysisRowElement extends AbstractThermalElement {
         const value = analysis[statistic];
         const text = value === undefined ? "-" : `${value.toFixed(2)} \u00b0C`;
         const active = analysis.graph.state[statistic === "avg" ? "AVG" : statistic === "min" ? "MIN" : "MAX"];
-        const canActivate = this.graphActivationEnabled && analysis.file.timeline.isSequence
+        const canActivate = !this.graphActivationDisabled && analysis.file.timeline.isSequence
             && (statistic === "avg" || analysis instanceof AbstractAreaAnalysis);
         const background = active ? analysis.initialColor : "transparent";
         const foreground = active ? getContrastColor(analysis.initialColor) : "var(--thermal-foreground)";

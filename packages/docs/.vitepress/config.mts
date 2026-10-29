@@ -152,6 +152,7 @@ export default defineConfig({
               { text: "Thermal palette", link: '/webcomponents/thermal-palette' },
               { text: "Thermal range", link: '/webcomponents/thermal-range' },
               { text: 'Styling and CSS variables', link: '/webcomponents/styling' },
+              { text: "Boolean attributes", link: '/webcomponents/guide/boolean-attributes' }
             ]
           },
           { text: 'List of all components', link: '/webcomponents/list' },

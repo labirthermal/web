@@ -1,9 +1,8 @@
-import type { CSSResultGroup} from "lit";
+import type { CSSResultGroup } from "lit";
 import { css, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
-import { booleanConverter } from "../utils/converters/booleanConverter";
 import type { BtnSizes, BtnVariants } from "./Btn";
 
 export class ThermalExpandableElement extends AbstractThermalElement {
@@ -11,7 +10,7 @@ export class ThermalExpandableElement extends AbstractThermalElement {
     @property({ type: String})
     public label?: string;
 
-    @property({ attribute: true, reflect: true, converter: booleanConverter(false) })
+    @property({ type: Boolean,attribute: "close-icon", reflect: true})
     public closeIcon: boolean = false;
 
     @property({ type: String, attribute: true, reflect: true })
@@ -29,20 +28,20 @@ export class ThermalExpandableElement extends AbstractThermalElement {
     @property({ type: String })
     public iconStyle: string = "outline";
 
-    @property({ type: String, converter: booleanConverter(false) })
-    public disabled?: boolean;
+    @property({ type: Boolean, reflect: true })
+    public disabled: boolean = false;
 
-    @property({ type: String, converter: booleanConverter(false) })
-    public interactive?: boolean;
+    @property({ type: Boolean, reflect: true, attribute: "non-interactive"})
+    public nonInteractive: boolean = false;
 
     @property({ type: Boolean, attribute: true })
-    public plain?: boolean;
+    public plain: boolean = false;
 
     @property({ type: String })
     public tooltip?: string;
 
-    @property({ converter: booleanConverter(false), reflect: true })
-    public expanded?: boolean = false;
+    @property({ type: Boolean, reflect: true })
+    public expanded: boolean = false;
 
     static styles?: CSSResultGroup | undefined = css`
 :host {
@@ -98,14 +97,14 @@ thermal-icon {
             : this.variant;
 
         return html`<thermal-btn
-    .variant=${ifDefined( variant )}
-    .size=${ifDefined( this.size )}
-    .icon=${ifDefined( this.icon )}
-    .iconStyle=${this.iconStyle}
-    .disabled=${ifDefined(this.disabled)}
-    .plain=${ifDefined(this.plain)}
-    .tooltip=${ifDefined( this.tooltip )}
-    .interactive=${ifDefined(this.interactive)}
+    variant=${ifDefined( variant )}
+    size=${ifDefined( this.size )}
+    icon=${ifDefined( this.icon )}
+    iconStyle=${this.iconStyle}
+    ?disabled=${this.disabled}
+    ?plain=${this.plain}
+    tooltip=${ifDefined( this.tooltip )}
+    ?non-interactive=${this.nonInteractive}
     @click=${() => this.expanded = !this.expanded}
 >${ifDefined(this.label)}${this.closeIcon && this.expanded ? html`<thermal-icon
     icon="close"

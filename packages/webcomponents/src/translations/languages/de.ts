@@ -172,7 +172,7 @@ export const de: Translation = {
     analysishint: "Markieren Sie einen Bereich im Thermogramm, um hier eine Übersicht seiner Temperaturen zu sehen.",
     graph: "Grafik",
     graphhint1: "Fügen Sie zuerst eine Analyse hinzu!",
-    graphhint2: "Klicken Sie auf einen <thermal-btn variant='background' interactive='false' tooltip='Sie finden sie in der obigen Tabelle...'>Wert</thermal-btn> einer Analyse, um hier die Grafik zu sehen!",
+    graphhint2: "Klicken Sie auf einen <thermal-btn variant='background' non-interactive tooltip='Sie finden sie in der obigen Tabelle...'>Wert</thermal-btn> einer Analyse, um hier die Grafik zu sehen!",
 
     rectangle: "Rechteck",
     ellipsis: "Ellipse",

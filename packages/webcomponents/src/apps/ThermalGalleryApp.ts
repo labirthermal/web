@@ -547,7 +547,7 @@ export class ThermalGalleryApp extends AbstractApp {
                     ${this.structure !== undefined && this.state !== STATE.MAIN
                 ? html`
                         <registry-range-form slot="bar-pre"></registry-range-form>
-                        <registry-histogram slot="pre" expandable="true"></registry-histogram>
+                        <registry-histogram slot="pre" ?expandable=${true}></registry-histogram>
                         <registry-range-slider slot="pre"></registry-range-slider>
                         <registry-ticks-bar slot="pre"></registry-ticks-bar>
                         `

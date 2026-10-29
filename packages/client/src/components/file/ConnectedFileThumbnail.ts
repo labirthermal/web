@@ -245,7 +245,7 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
                     variant=${variant}
                     icon="comment"
                     iconStyle="micro"
-                    plain="true"
+                    ?plain=${true}
                     badge=${ifDefined(this.file.comments.length > 0 ? "red" : undefined)}
                 ></thermal-btn>
                 <div slot="content">
@@ -330,7 +330,7 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
 
             content = html`<div class="analyses-inner">
                 
-                <file-analysis-complex showhint="false">
+                <file-analysis-complex ?hide-hint=${true}>
                     ${hasStoredAnalyses ? html`<thermal-btn 
                         @click=${this.restoreAnalyses.bind(this)}
                         size="md"

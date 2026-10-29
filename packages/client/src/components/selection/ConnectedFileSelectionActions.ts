@@ -73,7 +73,7 @@ export class ConnectedFileSelectionActions extends AbstractControlledConsumer {
         return html`<thermal-btn
             @click=${callback}
             slot="option"
-            disabled=${allSelected ? "true" : "false"}
+            ?disabled=${allSelected}
             icon="bigger"
             iconStyle="mini"
             align="left"

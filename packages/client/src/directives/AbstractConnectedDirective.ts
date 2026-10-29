@@ -25,7 +25,7 @@ export abstract class AbstractConnectedDirective extends Directive {
 
     protected renderThermalScale(): unknown {
         return html`<div>
-        <registry-histogram expandable="true"></registry-histogram>
+        <registry-histogram ?expandable=${true}></registry-histogram>
         <registry-range-slider></registry-range-slider>
         <registry-ticks-bar></registry-ticks-bar>
     </div>`;

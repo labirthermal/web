@@ -1,5 +1,6 @@
 import type { AbstractAnalysis } from "@labirthermal/core";
 import type { CSSResultGroup, PropertyValues } from "lit";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { css, html } from "lit";
 import { property, state } from "lit/decorators.js";
 import { AbstractThermalElement } from "../../../../hierarchy/AbstractThermalElement";
@@ -11,7 +12,7 @@ import { AbstractThermalElement } from "../../../../hierarchy/AbstractThermalEle
  */ 
 export class AnalysisNameInput extends AbstractThermalElement {
 
-    @property()
+    @property({type: Object})
     public analysis!: AbstractAnalysis;
 
     @state()
@@ -53,7 +54,7 @@ export class AnalysisNameInput extends AbstractThermalElement {
 
             <input 
                 type="text"
-                value="${this.name}" 
+                value=${ifDefined( this.name )}
                 @change=${(event: InputEvent) => {
                     const target = event.target as HTMLInputElement;
                     const value = target.value !== "" 

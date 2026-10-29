@@ -13,7 +13,7 @@ import { AbstractThermalElement } from "../../../../hierarchy/AbstractThermalEle
  */  
 export class AnalysisColorDropdown extends AbstractThermalElement {
 
-    @property()
+    @property({type: Object})
     public analysis!: AbstractAnalysis;
 
     @state()
@@ -82,7 +82,7 @@ export class AnalysisColorDropdown extends AbstractThermalElement {
     `;
 
     protected renderColor( value: string ) {
-        return html`<i style="background-color: ${value};" aria-hidden></i><span>${value}</span>`;
+        return html`<i style="background-color: ${value};" aria-hidden="true" aria-disabled="true"></i><span>${value}</span>`;
     }
 
     protected render(): unknown {

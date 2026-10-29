@@ -5,6 +5,7 @@ import { css, html } from "lit";
 import { property, state } from "lit/decorators.js";
 import { AbstractThermalElement } from "../../../../hierarchy/AbstractThermalElement";
 import { T } from "../../../../translations/Languages";
+import { ifDefined } from "lit/directives/if-defined.js";
 
 /** 
  * The full table and form for editing an area analysis properties. Enables editing of name, color and dimensions (top, left, width, height, right, bottom). Property `analysis` needs to be passed down from the parent component 
@@ -13,7 +14,7 @@ import { T } from "../../../../translations/Languages";
  */ 
 export class AreaEditTable extends AbstractThermalElement {
 
-    @property()
+    @property({type: Object})
     public analysis!: AbstractAreaAnalysis;
 
     @state()
@@ -131,11 +132,11 @@ export class AreaEditTable extends AbstractThermalElement {
                 <thermal-field label=${t(T.left)}>
                     <input 
                         name="left" 
-                        value=${this.left} 
+                        value=${ifDefined( this.left )} 
                         type="number" 
                         step="1" 
                         min="0" 
-                        max=${this.right !== undefined ? this.right - 1 : this.maxX}
+                        max=${ifDefined( this.right !== undefined ? this.right - 1 : this.maxX )}
                         @change=${ (event: InputEvent) => this.handleInput( event, value => { this.analysis.setLeft( value )} ) }
                     />
                 </thermal-field>
@@ -143,11 +144,11 @@ export class AreaEditTable extends AbstractThermalElement {
                 <thermal-field label=${t(T.right)}>
                     <input 
                         name="right" 
-                        value=${this.right} 
+                        value=${ifDefined( this.right )} 
                         type="number" 
                         step="1" 
                         min=${this.left !== undefined ? this.left + 1 : 0} 
-                        max=${ this.maxX}
+                        max=${ ifDefined( this.maxX )}
                         @change=${ (event: InputEvent) => this.handleInput( event, value => { this.analysis.setRight( value )} ) }
                     />
                 </thermal-field>
@@ -155,11 +156,11 @@ export class AreaEditTable extends AbstractThermalElement {
                 <thermal-field label=${t(T.top)}>
                     <input 
                         name="top" 
-                        value=${this.top} 
+                        value=${ifDefined( this.top )} 
                         type="number" 
                         step="1" 
                         min="0"
-                        max=${ this.bottom !== undefined ? this.bottom - 1 : this.maxY}
+                        max=${ ifDefined( this.bottom !== undefined ? this.bottom - 1 : this.maxY )}
                         @change=${ (event: InputEvent) => this.handleInput( event, value => { this.analysis.setTop( value )} ) }
                     />
                 </thermal-field>
@@ -167,11 +168,11 @@ export class AreaEditTable extends AbstractThermalElement {
                 <thermal-field label=${t(T.bottom)}>
                     <input 
                         name="bottom" 
-                        value=${this.bottom} 
+                        value=${ifDefined( this.bottom )} 
                         type="number" 
                         step="1" 
                         min=${this.top !== undefined ? this.top + 1 : 0 }
-                        max=${this.maxY}
+                        max=${ifDefined( this.maxY )}
                         @change=${ (event: InputEvent) => this.handleInput( event, value => { this.analysis.setBottom( value )} ) }
                     />
                 </thermal-field>

@@ -1,6 +1,6 @@
 import { property, state } from "lit/decorators.js";
 import { AbstractThermalElement } from "../../../hierarchy/AbstractThermalElement";
-import type { AbstractAnalysis} from "@labirthermal/core";
+import type { AbstractAnalysis, AbstractAreaAnalysis} from "@labirthermal/core";
 import { PointAnalysis } from "@labirthermal/core";
 import type { CSSResultGroup, PropertyValues } from "lit";
 import { css, html } from "lit";
@@ -10,7 +10,7 @@ import { T } from "../../../translations/Languages";
 /** Trigger the edit dialog for an analysis */
 export class FileAnalisisEditDialog extends AbstractThermalElement {
 
-    @property()
+    @property({type: Object})
     public analysis!: AbstractAnalysis;
 
     @state()
@@ -74,7 +74,7 @@ export class FileAnalisisEditDialog extends AbstractThermalElement {
                 <div slot="content">
                     ${ this.analysis instanceof PointAnalysis
                         ? html`<edit-point .analysis=${this.analysis}></edit-point>`
-                        : html`<edit-area .analysis=${this.analysis}></edit-area>`
+                        : html`<edit-area .analysis=${this.analysis as AbstractAreaAnalysis}></edit-area>`
                      }
                 </div>
 

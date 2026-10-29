@@ -21,7 +21,7 @@ export abstract class AbstractFileButton extends AbstractFileConsumer {
     public iconStyle?: string;
 
     @property({ type: Boolean })
-    public plain?: boolean;
+    public plain: boolean = false;
 
     protected abstract tooltip?: string;
 
@@ -83,9 +83,9 @@ slot {
     <thermal-btn 
         variant=${this.variant || "default"}
         size=${this.size || "sm"}
-        plain="${this.plain || false}"
+        ?plain=${this.plain}
         class="default"
-        tooltip=${this.tooltip}
+        tooltip=${ifDefined( this.tooltip )}
         icon=${ifDefined(this.icon)}
         iconStyle=${ifDefined(this.iconStyle)}
     >${this.getDefaultLabel()}</thermal-btn>

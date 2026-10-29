@@ -559,7 +559,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
                     <div class="file-analysis">
                         <file-analysis-table
                             table-mode="compact"
-                            ?forceinteractiveanalysis=${true}
+                            ?interactive-analysis=${true}
                             ?graph-activation-enabled=${true}
                         ></file-analysis-table>
                         <file-analysis-graph ?standalone=${true}></file-analysis-graph>
@@ -669,7 +669,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
             </div>
             <file-analysis-complex
                 table-mode="full"
-                forceinteractiveanalysis="true"
+                ?interactive-analysis=${true}
                 ?graph-activation-enabled=${true}
             ></file-analysis-complex>
         </div>`;

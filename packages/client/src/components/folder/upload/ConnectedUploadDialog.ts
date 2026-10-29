@@ -1,5 +1,6 @@
 import { booleanConverter, t } from "@labirthermal/webcomponents";
 import type { CSSResultGroup } from "lit";
+import type { BtnVariants } from "@labirthermal/webcomponents";
 import { css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
@@ -29,7 +30,7 @@ export class ConnectedUploadDialog extends AbstractControlledConsumer {
     public label: string = t(T.uploadafile);
 
     @property({ type: String })
-    public variant: string = "primary";
+    public variant: BtnVariants = "primary";
 
     @state()
     private errorMessage: string = "";
@@ -489,8 +490,8 @@ export class ConnectedUploadDialog extends AbstractControlledConsumer {
             <slot name="invoker" slot="invoker">
                 <thermal-btn 
                     size="md" 
-                    .variant=${this.variant}
-                    plain=${this.plain ? true : false}
+                    variant=${this.variant}
+                    ?plain=${this.plain}
                     icon="upload" 
                     iconStyle="micro"
                     .tooltip=${this.tooltip ?? ""}
@@ -560,7 +561,7 @@ export class ConnectedUploadDialog extends AbstractControlledConsumer {
             <td colspan="4">
                 <div class="group-header">
                     <span>${index + 1}. snímek</span>
-                    <thermal-btn variant="default" plain="true" icon="close" iconStyle="micro" tooltip="Odstranit celou skupinu" @click=${() => this.removePairedGroup(pair.lrc)}></thermal-btn>
+                    <thermal-btn variant="default" ?plain=${true} icon="close" iconStyle="micro" tooltip="Odstranit celou skupinu" @click=${() => this.removePairedGroup(pair.lrc)}></thermal-btn>
                 </div>
             </td>
         </tr>
@@ -600,7 +601,7 @@ export class ConnectedUploadDialog extends AbstractControlledConsumer {
             : (isImg ? html`<div class="file-preview__icon"><thermal-icon icon="image" variant="outline"></thermal-icon></div>`
                 : html`<div class="file-preview__icon"><thermal-icon icon="document" variant="outline"></thermal-icon></div>`);
         const removable = (type === 'visual' || type === 'preview') || label.toLowerCase().includes('lrc');
-        const removeBtn = removable ? html`<thermal-btn class="file-remove-btn" variant="primary" plain="true" size="sm" icon="close" iconStyle="micro" tooltip="${t(T.remove)}" @click=${() => this.removePairedFile(file)}></thermal-btn>` : nothing;
+        const removeBtn = removable ? html`<thermal-btn class="file-remove-btn" variant="primary" ?plain=${true} size="sm" icon="close" iconStyle="micro" tooltip="${t(T.remove)}" @click=${() => this.removePairedFile(file)}></thermal-btn>` : nothing;
         return html`<div class="file-preview file-preview__has-file">
             <div class="file-preview__preview">${preview}${removeBtn}</div>
             <div class="file-preview__info">
@@ -631,7 +632,7 @@ export class ConnectedUploadDialog extends AbstractControlledConsumer {
                         <td>
                             <thermal-btn 
                                 variant="background"
-                                plain="true" 
+                                ?plain=${true} 
                                 icon="close" 
                                 iconStyle="micro" 
                                 tooltip="${t(T.remove)}" 

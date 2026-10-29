@@ -8,12 +8,11 @@ import { property, state } from "lit/decorators.js";
 import { guard } from "lit/directives/guard.js";
 import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
-import { AbstractFileConsumer } from "../../../hierarchy/consumers/AbstractFileConsumer";
-import type { FileControllerCurrentFrameType} from "../../../controllers/FileController";
+import type { FileControllerCurrentFrameType } from "../../../controllers/FileController";
 import { fileCurrentFrameContext, fileTimeCursorContext } from "../../../controllers/FileController";
 import { managerGraphFunctionContext } from "../../../controllers/ManagerController";
+import { AbstractFileConsumer } from "../../../hierarchy/consumers/AbstractFileConsumer";
 import { T } from "../../../translations/Languages";
-import { booleanConverter } from "../../../utils/converters/booleanConverter";
 import type { ThermalChartElement } from "./chart/chart";
 
 /** High level component around `thermal-chart` that provides the functionality of a file analysis graph */
@@ -22,16 +21,16 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
     @state()
     protected hydrated: boolean = false;
 
-    @property({reflect: true})
+    @property({type: Number, reflect: true})
     public graphWidth: number = 0;
 
-    @property({reflect: true})
+    @property({type: Number, reflect: true})
     public graphHeight: number = 0;
 
     @property({ type: Boolean, reflect: true })
     public hasDownloads: boolean = true;
 
-    @property({ reflect: true, converter: booleanConverter(false) })
+    @property({ type: Boolean, reflect: true })
     public standalone: boolean = false;
 
     container: Ref<HTMLDivElement> = createRef();
@@ -477,7 +476,7 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
                         }
                     }}
                     variant="background"
-                    plain="true"
+                    plain
                     tooltip="Stáhnout graf jako obrázek SVG"
                 >SVG</thermal-btn>
                 <thermal-btn
@@ -491,14 +490,14 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
                         }
                     }}
                     variant="background"
-                    plain="true"
+                    plain
                     tooltip="Stáhnout graf jako obrázek PNG"
                 >PNG</thermal-btn>
                 <thermal-btn
                     size="sm"
                     @click=${() => this.file?.analysisData.downloadData()}
                     variant="background"
-                    plain="true"
+                    plain
                     tooltip="${t(T.downloadgraphdataascsv)}"
                 >CSV</thermal-btn>
             </div>`;

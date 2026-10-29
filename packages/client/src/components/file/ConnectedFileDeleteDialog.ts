@@ -138,7 +138,7 @@ export class ConnectedFileDeleteDialog extends AbstractControlledConsumer {
                     slot="invoker"
                     variant=${ifDefined(this.variant)}
                     size=${ifDefined(this.size)}
-                    plain=${ifDefined(this.plain)}
+                    ?plain=${this.plain}
                     icon="trash"
                     iconStyle="micro"
                     tooltip=${label}

@@ -89,7 +89,7 @@ export class ConnectedShareDialog extends AbstractControlledConsumer {
                 icon="copy"
                 iconStyle="mini"
                 variant="foreground"
-                plain="true"
+                ?plain=${true}
                 @click=${() => {
                 navigator.clipboard.writeText(url);
             }}
@@ -100,7 +100,7 @@ export class ConnectedShareDialog extends AbstractControlledConsumer {
                 icon="link"
                 iconStyle="micro"
                 variant="primary"
-                plain="true"
+                ?plain=${true}
                 @click=${() => {
                 window.open(url, "_blank");
             }}

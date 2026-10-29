@@ -2,7 +2,6 @@ import type { ThermalFileInstance, ThermalGroup } from "@labirthermal/core";
 import { ContextProvider, createContext } from "@lit/context";
 import type { PropertyDeclaration, PropertyValueMap } from "lit";
 import type { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
-import { booleanConverter } from "../utils/converters/booleanConverter";
 import { stringOrUndefinedConverter } from "../utils/converters/stringOrUndefinedConverter";
 import type { HostReactiveProperties } from "./AbstractHierarchyController";
 import { AbstractHierarchyController } from "./AbstractHierarchyController";
@@ -40,7 +39,7 @@ export class GroupAnalysisSyncController extends AbstractHierarchyController<IEl
     };
 
     public static readonly HOST_PROPERTIES: HostReactiveProperties<IHostProperties> = {
-        groupAnalysisSyncOn: { type: Boolean, reflect: true, converter: booleanConverter(false), attribute: "group-analysis-sync-on" },
+        groupAnalysisSyncOn: { type: Boolean, reflect: true, attribute: "group-analysis-sync-on" },
         analysis1: GroupAnalysisSyncController.ANALYSIS_PROPERTY_DECLARATION,
         analysis2: GroupAnalysisSyncController.ANALYSIS_PROPERTY_DECLARATION,
         analysis3: GroupAnalysisSyncController.ANALYSIS_PROPERTY_DECLARATION,

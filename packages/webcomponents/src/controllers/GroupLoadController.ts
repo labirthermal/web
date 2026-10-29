@@ -18,6 +18,29 @@ type IHostProperties = {
      * - The `group-files` attribute takes the encoded list of file requests.
      * - Whenever the `group-files` attribute changes, the `GroupLoadController` will load the files.
      * - Internal changes to the files ARE NOT synced to the `group-files` attribute. Meaning: any internal state changes will not be reflected to the attribute. But the attribute change will always trigger the reload.
+     * 
+     * Syntax:
+     * - Records (files) are separated by `;`.
+     * - Segments inside a record are separated by `|`.
+     * - Key and value of a segment are separated by `~`.
+     * - Keys: `thermal` (required), `visible` (optional), `label` (optional). Records without `thermal` are ignored.
+     * 
+     * @example Single thermal file
+     * ```html
+     * <thermal-group-app group-files="thermal~./record.lrc"></thermal-group-app>
+     * ```
+     * 
+     * @example Two files, the first one with a visible image and a label, the second one with a label only
+     * ```html
+     * <thermal-group-app
+     *   group-files="thermal~./t1.lrc|visible~./v1.jpg|label~Pre-test;thermal~./t2.lrc|label~Post-test">
+     * </thermal-group-app>
+     * ```
+     * 
+     * @example Setting the property programmatically
+     * ```ts
+     * element.filesString = "thermal~https://example.com/a.lrc|label~Motor;thermal~https://example.com/b.lrc";
+     * ```
      */
     filesString?: string;
 };

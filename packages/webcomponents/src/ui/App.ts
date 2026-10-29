@@ -9,7 +9,6 @@ import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
 import { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
 import { languagesObject, T } from "../translations/Languages";
-import { booleanConverter } from "../utils/converters/booleanConverter";
 import type { BtnVariants } from "./Btn";
 
 // @customElement("thermal-app")
@@ -39,8 +38,8 @@ export class ThermalAppElement extends AbstractThermalElement {
     @property({ type: String, reflect: true })
     fullscreen: string = "off";
 
-    @property({ type: Boolean, reflect: true, converter: booleanConverter(false), attribute: "show-fullscreen" })
-    showfullscreen: boolean = false;
+    @property({ type: Boolean, reflect: true, attribute: "show-fullscreen" })
+    showFullscreen: boolean = false;
 
     @property()
     author?: string;
@@ -522,14 +521,12 @@ export class ThermalAppElement extends AbstractThermalElement {
 
     private renderLabel(): unknown {
 
-        const interactive = this.onlabel !== undefined;
-
-        const interactiveProp = interactive ? "true" : "false";
+        const nonInteractive = !this.onlabel;
 
         const slotInner = this.label
             ? html`<thermal-btn
     variant="${this.labelVariant}"
-    interactive=${interactiveProp}
+    ?non-interactive=${nonInteractive}
     icon=${ifDefined(this.labelIcon)}
     iconStyle=${ifDefined(this.labelIconStyle)}
     tooltip=${ifDefined(this.labelTooltip)}
@@ -595,7 +592,7 @@ export class ThermalAppElement extends AbstractThermalElement {
 
     private renderFullscreenButton(): unknown {
 
-        if ( this.showfullscreen === false ) {
+        if ( this.showFullscreen === false ) {
             return nothing;
         }
 

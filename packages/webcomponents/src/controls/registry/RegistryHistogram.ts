@@ -4,7 +4,7 @@ import { css, html, nothing } from "lit";
 import type { ThermalRegistry } from "@labirthermal/core";
 import { property, state } from "lit/decorators.js";
 import { AbstractRegistryConsumer } from "../../hierarchy/consumers/AbstractRegistryConsumer";
-import { booleanConverter } from "../../utils/converters/booleanConverter";
+import { classMap } from "lit/directives/class-map.js";
 
 export class RegistryHistogram extends AbstractRegistryConsumer {
 
@@ -17,7 +17,8 @@ export class RegistryHistogram extends AbstractRegistryConsumer {
     @property({type: String, reflect: true })
     public heightExpanded: string = "400px";
 
-    @property({type: Boolean, reflect: true, converter: booleanConverter(false)})
+    /** Enables click-to-expand when present; defaults to false and reflects as a boolean attribute. */
+    @property({ type: Boolean, reflect: true })
     public expandable: boolean = false;
 
     @state()
@@ -191,11 +192,24 @@ export class RegistryHistogram extends AbstractRegistryConsumer {
 
         const isLoading = this.histogram.length > 0 && this.loading === false;
 
+        const containerClasses = {
+            "container": true,
+            "ready": isLoading,
+            "loading": !isLoading,
+            "has-error": this.error === true,
+            "is-ok": this.error !== true
+        };
+
+        const histogramClasses = {
+            "histogram": true,
+            "expandable": this.expandable === true
+        }
+
         return html`
 
-            <div class="container ${isLoading ? "ready" : "loading"} ${this.error ? "has-error" : "is-ok"}">
+            <div class="${classMap(containerClasses)}">
 
-                <div class="histogram ${this.expandable === true ? "expandable" : ""}" style="height: ${this.expanded ? this.heightExpanded: this.height}" part="bg" @click=${() => {
+                <div class="${classMap(histogramClasses)}" style="height: ${this.expanded ? this.heightExpanded: this.height}" part="bg" @click=${() => {
                     if ( this.expandable === true ) {
                         this.expanded = !this.expanded;
                     }

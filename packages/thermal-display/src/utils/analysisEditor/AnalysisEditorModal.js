@@ -108,7 +108,7 @@ export const AnalysisEditorModal = ({
                                 <group-tool-buttons style={{ paddingBottom: "1rem" }}></group-tool-buttons>
 
                                 <div style={{}}>
-                                    <file-analysis-table forceinteractiveanalysis={true}></file-analysis-table>
+                                    <file-analysis-table force-interactive={true}></file-analysis-table>
                                 </div>
                                 <div style={{ height: 300 }}>
                                     <file-analysis-graph style={{ height: "300px" }}></file-analysis-graph>

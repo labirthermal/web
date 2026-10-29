@@ -837,7 +837,7 @@ export class ConnectedUploadForm extends AbstractControlledConsumer {
             tooltip="Odstranit celou skupinu" 
             icon="close"
             iconStyle="micro"
-            plain="true"
+            ?plain=${true}
             @click=${() => this.removePairedGroup(pair.lrc)}></thermal-btn>
         </div>
     </td>
@@ -909,7 +909,7 @@ ${this.pairedFiles.map((pair, index) => this.renderPairedFileRow(pair, index))}
                 ${this.unmatchedPngs.map(item => html`
             <tr class="file-item">
                 <td>
-                    <thermal-btn tooltip="${this.t(T.remove)}" plain="true" variant="background" icon="close" iconStyle="micro" @click=${() => this.removeUnmatchedPng(item.file)}></thermal-btn>
+                    <thermal-btn tooltip="${this.t(T.remove)}" ?plain=${true} variant="background" icon="close" iconStyle="micro" @click=${() => this.removeUnmatchedPng(item.file)}></thermal-btn>
                 </td>
                 <td style="position:relative;">
                     <img src=${item.url} alt="Unmatched file preview" />
@@ -961,15 +961,15 @@ ${this.pairedFiles.map((pair, index) => this.renderPairedFileRow(pair, index))}
             <div style="display:flex;flex-direction:column;gap:1em;">
                 <thermal-btn
                     @click=${() => this.handleSubmit()}
-                    disabled=${this.maySubmit ? "false" : "true"}
-                    .variant=${this.maySubmit ? "primary" : "foreground"}
+                    ?disabled=${!this.maySubmit}
+                    variant=${this.maySubmit ? "primary" : "foreground"}
                     icon="upload"
                     iconStyle="micro"
                     size="lg"
                 >${this.label}</thermal-btn>
                 <thermal-btn
                     @click=${() => { this.clearAllFiles(); }}
-                    .variant="foreground"
+                    variant="foreground"
                     icon="close"
                     iconStyle="micro"
                     size="lg"

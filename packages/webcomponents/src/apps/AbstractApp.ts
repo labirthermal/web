@@ -5,7 +5,6 @@ import { ConfigController } from "../controllers/ConfigController";
 import { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
 import type { IWithlocale, Locales } from "../translations/localeContext";
 import { initLocalesInTopLevelElement, localeContext, localeConverter } from "../translations/localeContext";
-import { booleanConverter } from "../utils/converters/booleanConverter";
 
 export abstract class AbstractApp extends AbstractThermalElement implements IWithlocale {
 
@@ -24,7 +23,7 @@ export abstract class AbstractApp extends AbstractThermalElement implements IWit
     @property({type: String, reflect: true, attribute: "license"})
     public license?: string;
 
-    @property({type: Boolean, converter: booleanConverter(false), attribute: "show-fullscreen"})
+    @property({type: Boolean, reflect: true, attribute: "show-fullscreen"})
     public showFullscreen: boolean = false;
 
     firstUpdated(_changedProperties: PropertyValues): void {

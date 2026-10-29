@@ -9,33 +9,46 @@ import { fileAnalysisListContext } from "../../../controllers/FileController";
 import { managerInteractiveAnalysesContext } from "../../../controllers/ManagerController";
 import { AbstractFileConsumer } from "../../../hierarchy/consumers/AbstractFileConsumer";
 import { T } from "../../../translations/Languages";
-import { booleanConverter } from "../../../utils/converters/booleanConverter";
 import type { AnalysisTableMode } from "./AnalysisTableOptions";
-import { optionalBooleanConverter } from "./AnalysisTableOptions";
 
+/**
+ * Table of the analyses of the enclosing file provider.
+ *
+ * The table is interactive when the manager context enables interactive
+ * analyses or when the `force-interactive` attribute is present. Selection
+ * and editing follow the interactivity unless opted out. The range
+ * propagator and the opt-outs are independent boolean attributes that
+ * default to `false`.
+ */
 export class FileAnalysisTableElement extends AbstractFileConsumer {
 
     @property({ attribute: "table-mode" })
     public tableMode: AnalysisTableMode = "full";
 
-    @property({ attribute: "show-range-propagator", converter: optionalBooleanConverter })
-    public showRangePropagator?: boolean;
+    /** Shows the button applying the analysis MIN/MAX to the registry range, independently of interactivity. */
+    @property({ type: Boolean, attribute: "show-range-propagator" })
+    public showRangePropagator: boolean = false;
 
-    @property({ attribute: "selection-enabled", converter: optionalBooleanConverter })
-    public selectionEnabled?: boolean;
+    /** Disables selection of individual rows and select/deselect all, even when the table is interactive. */
+    @property({ type: Boolean, attribute: "selection-disabled" })
+    public selectionDisabled: boolean = false;
 
-    @property({ attribute: "edit-enabled", converter: optionalBooleanConverter })
-    public editEnabled?: boolean;
+    /** Hides editing and deletion actions, even when the table is interactive. */
+    @property({ type: Boolean, attribute: "edit-disabled" })
+    public editDisabled: boolean = false;
 
-    @property({ attribute: "graph-activation-enabled", converter: booleanConverter(true) })
-    public graphActivationEnabled: boolean = true;
+    /** Disables toggling the graph lines from the value cells. */
+    @property({ type: Boolean, attribute: "graph-activation-disabled" })
+    public graphActivationDisabled: boolean = false;
 
+    /** Makes the table interactive regardless of the manager context. */
+    @property({ type: Boolean, attribute: "force-interactive" })
+    public forceInteractive: boolean = false;
+
+    /** Interactivity provided by the manager context only. */
     @consume({ context: managerInteractiveAnalysesContext, subscribe: true })
-    @property({ converter: booleanConverter(false) })
-    public interactiveanalysis: boolean = false;
-
-    @property({ converter: booleanConverter(false) })
-    public forceinteractiveanalysis: boolean = false;
+    @state()
+    protected interactiveFromContext: boolean = false;
 
     @consume({ context: fileAnalysisListContext, subscribe: true })
     @state()
@@ -45,21 +58,16 @@ export class FileAnalysisTableElement extends AbstractFileConsumer {
 
     private readonly selectionChanged = () => this.requestUpdate();
 
-    protected get interactive(): boolean {
-        return this.interactiveanalysis || this.forceinteractiveanalysis;
+    protected get isInteractive(): boolean {
+        return this.interactiveFromContext || this.forceInteractive;
     }
 
     protected get allowsSelection(): boolean {
-        return this.selectionEnabled ?? this.interactive;
+        return this.isInteractive && !this.selectionDisabled;
     }
-
 
     protected get allowsEdit(): boolean {
-        return this.editEnabled ?? this.interactive;
-    }
-
-    protected get showsRangePropagator(): boolean {
-        return this.showRangePropagator ?? this.interactive;
+        return this.isInteractive && !this.editDisabled;
     }
 
     private get allSelected(): boolean {
@@ -227,7 +235,7 @@ export class FileAnalysisTableElement extends AbstractFileConsumer {
                             <th scope="col">${t(T.min)}</th>
                             <th scope="col">${t(T.max)}</th>
                             ${compact ? nothing : html`<th scope="col">${t(T.size)}</th>`}
-                            ${!compact && (this.allowsEdit || this.showsRangePropagator)
+                            ${!compact && (this.allowsEdit || this.showRangePropagator)
                                 ? html`<th scope="col"></th>`
                                 : nothing}
                         </tr>
@@ -239,8 +247,8 @@ export class FileAnalysisTableElement extends AbstractFileConsumer {
                                 .tableMode=${this.tableMode}
                                 .interactiveanalysis=${this.allowsSelection}
                                 .editEnabled=${this.allowsEdit}
-                                .graphActivationEnabled=${this.graphActivationEnabled}
-                                .showRangePropagator=${this.showsRangePropagator}
+                                .graphActivationEnabled=${!this.graphActivationDisabled}
+                                .showRangePropagator=${this.showRangePropagator}
                             ></file-analysis-table-row>
                         `)}
                     </tbody>

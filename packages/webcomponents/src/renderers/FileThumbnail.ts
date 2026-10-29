@@ -1,4 +1,3 @@
-import type { GridGrouping } from "@labirthermal/client";
 import type { ThermalFileInstance } from "@labirthermal/core";
 import { t } from "i18next";
 import type { CSSResultGroup } from "lit";
@@ -19,9 +18,6 @@ export class FileThumbnailElement extends AbstractFileConsumer {
 
     @property({ type: String })
     public label?: string;
-
-    @property({ type: String })
-    public grouping?: GridGrouping;
 
     public onInstanceCreated(): void {}
 
@@ -68,10 +64,6 @@ export class FileThumbnailElement extends AbstractFileConsumer {
             }
 
         }
-
-        main {
-
-        }
     
     `;
 
@@ -83,7 +75,7 @@ export class FileThumbnailElement extends AbstractFileConsumer {
                 <h2
                     @click=${() => this.ondetail?.(this.file!)}
                 >
-                    <file-label label="${ifDefined(this.label)}" grouping="${ifDefined(this.grouping)}"></file-label>
+                    <file-label label="${ifDefined(this.label)}"></file-label>
                 </h2>
                 <div>
                     <thermal-btn size="sm" variant="background" @click=${() => this.ondetail?.(this.file!)}>${t(T.detail).toLocaleLowerCase()}</thermal-btn>
@@ -101,7 +93,7 @@ export class FileThumbnailElement extends AbstractFileConsumer {
             <main>
                 <file-canvas norender="${this.norender}"></file-canvas>
                 <file-timeline></file-timeline>
-                <file-analysis-table mode="compact" show-range-propagator="false"></file-analysis-table>
+                <file-analysis-table mode="compact"></file-analysis-table>
             </main>
         
     `;

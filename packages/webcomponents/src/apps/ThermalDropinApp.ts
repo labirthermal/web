@@ -323,7 +323,7 @@ export class DropinAppElement
 
             elements.push(html`
                 <div slot="pre-bar" style="flex-grow: 1; padding-left: 1em;">
-            <registry-histogram height="15px" .expandable=${true}></registry-histogram>
+            <registry-histogram height="15px" ?expandable=${true}></registry-histogram>
             <registry-range-slider height="10px"></registry-range-slider>
             <registry-ticks-bar></registry-ticks-bar>
                 </div>

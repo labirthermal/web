@@ -135,7 +135,7 @@ thermal-icon {
 
         return html`<div class="colophon small slate">
     <thermal-btn 
-        variant="text"
+        variant="foreground"
         tooltip="Čas nahrání souboru"
         icon="upload"
         iconStyle="micro"
@@ -144,11 +144,11 @@ thermal-icon {
 
     ${this.content.file.uploadedby
                 ? html`<thermal-btn 
-                variant="text"
+                variant="foreground"
                 tooltip="Nahráno uživatelem"
                 icon="user"
                 iconStyle="micro"
-                interactive="false"
+                ?non-interactive=${true}
             >${this.content.file.uploadedby.name}</thermal-btn>`
                 : nothing}
 </div>`;

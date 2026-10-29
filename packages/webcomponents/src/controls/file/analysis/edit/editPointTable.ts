@@ -3,6 +3,7 @@ import { t } from "i18next";
 import type { PropertyValues } from "lit";
 import { css, html } from "lit";
 import { property, state } from "lit/decorators.js";
+import { ifDefined } from "lit/directives/if-defined.js";
 import type { Ref } from "lit/directives/ref.js";
 import { createRef } from "lit/directives/ref.js";
 import { AbstractThermalElement } from "../../../../hierarchy/AbstractThermalElement";
@@ -15,7 +16,7 @@ import { T } from "../../../../translations/Languages";
  */ 
 export class EditpointTable extends AbstractThermalElement {
 
-    @property()
+    @property({type: Object})
     public analysis!: PointAnalysis;
 
     @state()
@@ -110,7 +111,7 @@ export class EditpointTable extends AbstractThermalElement {
                 <thermal-field label=${t(T.top)} hint=${t(T.fromto, {from: 0, to: this.maxX})}>
                     <input 
                         name="top" 
-                        value=${this.top} 
+                        value=${ifDefined( this.top )} 
                         type="number" 
                         step="1" 
                         min="0" 
@@ -122,7 +123,7 @@ export class EditpointTable extends AbstractThermalElement {
                 <thermal-field label=${t(T.left)} hint=${t(T.fromto, {from: 0, to: this.maxX})}>
                     <input
                         name="left" 
-                        value=${this.left} 
+                        value=${ifDefined( this.left )} 
                         type="number" 
                         step="1" 
                         min="0" 

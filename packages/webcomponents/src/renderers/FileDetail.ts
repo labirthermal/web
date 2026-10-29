@@ -1,25 +1,20 @@
-import type { GridGrouping } from "@labirthermal/client";
 import { t } from "i18next";
 import type { CSSResultGroup } from "lit";
 import { css, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
 import { AbstractFileConsumer } from "../hierarchy/consumers/AbstractFileConsumer";
 import { T } from "../translations/Languages";
-import { booleanConverter } from "../utils/converters/booleanConverter";
 
 export class FileDetailElement extends AbstractFileConsumer {
 
     @property({ type: Object })
     onback?: () => void;
 
-    @property({ converter: booleanConverter(false) })
+    @property({ type: Boolean, reflect: true })
     public norender: boolean = false;
 
     @property({ type: String })
     public label?: string;
-
-    @property({ type: String })
-    public grouping?: GridGrouping;
 
     public onInstanceCreated(): void {}
 
@@ -70,9 +65,9 @@ export class FileDetailElement extends AbstractFileConsumer {
     ></thermal-btn>
 
     ${this.label !== undefined ? html`
-    <thermal-btn variant="background" interactive="false">${this.label}</thermal-btn>` : nothing}
+    <thermal-btn variant="background" non-interactive>${this.label}</thermal-btn>` : nothing}
 
-    <thermal-btn variant="background" interactive="false">
+    <thermal-btn variant="background" non-interactive>
         <file-label></file-label>
     </thermal-btn>
 

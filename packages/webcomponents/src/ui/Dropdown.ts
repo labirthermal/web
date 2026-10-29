@@ -1,10 +1,10 @@
 import { computePosition, flip, inline, offset, shift } from "@floating-ui/dom";
-import type { PropertyValueMap} from "lit";
+import type { PropertyValueMap } from "lit";
 import { LitElement, css, html } from "lit";
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { classMap } from "lit/directives/class-map.js";
 import { ifDefined } from "lit/directives/if-defined.js";
-import type { Ref} from "lit/directives/ref.js";
+import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
 import { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
 import type { BtnSizes, BtnVariants } from "./Btn";
@@ -29,16 +29,16 @@ export class ThermalDropdownElement extends AbstractThermalElement {
     @property({ type: String, reflect: true, attribute: true })
     public interactive: "on" | "off" = "on";
 
-    @property({ type: String, reflect: true})
+    @property({ type: String, reflect: true })
     public variant?: BtnVariants;
 
     @property({ type: String, reflect: true, attribute: true })
     public size?: BtnSizes;
 
-    @property({ type: String })
+    @property({ type: Boolean })
     public plain?: boolean;
 
-    @property({type: String, attribute: true})
+    @property({ type: String, attribute: true })
     public tooltip?: string;
 
     @property({ type: String, reflect: true })
@@ -75,7 +75,7 @@ export class ThermalDropdownElement extends AbstractThermalElement {
 
     private placeOptions() {
 
-        if ( ! this.invokerRef.value || ! this.optionsRef.value ) {
+        if (!this.invokerRef.value || !this.optionsRef.value) {
             return;
         }
 
@@ -95,15 +95,15 @@ export class ThermalDropdownElement extends AbstractThermalElement {
 
     }
 
-    protected updated(_changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>): void {
+    updated(_changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>): void {
         super.updated(_changedProperties);
-        if ( _changedProperties.has("isOpen") ) {
+        if (_changedProperties.has("isOpen")) {
             this.placeOptions();
         }
-        
+
     }
 
-    protected firstUpdated(_changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>): void {
+    firstUpdated(_changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>): void {
         super.firstUpdated(_changedProperties);
         this._options.forEach(option => {
             option.childNodes.forEach(child => child.addEventListener("click", () => {
@@ -229,9 +229,7 @@ export class ThermalDropdownElement extends AbstractThermalElement {
             mayNot: this.interactive === "off"
         };
 
-        const disabled = this.interactive === "off"
-            ? "true"
-            : "false";
+        const disabled = this.interactive === "off";
 
         return html`
 
@@ -245,7 +243,7 @@ export class ThermalDropdownElement extends AbstractThermalElement {
                     icon="${ifDefined(this.icon)}"
                     iconStyle="${ifDefined(this.iconStyle)}"
                     ?plain=${this.plain}
-                    disabled=${disabled}
+                    ?disabled=${disabled}
                     tooltip="${this.tooltip !== undefined ? this.tooltip : ""}"
                     part="invoker"
                 >
@@ -255,13 +253,13 @@ export class ThermalDropdownElement extends AbstractThermalElement {
                         </slot>
                         <div class="dropdown-invoker-wrapper-icon">
                         ${this.isOpen === "close"
-                            ? html`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                ? html`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                             </svg>`
-                            : html`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                : html`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                             </svg>`
-                        }
+            }
                         </div>
                     </div>
                 </thermal-btn>

@@ -92,14 +92,14 @@ export abstract class AbstractFolderDialog extends AbstractControlledConsumer {
 >
     <thermal-btn
         slot="invoker"
-        .icon=${ifDefined(this.icon)}
-        .iconStyle=${ifDefined(this.iconStyle)}
-        .variant=${ifDefined(this.variant)}
-        .size=${ifDefined(this.size)}
-        .plain=${ifDefined(this.plain)}
-        disabled=${this.disabled ? "true" : "false"}
-        .interactive=${ifDefined(this.interactive)}
-        .tooltip=${ifDefined(this.tooltip)}
+        icon=${ifDefined(this.icon)}
+        iconStyle=${ifDefined(this.iconStyle)}
+        variant=${ifDefined(this.variant)}
+        size=${ifDefined(this.size)}
+        ?plain=${this.plain}
+        ?disabled=${this.disabled}
+        ?non-interactive=${!this.interactive}
+        tooltip=${ifDefined(this.tooltip)}
     >
         ${this.label}
     </thermal-btn>

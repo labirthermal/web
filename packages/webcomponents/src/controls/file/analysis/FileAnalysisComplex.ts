@@ -9,7 +9,6 @@ import { createRef, ref } from "lit/directives/ref.js";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { AbstractFileConsumer } from "../../../hierarchy/consumers/AbstractFileConsumer";
 import { T } from "../../../translations/Languages";
-import { booleanConverter } from "../../../utils/converters/booleanConverter";
 import type { AnalysisTableMode } from "./AnalysisTableOptions";
 
 export class FileAnalysisComplexElement extends AbstractFileConsumer {
@@ -17,10 +16,10 @@ export class FileAnalysisComplexElement extends AbstractFileConsumer {
     @property({ attribute: "table-mode" })
     public tableMode: AnalysisTableMode = "full";
 
-    @property({ type: Boolean })
-    public forceinteractiveanalysis: boolean = false;
+    @property({ type: Boolean, reflect: true, attribute: "interactive-analysis" })
+    public interactiveAnalysis: boolean = false;
 
-    @property({ type: Boolean,attribute: "graph-activation-enabled" })
+    @property({ type: Boolean, attribute: "graph-activation-enabled", reflect: true })
     public graphActivationEnabled: boolean = true;
 
     @state()
@@ -50,8 +49,8 @@ export class FileAnalysisComplexElement extends AbstractFileConsumer {
     private listenerLayer?: HTMLElement;
     private observedGraph?: HTMLDivElement;
 
-    @property({ type: Boolean, reflect: true, converter: booleanConverter(true) })
-    public showhint: boolean = true;
+    @property({ type: Boolean, reflect: true, attribute: "hide-hint" })
+    public hideHint: boolean = false;
 
 
     connectedCallback(): void {
@@ -250,7 +249,7 @@ export class FileAnalysisComplexElement extends AbstractFileConsumer {
 
         return html`<div class="addanalysis">
 
-            ${this.showhint
+            ${!this.hideHint
                 ? html`<div>
                     <strong>${t(T.analysis)}</strong>
                 </div>
@@ -406,8 +405,8 @@ export class FileAnalysisComplexElement extends AbstractFileConsumer {
                 ? this.renderAddAnalysis()
                 : html`<file-analysis-table
                     .tableMode=${this.tableMode}
-                    .forceinteractiveanalysis=${this.forceinteractiveanalysis}
-                    .graphActivationEnabled=${this.graphActivationEnabled}
+                    ?force-interactive=${this.interactiveAnalysis}
+                    ?graph-activation-disabled=${!this.graphActivationEnabled}
                 ></file-analysis-table>`
             }
             </div>

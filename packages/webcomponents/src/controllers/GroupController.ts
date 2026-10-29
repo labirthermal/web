@@ -1,7 +1,6 @@
 import type { ThermalGroup } from "@labirthermal/core";
 import { CallbacksManager } from "@labirthermal/core";
 import { ContextProvider, createContext } from "@lit/context";
-import { booleanConverter } from "../utils/converters/booleanConverter";
 import type { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
 import type { HostReactiveProperties } from "./AbstractHierarchyController";
 import { AbstractHierarchyController, INTERNAL_STATE_DECLARATION } from "./AbstractHierarchyController";
@@ -63,7 +62,7 @@ export class GroupController extends AbstractHierarchyController<IElementWithGro
         registryController: INTERNAL_STATE_DECLARATION,
         groupSlug: { type: String, reflect: false, attribute: "group-slug" },
         groupObject: INTERNAL_STATE_DECLARATION,
-        autoclearGroup: { type: Boolean, reflect: true, attribute: "autoclear-group", converter: booleanConverter(true) },
+        autoclearGroup: { type: Boolean, reflect: true, attribute: "autoclear-group"},
         groupController: INTERNAL_STATE_DECLARATION
     }
 

@@ -35,7 +35,7 @@ export class ManagerPaletteDropdown extends AbstractPaletteSwitch {
                     <span slot="invoker" class="palette" style="background:${this.managerObject.palette.currentPalette.gradient}"></span>
 
                 ${this.palettes.map( palette => html`
-                    <div slot="option"><thermal-btn @click=${() => this.onSelect(palette.slug as AvailableThermalPalette)} variant="${palette.name === this.managerObject.palette.currentPalette.name ? "background" : "slate"}">
+                    <div slot="option"><thermal-btn @click=${() => this.onSelect(palette.slug as AvailableThermalPalette)} variant="${palette.name === this.managerObject.palette.currentPalette.name ? "background" : "default"}">
                         ${this.paletteTemplate(palette)}
                     </thermal-btn></div>
                 `)}

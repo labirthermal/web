@@ -1,4 +1,5 @@
 import type { CSSResultGroup } from "lit";
+import type { BtnVariants } from "@labirthermal/webcomponents";
 import { css, html, nothing } from "lit";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 import { DirectiveHelpers } from "../../../directives/DirectiveHelpers";
@@ -70,8 +71,8 @@ export class ConnectedFolderContentModeSwitch extends AbstractControlledConsumer
             .iconStyle=${iconStyle}
             .tooltip=${this.t(label)}
             @click=${onClick}
-            variant=${variant}
-            plain="true"
+            variant=${variant as BtnVariants}
+            ?plain=${true}
         >${count}x</thermal-btn>`;
     }
 

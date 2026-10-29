@@ -24,7 +24,6 @@ class ConnectedFileDetail extends AbstractLayoutDirective {
                 .file=${app.content.file}
                 variant="primary"
                 size="md"
-                .label=${undefined}
             ></connected-file-edit-dialog>` );
 
             fileOperations.push(html`<connected-file-move-dialog .file=${app.content.file}></connected-file-move-dialog>`);
@@ -128,7 +127,7 @@ class ConnectedFileDetail extends AbstractLayoutDirective {
         const content: unknown[] = [
 
             html`<div>
-                <registry-histogram expandable="true"></registry-histogram>
+                <registry-histogram ?expandable=${true}></registry-histogram>
                 <registry-range-slider></registry-range-slider>
                 <registry-ticks-bar></registry-ticks-bar>
                 <file-canvas></file-canvas>

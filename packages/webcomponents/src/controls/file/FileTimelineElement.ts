@@ -38,18 +38,25 @@ export class FileTimelineElement extends AbstractFileConsumer {
 
     protected timelineRef: Ref<HTMLDivElement> = createRef()
     protected barRef: Ref<HTMLDivElement> = createRef();
-    protected containerRef: Ref<HTMLDivElement> = createRef();
+    protected containerRef: Ref<HTMLElement> = createRef();
 
-    protected observer!: ResizeObserver;
+    protected observer?: ResizeObserver;
 
-    @property({ type: String, reflect: true })
-    public hasPlayButton: boolean = true;
+    private observedContainer?: HTMLElement;
 
-    @property({ type: String, reflect: true })
-    public hasInfo: boolean = true;
+    /**
+     * Hides the playback controls when present. Defaults to `false` and
+     * reflects as a boolean attribute. Replaces `hasPlayButton` with inverted meaning.
+     */
+    @property({ type: Boolean, reflect: true, attribute: "disable-play-button" })
+    public disablePlayButton: boolean = false;
 
-    @property({ type: String, reflect: true })
-    public interactive: boolean = true;
+    /**
+     * Hides the frame information when present. Defaults to `false` and
+     * reflects as a boolean attribute. Replaces `hasInfo` with inverted meaning.
+     */
+    @property({ type: Boolean, reflect: true, attribute: "disable-info" })
+    public disableInfo: boolean = false;
 
     @state()
     protected collapsed: boolean = false;
@@ -74,37 +81,51 @@ export class FileTimelineElement extends AbstractFileConsumer {
         this.file?.timeline.removeListener(this.UUID);
     }
 
-    protected update(changedProperties: PropertyValues): void {
+    connectedCallback(): void {
+        super.connectedCallback();
+        this.requestUpdate();
+    }
+
+    disconnectedCallback(): void {
+        this.observer?.disconnect();
+        this.observer = undefined;
+        this.observedContainer = undefined;
+        super.disconnectedCallback();
+    }
+
+    update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
 
-        if (
-            this.observer === undefined
-            && this.containerRef.value instanceof Element
-        ) {
-
-            this.observer = new ResizeObserver((entries) => {
-                const entry = entries[0];
-
-                if (this.file)
-                    this.ticks = calculateTicks(entry.contentRect.width, this.file.duration);
-
-                if (entry.contentRect.width < FileTimelineElement.collapseWidth) {
-                    if (this.collapsed === false) {
-                        this.collapsed = true;
-                    }
-                } else {
-                    if (this.collapsed === true) {
-                        this.collapsed = false;
-                    }
-                }
-
-            });
-            this.observer.observe(this.containerRef.value!);
-
+        const container = this.containerRef.value;
+        if (container === this.observedContainer) {
+            return;
         }
 
+        this.observer?.disconnect();
+        this.observer = undefined;
+        this.observedContainer = undefined;
 
+        if (!this.isConnected || !container) {
+            return;
+        }
 
+        this.observedContainer = container;
+        this.observer = new ResizeObserver((entries) => {
+            if (!this.isConnected || this.observedContainer !== container) {
+                return;
+            }
+
+            const entry = entries.find(entry => entry.target === container);
+            if (!entry) {
+                return;
+            }
+
+            if (this.file) {
+                this.ticks = calculateTicks(entry.contentRect.width, this.file.duration);
+            }
+            this.collapsed = entry.contentRect.width < FileTimelineElement.collapseWidth;
+        });
+        this.observer.observe(container);
     }
 
 
@@ -234,6 +255,11 @@ export class FileTimelineElement extends AbstractFileConsumer {
             .label { opacity: .5; }
         }
 
+        .real.collapsed {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
         .inline {
             white-space: nowrap;
         }
@@ -299,6 +325,10 @@ export class FileTimelineElement extends AbstractFileConsumer {
 
         }
 
+        .container.collapsed .controls {
+            flex-wrap: wrap;
+        }
+
         .chrome {
             width: 1em;
             color: var(--thermal-primary-dark);
@@ -315,14 +345,14 @@ export class FileTimelineElement extends AbstractFileConsumer {
 
     private renderControls(
         file: ThermalFileInstance,
-        disabled: string,
+        disabled: boolean,
         playButtonClasses: { [key: string]: boolean }
     ): unknown {
 
         return html`<nav class="controls">
 
     <thermal-btn 
-        disabled="${disabled}"
+        ?disabled=${disabled}
         @click=${() => {
                 file.timeline.prev();
             }}
@@ -334,17 +364,17 @@ export class FileTimelineElement extends AbstractFileConsumer {
         @click=${this.handlePlayButtonClick.bind(this)}
         icon="${this.playing ? "pause" : "play"}"
         iconStyle="solid"
-        disabled="${disabled}"
+        ?disabled=${disabled}
     ></thermal-btn>
 
     <thermal-btn 
         @click=${() => file.timeline.next()}
-        disabled="${disabled}"
+        ?disabled=${disabled}
     >${t(T.next)}</thermal-btn>
 
     <thermal-btn 
         @click=${() => file.timeline.setRelativeTime(0)}
-        disabled="${disabled}"
+        ?disabled=${disabled}
     >${t(T.back)}</thermal-btn>
 
     <file-playback-speed-dropdown enabled="${this.mayStop ? "on" : "off"}" class="item"></file-playback-speed-dropdown>
@@ -389,7 +419,7 @@ export class FileTimelineElement extends AbstractFileConsumer {
             ...mayClasses
         }
 
-        const disabled = this.mayStop ? "false" : "true";
+        const disabled = this.mayStop;
 
         return html`
 <section class="${classMap(containerClasses)}" ${ref(this.containerRef)}>
@@ -424,7 +454,7 @@ ${(this.currentFrame)
                 : nothing}
 
 
-${this.hasPlayButton === true
+${this.disablePlayButton === false
                 ? this.renderControls(
                     file,
                     disabled,
@@ -432,15 +462,13 @@ ${this.hasPlayButton === true
                 )
                 : nothing}
 
-        </div>
-
     </aside>
 
 </section>
 
 
 
-${this.currentFrame !== undefined && this.hasInfo === true
+${this.currentFrame !== undefined && this.disableInfo === false
                 ? html`<div class="small real ${this.collapsed ? "collapsed" : ""}">
         <div>
             <span class="label">${t(T.date)}:</span> 

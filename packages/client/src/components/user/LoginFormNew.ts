@@ -4,6 +4,7 @@ import { property, state } from "lit/decorators.js";
 import type { Identity } from "../../client/responseEntities";
 import { T } from "../../translations/Languages";
 import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
+import { ifDefined } from "lit/directives/if-defined.js";
 
 export class ConnectedLoginForm extends AbstractControlledConsumer {
 
@@ -185,9 +186,9 @@ export class ConnectedLoginForm extends AbstractControlledConsumer {
 
                 <thermal-btn
                     @click=${() => this.doLoginInternal()}
-                    disabled=${!this.mayLogIn}
-                    variant=${this.mayLogIn ? "primary" : "black"}
-                    tooltip=${!this.mayLogIn ? "Vyplňte přihlašovací údaje" : undefined}
+                    ?disabled=${!this.mayLogIn}
+                    variant=${this.mayLogIn ? "primary" : "background"}
+                    tooltip=${ifDefined( !this.mayLogIn ? "Vyplňte přihlašovací údaje" : undefined )}
                 >
                     ${this.isLoggingIn ? this.t(T.login) + "..." : this.t(T.login)}
                 </thermal-btn>

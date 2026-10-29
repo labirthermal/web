@@ -11,13 +11,20 @@
 </head>
 
 <body style="padding: 1rem; background: #ffffff">
+
+
+  <thermal-group-app
+    group-files="thermal~./flir/dji_xt2_1.jpg"
+  ></thermal-group-app>
+
+
   <thermal-simple-app thermal="/flir/flir_vue_pro_640_1.jpg" palette="iron" layout="simple" visible="/kitten.jpg" showshare="true"
     showhistogram="true"
     analysis1="Bod A; ellipsis; color:yellow; top:10;left:20;width:30;height:40;max"
     analysis7="První jméno obdélníku; rectangle; color:lightblue; top:0;left:0;width:100;height:100;max;avg"
     label="Lekce o něčem" author="Jan Jáchim" license="CC BY-SA 4.0" showlayout="true">
     <file-info-button slot="left"></file-info-button>
-    <registry-histogram slot="top"></registry-histogram>
+    <registry-histogram slot="top" expandable></registry-histogram>
     <registry-range-slider slot="top"></registry-range-slider>
     <registry-ticks-bar slot="top"></registry-ticks-bar>
     <file-info-button></file-info-button>

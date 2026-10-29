@@ -5,7 +5,6 @@ import type { CSSResultGroup, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 import { AbstractRegistryConsumer } from "../../hierarchy/consumers/AbstractRegistryConsumer";
 import { T } from "../../translations/Languages";
-import { booleanConverter } from "../../utils/converters/booleanConverter";
 import { ifDefined } from "lit/directives/if-defined.js";
 
 
@@ -20,10 +19,12 @@ import { ifDefined } from "lit/directives/if-defined.js";
 export class RegistryRangeForm extends AbstractRegistryConsumer {
 
     /**
-     * Whether to arrange the form controls in a stacked layout. Reflected to
-     * the `stacked` attribute; defaults to `false`.
+     * Whether to arrange the form controls in a stacked layout. Standard
+     * boolean attribute: presence of `stacked` (with any value, including
+     * `"false"`) means `true`, absence means `false`. Reflected to the
+     * `stacked` attribute; defaults to `false`.
      */
-    @property({reflect: true, converter: booleanConverter(true)})
+    @property({ type: Boolean, reflect: true })
     public stacked: boolean = false;
 
     /** The registry minimum, or `undefined` until bounds are available. */

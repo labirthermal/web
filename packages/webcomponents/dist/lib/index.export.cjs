@@ -66,6 +66,10 @@ const numberRangeConverter = (emptyValue, min, max) => {
 };
 //#endregion
 //#region src/utils/converters/booleanConverter.ts
+/**
+* 
+* @deprecated Use the recommended boolean conventions by LIT.
+*/
 const booleanConverter = (emptyValue) => {
 	const fromAttribute = (value) => {
 		if (value === void 0 || value === null || value?.trim().length === 0) return emptyValue;
@@ -5070,8 +5074,7 @@ var GroupController = class extends AbstractHierarchyController {
 			autoclearGroup: {
 				type: Boolean,
 				reflect: true,
-				attribute: "autoclear-group",
-				converter: booleanConverter(true)
+				attribute: "autoclear-group"
 			},
 			groupController: INTERNAL_STATE_DECLARATION
 		};
@@ -5715,7 +5718,7 @@ var GroupListingController = class extends AbstractHierarchyController {
                     <div class="file-analysis">
                         <file-analysis-table
                             table-mode="compact"
-                            ?forceinteractiveanalysis=${true}
+                            ?interactive-analysis=${true}
                             ?graph-activation-enabled=${true}
                         ></file-analysis-table>
                         <file-analysis-graph ?standalone=${true}></file-analysis-graph>
@@ -5802,7 +5805,7 @@ var GroupListingController = class extends AbstractHierarchyController {
             </div>
             <file-analysis-complex
                 table-mode="full"
-                forceinteractiveanalysis="true"
+                ?interactive-analysis=${true}
                 ?graph-activation-enabled=${true}
             ></file-analysis-complex>
         </div>`;
@@ -5841,7 +5844,6 @@ var GroupAnalysisSyncController = class GroupAnalysisSyncController extends Abst
 			groupAnalysisSyncOn: {
 				type: Boolean,
 				reflect: true,
-				converter: booleanConverter(false),
 				attribute: "group-analysis-sync-on"
 			},
 			analysis1: GroupAnalysisSyncController.ANALYSIS_PROPERTY_DECLARATION,
@@ -6351,17 +6353,17 @@ var ManagerController = class extends AbstractHierarchyController {
 			advancedPalettes: {
 				reflect: true,
 				attribute: "advanced-palettes",
-				converter: booleanConverter(false)
+				type: Boolean
 			},
 			smoothThermograms: {
 				reflect: true,
 				attribute: "smooth-thermograms",
-				converter: booleanConverter(false)
+				type: Boolean
 			},
 			smoothGraph: {
 				reflect: true,
 				attribute: "smooth-graph",
-				converter: booleanConverter(false)
+				type: Boolean
 			},
 			tool: {
 				type: String,
@@ -6657,7 +6659,7 @@ __decorate([(0, lit_decorators_js.property)({
 }), __decorateMetadata("design:type", String)], AbstractApp.prototype, "license", void 0);
 __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
-	converter: booleanConverter(false),
+	reflect: true,
 	attribute: "show-fullscreen"
 }), __decorateMetadata("design:type", Boolean)], AbstractApp.prototype, "showFullscreen", void 0);
 //#endregion
@@ -6673,7 +6675,7 @@ var ThermalAppElement = class ThermalAppElement extends AbstractThermalElement {
 		this._hasPreBar = false;
 		this._hasBarHeader = false;
 		this.fullscreen = "off";
-		this.showfullscreen = false;
+		this.showFullscreen = false;
 		this.labelVariant = "foreground";
 		this.headerRef = (0, lit_directives_ref_js.createRef)();
 		this.contentRef = (0, lit_directives_ref_js.createRef)();
@@ -7104,7 +7106,7 @@ var ThermalAppElement = class ThermalAppElement extends AbstractThermalElement {
 </thermal-dropdown>`;
 	}
 	renderFullscreenButton() {
-		if (this.showfullscreen === false) return lit.nothing;
+		if (this.showFullscreen === false) return lit.nothing;
 		return lit.html`<thermal-btn
     class="app-fullscreen-button"
     @click=${this.toggleFullscreen.bind(this)}
@@ -7206,9 +7208,8 @@ __decorate([(0, lit_decorators_js.property)({
 __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
 	reflect: true,
-	converter: booleanConverter(false),
 	attribute: "show-fullscreen"
-}), __decorateMetadata("design:type", Boolean)], ThermalAppElement.prototype, "showfullscreen", void 0);
+}), __decorateMetadata("design:type", Boolean)], ThermalAppElement.prototype, "showFullscreen", void 0);
 __decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", String)], ThermalAppElement.prototype, "author", void 0);
 __decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", String)], ThermalAppElement.prototype, "recorded", void 0);
 __decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", String)], ThermalAppElement.prototype, "license", void 0);
@@ -7359,6 +7360,8 @@ var ThermalBtnElement = class extends AbstractThermalElement {
 		super(..._args);
 		this.tooltipPlacement = "top";
 		this.iconStyle = "outline";
+		this.disabled = false;
+		this.nonInteractive = false;
 		this.tabindex = 0;
 		this.align = "center";
 		this.showTooltip = async () => {
@@ -7413,7 +7416,7 @@ var ThermalBtnElement = class extends AbstractThermalElement {
 		this.handleClick = (event) => {
 			if (this.disabled) {
 				event.preventDefault();
-				event.stopPropagation();
+				event.stopImmediatePropagation();
 			}
 		};
 		this.handleKeydown = (event) => {
@@ -7424,10 +7427,13 @@ var ThermalBtnElement = class extends AbstractThermalElement {
 			}
 		};
 	}
+	connectedCallback() {
+		super.connectedCallback();
+		this.addEventListener("click", this.handleClick, { capture: true });
+	}
 	firstUpdated() {
 		if (!this.hasAttribute("tabindex")) this.setAttribute("tabindex", "0");
 		this.addEventListener("keydown", this.handleKeydown);
-		this.addEventListener("click", this.handleClick);
 		if (this.tooltip) {
 			this.addEventListener("mouseenter", this.showTooltip);
 			this.addEventListener("mouseleave", this.hideTooltip);
@@ -7465,7 +7471,7 @@ var ThermalBtnElement = class extends AbstractThermalElement {
 	disconnectedCallback() {
 		super.disconnectedCallback();
 		this.removeEventListener("keydown", this.handleKeydown);
-		this.removeEventListener("click", this.handleClick);
+		this.removeEventListener("click", this.handleClick, { capture: true });
 		this.removeTooltip();
 		if (this.highlightTimeout) {
 			clearTimeout(this.highlightTimeout);
@@ -7582,10 +7588,9 @@ var ThermalBtnElement = class extends AbstractThermalElement {
 
 
 
-        :host([disabled=true]),
-        :host([disabled="true"])
-        :host([disabled="true"]:hover),
-        :host([disabled="true"]:focus) {
+        :host([disabled]),
+        :host([disabled]:hover),
+        :host([disabled]:focus) {
 
             cursor: not-allowed;
             color: color-mix(in srgb, var(--color) 50%, transparent);
@@ -7594,20 +7599,12 @@ var ThermalBtnElement = class extends AbstractThermalElement {
             --cursor: not-allowed;
             --shadow: none;
             --shadow-hover: none;
-
-            button {
-                outline: 0 !important;
-                pointer-events: none;
-            }
         }
 
 
-        :host([interactive="false"]),
-        :host([interactive=false]),
-        :host([interactive="false"]:hover),
-        :host([interactive=false]:hover),
-        :host([interactive="false"]:focus),
-        :host([interactive=false]:focus) {
+        :host([non-interactive]),
+        :host([non-interactive]:hover),
+        :host([non-interactive]:focus) {
             --shadow-hover: none;
             --cursor: text;
             --color-hover: var( --color );
@@ -7639,8 +7636,7 @@ var ThermalBtnElement = class extends AbstractThermalElement {
             font-size: 2em;
         }
 
-        :host([plain="true"]),
-        :host([plain=true]) {
+        :host([plain]) {
             --border-color: transparent;
             --border-color-hover: transparent;
             --border-width: 0px;
@@ -7859,16 +7855,18 @@ __decorate([(0, lit_decorators_js.property)({
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalBtnElement.prototype, "icon", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalBtnElement.prototype, "iconStyle", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	type: String,
-	converter: booleanConverter(false)
-}), __decorateMetadata("design:type", String)], ThermalBtnElement.prototype, "disabled", void 0);
-__decorate([(0, lit_decorators_js.property)({
-	type: String,
-	converter: booleanConverter(false)
-}), __decorateMetadata("design:type", String)], ThermalBtnElement.prototype, "interactive", void 0);
+	type: Boolean,
+	reflect: true
+}), __decorateMetadata("design:type", Boolean)], ThermalBtnElement.prototype, "disabled", void 0);
 __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
-	attribute: true
+	reflect: true,
+	attribute: "non-interactive"
+}), __decorateMetadata("design:type", Boolean)], ThermalBtnElement.prototype, "nonInteractive", void 0);
+__decorate([(0, lit_decorators_js.property)({
+	type: Boolean,
+	attribute: true,
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], ThermalBtnElement.prototype, "plain", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalBtnElement.prototype, "tooltip", void 0);
 __decorate([(0, lit_decorators_js.property)({
@@ -10993,8 +10991,8 @@ var RegistryRangeForm = class extends AbstractRegistryConsumer {
 	}
 };
 __decorate([(0, lit_decorators_js.property)({
-	reflect: true,
-	converter: booleanConverter(true)
+	type: Boolean,
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], RegistryRangeForm.prototype, "stacked", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeForm.prototype, "min", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeForm.prototype, "max", void 0);
@@ -11727,11 +11725,22 @@ var RegistryHistogram = class extends AbstractRegistryConsumer {
 	}
 	render() {
 		const isLoading = this.histogram.length > 0 && this.loading === false;
+		const containerClasses = {
+			"container": true,
+			"ready": isLoading,
+			"loading": !isLoading,
+			"has-error": this.error === true,
+			"is-ok": this.error !== true
+		};
+		const histogramClasses = {
+			"histogram": true,
+			"expandable": this.expandable === true
+		};
 		return lit.html`
 
-            <div class="container ${isLoading ? "ready" : "loading"} ${this.error ? "has-error" : "is-ok"}">
+            <div class="${(0, lit_directives_class_map_js.classMap)(containerClasses)}">
 
-                <div class="histogram ${this.expandable === true ? "expandable" : ""}" style="height: ${this.expanded ? this.heightExpanded : this.height}" part="bg" @click=${() => {
+                <div class="${(0, lit_directives_class_map_js.classMap)(histogramClasses)}" style="height: ${this.expanded ? this.heightExpanded : this.height}" part="bg" @click=${() => {
 			if (this.expandable === true) this.expanded = !this.expanded;
 		}}>
 
@@ -11767,8 +11776,7 @@ __decorate([(0, lit_decorators_js.property)({
 }), __decorateMetadata("design:type", String)], RegistryHistogram.prototype, "heightExpanded", void 0);
 __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
-	reflect: true,
-	converter: booleanConverter(false)
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], RegistryHistogram.prototype, "expandable", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], RegistryHistogram.prototype, "expanded", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], RegistryHistogram.prototype, "loading", void 0);
@@ -12057,6 +12065,10 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Bo
 //#endregion
 //#region src/controls/group/GroupAnalysisSyncButton.ts
 var GroupAnalysisSyncButton = class extends AbstractGroupConsumer {
+	constructor(..._args) {
+		super(..._args);
+		this.on = false;
+	}
 	connectedCallback() {
 		super.connectedCallback();
 		if (this.on) {
@@ -12155,8 +12167,7 @@ var GroupAnalysisSyncButton = class extends AbstractGroupConsumer {
 };
 __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
-	reflect: true,
-	converter: booleanConverter(false)
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], GroupAnalysisSyncButton.prototype, "on", void 0);
 //#endregion
 //#region src/controls/group/GroupDownloadDropdown.ts
@@ -12180,7 +12191,7 @@ var GroupDownloadDropdown = class extends AbstractGroupConsumer {
             
                 <thermal-btn 
                     slot="option" 
-                    pre="LRC" 
+                    pre="ZIP" 
                     @click=${() => this.groupObject.files.downloadAllFiles()}
                     tooltip=${t$1("downloadoriginalfileshint")}
                     tooltip-placement="right"
@@ -12704,6 +12715,7 @@ var AbstractFileButton = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
 		this.size = "sm";
+		this.plain = false;
 		this.ref = (0, lit_directives_ref_js.createRef)();
 		this.handleMouseOver = (event) => {
 			if (!this.isWithinButton(event.relatedTarget)) this.enter();
@@ -12740,9 +12752,9 @@ slot {
     <thermal-btn 
         variant=${this.variant || "default"}
         size=${this.size || "sm"}
-        plain="${this.plain || false}"
+        ?plain="${this.plain}"
         class="default"
-        tooltip=${this.tooltip}
+        tooltip=${(0, lit_directives_if_defined_js.ifDefined)(this.tooltip)}
         icon=${(0, lit_directives_if_defined_js.ifDefined)(this.icon)}
         iconStyle=${(0, lit_directives_if_defined_js.ifDefined)(this.iconStyle)}
     >${this.getDefaultLabel()}</thermal-btn>
@@ -13586,7 +13598,7 @@ var FileDownloadButton = class extends AbstractFileConsumer {
                 <thermal-btn 
                     slot="option"
                     @click="${() => window.open(this.file.thermalUrl)}"
-                    pre="LRC"
+                    pre=${this.file.reader.parser.extensions[0].extension.toUpperCase()}
                     align="left"
                 >
                     ${t$1("downloadoriginalfile", { type: this.file.reader.parser.extensions[0].extension.toUpperCase() })}
@@ -13878,7 +13890,7 @@ var FileLrcButton = class extends AbstractFileButton {
 		}
 	}
 	getDefaultLabel() {
-		return "lrc";
+		return this.file?.reader.parser.extensions[0]?.extension ?? "lrc";
 	}
 };
 //#endregion
@@ -13953,8 +13965,9 @@ var FileRangePropagator = class extends AbstractFileButton {
 	}
 };
 __decorate([(0, lit_decorators_js.property)({
-	type: String,
-	converter: booleanConverter(false)
+	type: Boolean,
+	reflect: true,
+	attribute: "hide-label"
 }), __decorateMetadata("design:type", Boolean)], FileRangePropagator.prototype, "hideLabel", void 0);
 //#endregion
 //#region src/controls/file/analysis/FileAnalysisComplex.ts
@@ -13962,7 +13975,7 @@ var FileAnalysisComplexElement = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
 		this.tableMode = "full";
-		this.forceinteractiveanalysis = false;
+		this.interactiveAnalysis = false;
 		this.graphActivationEnabled = true;
 		this.mayHaveGraph = false;
 		this.hasAnalysis = false;
@@ -13972,7 +13985,7 @@ var FileAnalysisComplexElement = class extends AbstractFileConsumer {
 		this.graphWidth = 0;
 		this.graphHeight = 0;
 		this.watchedAnalyses = /* @__PURE__ */ new Set();
-		this.showhint = true;
+		this.hideHint = false;
 		this.pointerUpListener = () => {
 			this.isDrawingAnalysis = false;
 		};
@@ -14112,7 +14125,7 @@ var FileAnalysisComplexElement = class extends AbstractFileConsumer {
 	renderAddAnalysis() {
 		return lit.html`<div class="addanalysis">
 
-            ${this.showhint ? lit.html`<div>
+            ${!this.hideHint ? lit.html`<div>
                     <strong>${t$1("analysis")}</strong>
                 </div>
 
@@ -14240,8 +14253,8 @@ var FileAnalysisComplexElement = class extends AbstractFileConsumer {
             <div class="analysis">
                 ${this.hasAnalysis === false || this.isDrawingAnalysis === true ? this.renderAddAnalysis() : lit.html`<file-analysis-table
                     .tableMode=${this.tableMode}
-                    .forceinteractiveanalysis=${this.forceinteractiveanalysis}
-                    .graphActivationEnabled=${this.graphActivationEnabled}
+                    ?force-interactive=${this.interactiveAnalysis}
+                    ?graph-activation-disabled=${!this.graphActivationEnabled}
                 ></file-analysis-table>`}
             </div>
             ${this.renderGraph()}
@@ -14252,10 +14265,15 @@ var FileAnalysisComplexElement = class extends AbstractFileConsumer {
 	}
 };
 __decorate([(0, lit_decorators_js.property)({ attribute: "table-mode" }), __decorateMetadata("design:type", Object)], FileAnalysisComplexElement.prototype, "tableMode", void 0);
-__decorate([(0, lit_decorators_js.property)({ type: Boolean }), __decorateMetadata("design:type", Boolean)], FileAnalysisComplexElement.prototype, "forceinteractiveanalysis", void 0);
 __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
-	attribute: "graph-activation-enabled"
+	reflect: true,
+	attribute: "interactive-analysis"
+}), __decorateMetadata("design:type", Boolean)], FileAnalysisComplexElement.prototype, "interactiveAnalysis", void 0);
+__decorate([(0, lit_decorators_js.property)({
+	type: Boolean,
+	attribute: "graph-activation-enabled",
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], FileAnalysisComplexElement.prototype, "graphActivationEnabled", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], FileAnalysisComplexElement.prototype, "mayHaveGraph", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], FileAnalysisComplexElement.prototype, "hasAnalysis", void 0);
@@ -14266,8 +14284,8 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Nu
 __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
 	reflect: true,
-	converter: booleanConverter(true)
-}), __decorateMetadata("design:type", Boolean)], FileAnalysisComplexElement.prototype, "showhint", void 0);
+	attribute: "hide-hint"
+}), __decorateMetadata("design:type", Boolean)], FileAnalysisComplexElement.prototype, "hideHint", void 0);
 //#endregion
 //#region src/controls/file/analysis/FileAnalysisDisplay.ts
 /** Display the analysis state for the purpose of exporting. */
@@ -14552,7 +14570,7 @@ var FileAnalisisEditDialog = class extends AbstractThermalElement {
         `;
 	}
 };
-__decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", Object)], FileAnalisisEditDialog.prototype, "analysis", void 0);
+__decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Object)], FileAnalisisEditDialog.prototype, "analysis", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], FileAnalisisEditDialog.prototype, "name", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], FileAnalisisEditDialog.prototype, "type", void 0);
 //#endregion
@@ -14915,15 +14933,21 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 	}
 };
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], FileAnalysisGraphElement.prototype, "hydrated", void 0);
-__decorate([(0, lit_decorators_js.property)({ reflect: true }), __decorateMetadata("design:type", Number)], FileAnalysisGraphElement.prototype, "graphWidth", void 0);
-__decorate([(0, lit_decorators_js.property)({ reflect: true }), __decorateMetadata("design:type", Number)], FileAnalysisGraphElement.prototype, "graphHeight", void 0);
+__decorate([(0, lit_decorators_js.property)({
+	type: Number,
+	reflect: true
+}), __decorateMetadata("design:type", Number)], FileAnalysisGraphElement.prototype, "graphWidth", void 0);
+__decorate([(0, lit_decorators_js.property)({
+	type: Number,
+	reflect: true
+}), __decorateMetadata("design:type", Number)], FileAnalysisGraphElement.prototype, "graphHeight", void 0);
 __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
 	reflect: true
 }), __decorateMetadata("design:type", Boolean)], FileAnalysisGraphElement.prototype, "hasDownloads", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	reflect: true,
-	converter: booleanConverter(false)
+	type: Boolean,
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], FileAnalysisGraphElement.prototype, "standalone", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], FileAnalysisGraphElement.prototype, "graphs", void 0);
 __decorate([(0, _lit_context.consume)({
@@ -14943,17 +14967,15 @@ __decorate([(0, _lit_context.consume)({
 	subscribe: true
 }), __decorateMetadata("design:type", Boolean)], FileAnalysisGraphElement.prototype, "graphSmooth", void 0);
 //#endregion
-//#region src/controls/file/analysis/AnalysisTableOptions.ts
-const optionalBooleanConverter = { fromAttribute: (value) => value === null ? void 0 : booleanConverter(true).fromAttribute(value) };
-//#endregion
 //#region src/controls/file/analysis/FileAnalysisRow.ts
 var FileAnalysisRowElement = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
 		this.tableMode = "full";
-		this.interactiveanalysis = true;
-		this.graphActivationEnabled = true;
-		this.showRangePropagator = true;
+		this.selectionDisabled = false;
+		this.editDisabled = false;
+		this.graphActivationDisabled = false;
+		this.showRangePropagator = false;
 		this.selected = false;
 		this.hovered = false;
 		this.focused = false;
@@ -14988,7 +15010,7 @@ var FileAnalysisRowElement = class extends AbstractThermalElement {
 		};
 	}
 	get allowsEdit() {
-		return this.editEnabled ?? this.interactiveanalysis;
+		return !this.editDisabled;
 	}
 	willUpdate(changedProperties) {
 		super.willUpdate(changedProperties);
@@ -15178,7 +15200,7 @@ var FileAnalysisRowElement = class extends AbstractThermalElement {
             <span class="color" aria-hidden="true" style="background-color: ${analysis.initialColor}"></span>
             <span>${analysis.name}</span>
         `;
-		return this.interactiveanalysis ? lit.html`
+		return !this.selectionDisabled ? lit.html`
             <button
                 type="button"
                 class="name"
@@ -15199,7 +15221,7 @@ var FileAnalysisRowElement = class extends AbstractThermalElement {
 		const value = analysis[statistic];
 		const text = value === void 0 ? "-" : `${value.toFixed(2)} \u00b0C`;
 		const active = analysis.graph.state[statistic === "avg" ? "AVG" : statistic === "min" ? "MIN" : "MAX"];
-		const canActivate = this.graphActivationEnabled && analysis.file.timeline.isSequence && (statistic === "avg" || analysis instanceof _labirthermal_core.AbstractAreaAnalysis);
+		const canActivate = !this.graphActivationDisabled && analysis.file.timeline.isSequence && (statistic === "avg" || analysis instanceof _labirthermal_core.AbstractAreaAnalysis);
 		const background = active ? analysis.initialColor : "transparent";
 		const foreground = active ? getContrastColor(analysis.initialColor) : "var(--thermal-foreground)";
 		return lit.html`<td class=${this.tableMode === "compact" ? "compact" : ""}>
@@ -15241,18 +15263,21 @@ var FileAnalysisRowElement = class extends AbstractThermalElement {
 };
 __decorate([(0, lit_decorators_js.property)({ attribute: false }), __decorateMetadata("design:type", Object)], FileAnalysisRowElement.prototype, "analysis", void 0);
 __decorate([(0, lit_decorators_js.property)({ attribute: "table-mode" }), __decorateMetadata("design:type", Object)], FileAnalysisRowElement.prototype, "tableMode", void 0);
-__decorate([(0, lit_decorators_js.property)({ converter: booleanConverter(true) }), __decorateMetadata("design:type", Boolean)], FileAnalysisRowElement.prototype, "interactiveanalysis", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	attribute: "edit-enabled",
-	converter: optionalBooleanConverter
-}), __decorateMetadata("design:type", Boolean)], FileAnalysisRowElement.prototype, "editEnabled", void 0);
+	type: Boolean,
+	attribute: "selection-disabled"
+}), __decorateMetadata("design:type", Boolean)], FileAnalysisRowElement.prototype, "selectionDisabled", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	attribute: "graph-activation-enabled",
-	converter: booleanConverter(true)
-}), __decorateMetadata("design:type", Boolean)], FileAnalysisRowElement.prototype, "graphActivationEnabled", void 0);
+	type: Boolean,
+	attribute: "edit-disabled"
+}), __decorateMetadata("design:type", Boolean)], FileAnalysisRowElement.prototype, "editDisabled", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	attribute: "show-range-propagator",
-	converter: booleanConverter(true)
+	type: Boolean,
+	attribute: "graph-activation-disabled"
+}), __decorateMetadata("design:type", Boolean)], FileAnalysisRowElement.prototype, "graphActivationDisabled", void 0);
+__decorate([(0, lit_decorators_js.property)({
+	type: Boolean,
+	attribute: "show-range-propagator"
 }), __decorateMetadata("design:type", Boolean)], FileAnalysisRowElement.prototype, "showRangePropagator", void 0);
 __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
@@ -15264,27 +15289,36 @@ __decorate([(0, _lit_context.consume)({
 }), __decorateMetadata("design:type", Object)], FileAnalysisRowElement.prototype, "registryController", void 0);
 //#endregion
 //#region src/controls/file/analysis/FileAnalysisTable.ts
+/**
+* Table of the analyses of the enclosing file provider.
+*
+* The table is interactive when the manager context enables interactive
+* analyses or when the `force-interactive` attribute is present. Selection
+* and editing follow the interactivity unless opted out. The range
+* propagator and the opt-outs are independent boolean attributes that
+* default to `false`.
+*/
 var FileAnalysisTableElement = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
 		this.tableMode = "full";
-		this.graphActivationEnabled = true;
-		this.interactiveanalysis = false;
-		this.forceinteractiveanalysis = false;
+		this.showRangePropagator = false;
+		this.selectionDisabled = false;
+		this.editDisabled = false;
+		this.graphActivationDisabled = false;
+		this.forceInteractive = false;
+		this.interactiveFromContext = false;
 		this.analysis = [];
 		this.selectionChanged = () => this.requestUpdate();
 	}
-	get interactive() {
-		return this.interactiveanalysis || this.forceinteractiveanalysis;
+	get isInteractive() {
+		return this.interactiveFromContext || this.forceInteractive;
 	}
 	get allowsSelection() {
-		return this.selectionEnabled ?? this.interactive;
+		return this.isInteractive && !this.selectionDisabled;
 	}
 	get allowsEdit() {
-		return this.editEnabled ?? this.interactive;
-	}
-	get showsRangePropagator() {
-		return this.showRangePropagator ?? this.interactive;
+		return this.isInteractive && !this.editDisabled;
 	}
 	get allSelected() {
 		return this.analysis.length > 0 && this.analysis.every((analysis) => analysis.selected);
@@ -15427,7 +15461,7 @@ var FileAnalysisTableElement = class extends AbstractFileConsumer {
                             <th scope="col">${t$1("min")}</th>
                             <th scope="col">${t$1("max")}</th>
                             ${compact ? lit.nothing : lit.html`<th scope="col">${t$1("size")}</th>`}
-                            ${!compact && (this.allowsEdit || this.showsRangePropagator) ? lit.html`<th scope="col"></th>` : lit.nothing}
+                            ${!compact && (this.allowsEdit || this.showRangePropagator) ? lit.html`<th scope="col"></th>` : lit.nothing}
                         </tr>
                     </thead>
                     <tbody>
@@ -15437,8 +15471,8 @@ var FileAnalysisTableElement = class extends AbstractFileConsumer {
                                 .tableMode=${this.tableMode}
                                 .interactiveanalysis=${this.allowsSelection}
                                 .editEnabled=${this.allowsEdit}
-                                .graphActivationEnabled=${this.graphActivationEnabled}
-                                .showRangePropagator=${this.showsRangePropagator}
+                                .graphActivationEnabled=${!this.graphActivationDisabled}
+                                .showRangePropagator=${this.showRangePropagator}
                             ></file-analysis-table-row>
                         `)}
                     </tbody>
@@ -15449,30 +15483,33 @@ var FileAnalysisTableElement = class extends AbstractFileConsumer {
 };
 __decorate([(0, lit_decorators_js.property)({ attribute: "table-mode" }), __decorateMetadata("design:type", Object)], FileAnalysisTableElement.prototype, "tableMode", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	attribute: "show-range-propagator",
-	converter: optionalBooleanConverter
+	type: Boolean,
+	attribute: "show-range-propagator"
 }), __decorateMetadata("design:type", Boolean)], FileAnalysisTableElement.prototype, "showRangePropagator", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	attribute: "selection-enabled",
-	converter: optionalBooleanConverter
-}), __decorateMetadata("design:type", Boolean)], FileAnalysisTableElement.prototype, "selectionEnabled", void 0);
+	type: Boolean,
+	attribute: "selection-disabled"
+}), __decorateMetadata("design:type", Boolean)], FileAnalysisTableElement.prototype, "selectionDisabled", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	attribute: "edit-enabled",
-	converter: optionalBooleanConverter
-}), __decorateMetadata("design:type", Boolean)], FileAnalysisTableElement.prototype, "editEnabled", void 0);
+	type: Boolean,
+	attribute: "edit-disabled"
+}), __decorateMetadata("design:type", Boolean)], FileAnalysisTableElement.prototype, "editDisabled", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	attribute: "graph-activation-enabled",
-	converter: booleanConverter(true)
-}), __decorateMetadata("design:type", Boolean)], FileAnalysisTableElement.prototype, "graphActivationEnabled", void 0);
+	type: Boolean,
+	attribute: "graph-activation-disabled"
+}), __decorateMetadata("design:type", Boolean)], FileAnalysisTableElement.prototype, "graphActivationDisabled", void 0);
+__decorate([(0, lit_decorators_js.property)({
+	type: Boolean,
+	attribute: "force-interactive"
+}), __decorateMetadata("design:type", Boolean)], FileAnalysisTableElement.prototype, "forceInteractive", void 0);
 __decorate([
 	(0, _lit_context.consume)({
 		context: managerInteractiveAnalysesContext,
 		subscribe: true
 	}),
-	(0, lit_decorators_js.property)({ converter: booleanConverter(false) }),
+	(0, lit_decorators_js.state)(),
 	__decorateMetadata("design:type", Boolean)
-], FileAnalysisTableElement.prototype, "interactiveanalysis", void 0);
-__decorate([(0, lit_decorators_js.property)({ converter: booleanConverter(false) }), __decorateMetadata("design:type", Boolean)], FileAnalysisTableElement.prototype, "forceinteractiveanalysis", void 0);
+], FileAnalysisTableElement.prototype, "interactiveFromContext", void 0);
 __decorate([
 	(0, _lit_context.consume)({
 		context: fileAnalysisListContext,
@@ -15532,7 +15569,7 @@ var AnalysisColorDropdown = class extends AbstractThermalElement {
     `;
 	}
 	renderColor(value) {
-		return lit.html`<i style="background-color: ${value};" aria-hidden></i><span>${value}</span>`;
+		return lit.html`<i style="background-color: ${value};" aria-hidden="true" aria-disabled="true"></i><span>${value}</span>`;
 	}
 	render() {
 		if (this.color === void 0) return lit.nothing;
@@ -15556,7 +15593,7 @@ var AnalysisColorDropdown = class extends AbstractThermalElement {
         `;
 	}
 };
-__decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", Object)], AnalysisColorDropdown.prototype, "analysis", void 0);
+__decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Object)], AnalysisColorDropdown.prototype, "analysis", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], AnalysisColorDropdown.prototype, "color", void 0);
 //#endregion
 //#region src/controls/file/analysis/edit/analysisNameInput.ts
@@ -15590,7 +15627,7 @@ var AnalysisNameInput = class extends AbstractThermalElement {
 
             <input 
                 type="text"
-                value="${this.name}" 
+                value=${(0, lit_directives_if_defined_js.ifDefined)(this.name)}
                 @change=${(event) => {
 			const target = event.target;
 			const value = target.value !== "" ? target.value : this.analysis.nameInitial;
@@ -15601,7 +15638,7 @@ var AnalysisNameInput = class extends AbstractThermalElement {
         `;
 	}
 };
-__decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", Object)], AnalysisNameInput.prototype, "analysis", void 0);
+__decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Object)], AnalysisNameInput.prototype, "analysis", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], AnalysisNameInput.prototype, "name", void 0);
 //#endregion
 //#region src/controls/file/analysis/edit/editAreaTable.ts
@@ -15676,11 +15713,11 @@ var AreaEditTable = class extends AbstractThermalElement {
                 <thermal-field label=${t$1("left")}>
                     <input 
                         name="left" 
-                        value=${this.left} 
+                        value=${(0, lit_directives_if_defined_js.ifDefined)(this.left)} 
                         type="number" 
                         step="1" 
                         min="0" 
-                        max=${this.right !== void 0 ? this.right - 1 : this.maxX}
+                        max=${(0, lit_directives_if_defined_js.ifDefined)(this.right !== void 0 ? this.right - 1 : this.maxX)}
                         @change=${(event) => this.handleInput(event, (value) => {
 			this.analysis.setLeft(value);
 		})}
@@ -15690,11 +15727,11 @@ var AreaEditTable = class extends AbstractThermalElement {
                 <thermal-field label=${t$1("right")}>
                     <input 
                         name="right" 
-                        value=${this.right} 
+                        value=${(0, lit_directives_if_defined_js.ifDefined)(this.right)} 
                         type="number" 
                         step="1" 
                         min=${this.left !== void 0 ? this.left + 1 : 0} 
-                        max=${this.maxX}
+                        max=${(0, lit_directives_if_defined_js.ifDefined)(this.maxX)}
                         @change=${(event) => this.handleInput(event, (value) => {
 			this.analysis.setRight(value);
 		})}
@@ -15704,11 +15741,11 @@ var AreaEditTable = class extends AbstractThermalElement {
                 <thermal-field label=${t$1("top")}>
                     <input 
                         name="top" 
-                        value=${this.top} 
+                        value=${(0, lit_directives_if_defined_js.ifDefined)(this.top)} 
                         type="number" 
                         step="1" 
                         min="0"
-                        max=${this.bottom !== void 0 ? this.bottom - 1 : this.maxY}
+                        max=${(0, lit_directives_if_defined_js.ifDefined)(this.bottom !== void 0 ? this.bottom - 1 : this.maxY)}
                         @change=${(event) => this.handleInput(event, (value) => {
 			this.analysis.setTop(value);
 		})}
@@ -15718,11 +15755,11 @@ var AreaEditTable = class extends AbstractThermalElement {
                 <thermal-field label=${t$1("bottom")}>
                     <input 
                         name="bottom" 
-                        value=${this.bottom} 
+                        value=${(0, lit_directives_if_defined_js.ifDefined)(this.bottom)} 
                         type="number" 
                         step="1" 
                         min=${this.top !== void 0 ? this.top + 1 : 0}
-                        max=${this.maxY}
+                        max=${(0, lit_directives_if_defined_js.ifDefined)(this.maxY)}
                         @change=${(event) => this.handleInput(event, (value) => {
 			this.analysis.setBottom(value);
 		})}
@@ -15736,7 +15773,7 @@ var AreaEditTable = class extends AbstractThermalElement {
         `;
 	}
 };
-__decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", Object)], AreaEditTable.prototype, "analysis", void 0);
+__decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Object)], AreaEditTable.prototype, "analysis", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], AreaEditTable.prototype, "color", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], AreaEditTable.prototype, "top", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], AreaEditTable.prototype, "left", void 0);
@@ -15820,7 +15857,7 @@ var EditpointTable = class extends AbstractThermalElement {
 		})}>
                     <input 
                         name="top" 
-                        value=${this.top} 
+                        value=${(0, lit_directives_if_defined_js.ifDefined)(this.top)} 
                         type="number" 
                         step="1" 
                         min="0" 
@@ -15837,7 +15874,7 @@ var EditpointTable = class extends AbstractThermalElement {
 		})}>
                     <input
                         name="left" 
-                        value=${this.left} 
+                        value=${(0, lit_directives_if_defined_js.ifDefined)(this.left)} 
                         type="number" 
                         step="1" 
                         min="0" 
@@ -15853,7 +15890,7 @@ var EditpointTable = class extends AbstractThermalElement {
         `;
 	}
 };
-__decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", Object)], EditpointTable.prototype, "analysis", void 0);
+__decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Object)], EditpointTable.prototype, "analysis", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], EditpointTable.prototype, "top", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], EditpointTable.prototype, "left", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], EditpointTable.prototype, "maxX", void 0);
@@ -16917,7 +16954,7 @@ var DropinAppElement = class extends AbstractApp {
             </thermal-dialog>`);
 			elements.push(lit.html`
                 <div slot="pre-bar" style="flex-grow: 1; padding-left: 1em;">
-            <registry-histogram height="15px" .expandable=${true}></registry-histogram>
+            <registry-histogram height="15px" ?expandable=${true}></registry-histogram>
             <registry-range-slider height="10px"></registry-range-slider>
             <registry-ticks-bar></registry-ticks-bar>
                 </div>
@@ -16977,11 +17014,14 @@ __decorate([
 	__decorateMetadata("design:type", Object)
 ], DropinAppElement.prototype, "locale", void 0);
 //#endregion
-//#region src/apps/ThermalFileApp.ts
-var ThermalFileAppElement = class extends AbstractApp {
+//#region src/apps/AbstractSingleFileApp.ts
+/**
+* Common foundation for apps that handle a single thermal file loaded from the URL.
+*/
+var AbstractSingleFileAppElement = class extends AbstractApp {
 	constructor(..._args) {
 		super(..._args);
-		this.interactiveanalysis = true;
+		this.interactiveAnalysis = true;
 		this.managerController = new ManagerController(this);
 		this.palette = "jet";
 		this.advancedPalettes = false;
@@ -17009,6 +17049,19 @@ var ThermalFileAppElement = class extends AbstractApp {
 			...FileLoadController.HOST_PROPERTIES
 		};
 	}
+};
+__decorate([
+	(0, _lit_context.provide)({ context: managerInteractiveAnalysesContext }),
+	(0, lit_decorators_js.property)({
+		type: Boolean,
+		reflect: true,
+		attribute: "interactive-analysis"
+	}),
+	__decorateMetadata("design:type", Boolean)
+], AbstractSingleFileAppElement.prototype, "interactiveAnalysis", void 0);
+//#endregion
+//#region src/apps/ThermalFileApp.ts
+var ThermalFileAppElement = class extends AbstractSingleFileAppElement {
 	connectedCallback() {
 		super.connectedCallback();
 		if (this.hasUpdated) this.observeLayout();
@@ -17119,15 +17172,6 @@ var ThermalFileAppElement = class extends AbstractApp {
         </thermal-app>`;
 	}
 };
-__decorate([
-	(0, _lit_context.provide)({ context: managerInteractiveAnalysesContext }),
-	(0, lit_decorators_js.property)({
-		type: String,
-		reflect: true,
-		converter: booleanConverter(true)
-	}),
-	__decorateMetadata("design:type", Boolean)
-], ThermalFileAppElement.prototype, "interactiveanalysis", void 0);
 //#endregion
 //#region src/apps/ThermalGroupApp.ts
 var ThermalGroupAppElement = class extends AbstractApp {
@@ -17226,7 +17270,7 @@ var ThermalGroupAppElement = class extends AbstractApp {
 		const hasFiles = this.groupObject?.files.value.length > 0;
 		return lit.html`<thermal-app
             label=${this.label ?? "LabIR Web Analyser"}
-            show-fullscreen=${String(this.showFullscreen)}
+            ?show-fullscreen=${this.showFullscreen}
         >
             ${hasFiles ? lit.html`
                 <manager-tool-bar slot="pre-bar"></manager-tool-bar>
@@ -17243,7 +17287,7 @@ var ThermalGroupAppElement = class extends AbstractApp {
                     </div>
                 </thermal-dialog>
                 <div slot="pre-bar" style="flex-grow: 1; padding-left: 1em;">
-                    <registry-histogram height="15px" expandable="true"></registry-histogram>
+                    <registry-histogram height="15px" ?expandable=${true}></registry-histogram>
                     <registry-range-slider height="10px"></registry-range-slider>
                     <registry-ticks-bar></registry-ticks-bar>
                 </div>
@@ -17258,6 +17302,67 @@ var ThermalGroupAppElement = class extends AbstractApp {
                 </div>
             </div>
         </thermal-app>`;
+	}
+};
+//#endregion
+//#region src/apps/ThermalSlottedApp.ts
+/**
+* Places left and right slot content beside the canvas, sized to their content.
+* Top, bottom and unnamed slot content span the full width.
+*/
+var ThermalSlottedAppElement = class extends AbstractSingleFileAppElement {
+	static {
+		this.styles = lit.css`
+    
+        :host {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            grid-template-areas:
+                "left top right"
+                "left viewer right"
+                "left bottom right"
+                "extra extra extra";
+            align-items: start;
+        }
+
+        slot {
+            display: block;
+            min-width: 0;
+            grid-area: extra;
+        }
+
+        slot[name="top"] {
+            grid-area: top;
+        }
+
+        slot[name="left"] {
+            grid-area: left;
+        }
+
+        file-canvas {
+            grid-area: viewer;
+            min-width: 0;
+        }
+
+        slot[name="right"] {
+            grid-area: right;
+        }
+
+        slot[name="bottom"] {
+            grid-area: bottom;
+        }
+    
+    `;
+	}
+	render() {
+		return lit.html`
+            <slot name="top"></slot>
+            <slot name="left"></slot>
+            <file-canvas></file-canvas>
+            <slot name="right"></slot>
+            <slot name="bottom"></slot>
+            <slot></slot>
+        `;
 	}
 };
 //#endregion
@@ -17434,9 +17539,8 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
 		this.timelineRef = (0, lit_directives_ref_js.createRef)();
 		this.barRef = (0, lit_directives_ref_js.createRef)();
 		this.containerRef = (0, lit_directives_ref_js.createRef)();
-		this.hasPlayButton = true;
-		this.hasInfo = true;
-		this.interactive = true;
+		this.disablePlayButton = false;
+		this.disableInfo = false;
 		this.collapsed = false;
 		this.ticks = [];
 	}
@@ -17449,18 +17553,33 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
 	onFailure() {
 		this.file?.timeline.removeListener(this.UUID);
 	}
+	connectedCallback() {
+		super.connectedCallback();
+		this.requestUpdate();
+	}
+	disconnectedCallback() {
+		this.observer?.disconnect();
+		this.observer = void 0;
+		this.observedContainer = void 0;
+		super.disconnectedCallback();
+	}
 	update(changedProperties) {
 		super.update(changedProperties);
-		if (this.observer === void 0 && this.containerRef.value instanceof Element) {
-			this.observer = new ResizeObserver((entries) => {
-				const entry = entries[0];
-				if (this.file) this.ticks = calculateTicks(entry.contentRect.width, this.file.duration);
-				if (entry.contentRect.width < FileTimelineElement.collapseWidth) {
-					if (this.collapsed === false) this.collapsed = true;
-				} else if (this.collapsed === true) this.collapsed = false;
-			});
-			this.observer.observe(this.containerRef.value);
-		}
+		const container = this.containerRef.value;
+		if (container === this.observedContainer) return;
+		this.observer?.disconnect();
+		this.observer = void 0;
+		this.observedContainer = void 0;
+		if (!this.isConnected || !container) return;
+		this.observedContainer = container;
+		this.observer = new ResizeObserver((entries) => {
+			if (!this.isConnected || this.observedContainer !== container) return;
+			const entry = entries.find((entry) => entry.target === container);
+			if (!entry) return;
+			if (this.file) this.ticks = calculateTicks(entry.contentRect.width, this.file.duration);
+			this.collapsed = entry.contentRect.width < FileTimelineElement.collapseWidth;
+		});
+		this.observer.observe(container);
 	}
 	/** Handlers */
 	/** Handle playback buttons */
@@ -17545,6 +17664,11 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
             .label { opacity: .5; }
         }
 
+        .real.collapsed {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
         .inline {
             white-space: nowrap;
         }
@@ -17608,6 +17732,10 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
 
             padding-top: 5px;
 
+        }
+
+        .container.collapsed .controls {
+            flex-wrap: wrap;
         }
 
         .chrome {
@@ -17705,9 +17833,7 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
 ${this.currentFrame ? renderTicks(file.duration, this.ticks, this.currentFrame.ms, this.pointerMs) : lit.nothing}
 
 
-${this.hasPlayButton === true ? this.renderControls(file, disabled, playButtonClasses) : lit.nothing}
-
-        </div>
+${this.disablePlayButton === false ? this.renderControls(file, disabled, playButtonClasses) : lit.nothing}
 
     </aside>
 
@@ -17715,7 +17841,7 @@ ${this.hasPlayButton === true ? this.renderControls(file, disabled, playButtonCl
 
 
 
-${this.currentFrame !== void 0 && this.hasInfo === true ? lit.html`<div class="small real ${this.collapsed ? "collapsed" : ""}">
+${this.currentFrame !== void 0 && this.disableInfo === false ? lit.html`<div class="small real ${this.collapsed ? "collapsed" : ""}">
         <div>
             <span class="label">${t$1("date")}:</span> 
             <span class="inline" data-video-dynamic>${(0, date_fns.format)(this.currentFrame.absolute, "d. L. y")}</span>
@@ -17769,17 +17895,15 @@ __decorate([(0, _lit_context.consume)({
 	subscribe: true
 }), __decorateMetadata("design:type", Object)], FileTimelineElement.prototype, "cursor", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	type: String,
-	reflect: true
-}), __decorateMetadata("design:type", Boolean)], FileTimelineElement.prototype, "hasPlayButton", void 0);
+	type: Boolean,
+	reflect: true,
+	attribute: "disable-play-button"
+}), __decorateMetadata("design:type", Boolean)], FileTimelineElement.prototype, "disablePlayButton", void 0);
 __decorate([(0, lit_decorators_js.property)({
-	type: String,
-	reflect: true
-}), __decorateMetadata("design:type", Boolean)], FileTimelineElement.prototype, "hasInfo", void 0);
-__decorate([(0, lit_decorators_js.property)({
-	type: String,
-	reflect: true
-}), __decorateMetadata("design:type", Boolean)], FileTimelineElement.prototype, "interactive", void 0);
+	type: Boolean,
+	reflect: true,
+	attribute: "disable-info"
+}), __decorateMetadata("design:type", Boolean)], FileTimelineElement.prototype, "disableInfo", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], FileTimelineElement.prototype, "collapsed", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Array)], FileTimelineElement.prototype, "ticks", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], FileTimelineElement.prototype, "pointerMs", void 0);
@@ -18653,7 +18777,7 @@ var AbstractSingleVideoExport = class extends AbstractFileConsumer {
 		super.updated(_changedProperties);
 		if (_changedProperties.has("file") && this.file) {
 			this.parentHasAnalyses = this.file.analysis.value.length > 0;
-			const baseName = this.file.fileName.replace(/\.lrc$/i, "");
+			const baseName = this.file.fileName.replace(/\.(lrc|jpe?g)$/i, "");
 			this.renderProps.fileName = baseName;
 			this.requestUpdate();
 		}
@@ -19708,9 +19832,11 @@ var FileDetailElement = class extends AbstractFileConsumer {
 	}
 };
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Function)], FileDetailElement.prototype, "onback", void 0);
-__decorate([(0, lit_decorators_js.property)({ converter: booleanConverter(false) }), __decorateMetadata("design:type", Boolean)], FileDetailElement.prototype, "norender", void 0);
+__decorate([(0, lit_decorators_js.property)({
+	type: Boolean,
+	reflect: true
+}), __decorateMetadata("design:type", Boolean)], FileDetailElement.prototype, "norender", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], FileDetailElement.prototype, "label", void 0);
-__decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", Object)], FileDetailElement.prototype, "grouping", void 0);
 //#endregion
 //#region src/renderers/FileThumbnail.ts
 var FileThumbnailElement = class extends AbstractFileConsumer {
@@ -19776,7 +19902,7 @@ var FileThumbnailElement = class extends AbstractFileConsumer {
                 <h2
                     @click=${() => this.ondetail?.(this.file)}
                 >
-                    <file-label label="${(0, lit_directives_if_defined_js.ifDefined)(this.label)}" grouping="${(0, lit_directives_if_defined_js.ifDefined)(this.grouping)}"></file-label>
+                    <file-label label="${(0, lit_directives_if_defined_js.ifDefined)(this.label)}"></file-label>
                 </h2>
                 <div>
                     <thermal-btn size="sm" variant="background" @click=${() => this.ondetail?.(this.file)}>${t$1("detail").toLocaleLowerCase()}</thermal-btn>
@@ -19794,7 +19920,7 @@ var FileThumbnailElement = class extends AbstractFileConsumer {
             <main>
                 <file-canvas norender="${this.norender}"></file-canvas>
                 <file-timeline></file-timeline>
-                <file-analysis-table mode="compact" show-range-propagator="false"></file-analysis-table>
+                <file-analysis-table mode="compact"></file-analysis-table>
             </main>
         
     `;
@@ -19803,7 +19929,6 @@ var FileThumbnailElement = class extends AbstractFileConsumer {
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Function)], FileThumbnailElement.prototype, "ondetail", void 0);
 __decorate([(0, lit_decorators_js.property)({ converter: booleanConverter(false) }), __decorateMetadata("design:type", Boolean)], FileThumbnailElement.prototype, "norender", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], FileThumbnailElement.prototype, "label", void 0);
-__decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", Object)], FileThumbnailElement.prototype, "grouping", void 0);
 //#endregion
 //#region src/ui/BtnGroup.ts
 var BtnGroupElement = class extends AbstractThermalElement {
@@ -19936,15 +20061,16 @@ const elementsApplications = {
 	"apparent-temperature-aat": AatAppElement,
 	"thermal-dropin-app": DropinAppElement,
 	"thermal-file-app": ThermalFileAppElement,
-	"thermal-group-app": ThermalGroupAppElement
+	"thermal-group-app": ThermalGroupAppElement,
+	"thermal-simple-app": ThermalSlottedAppElement
 };
 /** 
 * All the webcomponents from the @labirthermal/webcomponents package in a list for the purpose of its registration in `defineAllWebcomponents`.
 * @see {@link defineBaseWebcomponents}
 */
 const elementsAll = {
-	...elementsUi,
 	...elementsProviders,
+	...elementsUi,
 	...elementsManagerControls,
 	...elementsRegistryControls,
 	...elementsGroupControls,

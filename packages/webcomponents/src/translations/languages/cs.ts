@@ -172,7 +172,7 @@ export const cs: Translation = {
     analysishint: "Vyznačte oblast v termogramu a zde uvidíte přehled jejích teplot.",
     graph: "Graf",
     graphhint1: "Nejprve přidejte analýzu!",
-    graphhint2: "Pro zobrazení grafu klikněte na <thermal-btn variant='background' interactive='false' tooltip='Najdete je v tabulce výše...'>hodnotu</thermal-btn> některé analýzy!",
+    graphhint2: "Pro zobrazení grafu klikněte na <thermal-btn variant='background' non-interactive tooltip='Najdete je v tabulce výše...'>hodnotu</thermal-btn> některé analýzy!",
 
     rectangle: "obdélník",
     ellipsis: "elipsu",

@@ -16,7 +16,7 @@ import type { AppWithFileSelectionController} from "../controllers/FileSelection
 import { FileSelectionController } from "../controllers/FileSelectionController";
 import type { AppWithFolderSelectionController} from "../controllers/FolderSelectionController";
 import { FolderSelectionController } from "../controllers/FolderSelectionController";
-import { AbstractApp, booleanConverter } from "@labirthermal/webcomponents";
+import { AbstractApp, booleanConverter, BtnVariants } from "@labirthermal/webcomponents";
 import { ApiClient } from "../client/ApiClient";
 import { ControlledClientContext, ControlledContentContext, DisplayControllerContext, FileSelectionControllerContext, FolderSelectionControllerContext } from "../controllers/controllersContexts";
 
@@ -378,7 +378,7 @@ export abstract class AbstractConnectedApp extends AbstractApp
             labelTooltip=${ifDefined(this.labelTooltip)}
             labelIcon=${ifDefined(this.labelIcon)}
             labelIconStyle=${ifDefined(this.labelIconStyle)}
-            labelVariant=${ifDefined(this.labelVariant)}
+            labelVariant=${ifDefined(this.labelVariant as BtnVariants)}
         >
 
             ${shareDialog}

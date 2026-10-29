@@ -1,13 +1,17 @@
-import { AvailableThermalPalette, PlaybackSpeeds, ThermalFileFailure, ThermalFileInstance, ThermalGroup, ThermalManager, ThermalRangeOrUndefined, ThermalRegistry } from "@labirthermal/core";
-import { FileController, IElementWithFileController } from "../controllers/FileController";
-import { FileLoadController, IElementWithFileLoadController } from "../controllers/FileLoadController";
-import { GroupController, IElementWithGroupController } from "../controllers/GroupController";
-import { IElementWithManagerController, ManagerController, managerInteractiveAnalysesContext } from "../controllers/ManagerController";
-import { IElementWithRegistryController, RegistryController } from "../controllers/RegistryController";
-import { AbstractApp } from "./AbstractApp";
-import { booleanConverter } from "../utils/converters/booleanConverter";
-import { property } from "lit/decorators.js";
+import type { AvailableThermalPalette, PlaybackSpeeds, ThermalFileFailure, ThermalFileInstance, ThermalGroup, ThermalManager, ThermalRangeOrUndefined, ThermalRegistry } from "@labirthermal/core";
 import { provide } from "@lit/context";
+import { property } from "lit/decorators.js";
+import type { IElementWithFileController } from "../controllers/FileController";
+import { FileController } from "../controllers/FileController";
+import type { IElementWithFileLoadController } from "../controllers/FileLoadController";
+import { FileLoadController } from "../controllers/FileLoadController";
+import type { IElementWithGroupController } from "../controllers/GroupController";
+import { GroupController } from "../controllers/GroupController";
+import type { IElementWithManagerController } from "../controllers/ManagerController";
+import { ManagerController, managerInteractiveAnalysesContext } from "../controllers/ManagerController";
+import type { IElementWithRegistryController } from "../controllers/RegistryController";
+import { RegistryController } from "../controllers/RegistryController";
+import { AbstractApp } from "./AbstractApp";
 
 
 /**
@@ -34,8 +38,8 @@ implements
     
         /** Enables selecting, editing and removing the analyses in the tables. Provided to all descendants. */
         @provide({ context: managerInteractiveAnalysesContext })
-        @property({ type: String, reflect: true, converter: booleanConverter(true) })
-        interactiveanalysis: boolean = true;
+        @property({ type: Boolean, reflect: true, attribute: "interactive-analysis"})
+        interactiveAnalysis: boolean = true;
     
         // Manager controller properties
         

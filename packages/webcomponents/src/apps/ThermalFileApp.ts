@@ -111,7 +111,7 @@ export class ThermalFileAppElement extends AbstractSingleFileAppElement {
             <registry-range-form slot="bar-pre"></registry-range-form>
             <registry-opacity-slider slot="bar-pre"></registry-opacity-slider>
 
-            <registry-histogram slot="pre" expandable="true"></registry-histogram>
+            <registry-histogram slot="pre" ?expandable=${true}></registry-histogram>
             <registry-range-slider slot="pre"></registry-range-slider>
             <registry-ticks-bar slot="pre"></registry-ticks-bar>
 

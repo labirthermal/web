@@ -117,7 +117,7 @@ export class ConnectedSubfoldersGrid extends AbstractControlledConsumer {
                     <thermal-btn
                         tooltip="Zobrazit všech ${folder.lrc_count} souborů ve složce '${folder.name}'."
                         @click=${() => this.onFolderClick?.(folder)}
-                        plain="true"
+                        ?plain=${true}
                         icon="zoom"
                         iconStyle="micro"
                     ></thermal-btn>
@@ -282,25 +282,25 @@ export class ConnectedSubfoldersGrid extends AbstractControlledConsumer {
                         ></connected-file-tags>
 
                         <file-range-propagator
-                            plain="true"
+                            ?plain=${true}
                             icon="range"
                             iconStyle="outline"
                             size="md"
-                            hideLabel="true"
+                            ?hide-label=${true}
                         ></file-range-propagator>
 
                         <connected-file-delete-dialog
                             .file=${file}
                             .folder=${folder}
                             size="md"
-                            plain="true"
+                            ?plain=${true}
                             .onDelete=${() => {
                 this.display.reloadCurrentState();
             }}
                         ></connected-file-delete-dialog>
                         
                         <thermal-btn
-                            plain="true"
+                            ?plain=${true}
                             icon="zoom"
                             iconStyle="micro"
                             tooltip="Zobrazit detail tohoto souboru."

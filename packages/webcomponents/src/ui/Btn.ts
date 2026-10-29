@@ -5,7 +5,6 @@ import { property } from "lit/decorators.js";
 import { ref } from "lit/directives/ref.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
-import { booleanConverter } from "../utils/converters/booleanConverter";
 import icons from "../utils/icons";
 
 export type BtnVariants = "primary" | "foreground" | "background" | "default" | "breadcrumb";
@@ -32,13 +31,15 @@ export class ThermalBtnElement extends AbstractThermalElement {
     @property({type: String})
     public iconStyle:string = "outline";
 
-    @property({type: String, converter: booleanConverter(false)})
-    public disabled?: string;
+    /** Disables the button: blocks clicks and keyboard activation and renders it dimmed. */
+    @property({ type: Boolean, reflect: true })
+    public disabled: boolean = false;
 
-    @property({type: String, converter: booleanConverter(false)})
-    public interactive?: string;
+    /** Renders the button as a static label without hover/focus feedback. */
+    @property({ type: Boolean, reflect: true, attribute: "non-interactive" })
+    public nonInteractive: boolean = false;
 
-    @property({type: Boolean, attribute: true})
+    @property({type: Boolean, attribute: true, reflect: true})
     public plain?: boolean;
 
     @property({type: String})
@@ -60,6 +61,13 @@ export class ThermalBtnElement extends AbstractThermalElement {
     // timeout id for active highlight animation
     private highlightTimeout?: number;
 
+    connectedCallback() {
+        super.connectedCallback();
+        // Capture phase runs before consumers' click listeners on the host,
+        // so a disabled button can stop them all.
+        this.addEventListener('click', this.handleClick, { capture: true });
+    }
+
     firstUpdated() {
         // Ensure element is focusable
         if (!this.hasAttribute('tabindex')) {
@@ -67,8 +75,6 @@ export class ThermalBtnElement extends AbstractThermalElement {
         }
         // Add keyboard event listener
         this.addEventListener('keydown', this.handleKeydown);
-        // Add click event listener to prevent disabled button clicks
-        this.addEventListener('click', this.handleClick);
         // Tooltip will be rendered in render(), not in body
         if (this.tooltip) {
             this.addEventListener('mouseenter', this.showTooltip);
@@ -167,7 +173,7 @@ export class ThermalBtnElement extends AbstractThermalElement {
         // Prevent click if disabled
         if (this.disabled) {
             event.preventDefault();
-            event.stopPropagation();
+            event.stopImmediatePropagation();
         }
     };
 
@@ -185,7 +191,7 @@ export class ThermalBtnElement extends AbstractThermalElement {
     disconnectedCallback() {
         super.disconnectedCallback();
         this.removeEventListener('keydown', this.handleKeydown);
-        this.removeEventListener('click', this.handleClick);
+        this.removeEventListener('click', this.handleClick, { capture: true });
         this.removeTooltip();
         // clear highlight if still pending
         if (this.highlightTimeout) {
@@ -303,10 +309,9 @@ export class ThermalBtnElement extends AbstractThermalElement {
 
 
 
-        :host([disabled=true]),
-        :host([disabled="true"])
-        :host([disabled="true"]:hover),
-        :host([disabled="true"]:focus) {
+        :host([disabled]),
+        :host([disabled]:hover),
+        :host([disabled]:focus) {
 
             cursor: not-allowed;
             color: color-mix(in srgb, var(--color) 50%, transparent);
@@ -315,20 +320,12 @@ export class ThermalBtnElement extends AbstractThermalElement {
             --cursor: not-allowed;
             --shadow: none;
             --shadow-hover: none;
-
-            button {
-                outline: 0 !important;
-                pointer-events: none;
-            }
         }
 
 
-        :host([interactive="false"]),
-        :host([interactive=false]),
-        :host([interactive="false"]:hover),
-        :host([interactive=false]:hover),
-        :host([interactive="false"]:focus),
-        :host([interactive=false]:focus) {
+        :host([non-interactive]),
+        :host([non-interactive]:hover),
+        :host([non-interactive]:focus) {
             --shadow-hover: none;
             --cursor: text;
             --color-hover: var( --color );
@@ -360,8 +357,7 @@ export class ThermalBtnElement extends AbstractThermalElement {
             font-size: 2em;
         }
 
-        :host([plain="true"]),
-        :host([plain=true]) {
+        :host([plain]) {
             --border-color: transparent;
             --border-color-hover: transparent;
             --border-width: 0px;

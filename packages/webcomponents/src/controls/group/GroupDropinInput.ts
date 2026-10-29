@@ -1,13 +1,13 @@
-import { property, state } from "lit/decorators.js";
-
 import type { DropinElementListener } from "@labirthermal/core";
 import { t } from "i18next";
 import type { PropertyValues } from "lit";
 import { css, html } from "lit";
+import { property, state } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import type { Ref } from 'lit/directives/ref.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { T } from "../../translations/Languages";
+import type { BtnVariants } from "../../ui/Btn";
 import { AbstractGroupDropin } from "./AbstractGroupDropin";
 
 export class GroupDropinInputElement extends AbstractGroupDropin {
@@ -22,7 +22,7 @@ export class GroupDropinInputElement extends AbstractGroupDropin {
   public tooltip?: string;
 
   @property({ type: String, reflect: true })
-  public variant?: string;
+  public variant?: BtnVariants;
 
   @state()
   protected container: Ref<HTMLVideoElement> = createRef();

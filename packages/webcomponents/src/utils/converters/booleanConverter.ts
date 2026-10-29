@@ -1,3 +1,7 @@
+/**
+ * 
+ * @deprecated Use the recommended boolean conventions by LIT.
+ */
 export const booleanConverter = (
     emptyValue: boolean
 ) => {
