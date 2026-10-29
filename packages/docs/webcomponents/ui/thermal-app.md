@@ -84,14 +84,14 @@ Visual variant of the built-in title button, using the same values as [`thermal-
 
 </ComponentAttribute>
 
-<ComponentAttribute name="show-fullscreen" type="'true' | 'false'" default="false">
+<ComponentAttribute name="show-fullscreen" type="boolean" default="false" tag="thermal-app">
 
-Shows the built-in fullscreen toggle next to the language selector. Use `show-fullscreen="true"`: an empty attribute, `"false"` or any other value keeps the control hidden. This only controls the button's visibility; it does not enter fullscreen by itself.
+When `show-fullscreen` is present, the built-in fullscreen toggle is shown in the header. This only controls the button's visibility; it does not enter fullscreen by itself.
 
 <ComponentExample>
 
 ```html
-<thermal-app label="Fullscreen demo" show-fullscreen="true">
+<thermal-app label="Fullscreen demo" show-fullscreen>
     <p>Use the expand icon in the header to enter fullscreen.</p>
     <p>Use the same control or the browser's Escape key to leave it.</p>
 </thermal-app>
@@ -103,21 +103,26 @@ Shows the built-in fullscreen toggle next to the language selector. Use `show-fu
 
 <ComponentAttribute name="fullscreen" type="'on' | 'off'" default="off">
 
-Reflects and controls native browser fullscreen. `"on"` requests fullscreen for this frame; `"off"` exits it if this frame is the current fullscreen element. Use these exact values, not `"true"` or `"false"`.
+State of native browser fullscreen, managed by the component. The component sets it to `on` or `off` whenever the browser enters or leaves fullscreen, including when the user presses Escape, so you can use `[fullscreen="on"]` as a CSS state selector.
 
-Enter fullscreen from a user action, not by putting `fullscreen="on"` into initial markup: browsers normally require user activation. The browser must support the Fullscreen API and allow its use; embedding in an iframe also requires appropriate fullscreen permission. A rejected request is logged and the attribute is synchronized with the actual fullscreen state.
+Writing the attribute also controls fullscreen: `on` requests fullscreen for this frame and `off` exits it if this frame is the current fullscreen element. Use these exact values, not `true` or `false`.
 
-In fullscreen, the frame uses the viewport width and height, scrolls internally and removes its outer border and rounded corners. The header stays sticky. Browser fullscreen changes, including Escape, update the attribute.
+Do not use it as an initial configuration value. Browsers require a user action, so `fullscreen="on"` in the initial markup is rejected and the attribute returns to `off`. The browser must support and permit the Fullscreen API; an iframe also needs fullscreen permission. Rejected requests are logged and the attribute is synchronized with the actual fullscreen state. For your own controls, prefer [`toggleFullscreen()`](#custom-fullscreen-control); to show the built-in control, use [`show-fullscreen`](#show-fullscreen).
 
 <ComponentExample>
 
 ```html
-<thermal-app label="Custom fullscreen control">
+<style>
+    thermal-app.fullscreen-state-demo[fullscreen="on"] {
+        background: var(--thermal-background);
+    }
+</style>
+<thermal-app class="fullscreen-state-demo" label="Fullscreen state">
     <thermal-btn
         slot="bar-pre"
-        onclick="this.closest('thermal-app').toggleFullscreen()"
-    >Toggle fullscreen</thermal-btn>
-    <p>The public method toggles between fullscreen="on" and fullscreen="off".</p>
+        onclick="this.closest('thermal-app').setAttribute('fullscreen', 'on')"
+    >Enter fullscreen</thermal-btn>
+    <p>The button writes fullscreen="on" from a click. Press Escape to leave; the component sets fullscreen="off".</p>
 </thermal-app>
 ```
 
@@ -171,7 +176,7 @@ License credit, rendered as plain text rather than a link. Omitted, empty or whi
 
 </ComponentExample>
 
-When combined, credits appear in the order **recorded, author, license**. Their field labels use the active interface language.
+When combined, credits appear in the order **recorded, author, license**.
 
 </ComponentAttribute>
 
@@ -247,9 +252,10 @@ Set `slot` on a **direct child** of the frame. Use a wrapper if several elements
 | `bar-header` | In the top row, immediately after the title and before the responsive tools. Not moved into overflow. Hidden when it has no assigned elements. |
 | `bar-pre` | Toolbar items before the flexible spacer. Items can move into overflow when space runs out. |
 | `bar-post` | Toolbar items after the flexible spacer, toward the right. Items can move into overflow when space runs out. |
-| `close` | After the responsive tools, before the fullscreen and language controls. Only a placement slot: clicking its contents does not automatically close or remove the frame. |
+| `close` | After the responsive tools, before the built-in header controls. Only a placement slot: clicking its contents does not automatically close or remove the frame. |
 | `pre` | A row below the toolbar, inside the sticky header. Hidden when it has no assigned elements. |
 | `pre-bar` | Another row after `pre`, still inside the sticky header. Uses a horizontal flex layout; hidden when it has no assigned elements. |
+| `pre-bar-wrap` | After `pre-bar`, still inside the sticky header. Rendered directly without the horizontal flex wrapper used by `pre-bar`. |
 | Default (no `slot`) | Main content below the sticky header. Exposed for styling as `::part(app-content)`. |
 | `post` | After the main content, before the credits. |
 | `content` | Additional content **after the credits**, not the main content area. Gets top spacing when assigned elements are present. |
@@ -264,7 +270,7 @@ The order below follows the visual layout. The custom title link replaces `label
 <ComponentExample>
 
 ```html
-<thermal-app label="Replaced title" show-fullscreen="true" author="LabIR Team">
+<thermal-app label="Replaced title" show-fullscreen author="LabIR Team">
     <a slot="label" href="#slots" style="white-space: nowrap">Inspection</a>
     <span slot="bar-header">Draft</span>
     <thermal-btn slot="bar-pre" onclick="this.closest('thermal-app').querySelector('output').textContent = 'Saved.'">Save</thermal-btn>
@@ -272,6 +278,7 @@ The order below follows the visual layout. The custom title link replaces `label
     <thermal-btn slot="close" onclick="this.closest('thermal-app').querySelector('output').textContent = 'Close requested.'">Close</thermal-btn>
     <div slot="pre">North wall / first floor</div>
     <div slot="pre-bar">Review the measurements before saving.</div>
+    <div slot="pre-bar-wrap">Additional header content outside the horizontal toolbar row.</div>
     <section style="padding: 16px; line-height: 1.5">
         <h4>Main content</h4>
         <output aria-live="polite">Waiting for an action.</output>
@@ -289,7 +296,7 @@ The toolbar measures available space and moves items from the end of the combine
 
 The component changes each moved child's `slot` to `bar-overflow` and remembers its original slot in `data-original-slot`. When the frame grows again, the items return to their original slots. Avoid overwriting these while overflow is active.
 
-Drag the example's right edge to resize it, then use the options icon to reveal tools that no longer fit. The title, `bar-header`, `close`, fullscreen and language controls stay in the top row; they are not moved into overflow. Keep these fixed areas compact to leave room for tools.
+Drag the example's right edge to resize it, then use the options icon to reveal tools that no longer fit. The title, `bar-header`, `close` and built-in header controls stay in the top row; they are not moved into overflow. Keep these fixed areas compact to leave room for tools.
 
 <ComponentExample>
 
@@ -307,95 +314,108 @@ Drag the example's right edge to resize it, then use the options icon to reveal 
 
 </ComponentExample>
 
-## Language and JavaScript API
-
-The built-in language selector is always present. It offers English, Czech, German, French and Welsh. Changing it changes the shared interface language, including other components on the page; it does not translate your slotted content. There is no HTML attribute for hiding this selector.
+## JavaScript API
 
 | JavaScript API | Purpose |
 | --- | --- |
-| `toggleFullscreen()` | Toggles native fullscreen. Call from a user action. |
-| `fullscreen` | String property, synchronized with the `fullscreen` attribute. |
-| `showfullscreen` | Boolean property corresponding to `show-fullscreen`. |
+| `toggleFullscreen()` | Toggles native fullscreen by switching the `fullscreen` attribute between `on` and `off`. Call from a user action. |
+| `fullscreen` | String property synchronized with the `fullscreen` attribute. The component updates it from the browser's fullscreen state. |
+| `showFullscreen` | Boolean property corresponding to `show-fullscreen`. |
 | `labelIcon`, `labelIconStyle`, `labelTooltip`, `labelVariant` | Camel-cased properties corresponding to lowercase HTML attributes. |
 | `onlabel` | Function called on a click on the built-in title button. Assign a function in JavaScript; do not use an HTML `onlabel` string. |
 
-Although `onlabel` is declared as an Object property, an HTML value is not executable callback code. Set it only after the element is registered, as in the [complete document](#complete-html-document). Assigning it makes the built-in title interactive. Listen to standard `click` events on your own slotted controls; the frame does not emit a custom save or close event.
+Although `onlabel` is declared as an Object property, an HTML value is not executable callback code. Set it only after the element is registered by waiting for `customElements.whenDefined('thermal-app')`. Assigning it makes the built-in title interactive. Listen to standard `click` events on your own slotted controls; the frame does not emit a custom save or close event.
 
 ## Styling
 
 Use the `skin`, `corners` and `lines` attributes above for predefined looks. For custom colours, spacing, typography and the `::part(app-content)` selector, see [Styling and CSS variables](../guide/styling.md#styling-thermal-app).
 
+Use the [`fullscreen`](#fullscreen) state selector `[fullscreen="on"]` for fullscreen-specific styles.
+
 ## Examples
 
-### Complete HTML document
+### Custom fullscreen control
 
-Replace the placeholder script URL with your own. This document uses a named click handler for a slotted button and a named callback for the built-in title.
+Call `toggleFullscreen()` from a user action. The browser must support and permit the Fullscreen API; an iframe also needs fullscreen permission. Rejected requests are logged and the [`fullscreen`](#fullscreen) attribute is synchronized with the browser.
 
-`DOMContentLoaded` waits for the parsed body and deferred bundle. `customElements.whenDefined` then ensures the elements are registered before their APIs are used. These waits do not promise that content such as images or data loaded by other components has finished loading.
+In fullscreen, the frame fills the viewport, scrolls internally and removes its outer border and rounded corners. The header stays sticky. Use the control again or Escape to leave fullscreen.
+
+<ComponentExample>
 
 ```html
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Application frame example</title>
-    <script defer src="/path-to-your-script/labirthermal.iife.js"></script>
-    <style>
-        #inspection-app:not([fullscreen="on"]) {
-            max-width: 800px;
-        }
-    </style>
-</head>
-<body>
-    <script>
-        function saveInspection(event) {
-            if (
-                event.defaultPrevented ||
-                event.currentTarget.getAttribute('disabled') === 'true'
-            ) {
-                return;
-            }
-            document.getElementById('inspection-status').textContent = 'Inspection saved.';
-        }
-
-        function showInspectionInfo() {
-            document.getElementById('inspection-status').textContent = 'North wall inspection.';
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            await Promise.all([
-                customElements.whenDefined('thermal-app'),
-                customElements.whenDefined('thermal-btn')
-            ]);
-
-            const app = document.getElementById('inspection-app');
-            app.onlabel = showInspectionInfo;
-            document.getElementById('save-inspection').addEventListener('click', saveInspection);
-        });
-    </script>
-
-    <thermal-app
-        id="inspection-app"
-        label="Inspection"
-        labelicon="image"
-        labeltooltip="Show inspection information"
-        show-fullscreen="true"
-        author="LabIR Team"
-        recorded="21 October 2026"
-        license="CC BY 4.0"
-    >
-        <thermal-btn id="save-inspection" slot="bar-pre" variant="primary">Save</thermal-btn>
-        <div slot="pre">North wall / first floor</div>
-        <section style="padding: 20px">
-            <h1>Measurements</h1>
-            <p>Click the title for information or Save to update the status.</p>
-            <output id="inspection-status" aria-live="polite">Waiting for an action.</output>
-        </section>
-        <div slot="content">Additional inspection notes.</div>
-    </thermal-app>
-</body>
-</html>
+<thermal-app label="Custom fullscreen control">
+    <thermal-btn
+        slot="bar-pre"
+        onclick="this.closest('thermal-app').toggleFullscreen()"
+    >Toggle fullscreen</thermal-btn>
+    <p>Use the custom button to enter or leave fullscreen.</p>
+</thermal-app>
 ```
 
-Use the expand control for native fullscreen and the same control or Escape to leave it. Slotted buttons and the interactive title also support Enter and Space through `thermal-btn`.
+</ComponentExample>
+
+### Custom editor
+
+A simple editor for three files. The providers are nested in the order manager → registry → group, so all controls and files share one palette, analysis tool and temperature range. The palette and the toolbar are in `bar-pre`, the range form in `pre`, the range slider in `pre-bar-wrap` and the [file providers](../providers/file-provider.md) in the default slot.
+
+<ComponentExample>
+
+```html
+<style>
+    .custom-editor {
+        display: block;
+        width: 100%;
+    }
+
+    .custom-editor__files {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .custom-editor__files > file-provider {
+        display: block;
+        min-width: 0;
+    }
+</style>
+
+<manager-provider class="custom-editor" palette="iron">
+    <registry-provider>
+        <group-provider>
+            <thermal-app label="Custom editor" show-fullscreen>
+
+                <manager-palette-dropdown slot="bar-pre"></manager-palette-dropdown>
+                <manager-tool-bar slot="bar-pre" horizontal="true"></manager-tool-bar>
+
+                <registry-range-form slot="pre"></registry-range-form>
+
+                <div slot="pre-bar-wrap">
+                    <registry-range-slider></registry-range-slider>
+                    <registry-ticks-bar></registry-ticks-bar>
+                </div>
+
+                <div class="custom-editor__files">
+                    <file-provider thermal="../../files/makak.lrc">
+                        <file-canvas></file-canvas>
+                        <file-analysis-table></file-analysis-table>
+                    </file-provider>
+
+                    <file-provider thermal="../../files/klokan.lrc">
+                        <file-canvas></file-canvas>
+                        <file-analysis-table></file-analysis-table>
+                    </file-provider>
+
+                    <file-provider thermal="../../files/husy.lrc">
+                        <file-canvas></file-canvas>
+                        <file-analysis-table></file-analysis-table>
+                    </file-provider>
+                </div>
+
+            </thermal-app>
+        </group-provider>
+    </registry-provider>
+</manager-provider>
+```
+
+</ComponentExample>

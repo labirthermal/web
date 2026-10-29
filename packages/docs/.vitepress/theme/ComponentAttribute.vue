@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import ComponentBooleanAttribute from './ComponentBooleanAttribute.vue'
 
 const props = defineProps<{
     name: string
     type?: string
     default?: string
+    tag?: string
 }>()
 
 const id = computed(() => props.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
@@ -21,6 +23,8 @@ const id = computed(() => props.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
             <span v-if="type">Type: <code>{{ type }}</code></span>
             <span v-if="props.default !== undefined">Default: <code>{{ props.default }}</code></span>
         </p>
+
+        <ComponentBooleanAttribute v-if="type === 'boolean' && tag" :name="name" :tag="tag" />
 
         <slot />
     </div>

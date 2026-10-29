@@ -42,14 +42,14 @@ Size of the button.
 
 </ComponentAttribute>
 
-<ComponentAttribute name="disabled" type="'true' | 'false'">
+<ComponentAttribute name="disabled" type="boolean" default="false" tag="thermal-btn">
 
-Disables the button.
+When `disabled` is present, the button is dimmed, ignores Enter and Space, and stops its click event before any of your listeners run.
 
 <ComponentExample>
 
 ```html
-<thermal-btn disabled="true">Disabled</thermal-btn>
+<thermal-btn disabled>Disabled</thermal-btn>
 ```
 
 </ComponentExample>
@@ -126,30 +126,30 @@ Preferred position of the tooltip. Accepts any [Floating UI placement](https://f
 
 </ComponentAttribute>
 
-<ComponentAttribute name="interactive" type="'true' | 'false'">
+<ComponentAttribute name="non-interactive" type="boolean" default="false" tag="thermal-btn">
 
-When set to `"false"`, the button has no hover effect. Useful for buttons that only display information.
+When `non-interactive` is present, the button is rendered as a static label without hover and focus feedback. Useful for buttons that only display information. When omitted, the button is interactive.
 
 <ComponentExample>
 
 ```html
-<thermal-btn interactive="true">Interactive</thermal-btn>
-<thermal-btn interactive="false">Not interactive</thermal-btn>
+<thermal-btn>Interactive</thermal-btn>
+<thermal-btn non-interactive>Not interactive</thermal-btn>
 ```
 
 </ComponentExample>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="plain" type="'true'">
+<ComponentAttribute name="plain" type="boolean" default="false" tag="thermal-btn">
 
-Removes the border of the button.
+When `plain` is present, the button has no border.
 
 <ComponentExample>
 
 ```html
 <thermal-btn>With border</thermal-btn>
-<thermal-btn plain="true">Plain</thermal-btn>
+<thermal-btn plain>Plain</thermal-btn>
 ```
 
 </ComponentExample>
@@ -249,14 +249,7 @@ The setup script deliberately appears **before** the button:
 </head>
 <body>
     <script>
-        function showMessage(event) {
-            if (
-                event.defaultPrevented ||
-                event.currentTarget.getAttribute('disabled') === 'true'
-            ) {
-                return;
-            }
-
+        function showMessage() {
             document.getElementById('click-result').textContent = 'Button clicked!';
         }
 
@@ -276,4 +269,4 @@ The setup script deliberately appears **before** the button:
 </html>
 ```
 
-The click handler also works when the focused button is activated with Enter or Space. This is a complete standalone document: copy it into your own HTML file to run it.
+The click handler also works when the focused button is activated with Enter or Space. If you add the `disabled` attribute to the button, the handler is never called, so it needs no disabled check of its own. This is a complete standalone document: copy it into your own HTML file to run it.

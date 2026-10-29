@@ -32,7 +32,7 @@ export class ManagerToolBar extends AbstractManagerConsumer {
     gap: 0.25em;
 }
 
-:host([horizontal="true"]) {
+:host([horizontal]) {
     flex-direction: row;
 }
 

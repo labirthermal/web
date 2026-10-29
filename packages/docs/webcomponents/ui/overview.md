@@ -29,7 +29,7 @@ For a complete HTML document showing script loading and click listener registrat
             <td>
                 <thermal-btn variant="foreground" size="xl">Large</thermal-btn>
                 <thermal-btn variant="primary" size="sm">Small</thermal-btn>
-                <thermal-btn disabled="true">Disabled</thermal-btn>
+                <thermal-btn disabled>Disabled</thermal-btn>
                 <thermal-btn icon="trash" iconStyle="micro"></thermal-btn>
                 <thermal-btn tooltip="This is a button tooltip!">With a tooltip</thermal-btn>
             </td>

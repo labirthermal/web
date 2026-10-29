@@ -42,16 +42,16 @@ Text of the close button in the footer. When omitted, the text is a translation 
 
 </ComponentAttribute>
 
-<ComponentAttribute name="is-fullscreen" type="'true' | 'false'" default="false">
+<ComponentAttribute name="is-fullscreen" type="boolean" default="false" tag="thermal-dialog">
 
-When set to `"true"`, the open dialog fills the whole window and its content scrolls when it is too long. Any other value, including an empty attribute, keeps the regular size.
+When `is-fullscreen` is present, its Boolean property is `true`. However, the current fullscreen styles do not activate: Lit reflects this Boolean attribute as an empty value, while the CSS selector matches only the literal value `"true"`. The attribute therefore currently has no visible fullscreen effect.
 
 <ComponentExample>
 
 ```html
-<thermal-dialog label="Fullscreen dialog" is-fullscreen="true">
+<thermal-dialog label="Fullscreen dialog" is-fullscreen>
     <thermal-btn slot="invoker">Open fullscreen</thermal-btn>
-    <div slot="content">This dialog fills the whole window.</div>
+    <div slot="content">The Boolean property is enabled, but the current CSS selector prevents the fullscreen layout from appearing.</div>
 </thermal-dialog>
 ```
 
@@ -59,7 +59,7 @@ When set to `"true"`, the open dialog fills the whole window and its content scr
 
 </ComponentAttribute>
 
-The component also sets an `open` attribute while the dialog is open. It only reflects the state: adding or removing it in HTML does not open or close the dialog. Standard global HTML attributes such as `id` or `class` work as on any other element.
+Standard global HTML attributes such as `id` or `class` work as on any other element.
 
 ## Slots
 
@@ -75,11 +75,11 @@ The component also sets an `open` attribute while the dialog is open. It only re
 
 </ComponentExample>
 
-- `invoker` – the element that opens the dialog when clicked, usually a `thermal-btn`. It stays in the page where the dialog is placed. A `thermal-btn` with `disabled="true"` does not open the dialog.
+- `invoker` – the element that opens the dialog when clicked, usually a `thermal-btn`. It stays in the page where the dialog is placed. A `thermal-btn` with `disabled` does not open the dialog.
 - `content` – the body of the dialog. It is displayed only while the dialog is open.
 - `button` – additional buttons in the footer, displayed before the close button. Clicking them does **not** close the dialog.
 
-The dialog closes with the close icon in the header or the close button in the footer. The component does not handle closing with the Escape key.
+The close icon in the header and the close button in the footer close the dialog. The native `<dialog>` also closes on Escape; because the component does not handle the native `cancel` event, its `open` state can remain out of sync after that close.
 
 ## JavaScript API
 
@@ -87,9 +87,10 @@ These members are available on the element once `thermal-dialog` is defined:
 
 - `open` – read-only, `true` while the dialog is open.
 - `setOpen()` – opens the dialog.
+- `setClose()` – closes the dialog immediately, without checking `beforeClose`.
 - `closeFromTheOutside()` – closes the dialog. If `beforeClose` is set, the dialog closes only when it resolves to `true`.
 - `beforeClose` – an optional async function returning `true` or `false`. It is checked by the footer close button and by `closeFromTheOutside()`, but not by the close icon in the header.
-- `onCloseEveryTime` – an optional function called every time the dialog closes.
+- `onCloseEveryTime` – an optional function called whenever `setClose()` closes the dialog.
 
 `beforeClose` and `onCloseEveryTime` are functions, so they can be set only from JavaScript, not as HTML attributes.
 
@@ -141,13 +142,15 @@ A button in the `button` slot handles its click with the standard HTML `onclick`
 
 ### Complete HTML document
 
-This example loads the webcomponents IIFE bundle and attaches a named function with `addEventListener`. Replace the placeholder script URL with your own.
+This example loads the webcomponents IIFE bundle and attaches a named function with `addEventListener`. Place the bundle at `./lib/labirthermal.iife.js` relative to this HTML file, or adjust the script URL to its location.
 
 The setup script deliberately appears **before** the dialog:
 
-1. `DOMContentLoaded` waits until the dialog, its buttons and the output exist in the DOM. It also waits for the deferred bundle in the document head.
+1. `DOMContentLoaded` waits until the dialog, its buttons and the output exist in the DOM. Deferred scripts in the document head have also run.
 2. `customElements.whenDefined('thermal-dialog')` and `customElements.whenDefined('thermal-btn')` wait for both webcomponents to be registered, so `closeFromTheOutside()` is available.
 3. Only then does the script attach the click listener.
+
+`DOMContentLoaded` and `whenDefined()` ensure the document and custom elements are ready; they do not wait for component-specific asynchronous work such as fetching data.
 
 ```html
 <!doctype html>
@@ -156,7 +159,7 @@ The setup script deliberately appears **before** the dialog:
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dialog example</title>
-    <script defer src="/path-to-your-script/labirthermal.iife.js"></script>
+    <script defer src="./lib/labirthermal.iife.js"></script>
 </head>
 <body>
     <script>

@@ -5589,7 +5589,7 @@ var GroupListingController = class extends AbstractHierarchyController {
         </div>`;
 	}
 	hostConnected() {
-		if (this.host.hasUpdated) this.observeTemperatureScale();
+		if (this.host.hasUpdated) this.host.requestUpdate();
 	}
 	hostDisconnected() {
 		this.disconnectTemperatureScale();
@@ -5617,8 +5617,8 @@ var GroupListingController = class extends AbstractHierarchyController {
 	}
 	async observeTemperatureScale() {
 		const scale = this.temperatureScaleRef.value;
-		const app = scale?.parentElement;
-		if (!scale || app?.localName !== "thermal-app") {
+		const app = this.host.shadowRoot?.querySelector("thermal-app");
+		if (!scale || !app || scale.parentElement !== app) {
 			this.disconnectTemperatureScale();
 			return;
 		}
@@ -10187,7 +10187,7 @@ var ManagerToolBar = class extends AbstractManagerConsumer {
     gap: 0.25em;
 }
 
-:host([horizontal="true"]) {
+:host([horizontal]) {
     flex-direction: row;
 }
 
