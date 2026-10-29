@@ -5,7 +5,6 @@ import { css, html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { map } from "lit/directives/map.js";
 import { AbstractThermalElement } from "../../../hierarchy/AbstractThermalElement";
-import { booleanConverter } from "../../../utils/converters/booleanConverter";
 import { notationCurrentContext } from "./NotationContext";
 import type { NotationEntry } from "./NotationEntry";
 
@@ -18,19 +17,21 @@ export class NotationContent extends AbstractThermalElement {
     @consume({ context: notationCurrentContext, subscribe: true })
     protected entries!: NotationEntry[];
 
-    @property({ converter: booleanConverter(true) })
-    public showlabel: boolean = true;
+    /** Hides the entry labels when present. Replaces `showlabel` with inverted meaning. */
+    @property({ type: Boolean, attribute: "hide-label" })
+    public hideLabel: boolean = false;
 
-    @property({ converter: booleanConverter(true) })
-    public showTime: boolean = true;
+    /** Hides the entry time ranges when present. Replaces `showTime` with inverted meaning. */
+    @property({ type: Boolean, attribute: "hide-time" })
+    public hideTime: boolean = false;
 
     protected renderEntry(entry: NotationEntry) {
 
-        const label = this.showlabel === true
+        const label = !this.hideLabel
             ? entry.label
             : nothing;
 
-        const time = this.showTime === true
+        const time = !this.hideTime
             && entry.from !== undefined
             && entry.to !== undefined
             ? [

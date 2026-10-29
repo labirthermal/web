@@ -6,14 +6,13 @@ import { property } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { AbstractFileConsumer } from "../hierarchy/consumers/AbstractFileConsumer";
 import { T } from "../translations/Languages";
-import { booleanConverter } from "../utils/converters/booleanConverter";
 
 export class FileThumbnailElement extends AbstractFileConsumer {
 
     @property({ type: Object })
     ondetail?: (file: ThermalFileInstance) => void;
 
-    @property({ converter: booleanConverter(false) })
+    @property({ type: Boolean, reflect: true, attribute: "no-render" })
     public norender: boolean = false;
 
     @property({ type: String })

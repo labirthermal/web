@@ -437,6 +437,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
                 style="cursor: default; font-size: .9em;"
                 icon="folder"
                 iconStyle="micro"
+                variant="background" 
             >${options.allowFileChanges === false
                 ? `Počet souborů: ${this.group.files.value.length}`
                 : `${this.group.files.value.length} nahraných souborů`}</thermal-btn>
@@ -601,7 +602,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
         return html`<div style=${styleMap(divStyles)} slot=${ifDefined(slot)}>
 
             <thermal-btn 
-                variant="foreground" 
+                variant="background" 
                 tooltip="Název souboru" 
                 style="cursor: default; font-size: .9em;"
                 icon="image"
@@ -609,7 +610,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
             >${instance.fileName}</thermal-btn>
 
             <thermal-btn 
-                variant="foreground" 
+                variant="background" 
                 tooltip="Čas pořízení snímku" 
                 style="cursor: default; font-size: .9em;"
                 icon="clock"

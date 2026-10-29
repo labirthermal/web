@@ -2953,7 +2953,7 @@ function __decorate(decorators, target, key, desc) {
 //#endregion
 //#region src/hierarchy/AbstractThermalElement.ts
 /** 
-* All the webcomponents of \@labirthermal/embed (and its extensions) should be based on the abstract class `AbstractThermalElement`. 
+* All the webcomponents of \@labirthermal/webcomponents (and its extensions) should be based on the abstract class `AbstractThermalElement`. 
 * 
 * Functionality:
 * - listens to the locale context for rerender
@@ -3653,7 +3653,7 @@ var FileLoadController = class extends AbstractHierarchyController {
 /**
 * Exposes the `GroupController` instance to the `AbstractGroupConsumer` elements.
 * @see {@link GroupController}
-* @module @labirthermal/embed
+* @module @labirthermal/webcomponents
 * @author Jan Jáchim <jachim@zcu.cz>
 */
 const groupControllerContext = createContext("group-controller-context");
@@ -3662,7 +3662,7 @@ const groupControllerContext = createContext("group-controller-context");
 * 
 * @see {@link GroupController}
 * @see {@link ThermalGroup}
-* @module @labirthermal/embed
+* @module @labirthermal/webcomponents
 * @author Jan Jáchim <jachim@zcu.cz>
 */
 const groupObjectContext = createContext("group-object-context");
@@ -7952,7 +7952,7 @@ __decorate([
 ], AbstractFileConsumer.prototype, "fileIsRecording", void 0);
 //#endregion
 //#region package.json
-var name = "@labirthermal/embed";
+var name = "@labirthermal/webcomponents";
 var version = "1.3.4";
 //#endregion
 //#region src/controls/independent/AppInfoButton.ts
@@ -14068,7 +14068,7 @@ __decorate([
 //#region src/controls/file/analysis/edit/analysisColorDropdown.ts
 /** 
 * Render the dropdown for color selection of an analysis. Property `analysis` needs to be passed down from the parent component 
-* @package \@labirthermal/embed
+* @package \@labirthermal/webcomponents
 * @author Jan Jáchim
 */
 var AnalysisColorDropdown = class extends AbstractThermalElement {
@@ -14145,7 +14145,7 @@ __decorate([state(), __decorateMetadata("design:type", String)], AnalysisColorDr
 //#region src/controls/file/analysis/edit/analysisNameInput.ts
 /** 
 * Render the input for editing the analysis name. Property `analysis` needs to be passed down from the parent component 
-* @package \@labirthermal/embed
+* @package \@labirthermal/webcomponents
 * @author Jan Jáchim
 */
 var AnalysisNameInput = class extends AbstractThermalElement {
@@ -14190,7 +14190,7 @@ __decorate([state(), __decorateMetadata("design:type", String)], AnalysisNameInp
 //#region src/controls/file/analysis/edit/editAreaTable.ts
 /** 
 * The full table and form for editing an area analysis properties. Enables editing of name, color and dimensions (top, left, width, height, right, bottom). Property `analysis` needs to be passed down from the parent component 
-* @package \@labirthermal/embed
+* @package \@labirthermal/webcomponents
 * @author Jan Jáchim
 */
 var AreaEditTable = class extends AbstractThermalElement {
@@ -14334,7 +14334,7 @@ __decorate([state(), __decorateMetadata("design:type", Number)], AreaEditTable.p
 //#region src/controls/file/analysis/edit/editPointTable.ts
 /** 
 * The full table and form for editing a point analysis properties. Enables editing of name, color and coordinates (top, left). Property `analysis` needs to be passed down from the parent component 
-* @package \@labirthermal/embed
+* @package \@labirthermal/webcomponents
 * @author Jan Jáchim
 */
 var EditpointTable = class extends AbstractThermalElement {

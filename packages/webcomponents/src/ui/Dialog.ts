@@ -1,10 +1,9 @@
 import { t } from "i18next";
 import { LitElement, css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
-import type { Ref} from "lit/directives/ref.js";
+import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
 import { T } from "../translations/Languages";
-import { booleanConverter } from "../utils/converters/booleanConverter";
 
 export class ThermalDialogElement extends LitElement {
 
@@ -23,7 +22,6 @@ export class ThermalDialogElement extends LitElement {
     @property({
         type: Boolean, 
         reflect: true, 
-        converter: booleanConverter( false ),
         attribute: "is-fullscreen"
     })
     public isFullscreen: boolean = false;

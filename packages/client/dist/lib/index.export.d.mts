@@ -600,7 +600,7 @@ export declare class HierarchyUpdatesHub {
 //#endregion
 //#region src/hierarchy/AbstractThermalElement.d.ts
 /**
- * All the webcomponents of \@labirthermal/embed (and its extensions) should be based on the abstract class `AbstractThermalElement`.
+ * All the webcomponents of \@labirthermal/webcomponents (and its extensions) should be based on the abstract class `AbstractThermalElement`.
  *
  * Functionality:
  * - listens to the locale context for rerender
@@ -899,7 +899,7 @@ interface IElementWithGroupController extends IHostProperties$5, IBaseElement {}
 /**
  * Exposes the `GroupController` instance to the `AbstractGroupConsumer` elements.
  * @see {@link GroupController}
- * @module @labirthermal/embed
+ * @module @labirthermal/webcomponents
  * @author Jan Jáchim <jachim@zcu.cz>
  */
 export declare const groupControllerContext: {
@@ -910,7 +910,7 @@ export declare const groupControllerContext: {
  *
  * @see {@link GroupController}
  * @see {@link ThermalGroup}
- * @module @labirthermal/embed
+ * @module @labirthermal/webcomponents
  * @author Jan Jáchim <jachim@zcu.cz>
  */
 export declare const groupObjectContext: {
@@ -3812,7 +3812,7 @@ declare global {
 //#region src/controls/file/analysis/edit/analysisColorDropdown.d.ts
 /**
  * Render the dropdown for color selection of an analysis. Property `analysis` needs to be passed down from the parent component
- * @package \@labirthermal/embed
+ * @package \@labirthermal/webcomponents
  * @author Jan Jáchim
  */
 export declare class AnalysisColorDropdown extends AbstractThermalElement {
@@ -3833,7 +3833,7 @@ declare global {
 //#region src/controls/file/analysis/edit/analysisNameInput.d.ts
 /**
  * Render the input for editing the analysis name. Property `analysis` needs to be passed down from the parent component
- * @package \@labirthermal/embed
+ * @package \@labirthermal/webcomponents
  * @author Jan Jáchim
  */
 export declare class AnalysisNameInput extends AbstractThermalElement {
@@ -3853,7 +3853,7 @@ declare global {
 //#region src/controls/file/analysis/edit/editAreaTable.d.ts
 /**
  * The full table and form for editing an area analysis properties. Enables editing of name, color and dimensions (top, left, width, height, right, bottom). Property `analysis` needs to be passed down from the parent component
- * @package \@labirthermal/embed
+ * @package \@labirthermal/webcomponents
  * @author Jan Jáchim
  */
 export declare class AreaEditTable extends AbstractThermalElement {
@@ -3883,7 +3883,7 @@ declare global {
 //#region src/controls/file/analysis/edit/editPointTable.d.ts
 /**
  * The full table and form for editing a point analysis properties. Enables editing of name, color and coordinates (top, left). Property `analysis` needs to be passed down from the parent component
- * @package \@labirthermal/embed
+ * @package \@labirthermal/webcomponents
  * @author Jan Jáchim
  */
 export declare class EditpointTable extends AbstractThermalElement {
