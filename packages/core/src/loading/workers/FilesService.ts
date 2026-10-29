@@ -4,7 +4,7 @@ import { AbstractFileResult } from "./AbstractFileResult";
 import { DropinElementListener } from "./dropin/DropinElementManager";
 import { FileErrors } from "./errors";
 import { FileRequest } from "./FileRequest";
-import { determineAndPrepare } from "./parsers";
+import { determineAndPrepare } from "../../parsers";
 import { ThermalFileFailure } from "./ThermalFileFailure";
 import { ThermalFileReader } from "./ThermalFileReader";
 

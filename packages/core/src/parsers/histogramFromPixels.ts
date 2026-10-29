@@ -1,4 +1,4 @@
-import type { ThermalStatistics } from "../../../hierarchy/ThermalRegistry";
+import type { ThermalStatistics } from "../hierarchy/ThermalRegistry";
 
 /**
  * Build a histogram over several pixel sets in one shared temperature range

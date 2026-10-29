@@ -1,7 +1,7 @@
 import { ThermalFileInstance } from "../../file/ThermalFileInstance";
 import { ThermalRegistry, ThermalStatistics } from "../../hierarchy/ThermalRegistry";
-import { LrcParser } from "../../loading/workers/parsers/lrc/LrcParser";
-import { histogramFromPixels } from "../../loading/workers/parsers/histogramFromPixels";
+import { LrcParser } from "../../parsers/lrc/LrcParser";
+import { histogramFromPixels } from "../../parsers/histogramFromPixels";
 import type { ThermalFileReader } from "../../loading/workers/ThermalFileReader";
 import { AbstractProperty } from "../abstractProperty";
 import { CallbacksManager } from "../callbacksManager";

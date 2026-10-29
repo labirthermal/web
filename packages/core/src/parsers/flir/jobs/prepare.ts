@@ -1,4 +1,4 @@
-import { FileErrors, FileLoadingError } from "../../../errors";
+import { FileErrors, FileLoadingError } from "../../../loading/workers/errors";
 import { IParserObject } from "../../structure";
 import { prepareFlirWorkingBuffer } from "../decoder/decodeFlirJpeg";
 

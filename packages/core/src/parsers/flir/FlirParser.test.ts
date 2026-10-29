@@ -1,11 +1,11 @@
 import { afterAll, describe, expect, test } from "vitest";
 import * as workerpool from "workerpool";
-import { FLIR_FIXTURE_NAMES, FLIR_REFERENCE, readFlirFixture } from "../../../../../devserver/node/flirFixtures";
-import { buildJpeg } from "../../../../../devserver/node/syntheticFlir";
+import { FLIR_FIXTURE_NAMES, FLIR_REFERENCE, readFlirFixture } from "../../../devserver/node/flirFixtures";
+import { buildJpeg } from "../../../devserver/node/syntheticFlir";
 import { histogramFromPixels } from "../histogramFromPixels";
 import { determineAndPrepare, determineParser } from "../index";
 import { LrcParser } from "../lrc/LrcParser";
-import { FileLoadingError } from "../../errors";
+import { FileLoadingError } from "../../loading/workers/errors";
 import { FlirParser } from "./FlirParser";
 
 /** Reference values are computed in double precision, the parser stores Float32 */

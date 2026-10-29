@@ -1,4 +1,4 @@
-import { ThermalStatistics } from "../../../hierarchy/ThermalRegistry"
+import { ThermalStatistics } from "../hierarchy/ThermalRegistry"
 
 export type ParsedTimelineFrame = {
     index: number,

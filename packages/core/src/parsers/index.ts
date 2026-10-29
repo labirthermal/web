@@ -1,4 +1,4 @@
-import { FileLoadingError, FileErrors } from "../errors";
+import { FileLoadingError, FileErrors } from "../loading/workers/errors";
 import { LrcParser } from "./lrc/LrcParser";
 import { FlirParser } from "./flir/FlirParser";
 

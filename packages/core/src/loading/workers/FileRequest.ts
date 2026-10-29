@@ -2,7 +2,7 @@ import { ThermalFileFailure } from "./ThermalFileFailure";
 import { FileErrors, FileLoadingError } from "./errors";
 import { ThermalFileReader } from "./ThermalFileReader";
 import { AbstractFileResult } from "./AbstractFileResult";
-import { determineAndPrepare } from "./parsers";
+import { determineAndPrepare } from "../../parsers";
 import { FilesService } from "./FilesService";
 
 export type FileResultListener = ( result: AbstractFileResult ) => void

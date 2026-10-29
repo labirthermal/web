@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 
 import { describe, expect, test, vi } from "vitest";
-import { FLIR_REFERENCE, readFlirFixture } from "../../../../../devserver/node/flirFixtures";
-import { buildJpeg } from "../../../../../devserver/node/syntheticFlir";
-import { ThermalFileInstance } from "../../../../file/ThermalFileInstance";
-import { getPool } from "../../../../utils/pool";
-import { FileErrors } from "../../errors";
-import { FilesService } from "../../FilesService";
-import { ThermalFileFailure } from "../../ThermalFileFailure";
-import { ThermalFileReader } from "../../ThermalFileReader";
+import { FLIR_REFERENCE, readFlirFixture } from "../../../devserver/node/flirFixtures";
+import { buildJpeg } from "../../../devserver/node/syntheticFlir";
+import { ThermalFileInstance } from "../../file/ThermalFileInstance";
+import { getPool } from "../../utils/pool";
+import { FileErrors } from "../../loading/workers/errors";
+import { FilesService } from "../../loading/workers/FilesService";
+import { ThermalFileFailure } from "../../loading/workers/ThermalFileFailure";
+import { ThermalFileReader } from "../../loading/workers/ThermalFileReader";
 import * as decoder from "./decoder/decodeFlirJpeg";
 import { FlirParser } from "./FlirParser";
 

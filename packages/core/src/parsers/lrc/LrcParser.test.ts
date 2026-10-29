@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import { LrcParser } from './LrcParser';
-import { FilesService } from '../../FilesService';
-import { ThermalFileReader } from '../../ThermalFileReader';
-import { THERMOGRAM_PATHS } from '../../../../../devserver/node/mocks';
-import { getPool } from '../../../../utils/pool';
+import { FilesService } from '../../loading/workers/FilesService';
+import { ThermalFileReader } from '../../loading/workers/ThermalFileReader';
+import { THERMOGRAM_PATHS } from '../../../devserver/node/mocks';
+import { getPool } from '../../utils/pool';
 
 describe("LrcParser", async () => {
 

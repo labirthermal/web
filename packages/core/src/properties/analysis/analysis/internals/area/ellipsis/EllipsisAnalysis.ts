@@ -1,5 +1,5 @@
 import { ThermalFileInstance } from "../../../../../../file/ThermalFileInstance";
-import { AreaAnalysisData } from "../../../../../../loading/workers/parsers/structure";
+import { AreaAnalysisData } from "../../../../../../parsers/structure";
 import { AbstractArea } from "../AbstractArea";
 import { AbstractAreaAnalysis } from "../AbstractAreaAnalysis";
 import { EllipsisArea } from "./EllipsisArea";

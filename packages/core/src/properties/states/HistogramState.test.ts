@@ -3,9 +3,9 @@
 import { describe, expect, test, vi } from "vitest";
 import { ThermalFileInstance } from "../../file/ThermalFileInstance";
 import { ThermalManager } from "../../hierarchy/ThermalManager";
-import { LrcParser } from "../../loading/workers/parsers/lrc/LrcParser";
+import { LrcParser } from "../../parsers/lrc/LrcParser";
 import { getPool } from "../../utils/pool";
-import { FlirParser } from "../../loading/workers/parsers/flir/FlirParser";
+import { FlirParser } from "../../parsers/flir/FlirParser";
 import { FLIR_REFERENCE, readFlirFixture } from "../../../devserver/node/flirFixtures";
 import { ThermalRegistry } from "../../hierarchy/ThermalRegistry";
 

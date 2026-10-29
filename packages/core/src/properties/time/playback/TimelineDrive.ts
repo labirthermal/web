@@ -1,7 +1,7 @@
 
 import { format } from "date-fns";
 import { ThermalFileInstance } from "../../../file/ThermalFileInstance";
-import { ParsedFileBaseInfo, ParsedFileFrame, ParsedTimelineFrame } from "../../../loading/workers/parsers/structure";
+import { ParsedFileBaseInfo, ParsedFileFrame, ParsedTimelineFrame } from "../../../parsers/structure";
 import { AbstractProperty } from "../../abstractProperty";
 import { CallbacksManager } from "../../callbacksManager";
 import { FrameBuffer } from "./internals/FrameBuffer";

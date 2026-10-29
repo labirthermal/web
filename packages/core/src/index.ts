@@ -14,7 +14,7 @@ export { getPool } from "./utils/pool";
 
 // Core hierarchy classes
 
-export type { IParserObject } from "./loading/workers/parsers/structure";
+export type { IParserObject } from "./parsers/structure";
 
 // Manager
 export { ThermalManager } from "./hierarchy/ThermalManager";
@@ -26,7 +26,7 @@ export type { ThermalRegistryOptions } from "./hierarchy/ThermalRegistry";
 export type { ThermalMinmaxOrUndefined } from "./properties/scale/abstractMinmaxProperty";
 export type { ThermalRangeOrUndefined } from "./properties/scale/RangeDriver";
 export { Batch } from "./loading/batch/Batch";
-export { supportedFileTypes, supportedFileTypesInputProperty } from "./loading/workers/parsers";
+export { supportedFileTypes, supportedFileTypesInputProperty } from "./parsers";
 export{ DropinElementListener } from "./loading/workers/dropin/DropinElementManager";
 
 // Group
@@ -43,7 +43,7 @@ export { ThermalFileInstance } from "./file/ThermalFileInstance";
 // Playback related exports
 export type { PlaybackSpeeds } from "./properties/time/playback/TimelineDrive";
 export { playbackSpeed } from "./properties/time/playback/TimelineDrive";
-export type { ParsedTimelineFrame } from "./loading/workers/parsers/structure";
+export type { ParsedTimelineFrame } from "./parsers/structure";
 
 
 

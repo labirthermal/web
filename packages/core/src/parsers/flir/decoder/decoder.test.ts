@@ -11,7 +11,7 @@ import {
     flirApp1,
     flirSegments,
     toArrayBuffer
-} from "../../../../../../devserver/node/syntheticFlir";
+} from "../../../../devserver/node/syntheticFlir";
 import { readCameraInfo } from "./cameraInfo";
 import { decodeFlirJpeg, prepareFlirWorkingBuffer } from "./decodeFlirJpeg";
 import { FffRecordType, readFffRecords } from "./fff";

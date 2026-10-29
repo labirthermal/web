@@ -1,7 +1,7 @@
 import { ThermalFileInstance } from "../../file/ThermalFileInstance";
 import { ThermalGroup } from "../../hierarchy/ThermalGroup";
 import { AbstractFileResult } from "./AbstractFileResult";
-import { IParserObject, ParsedFileBaseInfo } from "./parsers/structure";
+import { IParserObject, ParsedFileBaseInfo } from "../../parsers/structure";
 
 import { FilesService } from "./FilesService";
 import { AbstractFilter } from "../../filters/AbstractFilter";
