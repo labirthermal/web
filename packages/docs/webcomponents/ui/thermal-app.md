@@ -184,7 +184,7 @@ A predefined colour scheme for the frame and everything inside it. Omit the attr
 - `system` – browser system colours.
 - `darkhc` – black text on white and light grey surfaces with a blue accent. Despite its name, this is currently a light palette.
 
-The attribute is a global styling hook provided by the bundle's stylesheet, not a property of the component, so changing it in JavaScript requires `setAttribute`. See [Styling and CSS variables](../styling.md) for custom colours.
+The attribute is a global styling hook provided by the bundle's stylesheet, not a property of the component, so changing it in JavaScript requires `setAttribute`. See [Styling and CSS variables](../guide/styling.md) for custom colours.
 
 <ComponentExample>
 
@@ -323,7 +323,7 @@ Although `onlabel` is declared as an Object property, an HTML value is not execu
 
 ## Styling
 
-Use the `skin`, `corners` and `lines` attributes above for predefined looks. For custom colours, spacing, typography and the `::part(app-content)` selector, see [Styling and CSS variables](../styling.md#styling-thermal-app).
+Use the `skin`, `corners` and `lines` attributes above for predefined looks. For custom colours, spacing, typography and the `::part(app-content)` selector, see [Styling and CSS variables](../guide/styling.md#styling-thermal-app).
 
 ## Examples
 

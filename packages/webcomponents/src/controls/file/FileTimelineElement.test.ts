@@ -6,6 +6,7 @@ import { AbstractFileProvider } from "../../hierarchy/abstraction/AbstractFilePr
 import { GroupProviderElement } from "../../hierarchy/providers/GroupProvider";
 import { ManagerProviderElement } from "../../hierarchy/providers/ManagerProvider";
 import { RegistryProviderElement } from "../../hierarchy/providers/RegistryProvider";
+import { ThermalBtnElement } from "../../ui/Btn";
 import { calculateTicks } from "../../utils/timelineTicks";
 import { FileTimelineElement } from "./FileTimelineElement";
 
@@ -51,6 +52,7 @@ customElements.define("test-timeline-registry", RegistryProviderElement);
 customElements.define("test-timeline-group", GroupProviderElement);
 customElements.define("test-timeline-file", TestFileProvider);
 customElements.define("test-file-timeline", FileTimelineElement);
+customElements.define("thermal-btn", ThermalBtnElement);
 
 describe("FileTimelineElement", () => {
     let manager: ManagerProviderElement;
@@ -82,6 +84,12 @@ describe("FileTimelineElement", () => {
                 manager.updateComplete, registry.updateComplete, group.updateComplete,
                 provider.updateComplete, timeline.updateComplete,
             ]);
+            await Promise.all(
+                Array.from(
+                    timeline.shadowRoot?.querySelectorAll<ThermalBtnElement>("thermal-btn") ?? [],
+                    button => button.updateComplete
+                )
+            );
         }
     }
 
@@ -106,6 +114,7 @@ describe("FileTimelineElement", () => {
             getFrameSubset: buffer => ({ array: buffer, dataType: 0 }),
             frameData: async () => frame,
             registryHistogram: async () => [],
+            histogramPixels: async () => new Float32Array(frame.pixels),
             pointAnalysisData: async () => ({ 0: 10, 120000: 11 }),
             rectAnalysisData: async () => ({ 0: { min: 10, max: 25, avg: 17.5 } }),
             ellipsisAnalysisData: async () => ({ 0: { min: 10, max: 25, avg: 17.5 } }),
@@ -158,6 +167,57 @@ describe("FileTimelineElement", () => {
         expect(timeline.hasAttribute("disable-info")).toBe(false);
         expect(timeline.shadowRoot?.querySelector(".controls")).not.toBeNull();
         expect(timeline.shadowRoot?.querySelector(".real")).not.toBeNull();
+    });
+
+    it("allows all playback actions immediately after loading a sequence", async () => {
+        await mount();
+        const previous = vi.spyOn(instance.timeline, "prev").mockImplementation(() => {});
+        const play = vi.spyOn(instance.timeline, "play").mockImplementation(() => {});
+        const next = vi.spyOn(instance.timeline, "next").mockImplementation(() => {});
+        const rewindResult = await instance.timeline.setRelativeTime(0);
+        const rewind = vi.spyOn(instance.timeline, "setRelativeTime").mockResolvedValue(rewindResult);
+        const buttons = Array.from(
+            element(timeline.shadowRoot, ".controls").querySelectorAll<ThermalBtnElement>("thermal-btn")
+        );
+
+        expect(provider.fileController.mayStop).toBe(true);
+        expect(buttons).toHaveLength(4);
+        for (const button of buttons) {
+            expect(button.disabled).toBe(false);
+            expect(button.hasAttribute("disabled")).toBe(false);
+            button.click();
+        }
+
+        expect(previous).toHaveBeenCalledOnce();
+        expect(play).toHaveBeenCalledOnce();
+        expect(next).toHaveBeenCalledOnce();
+        expect(rewind).toHaveBeenCalledExactlyOnceWith(0);
+    });
+
+    it("enables playback controls only while stopping is allowed", async () => {
+        await mount();
+        const previousFrame = vi.spyOn(instance.timeline, "prev").mockImplementation(() => {});
+        const buttons = Array.from(
+            element(timeline.shadowRoot, ".controls").querySelectorAll<ThermalBtnElement>("thermal-btn")
+        );
+        expect(buttons).toHaveLength(4);
+        const previousButton = element<ThermalBtnElement>(timeline.shadowRoot, ".controls thermal-btn");
+
+        for (const mayStop of [true, false, true]) {
+            instance.recording.callbackMayStop.call(mayStop);
+            await settle();
+            expect(provider.fileController.mayStop).toBe(mayStop);
+            for (const button of buttons) {
+                expect(button.disabled).toBe(!mayStop);
+                expect(button.hasAttribute("disabled")).toBe(!mayStop);
+                if (!mayStop) {
+                    expect(button.getAttribute("disabled")).toBe("");
+                }
+            }
+            previousFrame.mockClear();
+            previousButton.click();
+            expect(previousFrame).toHaveBeenCalledTimes(mayStop ? 1 : 0);
+        }
     });
 
     describe.each([
@@ -233,6 +293,9 @@ describe("FileTimelineElement", () => {
         expect(observer()).not.toBe(previousObserver);
         expect(observer().observe).toHaveBeenCalledExactlyOnceWith(retainedContainer);
         observer().notify(retainedContainer, 300);
+        await settle();
+        expect(container().classList.contains("collapsed")).toBe(true);
+        previousObserver.notify(retainedContainer, 800);
         await settle();
         expect(container().classList.contains("collapsed")).toBe(true);
     });

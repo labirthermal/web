@@ -72,14 +72,14 @@ The following components can be used anywhere. See the guide on [UI components](
 
 ### Context-aware elements
 
-The following components need to be used in the given hierarchy. See [context providers](./hierarchy.md) for more details.
+The following components need to be used in the given hierarchy. See [context providers](./guide/hierarchy.md) for more details.
 
 
 <Hierarchy>
     <HierarchyManager watch="palette,advanced-palettes,smooth-thermograms,smooth-graph,tool">
         <WebcomponentTable components="manager-palette-dropdown, manager-palette-buttons, manager-advanced-palette-switch, manager-image-smooth-switch, manager-graph-smooth-switch, manager-tool-bar" />
         <HierarchyRegistry watch="opacity,from,to">
-            <WebcomponentTable components="registry-opacity-slider,registry-histogram,registry-range-slider,registry-ticks-bar" />
+            <WebcomponentTable components="registry-opacity-slider,registry-histogram,registry-range-slider,registry-ticks-bar,registry-range-full-button,registry-range-auto-button" />
             <HierarchyGroup>
                 <WebcomponentTable components="group-download-dropdown, group-analysis-sync-button" />
                 <HierarchyFile

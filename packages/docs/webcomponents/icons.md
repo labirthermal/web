@@ -121,7 +121,7 @@ Components that expose icon presentation attributes use the same catalog, but th
 | `file-download-dropdown` | `icon`, `iconstyle` | Icon in the download dropdown's invoker | Internal button defaults to `outline` |
 | `group-dropin-input` | `icon`, `iconstyle` | Icon in the file input button | Internal button defaults to `outline` |
 
-The last two controls require their normal file or group context; icon attributes do not remove those requirements. See [Context providers and consumers](./hierarchy.md).
+The last two controls require their normal file or group context; icon attributes do not remove those requirements. See [Context providers and consumers](./guide/hierarchy.md).
 
 Other attributes such as `variant`, `size` or `tooltip` keep their component-specific meanings. Do not assume an `icon` attribute is supported by every component.
 

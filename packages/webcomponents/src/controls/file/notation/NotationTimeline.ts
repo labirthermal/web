@@ -9,7 +9,7 @@ import { notationDurationContext, notationListContext } from "./NotationContext"
 import type { NotationEntry } from "./NotationEntry";
 
 @customElement("notation-timeline")
-export class NotationContent extends AbstractFileConsumer {
+export class NotationTimeline extends AbstractFileConsumer {
 
     protected durationConverter = durationConverter;
     public onInstanceCreated(): void {}
@@ -45,7 +45,7 @@ export class NotationContent extends AbstractFileConsumer {
 
     static styles?: CSSResultGroup | undefined = css`
     
-        ::host {
+        :host {
             width: 100%;
             box-sizing: border-box;
             height: 5px;

@@ -678,6 +678,7 @@ export class ThermalAppElement extends AbstractThermalElement {
         <div class="pre-bar" ?hidden=${!this._hasPreBar}>
             <slot name="pre-bar" @slotchange=${this._onSlotChange}></slot>
         </div>
+        <slot name="pre-bar-wrap"></slot>
 
     </header>
 

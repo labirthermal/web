@@ -110,8 +110,8 @@ export class FileTimelineElement extends AbstractFileConsumer {
         }
 
         this.observedContainer = container;
-        this.observer = new ResizeObserver((entries) => {
-            if (!this.isConnected || this.observedContainer !== container) {
+        const observer = new ResizeObserver((entries) => {
+            if (!this.isConnected || this.observer !== observer) {
                 return;
             }
 
@@ -125,7 +125,8 @@ export class FileTimelineElement extends AbstractFileConsumer {
             }
             this.collapsed = entry.contentRect.width < FileTimelineElement.collapseWidth;
         });
-        this.observer.observe(container);
+        this.observer = observer;
+        observer.observe(container);
     }
 
 
@@ -233,10 +234,6 @@ export class FileTimelineElement extends AbstractFileConsumer {
 
         .cursor {
             width: 70px;
-        }
-
-        .duration {
-        
         }
 
         .small {
@@ -419,7 +416,7 @@ export class FileTimelineElement extends AbstractFileConsumer {
             ...mayClasses
         }
 
-        const disabled = this.mayStop;
+        const disabled = this.mayStop === false;
 
         return html`
 <section class="${classMap(containerClasses)}" ${ref(this.containerRef)}>

@@ -167,7 +167,7 @@ Omit the attribute to return to the inherited theme; there is no `skin="light"`.
 
 </ComponentExample>
 
-The [`thermal-app` skin attributes](./ui/thermal-app.md#skin) show all presets on an application frame.
+The [`thermal-app` skin attributes](../ui/thermal-app.md#skin) show all presets on an application frame.
 
 ## Dark mode
 

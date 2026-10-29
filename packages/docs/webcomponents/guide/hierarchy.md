@@ -20,7 +20,7 @@ When building an interface from scratch, you will need to use **all the followin
 - `group-provider`
 - `file-provider`
 
-See the [manager-provider](./providers/manager-provider), [registry-provider](./providers/registry-provider), [group-provider](./providers/group-provider), and [file-provider](./providers/file-provider) references for details about each provider.
+See the [manager-provider](../providers/manager-provider), [registry-provider](../providers/registry-provider), [group-provider](../providers/group-provider), and [file-provider](../providers/file-provider) references for details about each provider.
 
 The following schema explains their roles:
 
@@ -355,7 +355,7 @@ The context consumers may be nested anywhere in the DOM tree, but they still sha
 
 ## Applications
 
-Applications such as [thermal-file-app](./applications/thermal-file-app.md) create their own manager, registry, group and file context. You do not need to wrap them in provider elements.
+Applications such as [thermal-file-app](../applications/thermal-file-app.md) create their own manager, registry, group and file context. You do not need to wrap them in provider elements.
 
 The example below loads the **same thermal file and visible image** in two independent viewers with the same initial settings:
 
@@ -443,4 +443,4 @@ The essential HTML difference is:
 
 </div>
 
-The application also supplies its own controls, canvas and analysis interface. See the [application reference](./applications/thermal-file-app.md#attributes) for all public attributes.
+The application also supplies its own controls, canvas and analysis interface. See the [application reference](../applications/thermal-file-app.md#attributes) for all public attributes.

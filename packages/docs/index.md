@@ -30,7 +30,7 @@ const features = [
   {
     title: 'Multiple files at once',
     details: 'Compose a workspace for multiple recordings using provider elements. Share palettes and temperature ranges, and synchronise analysis areas across files in a group.',
-    link: '/webcomponents/hierarchy',
+    link: '/webcomponents/guide/hierarchy',
     linkText: 'Compose your workspace'
   },
   {

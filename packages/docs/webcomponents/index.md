@@ -18,10 +18,10 @@ For a visual list of all elements, see the [Overview of webcomponents](./list).
 
 ### Guide
 
-- [Context providers and consumers](./hierarchy) – the hierarchy of elements needed to build your own interface.
-- [Thermal palette](./thermal-palette) – choose and share colour palettes.
-- [Thermal range](./thermal-range) – set and share the displayed temperature range.
-- [Styling and CSS variables](./styling) – adapt the look of the components.
+- [Context providers and consumers](./guide/hierarchy) – the hierarchy of elements needed to build your own interface.
+- [Thermal palette](./guide/thermal-palette) – choose and share colour palettes.
+- [Thermal range](./guide/thermal-range) – set and share the displayed temperature range.
+- [Styling and CSS variables](./guide/styling) – adapt the look of the components.
 
 ### App components
 
@@ -44,10 +44,9 @@ General-purpose elements usable anywhere in the DOM. See the [overview of UI com
 
 ### Context providers
 
-Elements exposing the [core classes](../core/#key-concepts) to nested context consumers. See [Context providers and consumers](./hierarchy).
+Elements exposing the [core classes](../core/#key-concepts) to nested context consumers. See [Context providers and consumers](./guide/hierarchy).
 
 - [manager-provider](./providers/manager-provider) – `ThermalManager`
 - [registry-provider](./providers/registry-provider) – `ThermalRegistry`
 - [group-provider](./providers/group-provider) – `ThermalGroup`
 - [file-provider](./providers/file-provider) – `ThermalFileInstance`
-

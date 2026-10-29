@@ -2,10 +2,12 @@ import type { AbstractFileResult, ThermalFileInstance, ThermalGroup } from "@lab
 import { ThermalFileReader, TimeFormat } from "@labirthermal/core";
 import { css, html } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
+import { createRef, ref } from "lit/directives/ref.js";
 import { repeat } from "lit/directives/repeat.js";
 import type { StyleInfo } from "lit/directives/style-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import type { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
+import type { ThermalAppElement } from "../ui/App";
 import type { HostReactiveProperties } from "./AbstractHierarchyController";
 import { AbstractHierarchyController } from "./AbstractHierarchyController";
 import type { FileController } from "./FileController";
@@ -68,6 +70,12 @@ export class GroupListingController extends AbstractHierarchyController<IElement
     }
 
     private backup: Set<ThermalFileReader> = new Set();
+
+    private readonly temperatureScaleRef = createRef<HTMLDivElement>();
+    private temperatureScaleWrapped = false;
+    private temperatureScaleSlot?: HTMLSlotElement;
+    private temperatureScaleObserver?: ResizeObserver;
+    private temperatureScaleFrame?: number;
 
     public get hasBackup(): boolean {
         return this.backup.size > 0;
@@ -346,11 +354,13 @@ export class GroupListingController extends AbstractHierarchyController<IElement
 
 
     hostConnected(): void {
-        // throw new Error("Method not implemented.");
+        if (this.host.hasUpdated) {
+            this.host.requestUpdate();
+        }
     }
 
     hostDisconnected(): void {
-        // throw new Error("Method not implemented.");
+        this.disconnectTemperatureScale();
     }
 
     hostWillUpdateWatcher(): void {
@@ -358,7 +368,123 @@ export class GroupListingController extends AbstractHierarchyController<IElement
     }
 
     hostUpdatedWatcher(): void {
-        // Do nothing
+        void this.observeTemperatureScale();
+    }
+
+    public renderTemperatureScale(): unknown {
+        return html`<div
+            ${ref(this.temperatureScaleRef)}
+            slot=${this.temperatureScaleWrapped ? "pre-bar-wrap" : "pre-bar"}
+            style=${styleMap({
+                flex: "1 1 0",
+                minWidth: "0",
+                boxSizing: "border-box",
+                width: this.temperatureScaleWrapped ? "100%" : undefined,
+                paddingLeft: this.temperatureScaleWrapped ? "0" : "1em"
+            })}
+        >
+            <registry-histogram height="15px" ?expandable=${true}></registry-histogram>
+            <registry-range-slider height="10px"></registry-range-slider>
+            <registry-ticks-bar></registry-ticks-bar>
+        </div>`;
+    }
+
+    private async observeTemperatureScale(): Promise<void> {
+        const scale = this.temperatureScaleRef.value;
+        const app = this.host.shadowRoot?.querySelector<ThermalAppElement>("thermal-app");
+        if (!scale || !app || scale.parentElement !== app) {
+            this.disconnectTemperatureScale();
+            return;
+        }
+
+        await app.updateComplete;
+        if (!this.host.isConnected || this.temperatureScaleRef.value !== scale) {
+            return;
+        }
+
+        const slot = app.shadowRoot?.querySelector<HTMLSlotElement>('slot[name="pre-bar"]');
+        if (!slot?.parentElement) {
+            return;
+        }
+        if (this.temperatureScaleSlot !== slot) {
+            this.disconnectTemperatureScale();
+            this.temperatureScaleSlot = slot;
+            this.temperatureScaleObserver = new ResizeObserver(this.scheduleTemperatureScaleLayout);
+            slot.addEventListener("slotchange", this.observeTemperatureScaleItems);
+            this.observeTemperatureScaleItems();
+        } else {
+            this.scheduleTemperatureScaleLayout();
+        }
+    }
+
+    private readonly observeTemperatureScaleItems = (): void => {
+        const slot = this.temperatureScaleSlot;
+        const row = slot?.parentElement;
+        if (!slot || !row || !this.temperatureScaleObserver) {
+            return;
+        }
+        this.temperatureScaleObserver.disconnect();
+        this.temperatureScaleObserver.observe(row);
+        for (const item of slot.assignedElements({ flatten: true })) {
+            if (item !== this.temperatureScaleRef.value) {
+                this.temperatureScaleObserver.observe(item);
+            }
+        }
+        this.scheduleTemperatureScaleLayout();
+    };
+
+    private readonly scheduleTemperatureScaleLayout = (): void => {
+        if (!this.host.isConnected || this.temperatureScaleFrame !== undefined) {
+            return;
+        }
+        this.temperatureScaleFrame = requestAnimationFrame(() => {
+            this.temperatureScaleFrame = undefined;
+            this.updateTemperatureScaleLayout();
+        });
+    };
+
+    private updateTemperatureScaleLayout(): void {
+        const scale = this.temperatureScaleRef.value;
+        const slot = this.temperatureScaleSlot;
+        const row = slot?.parentElement;
+        if (!this.host.isConnected || !scale || !slot || !row) {
+            return;
+        }
+
+        const rowStyle = getComputedStyle(row);
+        const pixels = (value: string): number => parseFloat(value) || 0;
+        let available = row.getBoundingClientRect().width
+            - pixels(rowStyle.borderLeftWidth) - pixels(rowStyle.borderRightWidth)
+            - pixels(rowStyle.paddingLeft) - pixels(rowStyle.paddingRight);
+        const gap = pixels(rowStyle.columnGap);
+        for (const item of slot.assignedElements({ flatten: true })) {
+            if (item === scale) {
+                continue;
+            }
+            const style = getComputedStyle(item);
+            if (style.display !== "none") {
+                available -= item.getBoundingClientRect().width
+                    + pixels(style.marginLeft) + pixels(style.marginRight) + gap;
+            }
+        }
+        // Measure the prospective inline content width, even while the scale occupies its own row.
+        available -= pixels(getComputedStyle(scale).fontSize);
+        const wrapped = available < 200;
+        if (wrapped !== this.temperatureScaleWrapped) {
+            this.temperatureScaleWrapped = wrapped;
+            this.host.requestUpdate();
+        }
+    }
+
+    private disconnectTemperatureScale(): void {
+        this.temperatureScaleObserver?.disconnect();
+        this.temperatureScaleObserver = undefined;
+        this.temperatureScaleSlot?.removeEventListener("slotchange", this.observeTemperatureScaleItems);
+        this.temperatureScaleSlot = undefined;
+        if (this.temperatureScaleFrame !== undefined) {
+            cancelAnimationFrame(this.temperatureScaleFrame);
+            this.temperatureScaleFrame = undefined;
+        }
     }
 
     private _orderFiles(): ThermalFileInstance[] {

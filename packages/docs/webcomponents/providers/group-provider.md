@@ -6,7 +6,7 @@ import { withBase } from 'vitepress'
 
 <ComponentInfo tag="group-provider" category="Provider" :requires="['manager-provider', 'registry-provider']">
 
-Coordinates cursor position between nested files. See the [provider hierarchy](../hierarchy.md).
+Coordinates cursor position between nested files. See the [provider hierarchy](../guide/hierarchy.md).
 
 </ComponentInfo>
 

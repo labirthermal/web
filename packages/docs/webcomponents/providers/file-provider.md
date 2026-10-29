@@ -10,7 +10,7 @@ import { withBase } from 'vitepress'
     :requires="['manager-provider', 'registry-provider', 'group-provider']"
 >
 
-Loads a thermal file into the current group and exposes its loaded file context to nested consumers. See the [provider hierarchy](../hierarchy.md).
+Loads a thermal file into the current group and exposes its loaded file context to nested consumers. See the [provider hierarchy](../guide/hierarchy.md).
 
 </ComponentInfo>
 

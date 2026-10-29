@@ -6,7 +6,7 @@ import { withBase } from 'vitepress'
 
 <ComponentInfo tag="registry-provider" category="Provider" :requires="['manager-provider']">
 
-Provides a registry scope for its descendants. A `registry-provider` must be inside a `manager-provider`; the registry is scoped to that parent manager. See the [hierarchy overview](../hierarchy.md) and [thermal range guide](../thermal-range.md).
+Provides a registry scope for its descendants. A `registry-provider` must be inside a `manager-provider`; the registry is scoped to that parent manager. See the [hierarchy overview](../guide/hierarchy.md) and [thermal range guide](../guide/thermal-range.md).
 
 </ComponentInfo>
 

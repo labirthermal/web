@@ -5,12 +5,12 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { ContextProvider, consume, createContext, provide } from "@lit/context";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { ifDefined } from "lit/directives/if-defined.js";
+import { createRef, ref } from "lit/directives/ref.js";
 import { repeat } from "lit/directives/repeat.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { property, queryAssignedElements, state } from "lit/decorators.js";
 import { cache } from "lit/directives/cache.js";
 import { map } from "lit/directives/map.js";
-import { createRef, ref } from "lit/directives/ref.js";
 import { arrow, autoUpdate, computePosition, flip, inline, offset, shift } from "@floating-ui/dom";
 import { classMap } from "lit/directives/class-map.js";
 import { state as state$1 } from "lit/decorators/state.js";
@@ -2643,7 +2643,7 @@ instance.use(initLitI18n).use(LanguageDetector).init({
 			analysishint: "Vyznačte oblast v termogramu a zde uvidíte přehled jejích teplot.",
 			graph: "Graf",
 			graphhint1: "Nejprve přidejte analýzu!",
-			graphhint2: "Pro zobrazení grafu klikněte na <thermal-btn variant='background' interactive='false' tooltip='Najdete je v tabulce výše...'>hodnotu</thermal-btn> některé analýzy!",
+			graphhint2: "Pro zobrazení grafu klikněte na <thermal-btn variant='background' non-interactive tooltip='Najdete je v tabulce výše...'>hodnotu</thermal-btn> některé analýzy!",
 			rectangle: "obdélník",
 			ellipsis: "elipsu",
 			point: "bod",
@@ -2876,7 +2876,7 @@ instance.use(initLitI18n).use(LanguageDetector).init({
 			analysishint: "Gallwch ddewis ardal yn y ddelwedd IR i weld ei thymhereddau.",
 			graph: "Graff",
 			graphhint1: "Addio ddadansoddiad yn gyntaf i weld y graff!",
-			graphhint2: "Cliciwch ar <thermal-btn variant='background' interactive='false'  tooltip='Fe welwch nhw yn y tabl uchod...'>werth</thermal-btn> dadansoddiad i weld ei graff yma!",
+			graphhint2: "Cliciwch ar <thermal-btn variant='background' non-interactive  tooltip='Fe welwch nhw yn y tabl uchod...'>werth</thermal-btn> dadansoddiad i weld ei graff yma!",
 			rectangle: "petryal",
 			ellipsis: "elipsis",
 			point: "pwynt",
@@ -3108,7 +3108,7 @@ instance.use(initLitI18n).use(LanguageDetector).init({
 			analysishint: "Markieren Sie einen Bereich im Thermogramm, um hier eine Übersicht seiner Temperaturen zu sehen.",
 			graph: "Grafik",
 			graphhint1: "Fügen Sie zuerst eine Analyse hinzu!",
-			graphhint2: "Klicken Sie auf einen <thermal-btn variant='background' interactive='false' tooltip='Sie finden sie in der obigen Tabelle...'>Wert</thermal-btn> einer Analyse, um hier die Grafik zu sehen!",
+			graphhint2: "Klicken Sie auf einen <thermal-btn variant='background' non-interactive tooltip='Sie finden sie in der obigen Tabelle...'>Wert</thermal-btn> einer Analyse, um hier die Grafik zu sehen!",
 			rectangle: "Rechteck",
 			ellipsis: "Ellipse",
 			point: "Punkt",
@@ -5338,9 +5338,27 @@ var GroupListingController = class extends AbstractHierarchyController {
 	constructor(host) {
 		super(host);
 		this.backup = /* @__PURE__ */ new Set();
+		this.temperatureScaleRef = createRef();
+		this.temperatureScaleWrapped = false;
 		this._numColumns = 3;
 		this._asTable = false;
 		this._previewWidth = 50;
+		this.observeTemperatureScaleItems = () => {
+			const slot = this.temperatureScaleSlot;
+			const row = slot?.parentElement;
+			if (!slot || !row || !this.temperatureScaleObserver) return;
+			this.temperatureScaleObserver.disconnect();
+			this.temperatureScaleObserver.observe(row);
+			for (const item of slot.assignedElements({ flatten: true })) if (item !== this.temperatureScaleRef.value) this.temperatureScaleObserver.observe(item);
+			this.scheduleTemperatureScaleLayout();
+		};
+		this.scheduleTemperatureScaleLayout = () => {
+			if (!this.host.isConnected || this.temperatureScaleFrame !== void 0) return;
+			this.temperatureScaleFrame = requestAnimationFrame(() => {
+				this.temperatureScaleFrame = void 0;
+				this.updateTemperatureScaleLayout();
+			});
+		};
 		this._UUID = host.UUID + "_group-display-controller";
 	}
 	clearBackup() {
@@ -5546,10 +5564,83 @@ var GroupListingController = class extends AbstractHierarchyController {
 		})}>${label}: ${value}${this._asTable ? " %" : ""}</div>
         </div>`;
 	}
-	hostConnected() {}
-	hostDisconnected() {}
+	hostConnected() {
+		if (this.host.hasUpdated) this.observeTemperatureScale();
+	}
+	hostDisconnected() {
+		this.disconnectTemperatureScale();
+	}
 	hostWillUpdateWatcher() {}
-	hostUpdatedWatcher() {}
+	hostUpdatedWatcher() {
+		this.observeTemperatureScale();
+	}
+	renderTemperatureScale() {
+		return html`<div
+            ${ref(this.temperatureScaleRef)}
+            slot=${this.temperatureScaleWrapped ? "pre-bar-wrap" : "pre-bar"}
+            style=${styleMap({
+			flex: "1 1 0",
+			minWidth: "0",
+			boxSizing: "border-box",
+			width: this.temperatureScaleWrapped ? "100%" : void 0,
+			paddingLeft: this.temperatureScaleWrapped ? "0" : "1em"
+		})}
+        >
+            <registry-histogram height="15px" ?expandable=${true}></registry-histogram>
+            <registry-range-slider height="10px"></registry-range-slider>
+            <registry-ticks-bar></registry-ticks-bar>
+        </div>`;
+	}
+	async observeTemperatureScale() {
+		const scale = this.temperatureScaleRef.value;
+		const app = scale?.parentElement;
+		if (!scale || app?.localName !== "thermal-app") {
+			this.disconnectTemperatureScale();
+			return;
+		}
+		await app.updateComplete;
+		if (!this.host.isConnected || this.temperatureScaleRef.value !== scale) return;
+		const slot = app.shadowRoot?.querySelector("slot[name=\"pre-bar\"]");
+		if (!slot?.parentElement) return;
+		if (this.temperatureScaleSlot !== slot) {
+			this.disconnectTemperatureScale();
+			this.temperatureScaleSlot = slot;
+			this.temperatureScaleObserver = new ResizeObserver(this.scheduleTemperatureScaleLayout);
+			slot.addEventListener("slotchange", this.observeTemperatureScaleItems);
+			this.observeTemperatureScaleItems();
+		} else this.scheduleTemperatureScaleLayout();
+	}
+	updateTemperatureScaleLayout() {
+		const scale = this.temperatureScaleRef.value;
+		const slot = this.temperatureScaleSlot;
+		const row = slot?.parentElement;
+		if (!this.host.isConnected || !scale || !slot || !row) return;
+		const rowStyle = getComputedStyle(row);
+		const pixels = (value) => parseFloat(value) || 0;
+		let available = row.getBoundingClientRect().width - pixels(rowStyle.borderLeftWidth) - pixels(rowStyle.borderRightWidth) - pixels(rowStyle.paddingLeft) - pixels(rowStyle.paddingRight);
+		const gap = pixels(rowStyle.columnGap);
+		for (const item of slot.assignedElements({ flatten: true })) {
+			if (item === scale) continue;
+			const style = getComputedStyle(item);
+			if (style.display !== "none") available -= item.getBoundingClientRect().width + pixels(style.marginLeft) + pixels(style.marginRight) + gap;
+		}
+		available -= pixels(getComputedStyle(scale).fontSize);
+		const wrapped = available < 200;
+		if (wrapped !== this.temperatureScaleWrapped) {
+			this.temperatureScaleWrapped = wrapped;
+			this.host.requestUpdate();
+		}
+	}
+	disconnectTemperatureScale() {
+		this.temperatureScaleObserver?.disconnect();
+		this.temperatureScaleObserver = void 0;
+		this.temperatureScaleSlot?.removeEventListener("slotchange", this.observeTemperatureScaleItems);
+		this.temperatureScaleSlot = void 0;
+		if (this.temperatureScaleFrame !== void 0) {
+			cancelAnimationFrame(this.temperatureScaleFrame);
+			this.temperatureScaleFrame = void 0;
+		}
+	}
 	_orderFiles() {
 		const files = Array.from(this.group.files.value);
 		switch (this.host.orderby) {
@@ -5589,6 +5680,7 @@ var GroupListingController = class extends AbstractHierarchyController {
                 style="cursor: default; font-size: .9em;"
                 icon="folder"
                 iconStyle="micro"
+                variant="background" 
             >${options.allowFileChanges === false ? `Počet souborů: ${this.group.files.value.length}` : `${this.group.files.value.length} nahraných souborů`}</thermal-btn>
 
             ${options.allowFileChanges === false ? void 0 : html`<thermal-btn
@@ -5721,7 +5813,7 @@ var GroupListingController = class extends AbstractHierarchyController {
 		return html`<div style=${styleMap(divStyles)} slot=${ifDefined(slot)}>
 
             <thermal-btn 
-                variant="foreground" 
+                variant="background" 
                 tooltip="Název souboru" 
                 style="cursor: default; font-size: .9em;"
                 icon="image"
@@ -5729,7 +5821,7 @@ var GroupListingController = class extends AbstractHierarchyController {
             >${instance.fileName}</thermal-btn>
 
             <thermal-btn 
-                variant="foreground" 
+                variant="background" 
                 tooltip="Čas pořízení snímku" 
                 style="cursor: default; font-size: .9em;"
                 icon="clock"
@@ -7030,10 +7122,10 @@ var ThermalAppElement = class ThermalAppElement extends AbstractThermalElement {
     `;
 	}
 	renderLabel() {
-		const interactiveProp = this.onlabel !== void 0 ? "true" : "false";
+		const nonInteractive = !this.onlabel;
 		const slotInner = this.label ? html`<thermal-btn
     variant="${this.labelVariant}"
-    interactive=${interactiveProp}
+    ?non-interactive=${nonInteractive}
     icon=${ifDefined(this.labelIcon)}
     iconStyle=${ifDefined(this.labelIconStyle)}
     tooltip=${ifDefined(this.labelTooltip)}
@@ -7151,6 +7243,7 @@ var ThermalAppElement = class ThermalAppElement extends AbstractThermalElement {
         <div class="pre-bar" ?hidden=${!this._hasPreBar}>
             <slot name="pre-bar" @slotchange=${this._onSlotChange}></slot>
         </div>
+        <slot name="pre-bar-wrap"></slot>
 
     </header>
 
@@ -8052,7 +8145,6 @@ __decorate([property({
 __decorate([property({
 	type: Boolean,
 	reflect: true,
-	converter: booleanConverter(false),
 	attribute: "is-fullscreen"
 }), __decorateMetadata("design:type", Boolean)], ThermalDialogElement.prototype, "isFullscreen", void 0);
 __decorate([property({
@@ -8231,7 +8323,7 @@ var ThermalDropdownElement = class extends AbstractThermalElement {
 			may: this.interactive === "on",
 			mayNot: this.interactive === "off"
 		};
-		const disabled = this.interactive === "off" ? "true" : "false";
+		const disabled = this.interactive === "off";
 		return html`
 
             <div class="dropdown" ${ref(this.dropdownRef)}>
@@ -8244,7 +8336,7 @@ var ThermalDropdownElement = class extends AbstractThermalElement {
                     icon="${ifDefined(this.icon)}"
                     iconStyle="${ifDefined(this.iconStyle)}"
                     ?plain=${this.plain}
-                    disabled=${disabled}
+                    ?disabled=${disabled}
                     tooltip="${this.tooltip !== void 0 ? this.tooltip : ""}"
                     part="invoker"
                 >
@@ -8289,7 +8381,7 @@ __decorate([property({
 	reflect: true,
 	attribute: true
 }), __decorateMetadata("design:type", Object)], ThermalDropdownElement.prototype, "size", void 0);
-__decorate([property({ type: String }), __decorateMetadata("design:type", Boolean)], ThermalDropdownElement.prototype, "plain", void 0);
+__decorate([property({ type: Boolean }), __decorateMetadata("design:type", Boolean)], ThermalDropdownElement.prototype, "plain", void 0);
 __decorate([property({
 	type: String,
 	attribute: true
@@ -8395,6 +8487,9 @@ var ThermalExpandableElement = class extends AbstractThermalElement {
 		super(..._args);
 		this.closeIcon = false;
 		this.iconStyle = "outline";
+		this.disabled = false;
+		this.nonInteractive = false;
+		this.plain = false;
 		this.expanded = false;
 	}
 	static {
@@ -8448,14 +8543,14 @@ thermal-icon {
 	render() {
 		const variant = this.expanded && this.variantExpanded ? this.variantExpanded : this.variant;
 		return html`<thermal-btn
-    .variant=${ifDefined(variant)}
-    .size=${ifDefined(this.size)}
-    .icon=${ifDefined(this.icon)}
-    .iconStyle=${this.iconStyle}
-    .disabled=${ifDefined(this.disabled)}
-    .plain=${ifDefined(this.plain)}
-    .tooltip=${ifDefined(this.tooltip)}
-    .interactive=${ifDefined(this.interactive)}
+    variant=${ifDefined(variant)}
+    size=${ifDefined(this.size)}
+    icon=${ifDefined(this.icon)}
+    iconStyle=${this.iconStyle}
+    ?disabled=${this.disabled}
+    ?plain=${this.plain}
+    tooltip=${ifDefined(this.tooltip)}
+    ?non-interactive=${this.nonInteractive}
     @click=${() => this.expanded = !this.expanded}
 >${ifDefined(this.label)}${this.closeIcon && this.expanded ? html`<thermal-icon
     icon="close"
@@ -8469,9 +8564,9 @@ thermal-icon {
 };
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], ThermalExpandableElement.prototype, "label", void 0);
 __decorate([property({
-	attribute: true,
-	reflect: true,
-	converter: booleanConverter(false)
+	type: Boolean,
+	attribute: "close-icon",
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], ThermalExpandableElement.prototype, "closeIcon", void 0);
 __decorate([property({
 	type: String,
@@ -8491,20 +8586,21 @@ __decorate([property({
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], ThermalExpandableElement.prototype, "icon", void 0);
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], ThermalExpandableElement.prototype, "iconStyle", void 0);
 __decorate([property({
-	type: String,
-	converter: booleanConverter(false)
+	type: Boolean,
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], ThermalExpandableElement.prototype, "disabled", void 0);
 __decorate([property({
-	type: String,
-	converter: booleanConverter(false)
-}), __decorateMetadata("design:type", Boolean)], ThermalExpandableElement.prototype, "interactive", void 0);
+	type: Boolean,
+	reflect: true,
+	attribute: "non-interactive"
+}), __decorateMetadata("design:type", Boolean)], ThermalExpandableElement.prototype, "nonInteractive", void 0);
 __decorate([property({
 	type: Boolean,
 	attribute: true
 }), __decorateMetadata("design:type", Boolean)], ThermalExpandableElement.prototype, "plain", void 0);
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], ThermalExpandableElement.prototype, "tooltip", void 0);
 __decorate([property({
-	converter: booleanConverter(false),
+	type: Boolean,
 	reflect: true
 }), __decorateMetadata("design:type", Boolean)], ThermalExpandableElement.prototype, "expanded", void 0);
 //#endregion
@@ -10036,7 +10132,7 @@ var ManagerPaletteDropdown = class extends AbstractPaletteSwitch {
                     <span slot="invoker" class="palette" style="background:${this.managerObject.palette.currentPalette.gradient}"></span>
 
                 ${this.palettes.map((palette) => html`
-                    <div slot="option"><thermal-btn @click=${() => this.onSelect(palette.slug)} variant="${palette.name === this.managerObject.palette.currentPalette.name ? "background" : "slate"}">
+                    <div slot="option"><thermal-btn @click=${() => this.onSelect(palette.slug)} variant="${palette.name === this.managerObject.palette.currentPalette.name ? "background" : "default"}">
                         ${this.paletteTemplate(palette)}
                     </thermal-btn></div>
                 `)}
@@ -12681,7 +12777,7 @@ __decorate([property({
 __decorate([property({
 	type: String,
 	reflect: true
-}), __decorateMetadata("design:type", String)], GroupDropinInputElement.prototype, "variant", void 0);
+}), __decorateMetadata("design:type", Object)], GroupDropinInputElement.prototype, "variant", void 0);
 __decorate([state(), __decorateMetadata("design:type", Object)], GroupDropinInputElement.prototype, "container", void 0);
 __decorate([state(), __decorateMetadata("design:type", Boolean)], GroupDropinInputElement.prototype, "hover", void 0);
 __decorate([state(), __decorateMetadata("design:type", Boolean)], GroupDropinInputElement.prototype, "uploading", void 0);
@@ -12728,7 +12824,7 @@ slot {
     <thermal-btn 
         variant=${this.variant || "default"}
         size=${this.size || "sm"}
-        ?plain="${this.plain}"
+        ?plain=${this.plain}
         class="default"
         tooltip=${ifDefined(this.tooltip)}
         icon=${ifDefined(this.icon)}
@@ -14883,7 +14979,7 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 			}
 		}}
                     variant="background"
-                    plain="true"
+                    plain
                     tooltip="Stáhnout graf jako obrázek SVG"
                 >SVG</thermal-btn>
                 <thermal-btn
@@ -14895,14 +14991,14 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 			}
 		}}
                     variant="background"
-                    plain="true"
+                    plain
                     tooltip="Stáhnout graf jako obrázek PNG"
                 >PNG</thermal-btn>
                 <thermal-btn
                     size="sm"
                     @click=${() => this.file?.analysisData.downloadData()}
                     variant="background"
-                    plain="true"
+                    plain
                     tooltip="${t$1("downloadgraphdataascsv")}"
                 >CSV</thermal-btn>
             </div>`;
@@ -16928,13 +17024,7 @@ var DropinAppElement = class extends AbstractApp {
                     </table>
                 </div>
             </thermal-dialog>`);
-			elements.push(html`
-                <div slot="pre-bar" style="flex-grow: 1; padding-left: 1em;">
-            <registry-histogram height="15px" ?expandable=${true}></registry-histogram>
-            <registry-range-slider height="10px"></registry-range-slider>
-            <registry-ticks-bar></registry-ticks-bar>
-                </div>
-            `);
+			elements.push(this.groupListingController.renderTemperatureScale());
 		}
 		return elements;
 	}
@@ -17246,6 +17336,8 @@ var ThermalGroupAppElement = class extends AbstractApp {
 		const hasFiles = this.groupObject?.files.value.length > 0;
 		return html`<thermal-app
             label=${this.label ?? "LabIR Web Analyser"}
+            author=${ifDefined(this.author)}
+            license=${ifDefined(this.license)}
             ?show-fullscreen=${this.showFullscreen}
         >
             ${hasFiles ? html`
@@ -17262,11 +17354,7 @@ var ThermalGroupAppElement = class extends AbstractApp {
                         </table>
                     </div>
                 </thermal-dialog>
-                <div slot="pre-bar" style="flex-grow: 1; padding-left: 1em;">
-                    <registry-histogram height="15px" ?expandable=${true}></registry-histogram>
-                    <registry-range-slider height="10px"></registry-range-slider>
-                    <registry-ticks-bar></registry-ticks-bar>
-                </div>
+                ${this.groupListingController.renderTemperatureScale()}
             ` : void 0}
             <slot name="bar-pre" slot="bar-pre"></slot>
             ${this.groupLoadController.errors.map((message) => html`<p role="alert">${message}</p>`)}
@@ -17548,14 +17636,15 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
 		this.observedContainer = void 0;
 		if (!this.isConnected || !container) return;
 		this.observedContainer = container;
-		this.observer = new ResizeObserver((entries) => {
-			if (!this.isConnected || this.observedContainer !== container) return;
+		const observer = new ResizeObserver((entries) => {
+			if (!this.isConnected || this.observer !== observer) return;
 			const entry = entries.find((entry) => entry.target === container);
 			if (!entry) return;
 			if (this.file) this.ticks = calculateTicks(entry.contentRect.width, this.file.duration);
 			this.collapsed = entry.contentRect.width < FileTimelineElement.collapseWidth;
 		});
-		this.observer.observe(container);
+		this.observer = observer;
+		observer.observe(container);
 	}
 	/** Handlers */
 	/** Handle playback buttons */
@@ -17618,10 +17707,6 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
 
         .cursor {
             width: 70px;
-        }
-
-        .duration {
-        
         }
 
         .small {
@@ -17730,7 +17815,7 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
 		return html`<nav class="controls">
 
     <thermal-btn 
-        disabled="${disabled}"
+        ?disabled=${disabled}
         @click=${() => {
 			file.timeline.prev();
 		}}
@@ -17742,17 +17827,17 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
         @click=${this.handlePlayButtonClick.bind(this)}
         icon="${this.playing ? "pause" : "play"}"
         iconStyle="solid"
-        disabled="${disabled}"
+        ?disabled=${disabled}
     ></thermal-btn>
 
     <thermal-btn 
         @click=${() => file.timeline.next()}
-        disabled="${disabled}"
+        ?disabled=${disabled}
     >${t$1("next")}</thermal-btn>
 
     <thermal-btn 
         @click=${() => file.timeline.setRelativeTime(0)}
-        disabled="${disabled}"
+        ?disabled=${disabled}
     >${t$1("back")}</thermal-btn>
 
     <file-playback-speed-dropdown enabled="${this.mayStop ? "on" : "off"}" class="item"></file-playback-speed-dropdown>
@@ -17782,7 +17867,7 @@ var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer
 			timeline: true,
 			...mayClasses
 		};
-		const disabled = this.mayStop ? "false" : "true";
+		const disabled = this.mayStop === false;
 		return html`
 <section class="${classMap(containerClasses)}" ${ref(this.containerRef)}>
 
@@ -19786,9 +19871,9 @@ var FileDetailElement = class extends AbstractFileConsumer {
     ></thermal-btn>
 
     ${this.label !== void 0 ? html`
-    <thermal-btn variant="background" interactive="false">${this.label}</thermal-btn>` : nothing}
+    <thermal-btn variant="background" non-interactive>${this.label}</thermal-btn>` : nothing}
 
-    <thermal-btn variant="background" interactive="false">
+    <thermal-btn variant="background" non-interactive>
         <file-label></file-label>
     </thermal-btn>
 
@@ -19864,10 +19949,6 @@ var FileThumbnailElement = class extends AbstractFileConsumer {
             }
 
         }
-
-        main {
-
-        }
     
     `;
 	}
@@ -19903,7 +19984,11 @@ var FileThumbnailElement = class extends AbstractFileConsumer {
 	}
 };
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Function)], FileThumbnailElement.prototype, "ondetail", void 0);
-__decorate([property({ converter: booleanConverter(false) }), __decorateMetadata("design:type", Boolean)], FileThumbnailElement.prototype, "norender", void 0);
+__decorate([property({
+	type: Boolean,
+	reflect: true,
+	attribute: "no-render"
+}), __decorateMetadata("design:type", Boolean)], FileThumbnailElement.prototype, "norender", void 0);
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], FileThumbnailElement.prototype, "label", void 0);
 //#endregion
 //#region src/ui/BtnGroup.ts

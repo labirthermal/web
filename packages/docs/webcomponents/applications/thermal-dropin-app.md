@@ -19,7 +19,6 @@ The *drop-in* webcomponent enables the user to analyze his own LRC files. It is 
 
 ## palette and advanced-palettes
 
-The `palette` and `advanced-palettes` attributes can be to specify the default values. See [Thermal palette](../thermal-palette.md) for details.
+The `palette` and `advanced-palettes` attributes can be to specify the default values. See [Thermal palette](../guide/thermal-palette.md) for details.
 
 ## tool
-

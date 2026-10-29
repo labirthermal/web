@@ -6,7 +6,7 @@ import { withBase } from 'vitepress'
 
 <ComponentInfo tag="manager-provider" category="Provider">
 
-Provides manager-level context, including the global manager and display palette. No provider is required above it. See the [context hierarchy](../hierarchy.md) for its place among the providers and [Thermal palette](../thermal-palette.md) for palette behavior.
+Provides manager-level context, including the global manager and display palette. No provider is required above it. See the [context hierarchy](../guide/hierarchy.md) for its place among the providers and [Thermal palette](../guide/thermal-palette.md) for palette behavior.
 
 </ComponentInfo>
 
@@ -71,7 +71,7 @@ These two attributes configure which palette is selected and which palette choic
 - `palette` (`'iron' | 'jet' | 'white_hot' | 'black_hot' | 'lava' | 'arctic' | 'rainbow' | 'rainbow_hc'`, default `jet`) sets the manager's display palette. Empty or invalid values convert to `iron`.
 - `advanced-palettes` (`'true' | 'false'`, default `false`) enables the extended palette choices. Only the exact string `"true"` is true; an empty value, `"false"` or another value is false.
 
-Set both together when the initial palette is one of the advanced choices. See [Thermal palette](../thermal-palette.md) for the available choices.
+Set both together when the initial palette is one of the advanced choices. See [Thermal palette](../guide/thermal-palette.md) for the available choices.
 
 <ComponentExample>
 

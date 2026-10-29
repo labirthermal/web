@@ -105,7 +105,23 @@ the image and wraps horizontally when necessary.
 The layout element receives `layout--stacked` and `layout--compact` classes.
 Resizing preserves the existing canvas, playback and analysis controls.
 
+### File timeline controls
+
+`file-timeline` enables playback, frame stepping and seeking by default.
+These controls are temporarily disabled only while recording the entire
+sequence, to prevent interruptions to the exported video.
+The `disable-play-button` attribute hides the playback controls;
+`disable-info` hides the frame information. Both attributes are absent by default.
+
 ### Registry range slider
+
+In the group and drop-in applications, `GroupListingController` keeps the
+histogram, range slider and ticks together. If their available inline content
+width would be below 200px, it assigns the same scale element to the bare
+`thermal-app` slot `pre-bar-wrap`, below `pre-bar`, at full width without left
+indentation. It returns to `pre-bar` when at least 200px is available again.
+The controller observes the toolbar and its other items, independently of the
+scale's current row; `thermal-app` only supplies the additional slot.
 
 `registry-range-slider` renders its track, palette and two accessible handles
 directly in Lit, without a third-party slider. Registry contexts supply the

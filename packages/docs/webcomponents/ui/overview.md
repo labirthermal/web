@@ -4,11 +4,11 @@
 import { withBase } from 'vitepress'
 </script>
 
-The `@labirthermal/webcomponents` comes with a set of standardised UI elements. These elements are independent of [the hierarchy](../hierarchy.md) and can be used anywhere in the DOM tree.
+The `@labirthermal/webcomponents` comes with a set of standardised UI elements. These elements are independent of [the hierarchy](../guide/hierarchy.md) and can be used anywhere in the DOM tree.
 
-These UI elements are mostly used internally - in [context consumer elements](../hierarchy.md#context-consumers), but you can use them for your own purposes.
+These UI elements are mostly used internally - in [context consumer elements](../guide/hierarchy.md#context-consumers), but you can use them for your own purposes.
 
-See [Icons](../icons.md) for the built-in icon catalog and icon presentation attributes, and [Styling and CSS variables](../styling.md) for theming.
+See [Icons](../icons.md) for the built-in icon catalog and icon presentation attributes, and [Styling and CSS variables](../guide/styling.md) for theming.
 
 For a complete HTML document showing script loading and click listener registration, see the [standalone button example](../ui/thermal-btn.md#complete-html-document).
 
@@ -115,7 +115,7 @@ For a complete HTML document showing script loading and click listener registrat
 
 ## Building complex interfaces
 
-In combination with [the context providers](../hierarchy.md), UI elements can help you build complex interfaces.
+In combination with [the context providers](../guide/hierarchy.md), UI elements can help you build complex interfaces.
 
 Below is an example of a complex application displaying one file:
 

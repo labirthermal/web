@@ -171,7 +171,7 @@ These two attributes configure the initial palette and which palette choices are
 - `palette` (`'iron' | 'jet' | 'white_hot' | 'black_hot' | 'lava' | 'arctic' | 'rainbow' | 'rainbow_hc'`, default `jet`) sets the initial palette. Empty or invalid values convert to `iron`.
 - `advanced-palettes` (`'true' | 'false'`, default `false`) enables the extended palette choices. Only the exact string `"true"` is true.
 
-See [Thermal palette](../thermal-palette.md) for the available choices.
+See [Thermal palette](../guide/thermal-palette.md) for the available choices.
 
 ```html
 <thermal-file-app
@@ -202,7 +202,7 @@ Initial thermal range in °C:
 - `from` (`number`) – lower bound of the range.
 - `to` (`number`) – upper bound of the range.
 
-The range is applied only when both attributes are set; if either is missing, the full range of the file is used. The user can change the range later with the range form, slider or histogram. See [Thermal range](../thermal-range.md).
+The range is applied only when both attributes are set; if either is missing, the full range of the file is used. The user can change the range later with the range form, slider or histogram. See [Thermal range](../guide/thermal-range.md).
 
 ```html
 <thermal-file-app
@@ -421,7 +421,7 @@ When present, the temperature range of the loaded file is highlighted on the his
 
 Identifiers of the internal manager, registry and group. If omitted, the generic `slug` attribute is used; without either of them, a unique identifier is generated, so every application is independent by default.
 
-Two applications with the same `manager-slug` share the palette, tool and smoothing settings. Applications sharing a manager **and** the same `registry-slug` also share the thermal range and opacity. See [Context providers and consumers](../hierarchy.md).
+Two applications with the same `manager-slug` share the palette, tool and smoothing settings. Applications sharing a manager **and** the same `registry-slug` also share the thermal range and opacity. See [Context providers and consumers](../guide/hierarchy.md).
 
 Because `slug` is used as a fallback by all three identifiers, setting only `slug` on two applications makes them share everything, including the group.
 

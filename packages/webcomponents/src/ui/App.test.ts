@@ -39,15 +39,19 @@ describe("ThermalAppElement slots", () => {
         const element = mount(`
             <div slot="bar-header">header</div>
             <div slot="pre-bar">pre bar</div>
+            <div slot="pre-bar-wrap">wrapped scale</div>
             <div slot="pre">pre</div>
             <div slot="content">content</div>
         `);
 
         await settle(element);
 
-        for (const name of ["bar-header", "pre-bar", "pre", "content"]) {
+        for (const name of ["bar-header", "pre-bar", "pre-bar-wrap", "pre", "content"]) {
             expect(assigned(element, name).length, name).toBe(1);
         }
+        const wrapSlot = element.shadowRoot!.querySelector('slot[name="pre-bar-wrap"]')!;
+        expect(wrapSlot.parentElement?.tagName).toBe("HEADER");
+        expect(wrapSlot.previousElementSibling?.className).toBe("pre-bar");
 
         expect(element.shadowRoot!.querySelector(".bar-header")!.hasAttribute("hidden")).toBe(false);
         expect(element.shadowRoot!.querySelector(".pre-bar")!.hasAttribute("hidden")).toBe(false);

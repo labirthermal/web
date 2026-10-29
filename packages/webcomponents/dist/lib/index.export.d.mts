@@ -2751,6 +2751,11 @@ export declare class GroupListingController extends AbstractHierarchyController<
   static readonly HOST_PROPERTIES: HostReactiveProperties<IHostProperties$2>;
   private get group();
   private backup;
+  private readonly temperatureScaleRef;
+  private temperatureScaleWrapped;
+  private temperatureScaleSlot?;
+  private temperatureScaleObserver?;
+  private temperatureScaleFrame?;
   get hasBackup(): boolean;
   constructor(host: IElementWithGroupListingController);
   clearBackup(): void;
@@ -2775,6 +2780,12 @@ export declare class GroupListingController extends AbstractHierarchyController<
   hostDisconnected(): void;
   hostWillUpdateWatcher(): void;
   hostUpdatedWatcher(): void;
+  renderTemperatureScale(): unknown;
+  private observeTemperatureScale;
+  private readonly observeTemperatureScaleItems;
+  private readonly scheduleTemperatureScaleLayout;
+  private updateTemperatureScaleLayout;
+  private disconnectTemperatureScale;
   private _orderFiles;
   renderList(fileRendererFn: (file: ThermalFileInstance) => unknown, emptyRendererFn?: () => unknown): unknown;
   private handleFileDropAdd;
@@ -3247,8 +3258,8 @@ export declare class ThermalDropdownElement extends AbstractThermalElement {
   connectedCallback(): void;
   disconnectedCallback(): void;
   private placeOptions;
-  protected updated(_changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>): void;
-  protected firstUpdated(_changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>): void;
+  updated(_changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>): void;
+  firstUpdated(_changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>): void;
   attributeChangedCallback(name: string, _old: string | null, value: string | null): void;
   static styles: import("lit").CSSResult;
   render(): import("lit").TemplateResult<1>;
@@ -3280,11 +3291,11 @@ export declare class ThermalExpandableElement extends AbstractThermalElement {
   size?: BtnSizes;
   icon?: string;
   iconStyle: string;
-  disabled?: boolean;
-  interactive?: boolean;
-  plain?: boolean;
+  disabled: boolean;
+  nonInteractive: boolean;
+  plain: boolean;
   tooltip?: string;
-  expanded?: boolean;
+  expanded: boolean;
   static styles?: CSSResultGroup | undefined;
   protected render(): unknown;
 }
@@ -4581,7 +4592,7 @@ export declare class GroupDropinInputElement extends AbstractGroupDropin {
   icon?: string;
   iconStyle?: string;
   tooltip?: string;
-  variant?: string;
+  variant?: BtnVariants;
   protected container: Ref<HTMLVideoElement>;
   protected hover: boolean;
   protected uploading: boolean;

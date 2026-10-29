@@ -148,10 +148,10 @@ export default defineConfig({
             text: 'Guide',
             collapsed: true,
             items: [
-              { text: 'Context providers and consumers', link: '/webcomponents/hierarchy' },
-              { text: "Thermal palette", link: '/webcomponents/thermal-palette' },
-              { text: "Thermal range", link: '/webcomponents/thermal-range' },
-              { text: 'Styling and CSS variables', link: '/webcomponents/styling' },
+              { text: 'Context providers and consumers', link: '/webcomponents/guide/hierarchy' },
+              { text: "Thermal palette", link: '/webcomponents/guide/thermal-palette' },
+              { text: "Thermal range", link: '/webcomponents/guide/thermal-range' },
+              { text: 'Styling and CSS variables', link: '/webcomponents/guide/styling' },
               { text: "Boolean attributes", link: '/webcomponents/guide/boolean-attributes' }
             ]
           },

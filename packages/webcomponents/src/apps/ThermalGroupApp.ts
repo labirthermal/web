@@ -13,6 +13,7 @@ import { ManagerController } from "../controllers/ManagerController";
 import type { IElementWithRegistryController } from "../controllers/RegistryController";
 import { RegistryController } from "../controllers/RegistryController";
 import { AbstractApp } from "./AbstractApp";
+import { ifDefined } from "lit/directives/if-defined.js";
 
 
 export class ThermalGroupAppElement
@@ -156,6 +157,8 @@ export class ThermalGroupAppElement
 
         return html`<thermal-app
             label=${this.label ?? "LabIR Web Analyser"}
+            author=${ifDefined(this.author)}
+            license=${ifDefined(this.license)}
             ?show-fullscreen=${this.showFullscreen}
         >
             ${hasFiles ? html`
@@ -174,11 +177,7 @@ export class ThermalGroupAppElement
                         </table>
                     </div>
                 </thermal-dialog>
-                <div slot="pre-bar" style="flex-grow: 1; padding-left: 1em;">
-                    <registry-histogram height="15px" ?expandable=${true}></registry-histogram>
-                    <registry-range-slider height="10px"></registry-range-slider>
-                    <registry-ticks-bar></registry-ticks-bar>
-                </div>
+                ${this.groupListingController.renderTemperatureScale()}
             ` : undefined}
             <slot name="bar-pre" slot="bar-pre"></slot>
             ${this.groupLoadController.errors.map(message => html`<p role="alert">${message}</p>`)}
