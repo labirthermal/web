@@ -12,7 +12,7 @@ describe("ReTimelineDrive", async () => {
     it("control the timeline", async () => {
 
         const manager = new ThermalManager(pool);
-        const registry = manager.addOrGetRegistry("test_registry");
+        const registry = manager.registries.addOrGetRegistry("test_registry");
         const group = registry.groups.addOrGetGroup("test_group");
 
         const reader = await registry.service.loadFile( THERMOGRAM_PATHS.SEQUENCE ) as ThermalFileReader;

@@ -1,6 +1,6 @@
 import { ThermalFileInstance } from "../file/ThermalFileInstance";
 import { ThermalGroup } from "../hierarchy/ThermalGroup";
-import { ThermalStatistics } from "../hierarchy/ThermalRegistry";
+import { ThermalRegistry, ThermalStatistics } from "../hierarchy/ThermalRegistry";
 import { ThermalMinmaxOrUndefined } from "./scale/abstractMinmaxProperty";
 import { AnalysisDataStateValue } from "./analysis/data/AnalysisDataState";
 import { AbstractAnalysis } from "./analysis/analysis/internals/AbstractAnalysis";
@@ -11,6 +11,7 @@ import { AnalysisSlotsMap } from "./analysis/slots/AnalysisSlotsDrive";
 import { ThermalGraphGroupDataOrUndefined } from "./analysis/group/AnalysisGroupGraph";
 import { CallbacksManager } from "./callbacksManager";
 import { BaseStructureObject } from "../base/BaseStructureObject";
+import { ThermalUnit } from "./scale/units";
 
 /** All available property data types */
 type PropertyListenersTypes = boolean
@@ -20,13 +21,15 @@ type PropertyListenersTypes = boolean
     | ThermalMinmaxOrUndefined
     | ThermalCursorPositionOrUndefined
     | ThermalGroup[]
+    | ThermalRegistry[]
     | ThermalStatistics[]
     | ThermalFileInstance[]
     | AbstractAnalysis[]
     | AbstractTool
     | AnalysisDataStateValue
     | AnalysisSlotsMap
-    | ThermalGraphGroupDataOrUndefined;
+    | ThermalGraphGroupDataOrUndefined
+    | ThermalUnit;
 
 type PropertyListenerFn<T extends PropertyListenersTypes> = (value: T) => void
 

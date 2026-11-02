@@ -57,6 +57,7 @@ export class ThermalBtnElement extends AbstractThermalElement {
     private tooltipElement?: HTMLElement;
     private arrowElement?: HTMLElement;
     private cleanupAutoUpdate?: () => void;
+    private tooltipPositionSession = 0;
 
     // timeout id for active highlight animation
     private highlightTimeout?: number;
@@ -66,6 +67,10 @@ export class ThermalBtnElement extends AbstractThermalElement {
         // Capture phase runs before consumers' click listeners on the host,
         // so a disabled button can stop them all.
         this.addEventListener('click', this.handleClick, { capture: true });
+        this.addEventListener('keydown', this.handleKeydown);
+        if (this.tooltip) {
+            this.addTooltipListeners();
+        }
     }
 
     firstUpdated() {
@@ -73,67 +78,73 @@ export class ThermalBtnElement extends AbstractThermalElement {
         if (!this.hasAttribute('tabindex')) {
             this.setAttribute('tabindex', '0');
         }
-        // Add keyboard event listener
-        this.addEventListener('keydown', this.handleKeydown);
-        // Tooltip will be rendered in render(), not in body
-        if (this.tooltip) {
-            this.addEventListener('mouseenter', this.showTooltip);
-            this.addEventListener('mouseleave', this.hideTooltip);
-            this.addEventListener('focus', this.showTooltip);
-            this.addEventListener('blur', this.hideTooltip);
-        }
     }
 
     updated(changedProperties: Map<string | number | symbol, unknown>) {
-        // Tooltip rendering is handled in render()
         if (changedProperties.has('tooltip')) {
-            if (this.tooltip) {
-                this.addEventListener('mouseenter', this.showTooltip);
-                this.addEventListener('mouseleave', this.hideTooltip);
-                this.addEventListener('focus', this.showTooltip);
-                this.addEventListener('blur', this.hideTooltip);
+            if (this.tooltip && this.isConnected) {
+                this.addTooltipListeners();
             } else {
-                this.removeEventListener('mouseenter', this.showTooltip);
-                this.removeEventListener('mouseleave', this.hideTooltip);
-                this.removeEventListener('focus', this.showTooltip);
-                this.removeEventListener('blur', this.hideTooltip);
+                this.hideTooltip();
+                this.removeTooltipListeners();
             }
         }
     }
 
-    // Tooltip setup is now handled in render()
+    private addTooltipListeners(): void {
+        this.addEventListener('mouseenter', this.showTooltip);
+        this.addEventListener('mouseleave', this.hideTooltip);
+        this.addEventListener('focus', this.showTooltip);
+        this.addEventListener('blur', this.hideTooltip);
+    }
 
-    private removeTooltip() {
-        this.tooltipElement = undefined;
-        this.arrowElement = undefined;
-        if (this.cleanupAutoUpdate) {
-            this.cleanupAutoUpdate();
-            this.cleanupAutoUpdate = undefined;
-        }
+    private removeTooltipListeners(): void {
         this.removeEventListener('mouseenter', this.showTooltip);
         this.removeEventListener('mouseleave', this.hideTooltip);
         this.removeEventListener('focus', this.showTooltip);
         this.removeEventListener('blur', this.hideTooltip);
     }
 
-    private showTooltip = async () => {
-        if (!this.tooltipElement || !this.arrowElement) return;
-        this.tooltipElement.style.display = 'block';
-        this.tooltipElement.style.visibility = 'visible';
-        this.tooltipElement.style.opacity = '1';
+    private removeTooltip() {
+        this.hideTooltip();
+        this.tooltipElement = undefined;
+        this.arrowElement = undefined;
+        this.removeTooltipListeners();
+    }
+
+    private stopTooltipPositioning(): void {
+        this.tooltipPositionSession++;
+        this.cleanupAutoUpdate?.();
+        this.cleanupAutoUpdate = undefined;
+    }
+
+    private showTooltip = () => {
+        const tooltipElement = this.tooltipElement;
+        const arrowElement = this.arrowElement;
+        if (!this.isConnected || !tooltipElement || !arrowElement) return;
+        this.stopTooltipPositioning();
+        tooltipElement.style.display = 'block';
+        tooltipElement.style.visibility = 'visible';
+        tooltipElement.style.opacity = '1';
+        const session = this.tooltipPositionSession;
+        let latestRequest = 0;
         const updatePosition = async () => {
-            if (!this.tooltipElement || !this.arrowElement) return;
-            const { x, y, placement, middlewareData } = await computePosition(this, this.tooltipElement, {
+            if (session !== this.tooltipPositionSession) return;
+            const request = ++latestRequest;
+            const { x, y, placement, middlewareData } = await computePosition(this, tooltipElement, {
                 placement: this.tooltipPlacement,
                 strategy: 'fixed',
                 middleware: [
                     offset(6),
                     flip(),
                     shift({ padding: 8 }),
-                    arrow({ element: this.arrowElement })
+                    arrow({ element: arrowElement })
                 ]
             });
-            Object.assign(this.tooltipElement.style, {
+            // Ignore stale results after hiding, replacing, or repositioning the tooltip.
+            if (!this.isConnected || session !== this.tooltipPositionSession || request !== latestRequest
+                || this.tooltipElement !== tooltipElement || this.arrowElement !== arrowElement) return;
+            Object.assign(tooltipElement.style, {
                 left: `${x}px`,
                 top: `${y}px`,
             });
@@ -146,7 +157,7 @@ export class ThermalBtnElement extends AbstractThermalElement {
                 bottom: 'top',
                 left: 'right',
             }[side];
-            Object.assign(this.arrowElement.style, {
+            Object.assign(arrowElement.style, {
                 left: arrowX != null ? `${arrowX}px` : '',
                 top: arrowY != null ? `${arrowY}px` : '',
                 right: '',
@@ -154,19 +165,15 @@ export class ThermalBtnElement extends AbstractThermalElement {
                 [staticSide as string]: '-4px',
             });
         };
-        updatePosition();
-        this.cleanupAutoUpdate = autoUpdate(this, this.tooltipElement, updatePosition);
+        this.cleanupAutoUpdate = autoUpdate(this, tooltipElement, updatePosition);
     };
 
     private hideTooltip = () => {
+        this.stopTooltipPositioning();
         if (!this.tooltipElement) return;
         this.tooltipElement.style.opacity = '0';
         this.tooltipElement.style.visibility = 'hidden';
         this.tooltipElement.style.display = 'none';
-        if (this.cleanupAutoUpdate) {
-            this.cleanupAutoUpdate();
-            this.cleanupAutoUpdate = undefined;
-        }
     };
 
     private handleClick = (event: MouseEvent) => {
@@ -189,10 +196,10 @@ export class ThermalBtnElement extends AbstractThermalElement {
     };
 
     disconnectedCallback() {
+        this.removeTooltip();
         super.disconnectedCallback();
         this.removeEventListener('keydown', this.handleKeydown);
         this.removeEventListener('click', this.handleClick, { capture: true });
-        this.removeTooltip();
         // clear highlight if still pending
         if (this.highlightTimeout) {
             clearTimeout(this.highlightTimeout);

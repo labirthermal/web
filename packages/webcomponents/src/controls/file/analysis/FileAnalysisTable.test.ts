@@ -84,7 +84,7 @@ describe("FileAnalysisTable", () => {
             duration: sequence ? 100 : 0, frameInterval: 100, fps: 10, timeline,
             averageEmissivity: .95, averageReflectedKelvins: 293, bytesize: 16,
         };
-        const data = { 0: { min: 10, max: 25, avg: 17.5 }, 100: { min: 11, max: 26, avg: 18.5 } };
+        const data = { 0: { min: 10, max: 25, avg: 17.5, count: 16 }, 100: { min: 11, max: 26, avg: 18.5, count: 16 } };
         const parser: IParserObject = {
             name: "fixture", description: "fixture", devices: [], extensions: [],
             is: () => true,
@@ -504,10 +504,11 @@ describe("FileAnalysisTable", () => {
             expect(table[property]).toBe(false);
             expect(table.hasAttribute(attribute)).toBe(false);
         }
-        for (const property of Object.values(attributes)) {
+        for (const [attribute, property] of Object.entries(attributes)) {
             table[property] = true;
             await settle();
-            expect(Array.from(table.attributes).map(attribute => attribute.name)).not.toContain(property);
+            expect(table[property]).toBe(true);
+            expect(table.hasAttribute(attribute)).toBe(false);
         }
     });
 
@@ -518,9 +519,9 @@ describe("FileAnalysisTable", () => {
         table.setAttribute("show-range-propagator", "");
         await settle();
         const row = rows()[0];
-        expect(row.editEnabled).toBe(false);
-        expect(row.interactiveanalysis).toBe(false);
-        expect(row.graphActivationEnabled).toBe(false);
+        expect(row.editDisabled).toBe(true);
+        expect(row.selectionDisabled).toBe(true);
+        expect(row.graphActivationDisabled).toBe(true);
         expect(row.showRangePropagator).toBe(true);
         expect(row.shadowRoot?.querySelector("file-analysis-edit")).toBeNull();
         expect(row.shadowRoot?.querySelector("button.name")).toBeNull();
@@ -531,9 +532,9 @@ describe("FileAnalysisTable", () => {
             table.removeAttribute(attribute);
         }
         await settle();
-        expect(row.editEnabled).toBe(true);
-        expect(row.interactiveanalysis).toBe(true);
-        expect(row.graphActivationEnabled).toBe(true);
+        expect(row.editDisabled).toBe(false);
+        expect(row.selectionDisabled).toBe(false);
+        expect(row.graphActivationDisabled).toBe(false);
         expect(row.showRangePropagator).toBe(false);
         expect(row.shadowRoot?.querySelector("file-analysis-edit")).not.toBeNull();
         expect(row.shadowRoot?.querySelector("button.name")).not.toBeNull();

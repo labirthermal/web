@@ -99,24 +99,30 @@ describe("ThermalGroupApp", () => {
         expect(destroy).not.toHaveBeenCalled();
     });
 
-    it("loads the initial attribute, displays failures and ignores later attribute changes", async () => {
+    it("loads files from the initial attribute and reloads when it changes", async () => {
         const failure = new ThermalFileFailure("broken.lrc", FileErrors.PARSING_ERROR, "Invalid thermal file");
-        const loadFile = vi.spyOn(FilesService.prototype, "loadFile").mockResolvedValue(failure);
+        const laterFailure = new ThermalFileFailure("another.lrc", FileErrors.FILE_NOT_FOUND, "Another file is missing");
+        const loadFile = vi.spyOn(FilesService.prototype, "loadFile")
+            .mockResolvedValueOnce(failure)
+            .mockResolvedValueOnce(laterFailure);
         const host = new ThermalGroupAppElement();
         host.setAttribute("group-files", "thermal~broken.lrc");
-        const log = vi.spyOn(host, "log").mockImplementation(() => {});
+        vi.spyOn(host, "log").mockImplementation(() => {});
         document.body.append(host);
         await settle(host);
 
         expect(loadFile).toHaveBeenCalledExactlyOnceWith("broken.lrc", undefined);
         expect(host.loading).toBe(false);
         expect(host.shadowRoot!.querySelector('[role="alert"]')?.textContent).toContain("Invalid thermal file");
-        expect(log).toHaveBeenCalledWith("GroupLoadController", "File loading failed", failure);
         expect(host.shadowRoot!.querySelector("group-dropin-input")).toBeNull();
 
         host.setAttribute("group-files", "thermal~another.lrc");
         await settle(host);
-        expect(loadFile).toHaveBeenCalledOnce();
+        expect(loadFile).toHaveBeenCalledTimes(2);
+        expect(loadFile).toHaveBeenNthCalledWith(2, "another.lrc", undefined);
+        expect(host.loading).toBe(false);
+        expect(host.shadowRoot!.querySelector('[role="alert"]')?.textContent).toContain("Another file is missing");
+        expect(host.shadowRoot!.textContent).not.toContain("Invalid thermal file");
     });
 
     it("removes its file-list listener on disconnect", () => {

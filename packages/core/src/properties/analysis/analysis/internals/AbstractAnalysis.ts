@@ -3,7 +3,7 @@ import { AreaAnalysisData, PointAnalysisData } from "../../../../parsers/structu
 import { AnalysisGraph } from "../../data/graphs/AnalysisGraph";
 import { CallbacksManager } from "../../../callbacksManager";
 import { AbstractPoint } from "./AbstractPoint";
-import { AnalysisSerializableChangeType } from "../storage/AnalysisLayersStorage";
+import { AnalysisSerializableChangeType } from "../storage/AnalysisSerializableChangeType";
 
 
 type AnalysisEvent = (analysis: AbstractAnalysis) => void;

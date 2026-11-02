@@ -14,7 +14,7 @@ describe( "BatchLoader", () => {
         // Init fake timer in this test
 
         const manager = new ThermalManager;
-        const registry = manager.addOrGetRegistry( "registry" );
+        const registry = manager.registries.addOrGetRegistry( "registry" );
         const group = registry.groups.addOrGetGroup( "group" );
 
         const loader = registry.batch;
@@ -76,7 +76,7 @@ describe( "BatchLoader", () => {
     it( "should load more than one instances in a single batch", async () => {
 
         const manager = new ThermalManager;
-        const registry = manager.addOrGetRegistry( "registry" );
+        const registry = manager.registries.addOrGetRegistry( "registry" );
         const group = registry.groups.addOrGetGroup( "group" );
 
         const loader = registry.batch;
@@ -138,7 +138,7 @@ describe( "BatchLoader", () => {
     it( "should be able to run more than one batch at the same time", async () => {
 
         const manager = new ThermalManager;
-        const registry = manager.addOrGetRegistry( "registry" );
+        const registry = manager.registries.addOrGetRegistry( "registry" );
         const group = registry.groups.addOrGetGroup( "group" );
 
         const loader = registry.batch;

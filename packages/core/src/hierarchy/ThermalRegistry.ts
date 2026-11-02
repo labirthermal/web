@@ -88,8 +88,11 @@ export class ThermalRegistry extends BaseStructureObject {
 
             const group = this.groups.addOrGetGroup( groupId );
 
-            const groupFiles = await Promise.all(fs.map(( file ) => {
-                return this.service.loadFile(file.thermalUrl, file.visibleUrl)
+            const groupFiles = await Promise.all(fs.map(async ( file ) => {
+                return {
+                    service: await this.service.loadFile(file.thermalUrl, file.visibleUrl),
+                    label: file.label
+                };
             }));
 
             return {
@@ -102,10 +105,12 @@ export class ThermalRegistry extends BaseStructureObject {
         // Create instances from loaded services
         const result = await Promise.all( servicesByGroup.map( async ({group, groupFiles}) => {
 
-            const instances = await Promise.all( groupFiles.map( async ( service ) => {
+            const instances = await Promise.all( groupFiles.map( async ( {service, label} ) => {
 
                 if ( service instanceof ThermalFileReader ) {
-                    return await service.createInstance( group )
+                    const instance = await service.createInstance( group );
+                    instance.setLabel(label);
+                    return instance;
                 } else {
                     return false;
                 }
@@ -135,9 +140,13 @@ export class ThermalRegistry extends BaseStructureObject {
 
         const result = await this.service.loadFile( file.thermalUrl, file.visibleUrl );
 
-        const instanceOrError = result instanceof ThermalFileReader
-            ? await result.createInstance( group )
-            : result as ThermalFileFailure;
+        let instanceOrError: ThermalFileInstance | ThermalFileFailure;
+        if (result instanceof ThermalFileReader) {
+            instanceOrError = await result.createInstance( group );
+            instanceOrError.setLabel(file.label);
+        } else {
+            instanceOrError = result as ThermalFileFailure;
+        }
 
         this.loading.markAsLoaded();
 
@@ -240,7 +249,7 @@ export class ThermalRegistry extends BaseStructureObject {
     }
 
     public destroySelfInTheManager() {
-        this.manager.removeRegistry(this.id);
+        this.manager.registries.removeRegistry(this.id);
     }
 
 

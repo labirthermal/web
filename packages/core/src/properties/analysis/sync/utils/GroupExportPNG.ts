@@ -312,7 +312,7 @@ export class GroupExportPNG extends AbstractPngExport<GroupExportPNGParams, Grou
 
         // Build internal structure
         const manager = this.group.registry.manager;
-        const registry = manager.addOrGetRegistry(registryId);
+        const registry = manager.registries.addOrGetRegistry(registryId);
         const group = registry.groups.addOrGetGroup(this.group.id);
 
         // Popilate the header

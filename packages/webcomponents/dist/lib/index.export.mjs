@@ -3667,7 +3667,7 @@ const i18webcomponents = instance;
 //#endregion
 //#region package.json
 var name = "@labirthermal/webcomponents";
-var version$1 = "2.0.0";
+var version$1 = "2.0.1";
 window.matchMedia("(prefers-color-scheme: dark)");
 const DARK_MODE_CLASS = "thermal-dark-mode";
 //#endregion
@@ -5786,8 +5786,7 @@ var GroupListingController = class extends AbstractHierarchyController {
                     <div class="file-analysis">
                         <file-analysis-table
                             table-mode="compact"
-                            ?interactive-analysis=${true}
-                            ?graph-activation-enabled=${true}
+                            ?force-interactive=${true}
                         ></file-analysis-table>
                         <file-analysis-graph ?standalone=${true}></file-analysis-graph>
                     </div>
@@ -6383,7 +6382,7 @@ const removeManager = (manager) => {
 		console.log("found and removing", slug);
 		const foundManager = window.Thermal.managers.get(slug);
 		if (foundManager) {
-			foundManager.forEveryRegistry((registry) => foundManager.removeRegistry(registry.id));
+			foundManager.registries.forEveryRegistry((registry) => foundManager.registries.removeRegistry(registry.id));
 			window.Thermal.managers.delete(slug);
 		}
 	}
@@ -6519,7 +6518,7 @@ var ManagerController = class extends AbstractHierarchyController {
 	* Create or get a registry by its slug from the internal manager object. 
 	*/
 	createRegistry(slug) {
-		return this.managerObject.addOrGetRegistry(slug);
+		return this.managerObject.registries.addOrGetRegistry(slug);
 	}
 	_paletteStringToContextValue(palette) {
 		return {
@@ -7433,24 +7432,32 @@ var ThermalBtnElement = class extends AbstractThermalElement {
 		this.nonInteractive = false;
 		this.tabindex = 0;
 		this.align = "center";
-		this.showTooltip = async () => {
-			if (!this.tooltipElement || !this.arrowElement) return;
-			this.tooltipElement.style.display = "block";
-			this.tooltipElement.style.visibility = "visible";
-			this.tooltipElement.style.opacity = "1";
+		this.tooltipPositionSession = 0;
+		this.showTooltip = () => {
+			const tooltipElement = this.tooltipElement;
+			const arrowElement = this.arrowElement;
+			if (!this.isConnected || !tooltipElement || !arrowElement) return;
+			this.stopTooltipPositioning();
+			tooltipElement.style.display = "block";
+			tooltipElement.style.visibility = "visible";
+			tooltipElement.style.opacity = "1";
+			const session = this.tooltipPositionSession;
+			let latestRequest = 0;
 			const updatePosition = async () => {
-				if (!this.tooltipElement || !this.arrowElement) return;
-				const { x, y, placement, middlewareData } = await computePosition(this, this.tooltipElement, {
+				if (session !== this.tooltipPositionSession) return;
+				const request = ++latestRequest;
+				const { x, y, placement, middlewareData } = await computePosition(this, tooltipElement, {
 					placement: this.tooltipPlacement,
 					strategy: "fixed",
 					middleware: [
 						offset(6),
 						flip(),
 						shift({ padding: 8 }),
-						arrow({ element: this.arrowElement })
+						arrow({ element: arrowElement })
 					]
 				});
-				Object.assign(this.tooltipElement.style, {
+				if (!this.isConnected || session !== this.tooltipPositionSession || request !== latestRequest || this.tooltipElement !== tooltipElement || this.arrowElement !== arrowElement) return;
+				Object.assign(tooltipElement.style, {
 					left: `${x}px`,
 					top: `${y}px`
 				});
@@ -7461,7 +7468,7 @@ var ThermalBtnElement = class extends AbstractThermalElement {
 					bottom: "top",
 					left: "right"
 				}[placement.split("-")[0]];
-				Object.assign(this.arrowElement.style, {
+				Object.assign(arrowElement.style, {
 					left: arrowX != null ? `${arrowX}px` : "",
 					top: arrowY != null ? `${arrowY}px` : "",
 					right: "",
@@ -7469,18 +7476,14 @@ var ThermalBtnElement = class extends AbstractThermalElement {
 					[staticSide]: "-4px"
 				});
 			};
-			updatePosition();
-			this.cleanupAutoUpdate = autoUpdate(this, this.tooltipElement, updatePosition);
+			this.cleanupAutoUpdate = autoUpdate(this, tooltipElement, updatePosition);
 		};
 		this.hideTooltip = () => {
+			this.stopTooltipPositioning();
 			if (!this.tooltipElement) return;
 			this.tooltipElement.style.opacity = "0";
 			this.tooltipElement.style.visibility = "hidden";
 			this.tooltipElement.style.display = "none";
-			if (this.cleanupAutoUpdate) {
-				this.cleanupAutoUpdate();
-				this.cleanupAutoUpdate = void 0;
-			}
 		};
 		this.handleClick = (event) => {
 			if (this.disabled) {
@@ -7499,49 +7502,49 @@ var ThermalBtnElement = class extends AbstractThermalElement {
 	connectedCallback() {
 		super.connectedCallback();
 		this.addEventListener("click", this.handleClick, { capture: true });
+		this.addEventListener("keydown", this.handleKeydown);
+		if (this.tooltip) this.addTooltipListeners();
 	}
 	firstUpdated() {
 		if (!this.hasAttribute("tabindex")) this.setAttribute("tabindex", "0");
-		this.addEventListener("keydown", this.handleKeydown);
-		if (this.tooltip) {
-			this.addEventListener("mouseenter", this.showTooltip);
-			this.addEventListener("mouseleave", this.hideTooltip);
-			this.addEventListener("focus", this.showTooltip);
-			this.addEventListener("blur", this.hideTooltip);
-		}
 	}
 	updated(changedProperties) {
 		if (changedProperties.has("tooltip")) {
-			if (this.tooltip) {
-				this.addEventListener("mouseenter", this.showTooltip);
-				this.addEventListener("mouseleave", this.hideTooltip);
-				this.addEventListener("focus", this.showTooltip);
-				this.addEventListener("blur", this.hideTooltip);
-			} else {
-				this.removeEventListener("mouseenter", this.showTooltip);
-				this.removeEventListener("mouseleave", this.hideTooltip);
-				this.removeEventListener("focus", this.showTooltip);
-				this.removeEventListener("blur", this.hideTooltip);
+			if (this.tooltip && this.isConnected) this.addTooltipListeners();
+			else {
+				this.hideTooltip();
+				this.removeTooltipListeners();
 			}
 		}
 	}
-	removeTooltip() {
-		this.tooltipElement = void 0;
-		this.arrowElement = void 0;
-		if (this.cleanupAutoUpdate) {
-			this.cleanupAutoUpdate();
-			this.cleanupAutoUpdate = void 0;
-		}
+	addTooltipListeners() {
+		this.addEventListener("mouseenter", this.showTooltip);
+		this.addEventListener("mouseleave", this.hideTooltip);
+		this.addEventListener("focus", this.showTooltip);
+		this.addEventListener("blur", this.hideTooltip);
+	}
+	removeTooltipListeners() {
 		this.removeEventListener("mouseenter", this.showTooltip);
 		this.removeEventListener("mouseleave", this.hideTooltip);
 		this.removeEventListener("focus", this.showTooltip);
 		this.removeEventListener("blur", this.hideTooltip);
 	}
+	removeTooltip() {
+		this.hideTooltip();
+		this.tooltipElement = void 0;
+		this.arrowElement = void 0;
+		this.removeTooltipListeners();
+	}
+	stopTooltipPositioning() {
+		this.tooltipPositionSession++;
+		this.cleanupAutoUpdate?.();
+		this.cleanupAutoUpdate = void 0;
+	}
 	disconnectedCallback() {
+		this.removeTooltip();
 		super.disconnectedCallback();
 		this.removeEventListener("keydown", this.handleKeydown);
 		this.removeEventListener("click", this.handleClick, { capture: true });
-		this.removeTooltip();
 		if (this.highlightTimeout) {
 			clearTimeout(this.highlightTimeout);
 			this.highlightTimeout = void 0;
@@ -9328,7 +9331,7 @@ var AbstractRegistryProvider = class extends AbstractManagerConsumer {
 	}
 	disconnectedCallback() {
 		super.disconnectedCallback();
-		if (this.autoclear === true && this.registryObject !== void 0) this.managerObject.removeRegistry(this.registryObject.id);
+		if (this.autoclear === true && this.registryObject !== void 0) this.managerObject.registries.removeRegistry(this.registryObject.id);
 	}
 	render() {
 		return html`<slot></slot>`;
@@ -9743,7 +9746,7 @@ var FileCopyElement = class extends AbstractThermalElement {
 		this._canRenderChildren = false;
 		this.fileController.removeInstance();
 		this.registryController.removeGroup(this.groupObject);
-		this.managerObject.removeRegistry(this.registryObject.id);
+		this.managerObject.registries.removeRegistry(this.registryObject.id);
 		window.Thermal.managers.delete(this.managerSlug);
 	}
 	/** Take the current analyses of the original file. The file controller propagates them to the copied file. */
@@ -14879,18 +14882,18 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
             position: relative;
         }
 
-        :host([standalone="true"]) {
+        :host([standalone=""]) {
             display: block;
             height: var(--thermal-analysis-graph-height, 12rem);
             min-width: 0;
             margin-top: .5em;
         }
 
-        :host([standalone="true"]:not([data-has-graphs])) {
+        :host([standalone=""]:not([data-has-graphs])) {
             display: none;
         }
 
-        :host([standalone="true"]) .chart-container {
+        :host([standalone=""]) .chart-container {
             height: 100%;
             width: 100%;
         }
@@ -15254,7 +15257,7 @@ var FileAnalysisRowElement = class extends AbstractThermalElement {
                     icon="range"
                     iconStyle="outline"
                     tooltip="${t$1("range")}: ${analysis.name}"
-                    disabled=${this.range === void 0}
+                    ?disabled=${this.range === void 0}
                     @click=${() => {
 			const range = this.range;
 			if (range) analysis.file.group.registry.range.imposeRange(range);
@@ -15539,9 +15542,9 @@ var FileAnalysisTableElement = class extends AbstractFileConsumer {
                             <file-analysis-table-row
                                 .analysis=${analysis}
                                 .tableMode=${this.tableMode}
-                                .interactiveanalysis=${this.allowsSelection}
-                                .editEnabled=${this.allowsEdit}
-                                .graphActivationEnabled=${!this.graphActivationDisabled}
+                                .selectionDisabled=${!this.allowsSelection}
+                                .editDisabled=${!this.allowsEdit}
+                                .graphActivationDisabled=${this.graphActivationDisabled}
                                 .showRangePropagator=${this.showRangePropagator}
                             ></file-analysis-table-row>
                         `)}
@@ -19975,7 +19978,7 @@ var FileThumbnailElement = class extends AbstractFileConsumer {
             <main>
                 <file-canvas norender="${this.norender}"></file-canvas>
                 <file-timeline></file-timeline>
-                <file-analysis-table mode="compact"></file-analysis-table>
+                <file-analysis-table table-mode="compact"></file-analysis-table>
             </main>
         
     `;

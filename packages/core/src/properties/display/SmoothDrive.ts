@@ -9,7 +9,7 @@ export class SmoothDrive extends AbstractProperty<boolean, ThermalManager> {
     }
     protected afterSetEffect(value: boolean): void {
 
-        this.parent.forEveryRegistry( registry => registry.forEveryInstance( instance => {
+        this.parent.registries.forEveryRegistry( registry => registry.forEveryInstance( instance => {
 
             const canvasLayer = instance.dom?.canvasLayer;
             if ( canvasLayer ) {

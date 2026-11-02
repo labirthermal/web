@@ -8,9 +8,9 @@ import { FilesService } from "../loading/workers/FilesService";
 import { GraphSmoothDrive } from "../properties/display/GraphSmoothDrive";
 import { PaletteDrive } from "../properties/scale/PaletteDrive";
 import { SmoothDrive } from "../properties/display/SmoothDrive";
-import { ThermalRegistry, ThermalRegistryOptions } from "./ThermalRegistry";
 import { ToolDrive } from "../properties/analysis/tool/ToolDrive";
 import { InspectTool } from "../properties/analysis/tool/internals/InspectTool";
+import { RegistriesState } from "../properties/lists/RegistriesState";
 
 export type ThermalManagerOptions = {
     palette?: AvailableThermalPalette
@@ -34,10 +34,8 @@ export class ThermalManager extends BaseStructureObject {
     /** Service for creation of loading and caching the files. */
     public readonly service = new FilesService(this);
 
-    /** Index of existing registries */
-    public readonly registries: {
-        [index: string]: ThermalRegistry
-    } = {};
+    /** Registries management state */
+    public readonly registries = new RegistriesState(this, []);
 
     /** A palette is common to all registries within the manager */
     public readonly palette: PaletteDrive = new PaletteDrive(this, "jet");
@@ -73,51 +71,17 @@ export class ThermalManager extends BaseStructureObject {
 
     /* registries */
 
-    public forEveryRegistry(fn: ((registry: ThermalRegistry) => void)) {
-        Object.values(this.registries).forEach(registry => fn(registry));
-    }
-
-    public addOrGetRegistry(
-        id: string,
-        options?: ThermalRegistryOptions
-    ) {
-        if (this.registries[id] === undefined) {
-            this.registries[id] = new ThermalRegistry(id, this, options);
-        }
-
-        return this.registries[id];
-
-    }
-
-    public removeRegistry(
-        id: string
-    ) {
-        if (this.registries[id] !== undefined) {
-            const registry = this.registries[id];
-            registry.destroySelfAndBelow();
-            delete this.registries[id];
-        }
-    }
-
     public readonly filters = new FilterContainer( this );
 
     public getInstances() {
 
-        let instances: ThermalFileInstance[] = [];
+        const instances: ThermalFileInstance[] = [];
 
-        this.forEveryRegistry( registry => {
-            instances = [
-                ...instances,
-                ...registry.getInstances()
-            ];
-        } );
+        this.registries.forEveryInstance( instance => {
+            instances.push(instance);
+        });
 
         return instances;
-    }
-
-
-    public forEveryInstance( callback: (instance: ThermalFileInstance) => void ): void {
-        this.forEveryRegistry( registry => registry.forEveryInstance( callback ) );
     }
 
     public destroySelfAndBelow(): void {
@@ -130,8 +94,8 @@ export class ThermalManager extends BaseStructureObject {
 
     public removeAllChildren(): void {
 
-        this.forEveryRegistry(registry => {
-            this.removeRegistry(registry.id);
+        this.registries.forEveryRegistry(registry => {
+            this.registries.removeRegistry(registry.id);
         });
 
     }

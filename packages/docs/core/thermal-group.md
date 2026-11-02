@@ -18,7 +18,7 @@ To create or retrieve a group, use <code>registry.groups.addOrGetGroup</code>:
 import { ThermalManager, ThermalGroup } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 
 // Create or retrieve a group
 const group = registry.groups.addOrGetGroup(
@@ -93,8 +93,10 @@ The <code>group.files</code> property (`FilesState`) manages all thermal file in
   - `group.files.value` or `group.getInstances()` returns an array of `ThermalFileInstance`.
   - `group.files.removeFile(urlOrInstance)` unmounts and removes a file.
   - `group.files.removeAllInstances()` destroys all instances in the group.
-  - `group.files.downloadAllFiles()` packages all original `.lrc` files in this group into a `.zip` archive and triggers browser download.
-  - `group.forEveryInstance(fn)` iterates through every instance.
+  - `group.files.downloadAllFiles()` packages all original files in this group into a `.zip` archive and triggers browser download.
+  - `group.files.forEveryInstance(fn)` iterates through every instance; `group.forEveryInstance(fn)` provides the same traversal.
+
+Treat `group.files.value` as read-only and use the collection's methods to modify it. Subscribe to membership changes with `group.files.addListener(id, files => { ... })` and unsubscribe with `group.files.removeListener(id)`.
 
 ```ts
 import {
@@ -104,7 +106,7 @@ import {
 } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 const group = registry.groups.addOrGetGroup( "series" );
 
 // Load a file into the group via batch
@@ -122,11 +124,11 @@ registry.batch.request(
 );
 
 // Iterate through loaded files in this group
-group.forEveryInstance( instance => {
+group.files.forEveryInstance( instance => {
     console.log( "File:", instance.fileName, instance.timestamp );
 } );
 
-// Download all original LRC files in this group as a zip archive
+// Download all original files in this group as a zip archive
 // group.files.downloadAllFiles();
 
 // Remove a specific file from the group
@@ -185,7 +187,7 @@ The <code>group.minmax</code> property (`MinmaxGroupProperty`) computes temperat
 import { ThermalManager } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 const group = registry.groups.addOrGetGroup( "series" );
 
 // Read this group's temperature limits
@@ -277,7 +279,7 @@ The <code>group.analysisSync</code> property (`AnalysisSyncDrive`) allows points
 import { ThermalManager } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 const group = registry.groups.addOrGetGroup( "series" );
 
 const firstInstance = group.files.value[0];
@@ -348,7 +350,7 @@ The <code>group.cursorPosition</code> property (`CursorPositionDrive`) mirrors h
 import { ThermalManager } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 const group = registry.groups.addOrGetGroup( "series" );
 
 // Current cursor coordinates: { x: number, y: number } | undefined
@@ -380,7 +382,7 @@ The <code>group.playback</code> property (`GroupPlayback`) coordinates synchroni
 import { ThermalManager } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 const group = registry.groups.addOrGetGroup( "sequence-group" );
 
 // Check if any file in the group has playback sequence
@@ -467,4 +469,3 @@ group.playback.onPlayingStatusChange.set( "playback-listener", isPlaying => {
         </tr>
     </tbody>
 </table>
-

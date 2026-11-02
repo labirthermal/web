@@ -62,7 +62,7 @@ export const removeManager = (
         if ( foundManager ) {
 
             // Remove all objects internally
-            foundManager.forEveryRegistry( registry => foundManager.removeRegistry( registry.id ) );
+            foundManager.registries.forEveryRegistry( registry => foundManager.registries.removeRegistry( registry.id ) );
 
             // Delete the object from global key
             window.Thermal.managers.delete( slug );
@@ -77,7 +77,7 @@ export const removeManager = (
 export const getDefaultRegistry = (
     manager: ThermalManager
 ) => {
-    return manager.addOrGetRegistry(defaultRegistryKey);
+    return manager.registries.addOrGetRegistry(defaultRegistryKey);
 }
 
 export const getDefaultGroup = (

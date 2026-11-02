@@ -21,7 +21,7 @@ import {
 
 // Create the necessary hierarchy
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "demo-registry" );
+const registry = manager.registries.addOrGetRegistry( "demo-registry" );
 const group = registry.groups.addOrGetGroup( "demo-group" );
 
 // load the file asynchronously

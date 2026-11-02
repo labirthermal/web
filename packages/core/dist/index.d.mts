@@ -1297,10 +1297,7 @@ export declare class RectangleAnalysis extends AbstractAreaAnalysis {
   getAnalysisData(): Promise<AreaAnalysisData>;
 }
 //#endregion
-//#region src/properties/analysis/analysis/storage/AnalysisLayersStorage.d.ts
-type AnalysisAddedCallback = (analysis: AbstractAnalysis, layers: AbstractAnalysis[]) => void;
-type AnalysisRemovedCallback = (key: string) => void;
-type SelectionChangeEvent = (selectedAnalysis: AbstractAnalysis[]) => void;
+//#region src/properties/analysis/analysis/storage/AnalysisSerializableChangeType.d.ts
 /** What kind of change occured with the given analysis? */
 declare enum AnalysisSerializableChangeType {
   /** The analysis was added */
@@ -1314,10 +1311,12 @@ declare enum AnalysisSerializableChangeType {
   /** Graph visibility changes */
   GRAPH = 4
 }
+//#endregion
+//#region src/properties/analysis/analysis/storage/AnalysisLayersStorage.d.ts
+type AnalysisAddedCallback = (analysis: AbstractAnalysis, layers: AbstractAnalysis[]) => void;
+type AnalysisRemovedCallback = (key: string) => void;
+type SelectionChangeEvent = (selectedAnalysis: AbstractAnalysis[]) => void;
 type AnySerializableChangeCallback = (analysis: AbstractAnalysis, change: AnalysisSerializableChangeType) => void;
-type SlotUnion = "analysis1" | "analysis2" | "analysis3" | "analysis4" | "analysis5" | "analysis6" | "analysis7";
-type SlotNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-export declare const availableAnalysisColors: string[];
 declare class AnalysisLayersStorage extends Map<string, AbstractAnalysis> {
   readonly drive: AnalysisDrive;
   /** Array of all layers ordered from oldest to the newest */
@@ -1525,7 +1524,7 @@ declare class AnalysisGroupGraph extends AbstractProperty<ThermalGraphGroupDataO
 //#endregion
 //#region src/properties/abstractProperty.d.ts
 /** All available property data types */
-type PropertyListenersTypes = boolean | number | string | ThermalRangeOrUndefined | ThermalMinmaxOrUndefined | ThermalCursorPositionOrUndefined | ThermalGroup[] | ThermalStatistics[] | ThermalFileInstance[] | AbstractAnalysis[] | AbstractTool | AnalysisDataStateValue | AnalysisSlotsMap | ThermalGraphGroupDataOrUndefined;
+type PropertyListenersTypes = boolean | number | string | ThermalRangeOrUndefined | ThermalMinmaxOrUndefined | ThermalCursorPositionOrUndefined | ThermalGroup[] | ThermalRegistry[] | ThermalStatistics[] | ThermalFileInstance[] | AbstractAnalysis[] | AbstractTool | AnalysisDataStateValue | AnalysisSlotsMap | ThermalGraphGroupDataOrUndefined;
 type PropertyListenerFn<T extends PropertyListenersTypes> = (value: T) => void;
 /**
  * A common basis for all observable properties.
@@ -1661,10 +1660,11 @@ declare class BatchLoader {
 }
 //#endregion
 //#region src/loading/ThermalRequest.d.ts
-/** A stupid object containing only requested URLS. Does not perform any further logic. */
+/** File URLs and an optional instance label for the registry's full-load methods. */
 type ThermalFileRequest = {
   thermalUrl: string;
   visibleUrl?: string;
+  label?: string;
 };
 //#endregion
 //#region src/properties/display/OpacityDrive.d.ts
@@ -1690,6 +1690,8 @@ declare class GroupsState extends AbstractProperty<ThermalGroup[], ThermalRegist
   addOrGetGroup(groupId: string, name?: string, description?: string): ThermalGroup;
   removeGroup(groupId: string): void;
   removeAllGroups(): void;
+  forEveryGroup(callback: (group: ThermalGroup) => void): void;
+  forEveryInstance(callback: (instance: ThermalFileInstance) => void): void;
 }
 //#endregion
 //#region src/properties/scale/MinmaxRegistryState.d.ts
@@ -2827,6 +2829,19 @@ declare class SmoothDrive extends AbstractProperty<boolean, ThermalManager> {
   setSmooth(value: boolean): void;
 }
 //#endregion
+//#region src/properties/lists/RegistriesState.d.ts
+declare class RegistriesState extends AbstractProperty<ThermalRegistry[], ThermalManager> {
+  private map;
+  protected validate(value: ThermalRegistry[]): ThermalRegistry[];
+  protected afterSetEffect(value: ThermalRegistry[]): void;
+  addOrGetRegistry(id: string, options?: ThermalRegistryOptions): ThermalRegistry;
+  removeRegistry(id: string): void;
+  reset(): void;
+  forEveryRegistry(callback: (registry: ThermalRegistry) => void): void;
+  forEveryGroup(callback: (group: ThermalGroup) => void): void;
+  forEveryInstance(callback: (instance: ThermalFileInstance) => void): void;
+}
+//#endregion
 //#region src/hierarchy/ThermalManager.d.ts
 type ThermalManagerOptions = {
   palette?: AvailableThermalPalette;
@@ -2835,10 +2850,8 @@ export declare class ThermalManager extends BaseStructureObject {
   readonly id: number;
   /** Service for creation of loading and caching the files. */
   readonly service: FilesService;
-  /** Index of existing registries */
-  readonly registries: {
-    [index: string]: ThermalRegistry;
-  };
+  /** Registries management state */
+  readonly registries: RegistriesState;
   /** A palette is common to all registries within the manager */
   readonly palette: PaletteDrive;
   readonly smooth: SmoothDrive;
@@ -2846,12 +2859,8 @@ export declare class ThermalManager extends BaseStructureObject {
   readonly tool: ToolDrive;
   readonly pool: Pool;
   constructor(pool?: Pool, options?: ThermalManagerOptions);
-  forEveryRegistry(fn: ((registry: ThermalRegistry) => void)): void;
-  addOrGetRegistry(id: string, options?: ThermalRegistryOptions): ThermalRegistry;
-  removeRegistry(id: string): void;
   readonly filters: FilterContainer;
   getInstances(): ThermalFileInstance[];
-  forEveryInstance(callback: (instance: ThermalFileInstance) => void): void;
   destroySelfAndBelow(): void;
   removeAllChildren(): void;
   reset(): void;
@@ -2866,6 +2875,15 @@ export declare class ThermalManager extends BaseStructureObject {
  */
 export declare const supportedFileTypes: IParserObject["extensions"][];
 export declare const supportedFileTypesInputProperty: string;
+//#endregion
+//#region src/properties/analysis/analysis/storage/availableAnalysisColors.d.ts
+export declare const availableAnalysisColors: string[];
+//#endregion
+//#region src/properties/analysis/analysis/storage/SlotNumber.d.ts
+type SlotNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+//#endregion
+//#region src/properties/analysis/analysis/storage/SlotUnion.d.ts
+type SlotUnion = "analysis1" | "analysis2" | "analysis3" | "analysis4" | "analysis5" | "analysis6" | "analysis7";
 //#endregion
 //#region src/properties/analysis/analysis/internals/AbstractAddTool.d.ts
 /** Tool for analysis addition */

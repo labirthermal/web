@@ -245,9 +245,9 @@ export class FileAnalysisTableElement extends AbstractFileConsumer {
                             <file-analysis-table-row
                                 .analysis=${analysis}
                                 .tableMode=${this.tableMode}
-                                .interactiveanalysis=${this.allowsSelection}
-                                .editEnabled=${this.allowsEdit}
-                                .graphActivationEnabled=${!this.graphActivationDisabled}
+                                .selectionDisabled=${!this.allowsSelection}
+                                .editDisabled=${!this.allowsEdit}
+                                .graphActivationDisabled=${this.graphActivationDisabled}
                                 .showRangePropagator=${this.showRangePropagator}
                             ></file-analysis-table-row>
                         `)}

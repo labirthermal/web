@@ -39,7 +39,7 @@ export class FilePngExport extends AbstractPngExport<FileExportPngParams, FileEx
 
 
     protected afterDomRemoved(): void {
-        this.localInstance?.group.registry.manager.removeRegistry(this.localInstance.group.registry.id);
+        this.localInstance?.group.registry.manager.registries.removeRegistry(this.localInstance.group.registry.id);
         delete this.localInstance;
 
     }
@@ -62,7 +62,7 @@ export class FilePngExport extends AbstractPngExport<FileExportPngParams, FileEx
 
         // Build inner container
         const manager = this.file.group.registry.manager;
-        const registry = manager.addOrGetRegistry(registryId);
+        const registry = manager.registries.addOrGetRegistry(registryId);
         const group = registry.groups.addOrGetGroup(registryId);
 
         const fontSize = `${params.fontSize}px`;

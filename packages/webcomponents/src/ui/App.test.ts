@@ -111,7 +111,7 @@ describe("ThermalAppElement slots", () => {
             const items = element.shadowRoot?.querySelector(".bar-items");
             if (!items) throw new Error("Missing toolbar");
             Object.defineProperty(items, "offsetWidth", { value: 100, configurable: true });
-            for (const child of element.children) {
+            for (const child of Array.from(element.children)) {
                 Object.defineProperty(child, "offsetWidth", { value: 80 });
             }
             await flushFrame();

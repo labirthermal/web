@@ -10,7 +10,7 @@ import type { GroupController } from "./GroupController";
 import { GroupListingController, GroupOrderby, GroupOrdering } from "./GroupListingController";
 import type { IElementWithGroupListingController } from "./GroupListingController";
 
-vi.mock("../consumers/AbstractFileConsumer", async () => {
+vi.mock("../hierarchy/consumers/AbstractFileConsumer", async () => {
     const { LitElement } = await import("lit");
     class AbstractFileConsumer extends LitElement {
         static properties = { file: { attribute: false } };
@@ -367,7 +367,7 @@ describe("GroupListingController layouts", () => {
         expect(bitmap).not.toBeNull();
         expect(file.mountToDom).toHaveBeenCalledTimes(1);
         expect(analyses?.getAttribute("table-mode")).toBe("compact");
-        expect(graph?.getAttribute("standalone")).toBe("true");
+        expect(graph?.hasAttribute("standalone")).toBe(true);
         expect(provider.querySelector("file-analysis-complex")).toBeNull();
         expect(provider.querySelector(".file-media")?.children).toHaveLength(2);
 

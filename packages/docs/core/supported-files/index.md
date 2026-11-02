@@ -16,7 +16,8 @@ If no parser accepts the file, loading results in a `ThermalFileFailure` with th
 ```ts
 import { ThermalManager, ThermalFileFailure } from "@labirthermal/core";
 
-const registry = new ThermalManager().addOrGetRegistry( "registry" );
+const manager = new ThermalManager();
+const registry = manager.registries.addOrGetRegistry( "registry" );
 const group = registry.groups.addOrGetGroup( "group" );
 
 // The same call works for every supported format

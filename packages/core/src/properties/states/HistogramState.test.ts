@@ -30,7 +30,7 @@ describe("HistogramState", async () => {
     test("reuses a histogram when an isolated registry copies its reader", async () => {
         const execSpy = vi.spyOn(pool, "exec");
         const sourceManager = new ThermalManager(pool);
-        const sourceRegistry = sourceManager.addOrGetRegistry("source-registry");
+        const sourceRegistry = sourceManager.registries.addOrGetRegistry("source-registry");
         const sourceGroup = sourceRegistry.groups.addOrGetGroup("source-group");
         const reader = { buffer: createHistogramInputBuffer(), parser: LrcParser };
         const sourceInstance = {
@@ -50,7 +50,7 @@ describe("HistogramState", async () => {
         await sourceHistogramReady;
 
         const copyManager = new ThermalManager(pool);
-        const copyRegistry = copyManager.addOrGetRegistry("copy-registry");
+        const copyRegistry = copyManager.registries.addOrGetRegistry("copy-registry");
         const copyGroup = copyRegistry.groups.addOrGetGroup("copy-group");
         const copiedInstance = {
             ...sourceInstance,
@@ -90,7 +90,7 @@ describe("HistogramState", async () => {
         "sequence_uint16_small_long.lrc",
         "sequence_uint16_large_20frames.lrc",
     ])("calculates every frame of %s through the worker pool", async name => {
-        const registry = new ThermalManager(pool).addOrGetRegistry(name);
+        const registry = new ThermalManager(pool).registries.addOrGetRegistry(name);
         const group = registry.groups.addOrGetGroup("sequence");
         const reader = new ThermalFileReader(
             registry.service, readLrcFixture(name), LrcParser, name
@@ -128,7 +128,7 @@ describe("HistogramState", async () => {
     test("calculates a histogram of FLIR images and of mixed LRC + FLIR registries", async () => {
         const execSpy = vi.spyOn(pool, "exec");
 
-        const flirRegistry = new ThermalManager(pool).addOrGetRegistry("flir-registry");
+        const flirRegistry = new ThermalManager(pool).registries.addOrGetRegistry("flir-registry");
         flirRegistry.groups.addOrGetGroup("flir").files.addFile(await flirInstance("flir_01.jpg"));
         const flirHistogram = await calculate(flirRegistry);
 
@@ -137,7 +137,7 @@ describe("HistogramState", async () => {
         expect(flirHistogram[0].from).toBeCloseTo(reference.min, 2);
         expect(flirHistogram[flirHistogram.length - 1].to).toBeCloseTo(reference.max, 2);
 
-        const mixedRegistry = new ThermalManager(pool).addOrGetRegistry("mixed-registry");
+        const mixedRegistry = new ThermalManager(pool).registries.addOrGetRegistry("mixed-registry");
         const group = mixedRegistry.groups.addOrGetGroup("mixed");
         group.files.addFile({
             thermalUrl: "mixed.lrc",

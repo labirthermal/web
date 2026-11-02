@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { nothing } from "lit";
+import { html } from "lit";
 import { FileAnalysisComplexElement } from "./FileAnalysisComplex";
 
 vi.mock("../../../hierarchy/consumers/AbstractFileConsumer", async () => {
@@ -30,7 +30,7 @@ class TestComplex extends FileAnalysisComplexElement {
     }
 
     protected renderCurrentTooltip() {
-        return nothing;
+        return html``;
     }
 }
 

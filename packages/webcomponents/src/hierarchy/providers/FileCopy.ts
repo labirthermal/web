@@ -169,7 +169,7 @@ implements
         this._canRenderChildren = false;
         this.fileController.removeInstance();
         this.registryController.removeGroup(this.groupObject);
-        this.managerObject.removeRegistry(this.registryObject.id);
+        this.managerObject.registries.removeRegistry(this.registryObject.id);
         window.Thermal.managers.delete(this.managerSlug);
     }
 

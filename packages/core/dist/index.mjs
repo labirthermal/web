@@ -4,7 +4,7 @@ import { addDays, addHours, addMonths, addYears, endOfDay, endOfHour, endOfMonth
 import domtoimage from "dom-to-image";
 import { downloadZip } from "client-zip";
 //#region package.json
-var version = "2.0.0";
+var version = "2.0.1";
 //#endregion
 //#region src/properties/callbacksManager.ts
 /**
@@ -3079,7 +3079,7 @@ var RectangleAnalysis = class RectangleAnalysis extends AbstractAreaAnalysis {
 	}
 };
 //#endregion
-//#region src/properties/analysis/analysis/storage/AnalysisLayersStorage.ts
+//#region src/properties/analysis/analysis/storage/availableAnalysisColors.ts
 const availableAnalysisColors = [
 	"Blue",
 	"Red",
@@ -3094,6 +3094,8 @@ const availableAnalysisColors = [
 	"SpringGreen",
 	"SkyBlue"
 ];
+//#endregion
+//#region src/properties/analysis/analysis/storage/AnalysisLayersStorage.ts
 var AnalysisLayersStorage = class extends Map {
 	drive;
 	/** Array of all layers ordered from oldest to the newest */
@@ -5783,7 +5785,7 @@ var FilePngExport = class FilePngExport extends AbstractPngExport {
 	onBuildDom() {}
 	beforeDomRemoved() {}
 	afterDomRemoved() {
-		this.localInstance?.group.registry.manager.removeRegistry(this.localInstance.group.registry.id);
+		this.localInstance?.group.registry.manager.registries.removeRegistry(this.localInstance.group.registry.id);
 		delete this.localInstance;
 	}
 	getFinalParams(params) {
@@ -5797,7 +5799,7 @@ var FilePngExport = class FilePngExport extends AbstractPngExport {
 	async onDownload(params) {
 		const registryId = Math.random().toString();
 		const manager = this.file.group.registry.manager;
-		const registry = manager.addOrGetRegistry(registryId);
+		const registry = manager.registries.addOrGetRegistry(registryId);
 		const group = registry.groups.addOrGetGroup(registryId);
 		const fontSize = `${params.fontSize}px`;
 		manager.palette.setPalette(this.file.group.registry.manager.palette.value);
@@ -6226,7 +6228,7 @@ var FilesService = class {
 	}
 	/** @deprecated Intended only for tests & other internal purposes */
 	static isolatedInstance(pool, registryName = "isolated_registry") {
-		const registry = new ThermalManager(pool).addOrGetRegistry(registryName);
+		const registry = new ThermalManager(pool).registries.addOrGetRegistry(registryName);
 		return {
 			service: registry.service,
 			registry
@@ -6801,7 +6803,7 @@ var PaletteDrive = class extends AbstractProperty {
 	}
 	/** Any changes to the value should propagate directly to every instance. */
 	afterSetEffect() {
-		this.parent.forEveryRegistry((registry) => {
+		this.parent.registries.forEveryRegistry((registry) => {
 			registry.forEveryInstance((instance) => instance.draw());
 		});
 	}
@@ -6825,7 +6827,7 @@ var SmoothDrive = class extends AbstractProperty {
 		return value;
 	}
 	afterSetEffect(value) {
-		this.parent.forEveryRegistry((registry) => registry.forEveryInstance((instance) => {
+		this.parent.registries.forEveryRegistry((registry) => registry.forEveryInstance((instance) => {
 			const canvasLayer = instance.dom?.canvasLayer;
 			if (canvasLayer) canvasLayer.canvas.style.imageRendering = value === true ? "auto" : "pixelated";
 			else console.warn("Canvas layer not found when trying to set image smooth rendering", instance);
@@ -6833,6 +6835,275 @@ var SmoothDrive = class extends AbstractProperty {
 	}
 	setSmooth(value) {
 		this.value = value;
+	}
+};
+//#endregion
+//#region src/properties/analysis/tool/internals/AbstractTool.ts
+var AbstractTool = class {
+	manager;
+	active = false;
+	constructor(manager) {
+		this.manager = manager;
+	}
+	/** Action taken upon tool activation */
+	activate() {
+		this.onActivate();
+	}
+	/** Actions taken upon tool deactivation */
+	deactivate() {
+		this.onDeactivate();
+	}
+};
+//#endregion
+//#region src/properties/analysis/analysis/internals/AbstractAddTool.ts
+/** Tool for analysis addition */
+var AbstractAddTool = class extends AbstractTool {};
+//#endregion
+//#region src/properties/analysis/analysis/internals/area/ellipsis/AddEllipsisTool.ts
+var AddEllipsisTool = class extends AbstractAddTool {
+	key = "add-ellipsis";
+	name = "addellipsisanalysis";
+	description = "clickandaddellipsis";
+	icon = `<?xml version="1.0" encoding="UTF-8"?>
+<svg class="thermal-tool-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path fill="currentcolor" d="M48.87,21.96C47.6,9.62,37.17,0,24.5,0,10.97,0,0,10.97,0,24.5h0c0,12.67,9.62,23.1,21.96,24.37,2.71,8.76,10.88,15.13,20.54,15.13,11.87,0,21.5-9.63,21.5-21.5,0-9.66-6.37-17.82-15.13-20.54ZM4,24.5C4,13.2,13.2,4,24.5,4c10.15,0,18.57,7.42,20.2,17.11-.72-.07-1.45-.11-2.2-.11-11.87,0-21.5,9.63-21.5,21.5,0,.74.04,1.47.11,2.2-9.69-1.62-17.11-10.05-17.11-20.2ZM55.23,44.5h-10.65v10.65h-4v-10.65h-10.65v-4h10.65v-10.65h4v10.65h10.65v4Z"/>
+</svg>`;
+	onActivate() {
+		this.manager.registries.forEveryInstance((instance) => {
+			instance.analysis.layers.selectedOnly.forEach((analysis) => {
+				analysis.setDeselected();
+			});
+		});
+	}
+	onDeactivate() {}
+	onCanvasLeave() {}
+	onCanvasClick(top, left, file) {
+		file.analysis.layers.createEllipsisFrom(top, left).setSelected(true);
+	}
+	onPointDown() {}
+	onPointUp(point) {
+		if (!point.isInSelectedLayer()) return;
+		point.deactivate();
+		point.analysis.file.group.tool.selectTool("edit");
+		point.analysis.setReady();
+		if (point.analysis.width <= 0 || point.analysis.height <= 0) point.analysis.layers.removeAnalysis(point.analysis.key);
+		else if (point.analysis.file.slots.value.size <= AnalysisSlotsState.MAX_SLOTS) {
+			const slot = point.analysis.file.slots.getNextFreeSlotNumber();
+			if (slot !== void 0) point.file.slots.assignAnalysisToSlot(slot, point.analysis);
+		}
+	}
+	onPointMove(point, top, left) {
+		if (point.isInSelectedLayer() && point.active) {
+			point.setXFromTool(left);
+			point.setYFromTool(top);
+			point.analysis.onMoveOrResize.call(point.analysis);
+		}
+	}
+	onPointLeave() {}
+	onPointEnter() {}
+	getLabelValue = (x, y, file) => {
+		return `X:${x}<br />Y:${y}<br />${file.group.tool.tools.inspect.getLabelValue(x, y, file)}`;
+	};
+};
+//#endregion
+//#region src/properties/analysis/analysis/internals/area/rectangle/AddRectangleTool.ts
+var AddRectangleTool = class extends AbstractAddTool {
+	key = "add-rect";
+	name = "addrectangleanalysis";
+	description = "clickandaddrectangle";
+	icon = `<?xml version="1.0" encoding="UTF-8"?>
+<svg class="thermal-tool-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M49,22.01V0H0v49h22.01c2.76,8.7,10.89,15,20.49,15,11.87,0,21.5-9.63,21.5-21.5,0-9.61-6.3-17.74-15-20.49ZM4,45V4h41v17.16c-.82-.1-1.65-.16-2.5-.16-11.87,0-21.5,9.63-21.5,21.5,0,.85.06,1.68.16,2.5H4ZM55.23,44.5h-10.65v10.65h-4v-10.65h-10.65v-4h10.65v-10.65h4v10.65h10.65v4Z" fill="currentcolor"/>
+</svg>`;
+	onActivate() {
+		this.manager.registries.forEveryInstance((instance) => {
+			instance.analysis.layers.selectedOnly.forEach((analysis) => {
+				analysis.setDeselected();
+			});
+		});
+	}
+	onDeactivate() {}
+	onCanvasLeave() {}
+	onCanvasClick(x, y, file) {
+		file.analysis.layers.createRectFrom(x, y).setSelected(true);
+	}
+	onPointDown() {}
+	onPointUp(point) {
+		if (!point.isInSelectedLayer()) return;
+		point.deactivate();
+		point.analysis.file.group.tool.selectTool("edit");
+		point.analysis.setReady();
+		if (point.analysis.width <= 0 || point.analysis.height <= 0) point.analysis.layers.removeAnalysis(point.analysis.key);
+		else {
+			const slot = point.analysis.file.slots.getNextFreeSlotNumber();
+			if (slot !== void 0) point.file.slots.assignAnalysisToSlot(slot, point.analysis);
+		}
+	}
+	onPointMove(point, top, left) {
+		if (point.isInSelectedLayer() && point.active) {
+			point.setXFromTool(left);
+			point.setYFromTool(top);
+			point.analysis.onMoveOrResize.call(point.analysis);
+		}
+	}
+	onPointLeave() {}
+	onPointEnter() {}
+	getLabelValue = (x, y, file) => {
+		return `X:${x}<br />Y:${y}<br />${file.group.tool.tools.inspect.getLabelValue(x, y, file)}`;
+	};
+};
+//#endregion
+//#region src/properties/analysis/analysis/internals/point/AddPointTool.ts
+var AddPointTool = class extends AbstractAddTool {
+	key = "add-point";
+	name = "addpointanalysis";
+	description = "clickandaddpoint";
+	icon = `<?xml version="1.0" encoding="UTF-8"?>
+<svg class="thermal-tool-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path fill="currentcolor" d="M34,19h-15v15h-4v-15H0v-4h15V0h4v15h15v4ZM64,42.5c0,11.87-9.63,21.5-21.5,21.5s-21.5-9.63-21.5-21.5,9.63-21.5,21.5-21.5,21.5,9.63,21.5,21.5ZM55.23,40.5h-10.65v-10.65h-4v10.65h-10.65v4h10.65v10.65h4v-10.65h10.65v-4Z"/>
+</svg>`;
+	onActivate() {
+		this.manager.registries.forEveryInstance((instance) => {
+			instance.analysis.layers.selectedOnly.forEach((analysis) => {
+				analysis.setDeselected();
+			});
+		});
+	}
+	onDeactivate() {}
+	onCanvasLeave() {}
+	onCanvasClick(x, y, file) {
+		file.analysis.layers.createPointAt(x, y).setSelected(true);
+	}
+	onPointDown() {}
+	onPointUp(point) {
+		if (!point.isInSelectedLayer()) return;
+		point.deactivate();
+		point.analysis.file.group.tool.selectTool("edit");
+		point.analysis.setReady();
+		point.analysis.onMoveOrResize.call(point.analysis);
+	}
+	onPointMove() {}
+	onPointLeave() {}
+	onPointEnter() {}
+	getLabelValue = (x, y, file) => {
+		return `X:${x}<br />Y:${y}<br />${file.group.tool.tools.inspect.getLabelValue(x, y, file)}`;
+	};
+};
+//#endregion
+//#region src/properties/analysis/tool/internals/EditTool.ts
+var EditTool = class extends AbstractTool {
+	key = "edit";
+	name = "editanalysis";
+	description = "dragcornersofselectedanalysis";
+	icon = `<?xml version="1.0" encoding="UTF-8"?>
+<svg class="thermal-tool-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <polygon points="34 17.03 34 -.02 30 -.02 30 17.03 17 17.03 17 32 0 32 0 36 17 36 17 47 46.97 47 46.97 17.03 34 17.03" fill="currentcolor"/>
+</svg>`;
+	onActivate() {}
+	onDeactivate() {}
+	onCanvasLeave() {}
+	onCanvasClick() {}
+	onPointEnter(point) {
+		point.mouseEnter();
+	}
+	onPointLeave(point) {
+		if (point.active === false) point.mouseLeave();
+	}
+	onPointMove(point, top, left) {
+		if (point.isInSelectedLayer() && point.active) {
+			point.setXFromTool(left);
+			point.setYFromTool(top);
+			point.analysis.onMoveOrResize.call(point.analysis);
+		}
+	}
+	onPointDown(point) {
+		if (point.isInSelectedLayer() && point.active === false) point.activate();
+	}
+	onPointUp(point) {
+		if (point.active === true) point.deactivate();
+	}
+	getLabelValue(x, y, file) {
+		const temperature = file.getTemperatureAtPoint(x, y);
+		const hoveredAnalysis = file.analysis.layers.all.filter((analysis) => analysis.isWithin(x, y)).map((analysis) => {
+			const element = analysis.selected ? "span" : "s";
+			return `<${element} style="color: ${analysis.initialColor};">
+                    ${analysis.name}
+                </${element}>`;
+		});
+		return `${hoveredAnalysis.length > 0 ? hoveredAnalysis.join("<br />") + "<br />" : ""}${temperature && temperature.toFixed(2) + " °C<br />"}X: ${x}<br />Y: ${y}`;
+	}
+};
+//#endregion
+//#region src/properties/analysis/tool/internals/InspectTool.ts
+var InspectTool = class extends AbstractTool {
+	key = "inspect";
+	name = "inspecttemperatures";
+	description = "usemousetoinspecttemperaturevalues";
+	icon = `<?xml version="1.0" encoding="UTF-8"?>
+<svg class="thermal-tool-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M17.58,42.03c-1.39,0-2.65-.34-3.79-1.01-1.14-.68-2.04-1.58-2.72-2.72-.68-1.14-1.01-2.4-1.01-3.78s.34-2.65,1.01-3.79c.67-1.14,1.58-2.04,2.72-2.72,1.14-.68,2.4-1.01,3.79-1.01s2.65.34,3.79,1.01c1.14.68,2.04,1.58,2.72,2.72s1.01,2.4,1.01,3.79-.34,2.64-1.01,3.78c-.68,1.14-1.58,2.05-2.72,2.72-1.14.68-2.4,1.01-3.79,1.01ZM17.58,37.04c.47,0,.9-.11,1.28-.34.38-.23.69-.53.91-.92.22-.39.34-.81.34-1.27s-.11-.9-.34-1.28c-.23-.38-.53-.69-.91-.91s-.81-.34-1.28-.34-.88.11-1.27.34c-.39.23-.69.53-.92.91-.23.38-.34.81-.34,1.28s.11.88.34,1.27c.22.39.53.69.92.92.39.23.81.34,1.27.34ZM56.24,38.45h-8.28c-.06-.69-.21-1.31-.46-1.87-.25-.56-.59-1.04-1.03-1.45-.44-.41-.96-.72-1.58-.94s-1.32-.33-2.1-.33c-1.37,0-2.53.33-3.47,1s-1.66,1.62-2.14,2.86-.73,2.74-.73,4.48c0,1.84.25,3.38.74,4.62s1.21,2.17,2.15,2.79c.94.62,2.07.93,3.39.93.75,0,1.43-.1,2.03-.29.6-.19,1.12-.47,1.56-.83.44-.36.8-.8,1.08-1.31.28-.51.47-1.09.57-1.74l8.28.06c-.1,1.27-.46,2.57-1.07,3.88-.62,1.32-1.49,2.53-2.62,3.64s-2.53,2-4.19,2.68c-1.67.68-3.6,1.01-5.8,1.01-2.76,0-5.24-.59-7.43-1.78-2.19-1.18-3.92-2.93-5.18-5.23-1.27-2.3-1.9-5.12-1.9-8.45s.65-6.17,1.94-8.47c1.29-2.3,3.04-4.03,5.23-5.21,2.19-1.18,4.64-1.77,7.34-1.77,1.9,0,3.65.26,5.24.78,1.6.52,3,1.28,4.2,2.27,1.2.99,2.17,2.22,2.91,3.66s1.18,3.11,1.34,4.98ZM30,0H0v30L30,0Z" fill="currentcolor"/>
+</svg>`;
+	onActivate() {}
+	onDeactivate() {}
+	onCanvasClick() {}
+	onCanvasLeave() {}
+	onPointEnter() {}
+	onPointLeave() {}
+	onPointMove() {}
+	onPointDown() {}
+	onPointUp() {}
+	getLabelValue = (x, y, file) => {
+		if (file === void 0) return "";
+		try {
+			return file.getTemperatureAtPoint(x, y).toFixed(2) + " °C";
+		} catch (error) {
+			console.error("Error getting tool label at point", error);
+			return "";
+		}
+	};
+};
+//#endregion
+//#region src/properties/analysis/tool/ToolDrive.ts
+const toolsRegistry = [
+	InspectTool,
+	AddPointTool,
+	AddRectangleTool,
+	AddEllipsisTool,
+	EditTool
+];
+/** Instantiates the tool for the given group. Uses `definedTools` as source. */
+const createDefinedTools = (group) => {
+	const arrayOfEntries = toolsRegistry.map((cls) => {
+		const instance = new cls(group);
+		return [instance.key, instance];
+	});
+	return Object.fromEntries(arrayOfEntries);
+};
+var ToolDrive = class extends AbstractProperty {
+	/** Create own set of tools from the registry of tools */
+	_tools = createDefinedTools(this.parent);
+	/** Readonly list of available tools */
+	get tools() {
+		return this._tools;
+	}
+	constructor(parent, initial) {
+		super(parent, initial);
+	}
+	validate(value) {
+		return value;
+	}
+	afterSetEffect(value) {
+		if (value) {
+			value.activate();
+			Object.values(this.tools).forEach((tool) => {
+				if (tool.key !== value.key) tool.deactivate();
+			});
+		}
+	}
+	/** Pick a tool. Its activation is handled by the `afterSetEffect` */
+	selectTool(tool) {
+		if (tool instanceof AbstractTool) this.value = tool;
+		else this.value = this.tools[tool];
 	}
 };
 //#endregion
@@ -7315,7 +7586,7 @@ var GroupExportPNG = class GroupExportPNG extends AbstractPngExport {
 	onDownload(params) {
 		const registryId = Math.random().toFixed();
 		const manager = this.group.registry.manager;
-		const registry = manager.addOrGetRegistry(registryId);
+		const registry = manager.registries.addOrGetRegistry(registryId);
 		const group = registry.groups.addOrGetGroup(this.group.id);
 		if (params.showGroupName && this.header) {
 			const label = params.label ? params.label : this.group.label;
@@ -7987,6 +8258,12 @@ var GroupsState = class extends AbstractProperty {
 		this.value.forEach((group) => group.destroySelfAndBelow());
 		this.value = [];
 	}
+	forEveryGroup(callback) {
+		this.value.forEach(callback);
+	}
+	forEveryInstance(callback) {
+		this.value.forEach((group) => group.files.forEveryInstance(callback));
+	}
 };
 //#endregion
 //#region src/properties/scale/MinmaxRegistryState.ts
@@ -8355,15 +8632,21 @@ var ThermalRegistry = class extends BaseStructureObject {
 		const servicesByGroup = await Promise.all(Object.entries(files).map(async ([groupId, fs]) => {
 			return {
 				group: this.groups.addOrGetGroup(groupId),
-				groupFiles: await Promise.all(fs.map((file) => {
-					return this.service.loadFile(file.thermalUrl, file.visibleUrl);
+				groupFiles: await Promise.all(fs.map(async (file) => {
+					return {
+						service: await this.service.loadFile(file.thermalUrl, file.visibleUrl),
+						label: file.label
+					};
 				}))
 			};
 		}));
 		const result = await Promise.all(servicesByGroup.map(async ({ group, groupFiles }) => {
-			return await Promise.all(groupFiles.map(async (service) => {
-				if (service instanceof ThermalFileReader) return await service.createInstance(group);
-				else return false;
+			return await Promise.all(groupFiles.map(async ({ service, label }) => {
+				if (service instanceof ThermalFileReader) {
+					const instance = await service.createInstance(group);
+					instance.setLabel(label);
+					return instance;
+				} else return false;
 			}));
 		}));
 		this.postLoadedProcessing();
@@ -8375,7 +8658,11 @@ var ThermalRegistry = class extends BaseStructureObject {
 		this.loading.markAsLoading();
 		const group = this.groups.addOrGetGroup(groupId);
 		const result = await this.service.loadFile(file.thermalUrl, file.visibleUrl);
-		const instanceOrError = result instanceof ThermalFileReader ? await result.createInstance(group) : result;
+		let instanceOrError;
+		if (result instanceof ThermalFileReader) {
+			instanceOrError = await result.createInstance(group);
+			instanceOrError.setLabel(file.label);
+		} else instanceOrError = result;
 		this.loading.markAsLoaded();
 		this.postLoadedProcessing();
 		return instanceOrError;
@@ -8430,7 +8717,7 @@ var ThermalRegistry = class extends BaseStructureObject {
 		this.reset();
 	}
 	destroySelfInTheManager() {
-		this.manager.removeRegistry(this.id);
+		this.manager.registries.removeRegistry(this.id);
 	}
 	/**
 	* Observable properties and drives
@@ -8469,272 +8756,47 @@ var ThermalRegistry = class extends BaseStructureObject {
 	}
 };
 //#endregion
-//#region src/properties/analysis/tool/internals/AbstractTool.ts
-var AbstractTool = class {
-	manager;
-	active = false;
-	constructor(manager) {
-		this.manager = manager;
-	}
-	/** Action taken upon tool activation */
-	activate() {
-		this.onActivate();
-	}
-	/** Actions taken upon tool deactivation */
-	deactivate() {
-		this.onDeactivate();
-	}
-};
-//#endregion
-//#region src/properties/analysis/analysis/internals/AbstractAddTool.ts
-/** Tool for analysis addition */
-var AbstractAddTool = class extends AbstractTool {};
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/ellipsis/AddEllipsisTool.ts
-var AddEllipsisTool = class extends AbstractAddTool {
-	key = "add-ellipsis";
-	name = "addellipsisanalysis";
-	description = "clickandaddellipsis";
-	icon = `<?xml version="1.0" encoding="UTF-8"?>
-<svg class="thermal-tool-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <path fill="currentcolor" d="M48.87,21.96C47.6,9.62,37.17,0,24.5,0,10.97,0,0,10.97,0,24.5h0c0,12.67,9.62,23.1,21.96,24.37,2.71,8.76,10.88,15.13,20.54,15.13,11.87,0,21.5-9.63,21.5-21.5,0-9.66-6.37-17.82-15.13-20.54ZM4,24.5C4,13.2,13.2,4,24.5,4c10.15,0,18.57,7.42,20.2,17.11-.72-.07-1.45-.11-2.2-.11-11.87,0-21.5,9.63-21.5,21.5,0,.74.04,1.47.11,2.2-9.69-1.62-17.11-10.05-17.11-20.2ZM55.23,44.5h-10.65v10.65h-4v-10.65h-10.65v-4h10.65v-10.65h4v10.65h10.65v4Z"/>
-</svg>`;
-	onActivate() {
-		this.manager.forEveryInstance((instance) => {
-			instance.analysis.layers.selectedOnly.forEach((analysis) => {
-				analysis.setDeselected();
-			});
-		});
-	}
-	onDeactivate() {}
-	onCanvasLeave() {}
-	onCanvasClick(top, left, file) {
-		file.analysis.layers.createEllipsisFrom(top, left).setSelected(true);
-	}
-	onPointDown() {}
-	onPointUp(point) {
-		if (!point.isInSelectedLayer()) return;
-		point.deactivate();
-		point.analysis.file.group.tool.selectTool("edit");
-		point.analysis.setReady();
-		if (point.analysis.width <= 0 || point.analysis.height <= 0) point.analysis.layers.removeAnalysis(point.analysis.key);
-		else if (point.analysis.file.slots.value.size <= AnalysisSlotsState.MAX_SLOTS) {
-			const slot = point.analysis.file.slots.getNextFreeSlotNumber();
-			if (slot !== void 0) point.file.slots.assignAnalysisToSlot(slot, point.analysis);
-		}
-	}
-	onPointMove(point, top, left) {
-		if (point.isInSelectedLayer() && point.active) {
-			point.setXFromTool(left);
-			point.setYFromTool(top);
-			point.analysis.onMoveOrResize.call(point.analysis);
-		}
-	}
-	onPointLeave() {}
-	onPointEnter() {}
-	getLabelValue = (x, y, file) => {
-		return `X:${x}<br />Y:${y}<br />${file.group.tool.tools.inspect.getLabelValue(x, y, file)}`;
-	};
-};
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/rectangle/AddRectangleTool.ts
-var AddRectangleTool = class extends AbstractAddTool {
-	key = "add-rect";
-	name = "addrectangleanalysis";
-	description = "clickandaddrectangle";
-	icon = `<?xml version="1.0" encoding="UTF-8"?>
-<svg class="thermal-tool-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <path d="M49,22.01V0H0v49h22.01c2.76,8.7,10.89,15,20.49,15,11.87,0,21.5-9.63,21.5-21.5,0-9.61-6.3-17.74-15-20.49ZM4,45V4h41v17.16c-.82-.1-1.65-.16-2.5-.16-11.87,0-21.5,9.63-21.5,21.5,0,.85.06,1.68.16,2.5H4ZM55.23,44.5h-10.65v10.65h-4v-10.65h-10.65v-4h10.65v-10.65h4v10.65h10.65v4Z" fill="currentcolor"/>
-</svg>`;
-	onActivate() {
-		this.manager.forEveryInstance((instance) => {
-			instance.analysis.layers.selectedOnly.forEach((analysis) => {
-				analysis.setDeselected();
-			});
-		});
-	}
-	onDeactivate() {}
-	onCanvasLeave() {}
-	onCanvasClick(x, y, file) {
-		file.analysis.layers.createRectFrom(x, y).setSelected(true);
-	}
-	onPointDown() {}
-	onPointUp(point) {
-		if (!point.isInSelectedLayer()) return;
-		point.deactivate();
-		point.analysis.file.group.tool.selectTool("edit");
-		point.analysis.setReady();
-		if (point.analysis.width <= 0 || point.analysis.height <= 0) point.analysis.layers.removeAnalysis(point.analysis.key);
-		else {
-			const slot = point.analysis.file.slots.getNextFreeSlotNumber();
-			if (slot !== void 0) point.file.slots.assignAnalysisToSlot(slot, point.analysis);
-		}
-	}
-	onPointMove(point, top, left) {
-		if (point.isInSelectedLayer() && point.active) {
-			point.setXFromTool(left);
-			point.setYFromTool(top);
-			point.analysis.onMoveOrResize.call(point.analysis);
-		}
-	}
-	onPointLeave() {}
-	onPointEnter() {}
-	getLabelValue = (x, y, file) => {
-		return `X:${x}<br />Y:${y}<br />${file.group.tool.tools.inspect.getLabelValue(x, y, file)}`;
-	};
-};
-//#endregion
-//#region src/properties/analysis/analysis/internals/point/AddPointTool.ts
-var AddPointTool = class extends AbstractAddTool {
-	key = "add-point";
-	name = "addpointanalysis";
-	description = "clickandaddpoint";
-	icon = `<?xml version="1.0" encoding="UTF-8"?>
-<svg class="thermal-tool-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <path fill="currentcolor" d="M34,19h-15v15h-4v-15H0v-4h15V0h4v15h15v4ZM64,42.5c0,11.87-9.63,21.5-21.5,21.5s-21.5-9.63-21.5-21.5,9.63-21.5,21.5-21.5,21.5,9.63,21.5,21.5ZM55.23,40.5h-10.65v-10.65h-4v10.65h-10.65v4h10.65v10.65h4v-10.65h10.65v-4Z"/>
-</svg>`;
-	onActivate() {
-		this.manager.forEveryInstance((instance) => {
-			instance.analysis.layers.selectedOnly.forEach((analysis) => {
-				analysis.setDeselected();
-			});
-		});
-	}
-	onDeactivate() {}
-	onCanvasLeave() {}
-	onCanvasClick(x, y, file) {
-		file.analysis.layers.createPointAt(x, y).setSelected(true);
-	}
-	onPointDown() {}
-	onPointUp(point) {
-		if (!point.isInSelectedLayer()) return;
-		point.deactivate();
-		point.analysis.file.group.tool.selectTool("edit");
-		point.analysis.setReady();
-		point.analysis.onMoveOrResize.call(point.analysis);
-	}
-	onPointMove() {}
-	onPointLeave() {}
-	onPointEnter() {}
-	getLabelValue = (x, y, file) => {
-		return `X:${x}<br />Y:${y}<br />${file.group.tool.tools.inspect.getLabelValue(x, y, file)}`;
-	};
-};
-//#endregion
-//#region src/properties/analysis/tool/internals/EditTool.ts
-var EditTool = class extends AbstractTool {
-	key = "edit";
-	name = "editanalysis";
-	description = "dragcornersofselectedanalysis";
-	icon = `<?xml version="1.0" encoding="UTF-8"?>
-<svg class="thermal-tool-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <polygon points="34 17.03 34 -.02 30 -.02 30 17.03 17 17.03 17 32 0 32 0 36 17 36 17 47 46.97 47 46.97 17.03 34 17.03" fill="currentcolor"/>
-</svg>`;
-	onActivate() {}
-	onDeactivate() {}
-	onCanvasLeave() {}
-	onCanvasClick() {}
-	onPointEnter(point) {
-		point.mouseEnter();
-	}
-	onPointLeave(point) {
-		if (point.active === false) point.mouseLeave();
-	}
-	onPointMove(point, top, left) {
-		if (point.isInSelectedLayer() && point.active) {
-			point.setXFromTool(left);
-			point.setYFromTool(top);
-			point.analysis.onMoveOrResize.call(point.analysis);
-		}
-	}
-	onPointDown(point) {
-		if (point.isInSelectedLayer() && point.active === false) point.activate();
-	}
-	onPointUp(point) {
-		if (point.active === true) point.deactivate();
-	}
-	getLabelValue(x, y, file) {
-		const temperature = file.getTemperatureAtPoint(x, y);
-		const hoveredAnalysis = file.analysis.layers.all.filter((analysis) => analysis.isWithin(x, y)).map((analysis) => {
-			const element = analysis.selected ? "span" : "s";
-			return `<${element} style="color: ${analysis.initialColor};">
-                    ${analysis.name}
-                </${element}>`;
-		});
-		return `${hoveredAnalysis.length > 0 ? hoveredAnalysis.join("<br />") + "<br />" : ""}${temperature && temperature.toFixed(2) + " °C<br />"}X: ${x}<br />Y: ${y}`;
-	}
-};
-//#endregion
-//#region src/properties/analysis/tool/internals/InspectTool.ts
-var InspectTool = class extends AbstractTool {
-	key = "inspect";
-	name = "inspecttemperatures";
-	description = "usemousetoinspecttemperaturevalues";
-	icon = `<?xml version="1.0" encoding="UTF-8"?>
-<svg class="thermal-tool-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <path d="M17.58,42.03c-1.39,0-2.65-.34-3.79-1.01-1.14-.68-2.04-1.58-2.72-2.72-.68-1.14-1.01-2.4-1.01-3.78s.34-2.65,1.01-3.79c.67-1.14,1.58-2.04,2.72-2.72,1.14-.68,2.4-1.01,3.79-1.01s2.65.34,3.79,1.01c1.14.68,2.04,1.58,2.72,2.72s1.01,2.4,1.01,3.79-.34,2.64-1.01,3.78c-.68,1.14-1.58,2.05-2.72,2.72-1.14.68-2.4,1.01-3.79,1.01ZM17.58,37.04c.47,0,.9-.11,1.28-.34.38-.23.69-.53.91-.92.22-.39.34-.81.34-1.27s-.11-.9-.34-1.28c-.23-.38-.53-.69-.91-.91s-.81-.34-1.28-.34-.88.11-1.27.34c-.39.23-.69.53-.92.91-.23.38-.34.81-.34,1.28s.11.88.34,1.27c.22.39.53.69.92.92.39.23.81.34,1.27.34ZM56.24,38.45h-8.28c-.06-.69-.21-1.31-.46-1.87-.25-.56-.59-1.04-1.03-1.45-.44-.41-.96-.72-1.58-.94s-1.32-.33-2.1-.33c-1.37,0-2.53.33-3.47,1s-1.66,1.62-2.14,2.86-.73,2.74-.73,4.48c0,1.84.25,3.38.74,4.62s1.21,2.17,2.15,2.79c.94.62,2.07.93,3.39.93.75,0,1.43-.1,2.03-.29.6-.19,1.12-.47,1.56-.83.44-.36.8-.8,1.08-1.31.28-.51.47-1.09.57-1.74l8.28.06c-.1,1.27-.46,2.57-1.07,3.88-.62,1.32-1.49,2.53-2.62,3.64s-2.53,2-4.19,2.68c-1.67.68-3.6,1.01-5.8,1.01-2.76,0-5.24-.59-7.43-1.78-2.19-1.18-3.92-2.93-5.18-5.23-1.27-2.3-1.9-5.12-1.9-8.45s.65-6.17,1.94-8.47c1.29-2.3,3.04-4.03,5.23-5.21,2.19-1.18,4.64-1.77,7.34-1.77,1.9,0,3.65.26,5.24.78,1.6.52,3,1.28,4.2,2.27,1.2.99,2.17,2.22,2.91,3.66s1.18,3.11,1.34,4.98ZM30,0H0v30L30,0Z" fill="currentcolor"/>
-</svg>`;
-	onActivate() {}
-	onDeactivate() {}
-	onCanvasClick() {}
-	onCanvasLeave() {}
-	onPointEnter() {}
-	onPointLeave() {}
-	onPointMove() {}
-	onPointDown() {}
-	onPointUp() {}
-	getLabelValue = (x, y, file) => {
-		if (file === void 0) return "";
-		try {
-			return file.getTemperatureAtPoint(x, y).toFixed(2) + " °C";
-		} catch (error) {
-			console.error("Error getting tool label at point", error);
-			return "";
-		}
-	};
-};
-//#endregion
-//#region src/properties/analysis/tool/ToolDrive.ts
-const toolsRegistry = [
-	InspectTool,
-	AddPointTool,
-	AddRectangleTool,
-	AddEllipsisTool,
-	EditTool
-];
-/** Instantiates the tool for the given group. Uses `definedTools` as source. */
-const createDefinedTools = (group) => {
-	const arrayOfEntries = toolsRegistry.map((cls) => {
-		const instance = new cls(group);
-		return [instance.key, instance];
-	});
-	return Object.fromEntries(arrayOfEntries);
-};
-var ToolDrive = class extends AbstractProperty {
-	/** Create own set of tools from the registry of tools */
-	_tools = createDefinedTools(this.parent);
-	/** Readonly list of available tools */
-	get tools() {
-		return this._tools;
-	}
-	constructor(parent, initial) {
-		super(parent, initial);
-	}
+//#region src/properties/lists/RegistriesState.ts
+var RegistriesState = class extends AbstractProperty {
+	map = /* @__PURE__ */ new Map();
 	validate(value) {
+		const ids = value.map((registry) => registry.id);
+		const uniqueIds = Array.from(new Set(ids));
+		if (ids.length !== uniqueIds.length) throw new Error("Duplicate registry IDs found.");
 		return value;
 	}
 	afterSetEffect(value) {
-		if (value) {
-			value.activate();
-			Object.values(this.tools).forEach((tool) => {
-				if (tool.key !== value.key) tool.deactivate();
-			});
-		}
+		this.map.clear();
+		value.forEach((registry) => this.map.set(registry.id, registry));
 	}
-	/** Pick a tool. Its activation is handled by the `afterSetEffect` */
-	selectTool(tool) {
-		if (tool instanceof AbstractTool) this.value = tool;
-		else this.value = this.tools[tool];
+	addOrGetRegistry(id, options) {
+		if (this.map.has(id)) return this.map.get(id);
+		const registry = new ThermalRegistry(id, this.parent, options);
+		this.value = [...this.value, registry];
+		return registry;
+	}
+	removeRegistry(id) {
+		const registry = this.map.get(id);
+		if (!registry) return;
+		registry.destroySelfAndBelow();
+		this.value = this.value.filter((registry) => registry.id !== id);
+	}
+	reset() {
+		this.forEveryRegistry((registry) => registry.destroySelfAndBelow());
+		super.reset();
+	}
+	forEveryRegistry(callback) {
+		this.value.forEach(callback);
+	}
+	forEveryGroup(callback) {
+		this.forEveryRegistry((registry) => {
+			registry.groups.forEveryGroup(callback);
+		});
+	}
+	forEveryInstance(callback) {
+		this.forEveryRegistry((registry) => {
+			registry.groups.forEveryInstance(callback);
+		});
 	}
 };
 //#endregion
@@ -8745,8 +8807,8 @@ var ThermalManager = class extends BaseStructureObject {
 	id;
 	/** Service for creation of loading and caching the files. */
 	service = new FilesService(this);
-	/** Index of existing registries */
-	registries = {};
+	/** Registries management state */
+	registries = new RegistriesState(this, []);
 	/** A palette is common to all registries within the manager */
 	palette = new PaletteDrive(this, "jet");
 	smooth = new SmoothDrive(this, false);
@@ -8761,37 +8823,21 @@ var ThermalManager = class extends BaseStructureObject {
 			if (options.palette) this.palette.setPalette(options.palette);
 		}
 	}
-	forEveryRegistry(fn) {
-		Object.values(this.registries).forEach((registry) => fn(registry));
-	}
-	addOrGetRegistry(id, options) {
-		if (this.registries[id] === void 0) this.registries[id] = new ThermalRegistry(id, this, options);
-		return this.registries[id];
-	}
-	removeRegistry(id) {
-		if (this.registries[id] !== void 0) {
-			this.registries[id].destroySelfAndBelow();
-			delete this.registries[id];
-		}
-	}
 	filters = new FilterContainer(this);
 	getInstances() {
-		let instances = [];
-		this.forEveryRegistry((registry) => {
-			instances = [...instances, ...registry.getInstances()];
+		const instances = [];
+		this.registries.forEveryInstance((instance) => {
+			instances.push(instance);
 		});
 		return instances;
-	}
-	forEveryInstance(callback) {
-		this.forEveryRegistry((registry) => registry.forEveryInstance(callback));
 	}
 	destroySelfAndBelow() {
 		this.removeAllChildren();
 		this.reset();
 	}
 	removeAllChildren() {
-		this.forEveryRegistry((registry) => {
-			this.removeRegistry(registry.id);
+		this.registries.forEveryRegistry((registry) => {
+			this.registries.removeRegistry(registry.id);
 		});
 	}
 	reset() {

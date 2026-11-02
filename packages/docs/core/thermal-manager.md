@@ -8,7 +8,7 @@ The <code>ThermalManager</code> is the top-level context of an application. It o
 
 ## Nested registries
 
-There can be multiple <code>ThermalRegistry</code> objects within one <code>ThermalManager</code>. Each registry is identified by its unique ID. To create or retrieve a registry, use <code>addOrGetRegistry</code>:
+There can be multiple <code>ThermalRegistry</code> objects within one <code>ThermalManager</code>. The observable <code>manager.registries</code> property (`RegistriesState`) manages this collection. Each registry is identified by a unique ID within its manager. To create or retrieve a registry, use <code>manager.registries.addOrGetRegistry</code>:
 
 ```ts
 import { ThermalManager } from "@labirthermal/core";
@@ -17,18 +17,75 @@ import { ThermalManager } from "@labirthermal/core";
 const manager = new ThermalManager();
 
 // Create two registries
-const registryA = manager.addOrGetRegistry( "registry-a" );
-const registryB = manager.addOrGetRegistry( "registry-b" );
+const registryA = manager.registries.addOrGetRegistry( "registry-a" );
+const registryB = manager.registries.addOrGetRegistry( "registry-b" );
 
 // Get the reference on an existing registry
-const registryAForTheSecondTime = manager.addOrGetRegistry( "registry-a" );
+const registryAForTheSecondTime = manager.registries.addOrGetRegistry( "registry-a" );
 
 // Both references point to the same object
 const referencesAreEqual = registryA === registryAForTheSecondTime; // true
 
 // Remove a registry by its ID
-manager.removeRegistry( "registry-a" );
+manager.registries.removeRegistry( "registry-a" );
 ```
+
+### Reading and observing the collection
+
+`manager.registries.value` contains the current array of registries in insertion order. Treat this array as read-only: use the collection's methods rather than mutating the array, so its ID index and change listeners stay in sync.
+
+```ts
+const registries = manager.registries.value;
+console.log( "Number of registries:", registries.length );
+
+manager.registries.addListener( "registry-list", currentRegistries => {
+    console.log( "Current registries:", currentRegistries.map( registry => registry.id ) );
+} );
+
+manager.registries.addOrGetRegistry( "new-registry" );
+manager.registries.removeRegistry( "new-registry" );
+
+// Unsubscribe when the listener is no longer needed
+manager.registries.removeListener( "registry-list" );
+```
+
+Listeners receive the updated array after a registry is added or removed, or the collection is reset. Adding a listener does not immediately invoke it; read `.value` for the initial state. Retrieving an existing registry or removing an unknown ID does not change the collection or notify listeners.
+
+The optional settings passed to `addOrGetRegistry(id, options)` are applied only when a registry is created. Calling it again with the same ID returns the existing object without reconfiguring it.
+
+### Iterating through the hierarchy
+
+The collection provides iterators for every level below the manager:
+
+```ts
+manager.registries.forEveryRegistry( registry => {
+    console.log( "Registry:", registry.id );
+} );
+
+manager.registries.forEveryGroup( group => {
+    console.log( "Group:", group.label );
+} );
+
+manager.registries.forEveryInstance( instance => {
+    console.log( "File:", instance.fileName );
+} );
+
+// Collect all file instances into a new array
+const instances = manager.getInstances();
+```
+
+### Removing registries and cleaning up
+
+`manager.registries.removeRegistry(id)` destroys the registry's groups and their file instances, resets its opacity and min/max limits, and removes it from the collection. Removing an unknown ID has no effect.
+
+To destroy and remove all registries at once, use `manager.registries.reset()`. It clears the ID index and notifies collection listeners once with an empty array. The listeners remain registered.
+
+```ts
+manager.registries.reset();
+console.log( manager.registries.value.length ); // 0
+```
+
+`manager.removeAllChildren()` also destroys and removes all registries, but removes them individually. `manager.reset()` resets the manager's shared settings and does not remove its registries. Use `manager.destroySelfAndBelow()` to remove all registries and reset the shared settings together.
 
 ## Thermal palette property
 
@@ -234,7 +291,7 @@ The worker pool used for asynchronous file processing.
 
 ### registries
 
-An ID-keyed object containing the manager's registries.
+The observable registry collection (`RegistriesState`). Read its current array through `manager.registries.value`; use its creation, removal, iteration and listener methods as described in [Nested registries](#nested-registries).
 
 ### service
 

@@ -291,7 +291,7 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
     public createRegistry(
         slug: string
     ): ThermalRegistry {
-        return this.managerObject.addOrGetRegistry(slug);
+        return this.managerObject.registries.addOrGetRegistry(slug);
     }
 
 

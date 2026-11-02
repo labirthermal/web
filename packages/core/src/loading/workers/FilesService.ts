@@ -27,7 +27,7 @@ export class FilesService {
     /** @deprecated Intended only for tests & other internal purposes */
     public static isolatedInstance(pool: Pool, registryName: string = "isolated_registry") {
         const manager = new ThermalManager(pool);
-        const registry = manager.addOrGetRegistry(registryName);
+        const registry = manager.registries.addOrGetRegistry(registryName);
         return {
             service: registry.service,
             registry

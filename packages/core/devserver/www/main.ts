@@ -8,7 +8,7 @@ const GROUP_ID = "group_id";
 const pool = await getPool();
 
 const manager = new ThermalManager( pool );
-const registry = manager.addOrGetRegistry(REGISTRY_ID);
+const registry = manager.registries.addOrGetRegistry(REGISTRY_ID);
 const group = registry.groups.addOrGetGroup(GROUP_ID, "Testovací skupina", "Popiska testovací skupiny");
 
 const buildTools = () => {
@@ -168,7 +168,7 @@ group.files.addListener("boot", value => {
 
 
 
-const reg = manager.addOrGetRegistry( "reg" );
+const reg = manager.registries.addOrGetRegistry( "reg" );
 const grp = reg.groups.addOrGetGroup( "grp" );
 
 reg.range.imposeRange( {from: 30, to: 40} );
@@ -426,7 +426,7 @@ const buildControls = () => {
 
             if ( result instanceof ThermalFileReader ) {
 
-                const r = manager.addOrGetRegistry( file.name );
+                const r = manager.registries.addOrGetRegistry( file.name );
                 const g = r.groups.addOrGetGroup( file.name );
 
                 const instance = await result.createInstance( g );
@@ -573,5 +573,4 @@ const buildControls = () => {
 buildControls();
 
 */
-
 

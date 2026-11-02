@@ -284,7 +284,7 @@ export class FileAnalysisRowElement extends AbstractThermalElement {
                     icon="range"
                     iconStyle="outline"
                     tooltip="${t(T.range)}: ${analysis.name}"
-                    disabled=${this.range === undefined}
+                    ?disabled=${this.range === undefined}
                     @click=${() => {
                         const range = this.range;
                         if (range) {

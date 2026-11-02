@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { ThermalManager } from './ThermalManager';
 import { THERMOGRAM_PATHS as THERMOGRAM_PATHS } from '../../devserver/node/mocks';
 import { getPool } from '../utils/pool';
@@ -11,10 +11,52 @@ describe("ThermalRegistry", async () => {
 
     const pool = await getPool();
 
+    test.each(["Custom label", "", undefined])("applies a single-file request label: %s", async label => {
+        const manager = new ThermalManager(pool);
+        const registry = manager.registries.addOrGetRegistry(REGISTRY_ID);
+        vi.spyOn(registry, "postLoadedProcessing").mockResolvedValue();
+
+        const instance = await registry.loadFullOneFile({
+            thermalUrl: THERMOGRAM_PATHS.SOUSTRUH,
+            label
+        }, GROUP_ID);
+
+        expect(instance).toBeInstanceOf(ThermalFileInstance);
+        if (instance instanceof ThermalFileInstance) {
+            expect(instance.label).toBe(label);
+        }
+    });
+
+    test("keeps request labels independent when a reader is reused across groups", async () => {
+        const manager = new ThermalManager(pool);
+        const registry = manager.registries.addOrGetRegistry(REGISTRY_ID);
+        vi.spyOn(registry, "postLoadedProcessing").mockResolvedValue();
+
+        const instances = await registry.loadFullMultipleFiles({
+            first: [
+                { thermalUrl: THERMOGRAM_PATHS.SOUSTRUH, label: "First" },
+                { thermalUrl: THERMOGRAM_PATHS.CAS }
+            ],
+            second: [
+                { thermalUrl: THERMOGRAM_PATHS.SOUSTRUH, label: "Second" }
+            ]
+        });
+
+        expect(instances.map(group => group.map(instance => instance && instance.label)))
+            .toEqual([["First", undefined], ["Second"]]);
+
+        const iterateInstances = vi.fn();
+        manager.registries.forEveryInstance(iterateInstances);
+        expect(iterateInstances.mock.calls.map(([instance]) => instance))
+            .toEqual(registry.groups.value.flatMap(group => group.files.value));
+        expect(iterateInstances).toHaveBeenCalledTimes(3);
+        expect(manager.getInstances()).toEqual(registry.groups.value.flatMap(group => group.files.value));
+    });
+
     test("loading of files", async () => {
 
         const manager = new ThermalManager( pool );
-        const registry = manager.addOrGetRegistry(REGISTRY_ID);
+        const registry = manager.registries.addOrGetRegistry(REGISTRY_ID);
         // const group = registry.groups.addOrGetGroup(GROUP_ID);
 
         // First load
@@ -78,7 +120,7 @@ describe("ThermalRegistry", async () => {
     test("minmax is calculated from the groups", async () => {
 
         const manager = new ThermalManager(pool);
-        const registry = manager.addOrGetRegistry(REGISTRY_ID);
+        const registry = manager.registries.addOrGetRegistry(REGISTRY_ID);
 
         await registry.loadFullMultipleFiles({
             ["new_group"]: [

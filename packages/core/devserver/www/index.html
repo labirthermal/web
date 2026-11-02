@@ -68,7 +68,7 @@
           const manager = new ThermalManager();
 
           // A registry object wraps set of groups and synchronises some of their parameters such as thermal range ac ati
-          const registry = manager.addOrGetRegistry("single-image-registry");
+          const registry = manager.registries.addOrGetRegistry("single-image-registry");
 
           // Group wraps a set of thermal files and synchronises some parameters such as: the cursor position, analyses ac ati
           const group = registry.groups.addOrGetGroup("single-file-group");
@@ -120,7 +120,7 @@
           const container2 = document.getElementById('multiple-images');
 
           const manager2 = new ThermalManager();
-          const registry2 = manager2.addOrGetRegistry("multiple-images-registry");
+          const registry2 = manager2.registries.addOrGetRegistry("multiple-images-registry");
           const group2 = registry2.groups.addOrGetGroup("multiple-files-group");
 
           // Set a palette
@@ -181,7 +181,7 @@
           const container3 = document.getElementById('controls');
 
           const manager3 = new ThermalManager();
-          const registry3 = manager3.addOrGetRegistry("controls-registry");
+          const registry3 = manager3.registries.addOrGetRegistry("controls-registry");
           const group3 = registry3.groups.addOrGetGroup("controls-group");
 
           // Set a palette

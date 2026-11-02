@@ -9,7 +9,7 @@ describe( "FilesState", () => {
         vi.useRealTimers();
 
         const manager = new ThermalManager;
-        const registry = manager.addOrGetRegistry( "test" );
+        const registry = manager.registries.addOrGetRegistry( "test" );
         const group = registry.groups.addOrGetGroup( "test" );
 
         registry.batch.request(

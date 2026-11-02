@@ -17,7 +17,7 @@ export class AddEllipsisTool extends AbstractAddTool implements ITool {
 
     protected onActivate(): void {
 
-        this.manager.forEveryInstance(instance => {
+        this.manager.registries.forEveryInstance(instance => {
             instance.analysis.layers.selectedOnly.forEach(analysis => {
                 analysis.setDeselected();
             });

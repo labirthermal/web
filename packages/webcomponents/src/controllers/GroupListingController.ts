@@ -686,8 +686,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
                     <div class="file-analysis">
                         <file-analysis-table
                             table-mode="compact"
-                            ?interactive-analysis=${true}
-                            ?graph-activation-enabled=${true}
+                            ?force-interactive=${true}
                         ></file-analysis-table>
                         <file-analysis-graph ?standalone=${true}></file-analysis-graph>
                     </div>

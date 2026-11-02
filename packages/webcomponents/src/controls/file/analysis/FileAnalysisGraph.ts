@@ -360,18 +360,18 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
             position: relative;
         }
 
-        :host([standalone="true"]) {
+        :host([standalone=""]) {
             display: block;
             height: var(--thermal-analysis-graph-height, 12rem);
             min-width: 0;
             margin-top: .5em;
         }
 
-        :host([standalone="true"]:not([data-has-graphs])) {
+        :host([standalone=""]:not([data-has-graphs])) {
             display: none;
         }
 
-        :host([standalone="true"]) .chart-container {
+        :host([standalone=""]) .chart-container {
             height: 100%;
             width: 100%;
         }

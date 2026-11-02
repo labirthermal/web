@@ -5,7 +5,7 @@ description: "Use for the embed package (@labirthermal/webcomponents) in package
 
 # Embed Component Formatter Entry Point
 
-1. Read the [package-local component formatting workflow](../../../packages/embed/.github/skills/embed-format-component/SKILL.md).
+1. Read the [package-local component formatting workflow](../../../packages/webcomponents/.github/skills/embed-format-component/SKILL.md).
 2. Follow its scope guard, review procedure, JSDoc rules, controller property exclusions, and interactive dialogue for the current task.
 
 The linked file is the source of truth. This entry point enables skill discovery from the repository root; keep the workflow in the linked file, not here.

@@ -8,7 +8,7 @@ describe("RangeDriverTest", () => {
     test("standard behavior", async () => {
 
         const manager = new ThermalManager;
-        const registry = manager.addOrGetRegistry("reg");
+        const registry = manager.registries.addOrGetRegistry("reg");
         const group = registry.groups.addOrGetGroup("grp");
         const range = registry.range;
 
@@ -37,7 +37,7 @@ describe("RangeDriverTest", () => {
     test("with preset range", async () => {
 
         const manager = new ThermalManager;
-        const registry = manager.addOrGetRegistry("reg");
+        const registry = manager.registries.addOrGetRegistry("reg");
         const group = registry.groups.addOrGetGroup("grp");
         const range = registry.range;
 
@@ -78,7 +78,7 @@ describe("RangeDriverTest", () => {
     test("recalculates and notifies the automatic range when the histogram changes", async () => {
 
         const manager = new ThermalManager;
-        const registry = manager.addOrGetRegistry("reg");
+        const registry = manager.registries.addOrGetRegistry("reg");
         const range = registry.range;
 
         const autoValueChanges: (typeof range.autoValue)[] = [];

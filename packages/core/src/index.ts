@@ -52,14 +52,15 @@ export type { ParsedTimelineFrame } from "./parsers/structure";
 // Analysis related exports
 export {
     availableAnalysisColors
-} from "./properties/analysis/analysis/storage/AnalysisLayersStorage";
+} from "./properties/analysis/analysis/storage/availableAnalysisColors";
 export { AnalysisGraph } from "./properties/analysis/data/graphs/AnalysisGraph";
 export { AbstractAnalysis } from "./properties/analysis/analysis/internals/AbstractAnalysis";
 export { AbstractAreaAnalysis } from "./properties/analysis/analysis/internals/area/AbstractAreaAnalysis";
 export type { AnalysisDataStateValue } from "./properties/analysis/data/AnalysisDataState";
 
 // Slot related exports
-export type { SlotNumber, SlotUnion } from "./properties/analysis/analysis/storage/AnalysisLayersStorage";
+export type { SlotNumber } from "./properties/analysis/analysis/storage/SlotNumber";
+export type { SlotUnion } from "./properties/analysis/analysis/storage/SlotUnion";
 
 
 // Tool related exports

@@ -13,7 +13,7 @@ describe("InstanceDOM", () => {
     test("attaching, building and detaching as isolated instance", async () => {
 
         const manager = new ThermalManager();
-        const registry = manager.addOrGetRegistry("test");
+        const registry = manager.registries.addOrGetRegistry("test");
         const group = registry.groups.addOrGetGroup("test");
 
         const service = manager.service;

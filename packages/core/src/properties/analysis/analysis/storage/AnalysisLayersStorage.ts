@@ -5,45 +5,15 @@ import { EllipsisAnalysis } from "../internals/area/ellipsis/EllipsisAnalysis";
 import { PointAnalysis } from "../internals/point/PointAnalysis";
 import { RectangleAnalysis } from "../internals/area/rectangle/RectangleAnalysis";
 import { SlotInitialisationValue } from "../../slots/AnalysisSlotsDrive";
+import { AnalysisSerializableChangeType } from "./AnalysisSerializableChangeType";
+import { availableAnalysisColors } from "./availableAnalysisColors";
 
 
 type AnalysisAddedCallback = (analysis: AbstractAnalysis, layers: AbstractAnalysis[]) => void;
 type AnalysisRemovedCallback = (key: string) => void;
 type SelectionChangeEvent = (selectedAnalysis: AbstractAnalysis[]) => void;
 
-/** What kind of change occured with the given analysis? */
-export enum AnalysisSerializableChangeType {
-    /** The analysis was added */
-    ADD = 0,
-    /** The analysis was removed */
-    REMOVE = 1,
-    /** The analysis was resized or moved */
-    RESIZEMOVE = 2,
-    /** Other properties of the analysis were changed */
-    PROPERTIESCHANGE = 3,
-    /** Graph visibility changes */
-    GRAPH = 4
-}
-
 type AnySerializableChangeCallback = ( analysis: AbstractAnalysis, change: AnalysisSerializableChangeType ) => void;
-
-export type SlotUnion = "analysis1" | "analysis2" | "analysis3" | "analysis4" | "analysis5" | "analysis6" | "analysis7";
-export type SlotNumber = 1|2|3|4|5|6|7;
-
-export const availableAnalysisColors = [
-    "Blue",
-    "Red",
-    "Lightblue",
-    "Green",
-    "Brown",
-    "Yellow",
-    "Navy",
-    "Pink",
-    "DarkGoldenRod",
-    "GreenYellow",
-    "SpringGreen",
-    "SkyBlue"
-];
 
 export class AnalysisLayersStorage extends Map<string, AbstractAnalysis> {
 

@@ -35,7 +35,7 @@ export abstract class AbstractRegistryProvider extends AbstractManagerConsumer i
         super.disconnectedCallback();
 
         if (this.autoclear === true && this.registryObject !== undefined) {
-            this.managerObject.removeRegistry(this.registryObject.id);
+            this.managerObject.registries.removeRegistry(this.registryObject.id);
         }
     }
 

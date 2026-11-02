@@ -1,3 +1,4 @@
+import { ThermalFileInstance } from "../../file/ThermalFileInstance";
 import { ThermalGroup } from "../../hierarchy/ThermalGroup";
 import { ThermalRegistry } from "../../hierarchy/ThermalRegistry";
 import { AbstractProperty } from "../abstractProperty";
@@ -84,6 +85,18 @@ export class GroupsState extends AbstractProperty<ThermalGroup[], ThermalRegistr
         // Set the empty array of groups
         this.value = [];
 
+    }
+
+    public forEveryGroup(
+        callback: (group: ThermalGroup) => void
+    ): void {
+        this.value.forEach(callback);
+    }
+
+    public forEveryInstance(
+        callback: (instance: ThermalFileInstance) => void
+    ): void {
+        this.value.forEach( group => group.files.forEveryInstance(callback) );
     }
 
 }

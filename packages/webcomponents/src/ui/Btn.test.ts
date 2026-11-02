@@ -106,4 +106,23 @@ describe("thermal-btn boolean attributes", () => {
         btn.click();
         expect(listener).toHaveBeenCalledTimes(1);
     });
+
+    it("restores keyboard activation after reconnect", async () => {
+        const btn = await createButton();
+        const listener = vi.fn();
+        btn.addEventListener("click", listener);
+
+        btn.remove();
+        document.body.append(btn);
+        await btn.updateComplete;
+        btn.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+        btn.dispatchEvent(new KeyboardEvent("keydown", { key: " " }));
+        expect(listener).toHaveBeenCalledTimes(2);
+
+        btn.disabled = true;
+        await btn.updateComplete;
+        btn.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+        btn.dispatchEvent(new KeyboardEvent("keydown", { key: " " }));
+        expect(listener).toHaveBeenCalledTimes(2);
+    });
 });

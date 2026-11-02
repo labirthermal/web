@@ -11,7 +11,7 @@ describe( "Analysis Sync", () => {
         // vi.useFakeTimers();
 
         const manager = new ThermalManager;
-        const registry = manager.addOrGetRegistry( "test" );
+        const registry = manager.registries.addOrGetRegistry( "test" );
         const group = registry.groups.addOrGetGroup( "test" );
 
         const request = await Promise.all([
@@ -71,7 +71,7 @@ describe( "Analysis Sync", () => {
                 vi.useFakeTimers();
 
                 const manager = new ThermalManager;
-                const registry = manager.addOrGetRegistry("test");
+                const registry = manager.registries.addOrGetRegistry("test");
                 const group = registry.groups.addOrGetGroup("test");
 
                 const request = await Promise.all([
@@ -133,7 +133,7 @@ describe( "Analysis Sync", () => {
 
     test("Turning off analysis sync", async () => {
         const manager = new ThermalManager;
-        const registry = manager.addOrGetRegistry("test");
+        const registry = manager.registries.addOrGetRegistry("test");
         const group = registry.groups.addOrGetGroup("test");
 
         const request = await Promise.all([
@@ -157,7 +157,7 @@ describe( "Analysis Sync", () => {
 
     test("Switching analysis sync pointer", async () => {
         const manager = new ThermalManager;
-        const registry = manager.addOrGetRegistry("test");
+        const registry = manager.registries.addOrGetRegistry("test");
         const group = registry.groups.addOrGetGroup("test");
 
         const request = await Promise.all([
@@ -180,4 +180,3 @@ describe( "Analysis Sync", () => {
     });
 
 });
-

@@ -115,8 +115,8 @@ describe("FileTimelineElement", () => {
             frameData: async () => frame,
             histogramPixels: async () => new Float32Array(frame.pixels),
             pointAnalysisData: async () => ({ 0: 10, 120000: 11 }),
-            rectAnalysisData: async () => ({ 0: { min: 10, max: 25, avg: 17.5 } }),
-            ellipsisAnalysisData: async () => ({ 0: { min: 10, max: 25, avg: 17.5 } }),
+            rectAnalysisData: async () => ({ 0: { min: 10, max: 25, avg: 17.5, count: 16 } }),
+            ellipsisAnalysisData: async () => ({ 0: { min: 10, max: 25, avg: 17.5, count: 16 } }),
         };
         const reader = new ThermalFileReader(
             manager.managerObject.service, new ArrayBuffer(16), parser, `timeline-${crypto.randomUUID()}.lrc`

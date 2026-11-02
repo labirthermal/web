@@ -10,7 +10,7 @@ All registries within a single <code>ThermalManager</code> share the manager's t
 
 ## Creating and managing registries
 
-A registry is identified by a unique ID string within its parent <code>ThermalManager</code>. To create or obtain an existing registry, use <code>manager.addOrGetRegistry</code>:
+A registry is identified by a unique ID string within its parent <code>ThermalManager</code>. To create or obtain an existing registry, use <code>manager.registries.addOrGetRegistry</code>:
 
 ```ts
 import { ThermalManager } from "@labirthermal/core";
@@ -19,21 +19,32 @@ import { ThermalManager } from "@labirthermal/core";
 const manager = new ThermalManager();
 
 // Create or retrieve registries
-const registryA = manager.addOrGetRegistry( "display-set-a" );
-const registryB = manager.addOrGetRegistry( "display-set-b" );
+const registryA = manager.registries.addOrGetRegistry( "display-set-a" );
+const registryB = manager.registries.addOrGetRegistry( "display-set-b" );
 
 // Calling addOrGetRegistry with an existing ID returns the same instance
-const registryASecondRef = manager.addOrGetRegistry( "display-set-a" );
+const registryASecondRef = manager.registries.addOrGetRegistry( "display-set-a" );
 console.log( registryA === registryASecondRef ); // true
 
 // Registries can be configured with optional settings, e.g. histogram resolution
-const customRegistry = manager.addOrGetRegistry( "custom-set", {
+const customRegistry = manager.registries.addOrGetRegistry( "custom-set", {
     histogramResolution: 200
 } );
 
 // Remove a registry by ID (destroys the registry and all its groups and instances)
-manager.removeRegistry( "display-set-a" );
+manager.registries.removeRegistry( "display-set-a" );
 ```
+
+The manager's observable registry collection is available through `manager.registries.value`. Its listeners and hierarchy iterators are described in [ThermalManager](./thermal-manager#nested-registries). Options passed to `addOrGetRegistry` configure a new registry only; retrieving an existing ID does not change its settings.
+
+### Resetting or removing a registry
+
+- `registry.removeAllChildren()` destroys and removes all groups and their file instances, but keeps the registry in its manager.
+- `registry.reset()` also resets the registry's opacity and min/max limits. It keeps the registry in its manager and does not reset its temperature range or histogram.
+- `registry.destroySelfAndBelow()` performs the same cleanup as `reset()`; it does not remove the registry from its manager.
+- `registry.destroySelfInTheManager()` delegates to `manager.registries.removeRegistry(registry.id)`, performing cleanup and removing the registry from the collection.
+
+Use `manager.registries.reset()` to destroy and remove all registries in that manager.
 
 ## Managing groups (`registry.groups`)
 
@@ -45,7 +56,7 @@ To create a new group or retrieve an existing one by ID:
 import { ThermalManager, ThermalGroup } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 
 // Create or retrieve a group with an optional human-readable name and description
 const groupA = registry.groups.addOrGetGroup(
@@ -62,8 +73,8 @@ registry.groups.addExistingGroup( groupB );
 const allGroups: ThermalGroup[] = registry.groups.value;
 
 // Iterate through all groups or all instances across all groups
-registry.forEveryGroup( group => console.log( group.label ) );
-registry.forEveryInstance( instance => console.log( instance.thermalUrl ) );
+registry.groups.forEveryGroup( group => console.log( group.label ) );
+registry.groups.forEveryInstance( instance => console.log( instance.thermalUrl ) );
 
 // Remove a group by its ID (destroys its instances and clears state)
 registry.groups.removeGroup( "morning-series" );
@@ -72,7 +83,12 @@ registry.groups.removeGroup( "morning-series" );
 registry.groups.addListener( "groups-listener", groups => {
     console.log( "Current groups count:", groups.length );
 } );
+
+// Unsubscribe when the listener is no longer needed
+registry.groups.removeListener( "groups-listener" );
 ```
+
+Treat `registry.groups.value` as read-only and use the collection's methods to modify it. `registry.groups.removeAllGroups()` destroys and removes every group and its instances. The registry also exposes `forEveryGroup` and `forEveryInstance` for the same hierarchy traversal.
 
 :::tabs
 == Interactive demo
@@ -131,7 +147,7 @@ The <code>registry.minmax</code> property (`MinmaxRegistryProperty`) represents 
 import { ThermalManager } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 
 // Read current minmax values
 const minmax = registry.minmax.value;
@@ -200,7 +216,7 @@ The <code>registry.range</code> property (`RangeDriver`) controls the active tem
 import { ThermalManager } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 
 // Manually set a custom temperature range
 registry.range.imposeRange({ from: 24.0, to: 36.5 });
@@ -284,7 +300,7 @@ The <code>registry.histogram</code> property (`HistogramState`) contains the sta
 import { ThermalManager } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 
 // Access histogram bins
 const bins = registry.histogram.value;
@@ -333,7 +349,7 @@ The opacity value is constrained between `0` (completely transparent IR image) a
 import { ThermalManager } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 
 // Set opacity and propagate to all instances
 registry.opacity.imposeOpacity( 0.6 );
@@ -388,7 +404,7 @@ import {
 } from "@labirthermal/core";
 
 const manager = new ThermalManager();
-const registry = manager.addOrGetRegistry( "display-set" );
+const registry = manager.registries.addOrGetRegistry( "display-set" );
 const group = registry.groups.addOrGetGroup( "series" );
 
 // Request files to be loaded into a specific group
@@ -407,6 +423,12 @@ registry.batch.request(
     }
 );
 ```
+
+### Instance labels
+
+Assign an optional human-readable label to a loaded instance with `result.setLabel("Measurement A")` in a successful batch callback. Read it through `result.label`; it does not change the file name or the source URL.
+
+The deprecated full-load methods, `loadFullOneFile` and `loadFullMultipleFiles`, also accept an optional `label` in each file request and apply it to the created instance. Labels belong to individual instances, so the same source file can have different labels in different groups. For new loading code, prefer the batch loader shown above.
 
 ## Summary of registry controls
 
@@ -452,4 +474,3 @@ registry.batch.request(
         </tr>
     </tbody>
 </table>
-

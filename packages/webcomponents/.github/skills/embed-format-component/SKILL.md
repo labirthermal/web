@@ -5,19 +5,19 @@ description: "Use for the embed package (@labirthermal/webcomponents) in package
 
 # Embed Component & Class Formatter Workflow
 
-This workflow standardizes documentation, code structure, and readability for Lit web components and TypeScript classes in `packages/embed` (`@labirthermal/webcomponents`).
+This workflow standardizes documentation, code structure, and readability for Lit web components and TypeScript classes in `packages/webcomponents` (`@labirthermal/webcomponents`).
 
 ---
 
 ## 1. Scope & Package Guard
 
 > **CRITICAL - Embed Package Only:**
-> This skill is strictly scoped to `packages/embed`.
+> This skill is strictly scoped to `packages/webcomponents`.
 >
 > **Verification Step:**
-> Check the target file path. If the file is **NOT** located under `packages/embed/`:
-> 1. Inform the user: *"Tento skill (`embed-format-component`) je určen pouze pro balíček `packages/embed`. Zadaný soubor leží mimo tento balíček, operace byla zastavena."*
-> 2. Stop execution immediately. Do not format or modify files outside `packages/embed`.
+> Check the target file path. If the file is **NOT** located under `packages/webcomponents/`:
+> 1. Inform the user: *"Tento skill (`embed-format-component`) je určen pouze pro balíček `packages/webcomponents`. Zadaný soubor leží mimo tento balíček, operace byla zastavena."*
+-> 2. Stop execution immediately. Do not format or modify files outside `packages/webcomponents`.
 
 ---
 

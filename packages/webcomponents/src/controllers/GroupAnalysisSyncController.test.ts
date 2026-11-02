@@ -73,7 +73,7 @@ describe("GroupAnalysisSyncController", () => {
             frameInterval: 100, fps: 10, timeline,
             averageEmissivity: .95, averageReflectedKelvins: 293, bytesize: 16,
         };
-        const data = { 0: { min: 10, max: 25, avg: 17.5 } };
+        const data = { 0: { min: 10, max: 25, avg: 17.5, count: 16 } };
         const parser: IParserObject = {
             name: "fixture", description: "fixture", devices: [], extensions: [],
             is: () => true, baseInfo: async () => info,

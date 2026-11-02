@@ -83,11 +83,35 @@ afterEach(() => {
 });
 
 describe("Standalone analysis graph", () => {
-    it("hides inactive graphs and measures active graphs without replacing the host", async () => {
+    it("uses boolean presence semantics for the standalone attribute", async () => {
+        const component = new TestGraph();
+        document.body.append(component);
+        await component.updateComplete;
+        expect(component.standalone).toBe(false);
+        expect(component.hasAttribute("standalone")).toBe(false);
+
+        for (const value of ["", "false", "true"]) {
+            component.setAttribute("standalone", value);
+            await component.updateComplete;
+            expect(component.standalone).toBe(true);
+            component.removeAttribute("standalone");
+            await component.updateComplete;
+            expect(component.standalone).toBe(false);
+        }
+
+        component.standalone = true;
+        await component.updateComplete;
+        expect(component.getAttribute("standalone")).toBe("");
+        component.standalone = false;
+        await component.updateComplete;
+        expect(component.hasAttribute("standalone")).toBe(false);
+    });
+
+    it("marks inactive graphs and measures active graphs without replacing the host", async () => {
         const component = new TestGraph();
         const source = fixture();
         Object.assign(component, { file: source.file });
-        component.setAttribute("standalone", "true");
+        component.setAttribute("standalone", "");
         document.body.append(component);
         expect(await component.updateComplete).toBe(true);
         expect(component.hasAttribute("data-has-graphs")).toBe(false);
