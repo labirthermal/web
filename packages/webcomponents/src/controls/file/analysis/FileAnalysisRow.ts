@@ -1,16 +1,17 @@
 import { AbstractAreaAnalysis, PointAnalysis } from "@labirthermal/core";
-import type { AbstractAnalysis } from "@labirthermal/core";
+import type { AbstractAnalysis, ThermalUnit } from "@labirthermal/core";
 import { consume } from "@lit/context";
 import { t } from "i18next";
 import { css, html, nothing } from "lit";
 import type { PropertyValues } from "lit";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { AbstractThermalElement } from "../../../hierarchy/AbstractThermalElement";
 import { registryControllerContext } from "../../../controllers/RegistryController";
 import type { RegistryController } from "../../../controllers/RegistryController";
 import { T } from "../../../translations/Languages";
 import { getContrastColor } from "../../../utils/getContrastColor";
 import type { AnalysisTableMode } from "./AnalysisTableOptions";
+import { managerUnitContext } from "../../../controllers/ManagerController";
 
 export class FileAnalysisRowElement extends AbstractThermalElement {
 
@@ -41,6 +42,10 @@ export class FileAnalysisRowElement extends AbstractThermalElement {
 
     @consume({ context: registryControllerContext, subscribe: true })
     private registryController!: RegistryController;
+
+    @state()
+    @consume({context: managerUnitContext, subscribe: true})
+    private unit!: ThermalUnit;
 
     /** Actual subscription target, retained so old listeners can be removed after analysis changes. Not reactive. */
     private boundAnalysis?: AbstractAnalysis;
@@ -330,7 +335,14 @@ export class FileAnalysisRowElement extends AbstractThermalElement {
             return nothing;
         }
         const value = analysis[statistic];
-        const text = value === undefined ? "-" : `${value.toFixed(2)} \u00b0C`;
+
+        const unit = this.registryController.registryObject.manager.unit;
+        
+        const text = value === undefined 
+            ? "-" 
+            : unit.formatSingle(
+                unit.celsiusToCurrent(value)
+            )
         const active = analysis.graph.state[statistic === "avg" ? "AVG" : statistic === "min" ? "MIN" : "MAX"];
         const canActivate = !this.graphActivationDisabled && analysis.file.timeline.isSequence
             && (statistic === "avg" || analysis instanceof AbstractAreaAnalysis);

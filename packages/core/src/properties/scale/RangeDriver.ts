@@ -11,7 +11,7 @@ type ThermalRangeType = {
 /** The range or undefined */
 export type ThermalRangeOrUndefined = ThermalRangeType | undefined;
 
-/** Handles the thermal range display. */
+/** Handles the thermal range display. Internal value is always stored in Celsius. */
 export class RangeDriver extends AbstractProperty<ThermalRangeOrUndefined, ThermalRegistry> {
 
     public readonly onAutoValueChanged = new CallbacksManager<(value: ThermalRangeOrUndefined) => void>();
@@ -70,26 +70,26 @@ export class RangeDriver extends AbstractProperty<ThermalRangeOrUndefined, Therm
      * Imposes a range to itself and below
      * - needs to be called before the minmax is calculated!
      */
-    public imposeRange(value: ThermalRangeOrUndefined) {
+    public imposeRange(valueInCelsius: ThermalRangeOrUndefined) {
 
         // If new and old are undefined, do nothing
-        if (value === undefined && this.value === undefined) {
+        if (valueInCelsius === undefined && this.value === undefined) {
             // ..do nothing
         }
         // If the new one is undefined and old one exists, set undefined
-        else if (value === undefined && this.value !== undefined) {
-            this.value = value;
+        else if (valueInCelsius === undefined && this.value !== undefined) {
+            this.value = valueInCelsius;
         }
         // If there is no value and the new one exists
-        if (value !== undefined && this.value === undefined) {
-            this.value = value;
+        if (valueInCelsius !== undefined && this.value === undefined) {
+            this.value = valueInCelsius;
         }
         // If the value changes...
-        else if (value !== undefined && this.value !== undefined) {
+        else if (valueInCelsius !== undefined && this.value !== undefined) {
 
             // ... set it only if it is different
-            if (this.value.from !== value.from || this.value.to !== value.to) {
-                this.value = value;
+            if (this.value.from !== valueInCelsius.from || this.value.to !== valueInCelsius.to) {
+                this.value = valueInCelsius;
             }
 
         }

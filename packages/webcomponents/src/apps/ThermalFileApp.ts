@@ -108,6 +108,7 @@ export class ThermalFileAppElement extends AbstractSingleFileAppElement {
             <file-info-button slot="bar-pre"></file-info-button>
 
             <manager-palette-dropdown slot="bar-pre"></manager-palette-dropdown>
+            <manager-unit-switch slot="bar-pre"></manager-unit-switch>
             <registry-range-form slot="bar-pre"></registry-range-form>
             <registry-opacity-slider slot="bar-pre"></registry-opacity-slider>
 

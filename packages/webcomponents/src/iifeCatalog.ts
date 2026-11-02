@@ -44,6 +44,7 @@ import { ManagerImageSmoothSwitch } from "./controls/manager/ManagerImageSmoothS
 import { ManagerPaletteButtons } from "./controls/manager/ManagerPaletteButtons";
 import { ManagerPaletteDropdown } from "./controls/manager/ManagerPaletteDropdown";
 import { ManagerToolBar } from "./controls/manager/ManagerToolsBar";
+import { ManagerUnitSwitch } from "./controls/manager/ManagerUnitSwitch";
 import { RegistryHistogram } from "./controls/registry/RegistryHistogram";
 import { RegistryOpacitySlider } from "./controls/registry/RegistryOpacitySlider";
 import { RegistryRangeAutoButton } from "./controls/registry/RegistryRangeAutoButton";
@@ -125,6 +126,7 @@ const elementsManagerControls = {
     "manager-palette-dropdown": ManagerPaletteDropdown,
     "manager-palette-buttons": ManagerPaletteButtons,
     "manager-tool-bar": ManagerToolBar,
+    "manager-unit-switch": ManagerUnitSwitch,
     /** @deprecated This sort of export should never be used. Please, do export thermal images only through the LIT components instead of the `@labirthermal/core` export. */
     "manager-export-panel": ManagerExportPanel
 } as const;

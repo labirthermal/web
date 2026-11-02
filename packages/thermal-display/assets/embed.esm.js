@@ -12896,7 +12896,7 @@ var GroupRangePropagatorElement = class extends AbstractGroupConsumer {
 	}
 	setValue() {
 		const value = this.groupObject.minmax.value;
-		if (value) this.value = `${value.min.toFixed(2)} — ${value.min.toFixed(2)} °C`;
+		if (value) this.value = `${value.min.toFixed(2)} — ${value.max.toFixed(2)} °C`;
 		else this.value = void 0;
 	}
 	render() {

@@ -12,6 +12,19 @@
 
 <body style="padding: 1rem; background: #ffffff">
 
+  <thermal-file-app thermal="/flir/flir_03.jpg" palette="jet" label="Lekce o něčem"
+    author="Jan Jáchim" license="CC BY-SA 4.0" smooth-thermograms="true" manager-slug="main-manager"
+    registry-slug="registry-sample" group-slug="smrt" tool="edit" advanced-palettes="false" opacity="0.3"
+    show-fullscreen="true" analysis1="Rectangle 0;rectangle;color:Blue;top:19;left:14;width:65;height:45;min" ms="5000" unit="K"></thermal-file-app>
+
+
+
+  <thermal-file-app thermal="/lrc/sequence_float32_small_short.lrc" palette="jet" label="Lekce o něčem"
+    author="Jan Jáchim" license="CC BY-SA 4.0" smooth-thermograms="true"
+    registry-slug="registry-sample" group-slug="smrt" tool="edit" advanced-palettes="false" opacity="0.3"
+    show-fullscreen="true" analysis1="Rectangle 0;rectangle;color:Blue;top:19;left:14;width:65;height:45;min" ms="5000" unit="F"></thermal-file-app>
+    <!--
+
 
   <thermal-group-app
     group-files="thermal~./flir/flir_01.jpg"
@@ -30,8 +43,6 @@
     <file-info-button></file-info-button>
   </thermal-simple-app>
 
-
-  <!--
   <connected-browser-app
     server-url="http://localhost:8080" 
     server-api-root="/api/"
@@ -126,7 +137,6 @@
 
 <thermal-group-app label="Skupina souborů" group-files="thermal~/soustruh.lrc;thermal~/tucnaci_04.lrc;"></thermal-group-app>
 
--->
 
   <h1>Dropin App</h1>
 

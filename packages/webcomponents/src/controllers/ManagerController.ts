@@ -1,5 +1,5 @@
 import type { AvailableThermalPalette, ThermalManager, ThermalPaletteType, ThermalRegistry, ThermalTool } from "@labirthermal/core";
-import { CallbacksManager, ThermalPalettes } from "@labirthermal/core";
+import { CallbacksManager, ThermalPalettes, ThermalUnit } from "@labirthermal/core";
 import { ContextProvider, createContext } from "@lit/context";
 import type { PropertyValues } from "lit";
 import type { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
@@ -34,6 +34,9 @@ interface IHostProperties {
     /** Tool property accessed from the host element. Exposed in the toolContext. Recommended property name: tool */
     tool: keyof ThermalManager["tool"]["tools"];
 
+    /** Indication of the thermal unit used in the webcomponents */
+    unit: ThermalUnit
+
 }
 
 export interface IElementWithManagerController extends AbstractThermalElement, IHostProperties {}
@@ -53,6 +56,7 @@ export const managerSmoothContext = createContext<boolean>("manager-smooth-conte
 export const managerGraphFunctionContext = createContext<boolean>("manager-graph-function-context");
 export const managerToolContext = createContext<ThermalTool>("manager-tool-context");
 export const managerInteractiveAnalysesContext = createContext<boolean>("manager-interactive-analysis-context");
+export const managerUnitContext = createContext<ThermalUnit>( "manager-unit-context" );
 
 export class ManagerController extends AbstractHierarchyController<IElementWithManagerController> {
 
@@ -70,7 +74,8 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
         advancedPalettes: { reflect: true, attribute: "advanced-palettes", type: Boolean },
         smoothThermograms: { reflect: true, attribute: "smooth-thermograms", type: Boolean},
         smoothGraph: { reflect: true, attribute: "smooth-graph", type: Boolean },
-        tool: { type: String, reflect: true, attribute: "tool"}
+        tool: { type: String, reflect: true, attribute: "tool"},
+        unit: { type: String, reflect: true, attribute: "unit" }
     }
 
 
@@ -115,6 +120,8 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
     public get smoothGraph(): boolean { return this.host.smoothGraph; }
 
     private readonly smoothGraphContextProvider: ContextProvider<typeof managerGraphFunctionContext, IElementWithManagerController>;
+
+    private readonly unitContextProvider: ContextProvider< typeof managerUnitContext, IElementWithManagerController>;
 
     /** Callbacks called upon the internal registry object creation */
     public readonly onInternalObject = new CallbacksManager< (manager: ThermalManager) => void >();
@@ -170,6 +177,13 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
             { context: managerGraphFunctionContext }
         );
 
+        this.unitContextProvider = new ContextProvider(
+            this.host,
+            { context: managerUnitContext }
+        )
+
+        
+
     }
 
 
@@ -184,6 +198,25 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
         this.managerObjectContextPtovider.setValue(this.host.managerObject);
 
         this.onInternalObject.call(this.host.managerObject);
+
+
+        // Unit
+        // Make sure an unit exists
+        if (this.host.unit === undefined) {
+            this.host.unit = ThermalUnit.C;
+        } 
+        // Make sure the unit is valid
+        else if ( ! ( this.host.unit.toUpperCase() in ThermalUnit ) ) {
+            this.host.unit = ThermalUnit.C;
+        }
+
+        // Impose the unit everywhere
+        this.setUnit( this.host.unit );
+
+        // Add the internal listener
+        this.managerObject.unit.addListener(this.UUID, this.setUnit.bind(this));
+
+
 
 
         // Palette
@@ -275,6 +308,10 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
         // If the tool property changed in the element, update it internally
         if (value.has("tool")) {
             this._setToolByKey(this.host.tool);
+        }
+
+        if (value.has("unit")) {
+            this.setUnit(this.host.unit);
         }
 
     }
@@ -454,6 +491,28 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
             this.managerObject.graphSmooth.setGraphSmooth(value);
         }
 
+    }
+
+    public setUnit(
+        value: ThermalUnit
+    ): void {
+
+        value = value in ThermalUnit ? value : ThermalUnit.C;
+
+        // If the value differs, set it to the property
+        if (this.host.unit !== value) {
+            this.host.unit = value;
+        }
+
+        // If the context differs, set it in context provider
+        if (this.unitContextProvider.value !== value) {
+            this.unitContextProvider.setValue(value);
+        }
+
+        // Impose the value internally
+        if (this.managerObject.unit.value !== value) {
+            this.managerObject.unit.set(value);
+        }
     }
 
 }

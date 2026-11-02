@@ -1,4 +1,4 @@
-import type { AvailableThermalPalette, PlaybackSpeeds, ThermalFileFailure, ThermalFileInstance, ThermalGroup, ThermalManager, ThermalRangeOrUndefined, ThermalRegistry } from "@labirthermal/core";
+import type { AvailableThermalPalette, PlaybackSpeeds, ThermalFileFailure, ThermalFileInstance, ThermalGroup, ThermalManager, ThermalRangeOrUndefined, ThermalRegistry, ThermalUnit } from "@labirthermal/core";
 import { provide } from "@lit/context";
 import { property } from "lit/decorators.js";
 import type { IElementWithFileController } from "../controllers/FileController";
@@ -51,6 +51,7 @@ implements
         smoothThermograms: boolean = false;
         smoothGraph: boolean = false;
         tool: string = "inspect";
+        unit!: ThermalUnit;
     
     
         // Registry controller properties

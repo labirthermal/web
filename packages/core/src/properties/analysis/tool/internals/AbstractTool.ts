@@ -54,4 +54,18 @@ export abstract class AbstractTool {
     /** Assamble the cursor label at the given point */
     public abstract getLabelValue(x: number, y: number, file: ThermalFileInstance): string;
 
+    protected get unit() {
+        return this.manager.unit;
+    }
+
+    protected getFormattedTemperature(
+        x: number,
+        y: number,
+        file: ThermalFileInstance
+    ): string {
+        const celsius = file.getTemperatureAtPoint(x, y);
+        const inCurrentUnit = this.unit.celsiusToCurrent(celsius);
+        return this.unit.formatSingle(inCurrentUnit);
+    }
+
 }

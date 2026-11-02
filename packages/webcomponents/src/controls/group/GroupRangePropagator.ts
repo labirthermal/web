@@ -55,7 +55,7 @@ export class GroupRangePropagatorElement extends AbstractGroupConsumer {
         const value = this.groupObject.minmax.value;
 
         if (value) {
-            this.value = `${value.min.toFixed(2)} — ${value.min.toFixed(2)} °C`;
+            this.value = `${value.min.toFixed(2)} — ${value.max.toFixed(2)} °C`;
         } else {
             this.value = undefined;
         }

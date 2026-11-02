@@ -19,6 +19,9 @@ export type { IParserObject } from "./parsers/structure";
 // Manager
 export { ThermalManager } from "./hierarchy/ThermalManager";
 export type { ThermalManagerOptions } from "./hierarchy/ThermalManager";
+export { UnitDrive } from "./properties/scale/UnitDrive";
+export type { ThermalUnitDefinition } from "./properties/scale/units";
+export { thermalUnits, ThermalUnit } from "./properties/scale/units";
 
 // Registry
 export { ThermalRegistry } from "./hierarchy/ThermalRegistry";

@@ -96,7 +96,12 @@ export class RegistryRangeSlider extends AbstractRegistryConsumer {
         if (min === undefined || max === undefined || from === undefined || to === undefined) return undefined;
         if (![min, max, from, to, max - min].every(Number.isFinite)
             || min > max || from < min || to > max || from > to) return undefined;
-        return { min, max, from, to };
+        return { 
+            min: this.toCurrentUnit(min), 
+            max: this.toCurrentUnit(max), 
+            from: this.toCurrentUnit(from), 
+            to: this.toCurrentUnit(to) 
+        };
     }
 
     private percent(value: number, values: Values): number {

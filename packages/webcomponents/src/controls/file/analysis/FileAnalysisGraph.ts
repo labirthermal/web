@@ -1,4 +1,4 @@
-import type { AnalysisDataStateValue, ThermalFileInstance } from "@labirthermal/core";
+import type { AnalysisDataStateValue, ThermalFileInstance, ThermalUnit } from "@labirthermal/core";
 import { TimeFormat } from "@labirthermal/core";
 import { consume } from "@lit/context";
 import { t } from "i18next";
@@ -10,7 +10,7 @@ import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
 import type { FileControllerCurrentFrameType } from "../../../controllers/FileController";
 import { fileCurrentFrameContext, fileTimeCursorContext } from "../../../controllers/FileController";
-import { managerGraphFunctionContext } from "../../../controllers/ManagerController";
+import { managerGraphFunctionContext, managerUnitContext } from "../../../controllers/ManagerController";
 import { AbstractFileConsumer } from "../../../hierarchy/consumers/AbstractFileConsumer";
 import { T } from "../../../translations/Languages";
 import type { ThermalChartElement } from "./chart/chart";
@@ -44,6 +44,7 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
     }
 
     private chartDataSource?: AnalysisDataStateValue;
+    private chartDataUnit?: ThermalUnit;
     private chartDataCache?: unknown[][];
     private chartOptionsCache?: object;
     private chartOptionsCacheKey?: string;
@@ -75,6 +76,10 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
 
     @consume( {context: managerGraphFunctionContext, subscribe: true} )
     protected graphSmooth: boolean = false;
+
+    /** Current display unit. Graph data stay in Celsius and are converted only for the chart. */
+    @consume({ context: managerUnitContext, subscribe: true })
+    protected unit?: ThermalUnit;
 
     public onInstanceCreated(instance: ThermalFileInstance): void {
         this.graphs = instance.analysisData.value;
@@ -239,13 +244,20 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
     }
 
     private getChartData(): unknown[][] {
-        if (this.chartDataSource === this.graphs && this.chartDataCache) {
+        if (
+            this.chartDataSource === this.graphs
+            && this.chartDataUnit === this.unit
+            && this.chartDataCache
+        ) {
             return this.chartDataCache;
         }
 
         const [headers, ...rows] = this.graphs.values;
+        // Without a manager (e.g. outside the hierarchy) values stay in Celsius
+        const unit = this.managerObject?.unit;
 
         this.chartDataSource = this.graphs;
+        this.chartDataUnit = this.unit;
         this.chartDataCache = [
             [
                 { label: headers[0], type: "number" },
@@ -259,10 +271,23 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
 
                 return [
                     relativeTime,
-                    ...row.slice(1).flatMap((value, index) => [
-                        value,
-                        `<div style="padding: 6px 8px"><div>${this.escapeHtml(t(T.time))}: <strong>${TimeFormat.duration(relativeTime)}</strong></div><div>${this.escapeHtml(headers[index + 1])}: <strong>${this.escapeHtml(String(value))} °C</strong></div></div>`
-                    ])
+                    ...row.slice(1).flatMap((value, index) => {
+                        // Missing values (gaps in the series) are passed through unchanged
+                        const isNumber = typeof value === "number" && Number.isFinite(value);
+                        const converted = isNumber && unit
+                            ? unit.celsiusToCurrent(value)
+                            : value;
+                        const formatted = !isNumber
+                            ? String(value)
+                            : unit
+                                ? unit.formatSingle(converted as number)
+                                : `${value} °C`;
+
+                        return [
+                            converted,
+                            `<div style="padding: 6px 8px"><div>${this.escapeHtml(t(T.time))}: <strong>${TimeFormat.duration(relativeTime)}</strong></div><div>${this.escapeHtml(headers[index + 1])}: <strong>${this.escapeHtml(formatted)}</strong></div></div>`
+                        ];
+                    })
                 ];
             })
         ];
@@ -273,7 +298,7 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
     private getChartOptions(): object {
         const duration = this.file?.duration ?? 0;
         const timeLabel = t(T.time);
-        const temperatureLabel = `${t(T.temperature)} °C`;
+        const temperatureLabel = `${t(T.temperature)} ${this.managerObject?.unit.current.symbol ?? "°C"}`;
         const key = JSON.stringify([
             this.graphs.colors,
             this.graphSmooth,
@@ -428,7 +453,7 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
                         ${ref(this.graphRef)}
                         data-video-svg
                         type="line" 
-                        .data=${guard([this.graphs], () => this.getChartData())}
+                        .data=${guard([this.graphs, this.unit], () => this.getChartData())}
                         .onGraphClick=${this.handleGraphClick}
                         .onGraphHover=${this.handleGraphHover}
                         @google-chart-ready=${this.syncChartArea}
@@ -439,7 +464,8 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
                             this.graphHeight,
                             this.file?.duration,
                             t(T.time),
-                            t(T.temperature)
+                            t(T.temperature),
+                            this.unit
                         ], () => this.getChartOptions())}
                         ></thermal-chart>`
                 : nothing

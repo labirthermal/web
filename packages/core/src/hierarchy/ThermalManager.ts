@@ -1,5 +1,7 @@
 import * as workerpool from "workerpool";
 import Pool from "workerpool/types/Pool";
+import { UnitDrive } from "../properties/scale/UnitDrive";
+import { ThermalUnit } from "../properties/scale/units";
 import { BaseStructureObject } from "../base/BaseStructureObject";
 import { ThermalFileInstance } from "../file/ThermalFileInstance";
 import { AvailableThermalPalette } from "../properties/scale/palettes";
@@ -45,6 +47,8 @@ export class ThermalManager extends BaseStructureObject {
     public readonly graphSmooth: GraphSmoothDrive = new GraphSmoothDrive(this, false);
 
     public readonly tool: ToolDrive = new ToolDrive( this, new InspectTool( this ) );
+
+    public readonly unit: UnitDrive = new UnitDrive(this, ThermalUnit.C);
 
     
 

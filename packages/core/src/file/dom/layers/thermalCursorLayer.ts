@@ -11,6 +11,10 @@ export default class ThermalCursorLayer extends AbstractLayer {
     protected axisY: HTMLDivElement;
     protected label: HTMLDivElement;
 
+    private get unit() {
+        return this.instance.manager.unit;
+    }
+
     public constructor(
         dom: InstanceDOM
     ) {
@@ -119,13 +123,12 @@ export default class ThermalCursorLayer extends AbstractLayer {
     public setValue(
         value?: number
     ) {
-        if (value)
-            this.label.innerHTML = `${value.toFixed(3)} °C`;
+        if (value) {
+            this.label.innerHTML = `${value.toFixed(3)} $°C`;
+        }
     }
 
     public resetCursor(): void {
-        // this.axisX.style.left = "0px";
-        // this.axisY.style.top = "0px";
         this.center.style.top = "0px";
         this.center.style.left = "0px";
         this.label.style.removeProperty("right");

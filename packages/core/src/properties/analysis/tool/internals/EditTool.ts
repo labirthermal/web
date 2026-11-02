@@ -97,7 +97,10 @@ export class EditTool extends AbstractTool implements ITool {
             : "";
 
 
-        return `${analysis}${temperature && temperature.toFixed(2) + " °C<br />"}X: ${x}<br />Y: ${y}`;
+        const temperatureFormatted = this.getFormattedTemperature(x, y, file);
+
+
+        return `${analysis}${temperatureFormatted}<br />X: ${x}<br />Y: ${y}`;
 
     }
 

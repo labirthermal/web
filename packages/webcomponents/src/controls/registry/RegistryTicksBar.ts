@@ -1,4 +1,4 @@
-import type { ThermalMinmaxOrUndefined, ThermalRangeOrUndefined, ThermalRegistry } from "@labirthermal/core";
+import type { ThermalMinmaxOrUndefined, ThermalRangeOrUndefined, ThermalRegistry, ThermalUnit } from "@labirthermal/core";
 import { consume } from "@lit/context";
 import type { PropertyValues } from "lit";
 import { css, html, nothing } from "lit";
@@ -7,6 +7,7 @@ import type { Ref} from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
 import { AbstractRegistryConsumer } from "../../hierarchy/consumers/AbstractRegistryConsumer";
 import { registryHighlightContext } from "../../controllers/RegistryController";
+import { managerUnitContext } from "../../controllers/ManagerController";
 
 type TickType = {
     percentage: number,
@@ -34,6 +35,9 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
 
     @consume({context: registryHighlightContext, subscribe: true})
     protected highlight?: ThermalRangeOrUndefined;
+
+    @consume({ context: managerUnitContext, subscribe: true })
+    protected unit?: ThermalUnit;
 
     @property({ type: String, reflect: true })
     public placement: string = "top";
@@ -286,7 +290,7 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
                     <div class="tick" >
                         <div class="tick-marker"></div>
                         <div class="tick-value">
-                            ${tick.value.toFixed(RegistryTicksBar.TICK_FIXED)}
+                            ${this.toCurrentUnit( tick.value ).toFixed(RegistryTicksBar.TICK_FIXED)}
                         </div>
                     </div>
                         `;

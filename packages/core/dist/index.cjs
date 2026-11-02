@@ -60,6 +60,177 @@ const getPool = async () => {
 	return pool;
 };
 //#endregion
+//#region src/properties/abstractProperty.ts
+/** 
+* A common basis for all observable properties.
+* 
+* Principle:
+* - the value is stored internally
+* - update should be done only using `this.value = newValue` setter which will call
+*     - the validation
+*     - the side effects
+*     - the listeners on the value change
+* - Listeners are stored in a `CallbacksManager` object which is controlled by methods such as `addListener`, `removeListener` and `clearAllListeners`
+* - for the purpose of value assignment from the outside, every individual property should create its own public methods that respect principles mentioned above.
+* 
+* @internal 
+*/
+var AbstractProperty = class {
+	parent;
+	_initial;
+	_value;
+	/** Get the current value @readonly */
+	get value() {
+		return this._value;
+	}
+	/** Get the initial value of this property @readonly */
+	get valueInitial() {
+		return this._initial;
+	}
+	/** 
+	* Set the value and call all listeners. 
+	* - Validates the value before settings
+	* - Calls side effects after setting the value
+	* - Calls all the listeners with the new values
+	* @internal 
+	*/
+	set value(value) {
+		this._value = this.validate(value);
+		this.afterSetEffect(this._value);
+		this._listeners.call(this._value);
+	}
+	_listeners = new CallbacksManager();
+	constructor(parent, _initial) {
+		this.parent = parent;
+		this._initial = _initial;
+		this._value = this.validate(this._initial);
+	}
+	/** Set the value to its initial state */
+	reset() {
+		this.value = this._initial;
+	}
+	/**
+	* Add a listener to the property value changes.
+	* @param id Identificator of the listening object needs to be unique - it will be the key in the `Map of listeners`
+	* @param listener The function that will be triggered whenever the value changes.
+	*/
+	addListener(id, listener) {
+		this._listeners.set(id, listener);
+	}
+	/** Remove the listener from the `Map` by its unique ID. */
+	removeListener(id) {
+		this._listeners.delete(id);
+	}
+	/** Remove all listeners from the `Map` */
+	clearAllListeners() {
+		this._listeners.clear();
+	}
+	/** 
+	* Arbitrary call all registered listeners usin the current value of the property. 
+	* 
+	* This method should be used only in special cases, for example when the value is concieved as a reference, therefore its updates does not use the standard setter which triggers the listeners, side effects ac ati.
+	*/
+	callAllListenersWithCurrentValue() {
+		this._listeners.call(this._value);
+	}
+};
+//#endregion
+//#region src/properties/scale/units.ts
+let ThermalUnit = /* @__PURE__ */ function(ThermalUnit) {
+	ThermalUnit["C"] = "C";
+	ThermalUnit["F"] = "F";
+	ThermalUnit["K"] = "K";
+	return ThermalUnit;
+}({});
+const celsiusToFahrenheit = (celsius) => celsius * 9 / 5 + 32;
+const celsiusToKelvin = (celsius) => celsius + 273.15;
+const fahrenheitToCelsius = (fahrenheit) => (fahrenheit - 32) * 5 / 9;
+const fahrenheitToKelvin = (fahrenheit) => (fahrenheit - 32) * 5 / 9 + 273.15;
+const kelvinToCelsius = (kelvin) => kelvin - 273.15;
+const kelvinToFahrenheit = (kelvin) => (kelvin - 273.15) * 9 / 5 + 32;
+const noConversion = (value) => value;
+const thermalUnits = {
+	["C"]: {
+		name: "Celsius",
+		symbol: "°C",
+		key: "C",
+		toCelsius: noConversion,
+		fromCelsius: noConversion,
+		toFahrenheit: celsiusToFahrenheit,
+		toKelvin: celsiusToKelvin
+	},
+	["F"]: {
+		name: "Fahrenheit",
+		symbol: "°F",
+		key: "F",
+		toCelsius: fahrenheitToCelsius,
+		fromCelsius: celsiusToFahrenheit,
+		toFahrenheit: noConversion,
+		toKelvin: fahrenheitToKelvin
+	},
+	["K"]: {
+		name: "Kelvin",
+		symbol: "K",
+		key: "K",
+		toCelsius: kelvinToCelsius,
+		fromCelsius: celsiusToKelvin,
+		toFahrenheit: kelvinToFahrenheit,
+		toKelvin: noConversion
+	}
+};
+//#endregion
+//#region src/properties/scale/UnitDrive.ts
+var UnitDrive = class UnitDrive extends AbstractProperty {
+	static KEYS = ThermalUnit;
+	static UNITS = Object.freeze(thermalUnits);
+	_current;
+	get current() {
+		return this._current;
+	}
+	constructor(parent, initial) {
+		super(parent, initial);
+		this._current = this.getUnitDefinition(initial);
+	}
+	validate(value) {
+		return value;
+	}
+	afterSetEffect(value) {
+		this._current = this.getUnitDefinition(value);
+	}
+	getUnitDefinition(key) {
+		return thermalUnits[key];
+	}
+	set(key) {
+		this.value = key;
+	}
+	setCelsius() {
+		this.set("C");
+	}
+	setFahrenheit() {
+		this.set("F");
+	}
+	setKelvin() {
+		this.set("K");
+	}
+	/** Celsius is the internal unit - all conversions are based on it. */
+	celsiusToCurrent(value) {
+		return this.current.fromCelsius(value);
+	}
+	/** Celsius is the internal unit - all conversions are based on it. */
+	currentToCelsius(value) {
+		return this.current.toCelsius(value);
+	}
+	formatSingle(value) {
+		return `${value.toFixed(2)} ${this.current.symbol}`;
+	}
+	formatRange(from, to) {
+		return `${from.toFixed(2)} — ${to.toFixed(2)} ${this.current.symbol}`;
+	}
+	getUnits() {
+		return UnitDrive.UNITS;
+	}
+};
+//#endregion
 //#region src/base/BaseStructureObject.ts
 var BaseStructureObject = class {};
 //#endregion
@@ -1532,81 +1703,6 @@ var ThermalFileFailure = class ThermalFileFailure extends AbstractFileResult {
 	}
 	static fromError(error) {
 		return new ThermalFileFailure(error.url, error.code, error.message);
-	}
-};
-//#endregion
-//#region src/properties/abstractProperty.ts
-/** 
-* A common basis for all observable properties.
-* 
-* Principle:
-* - the value is stored internally
-* - update should be done only using `this.value = newValue` setter which will call
-*     - the validation
-*     - the side effects
-*     - the listeners on the value change
-* - Listeners are stored in a `CallbacksManager` object which is controlled by methods such as `addListener`, `removeListener` and `clearAllListeners`
-* - for the purpose of value assignment from the outside, every individual property should create its own public methods that respect principles mentioned above.
-* 
-* @internal 
-*/
-var AbstractProperty = class {
-	parent;
-	_initial;
-	_value;
-	/** Get the current value @readonly */
-	get value() {
-		return this._value;
-	}
-	/** Get the initial value of this property @readonly */
-	get valueInitial() {
-		return this._initial;
-	}
-	/** 
-	* Set the value and call all listeners. 
-	* - Validates the value before settings
-	* - Calls side effects after setting the value
-	* - Calls all the listeners with the new values
-	* @internal 
-	*/
-	set value(value) {
-		this._value = this.validate(value);
-		this.afterSetEffect(this._value);
-		this._listeners.call(this._value);
-	}
-	_listeners = new CallbacksManager();
-	constructor(parent, _initial) {
-		this.parent = parent;
-		this._initial = _initial;
-		this._value = this.validate(this._initial);
-	}
-	/** Set the value to its initial state */
-	reset() {
-		this.value = this._initial;
-	}
-	/**
-	* Add a listener to the property value changes.
-	* @param id Identificator of the listening object needs to be unique - it will be the key in the `Map of listeners`
-	* @param listener The function that will be triggered whenever the value changes.
-	*/
-	addListener(id, listener) {
-		this._listeners.set(id, listener);
-	}
-	/** Remove the listener from the `Map` by its unique ID. */
-	removeListener(id) {
-		this._listeners.delete(id);
-	}
-	/** Remove all listeners from the `Map` */
-	clearAllListeners() {
-		this._listeners.clear();
-	}
-	/** 
-	* Arbitrary call all registered listeners usin the current value of the property. 
-	* 
-	* This method should be used only in special cases, for example when the value is concieved as a reference, therefore its updates does not use the standard setter which triggers the listeners, side effects ac ati.
-	*/
-	callAllListenersWithCurrentValue() {
-		this._listeners.call(this._value);
 	}
 };
 //#endregion
@@ -4673,6 +4769,9 @@ var ThermalCursorLayer = class extends AbstractLayer {
 	axisX;
 	axisY;
 	label;
+	get unit() {
+		return this.instance.manager.unit;
+	}
 	constructor(dom) {
 		super(dom);
 		this.layerRoot = ThermalDomFactory.createCursorLayerRoot();
@@ -4735,7 +4834,7 @@ var ThermalCursorLayer = class extends AbstractLayer {
 		}
 	}
 	setValue(value) {
-		if (value) this.label.innerHTML = `${value.toFixed(3)} °C`;
+		if (value) this.label.innerHTML = `${value.toFixed(3)} $°C`;
 	}
 	resetCursor() {
 		this.center.style.top = "0px";
@@ -6878,6 +6977,14 @@ var AbstractTool = class {
 	deactivate() {
 		this.onDeactivate();
 	}
+	get unit() {
+		return this.manager.unit;
+	}
+	getFormattedTemperature(x, y, file) {
+		const celsius = file.getTemperatureAtPoint(x, y);
+		const inCurrentUnit = this.unit.celsiusToCurrent(celsius);
+		return this.unit.formatSingle(inCurrentUnit);
+	}
 };
 //#endregion
 //#region src/properties/analysis/analysis/internals/AbstractAddTool.ts
@@ -6974,7 +7081,7 @@ var AddRectangleTool = class extends AbstractAddTool {
 	onPointLeave() {}
 	onPointEnter() {}
 	getLabelValue = (x, y, file) => {
-		return `X:${x}<br />Y:${y}<br />${file.group.tool.tools.inspect.getLabelValue(x, y, file)}`;
+		return `X:${x}<br />Y:${y}<br />${this.getFormattedTemperature(x, y, file)}`;
 	};
 };
 //#endregion
@@ -7011,7 +7118,7 @@ var AddPointTool = class extends AbstractAddTool {
 	onPointLeave() {}
 	onPointEnter() {}
 	getLabelValue = (x, y, file) => {
-		return `X:${x}<br />Y:${y}<br />${file.group.tool.tools.inspect.getLabelValue(x, y, file)}`;
+		return `X:${x}<br />Y:${y}<br />${this.getFormattedTemperature(x, y, file)}`;
 	};
 };
 //#endregion
@@ -7048,14 +7155,14 @@ var EditTool = class extends AbstractTool {
 		if (point.active === true) point.deactivate();
 	}
 	getLabelValue(x, y, file) {
-		const temperature = file.getTemperatureAtPoint(x, y);
+		file.getTemperatureAtPoint(x, y);
 		const hoveredAnalysis = file.analysis.layers.all.filter((analysis) => analysis.isWithin(x, y)).map((analysis) => {
 			const element = analysis.selected ? "span" : "s";
 			return `<${element} style="color: ${analysis.initialColor};">
                     ${analysis.name}
                 </${element}>`;
 		});
-		return `${hoveredAnalysis.length > 0 ? hoveredAnalysis.join("<br />") + "<br />" : ""}${temperature && temperature.toFixed(2) + " °C<br />"}X: ${x}<br />Y: ${y}`;
+		return `${hoveredAnalysis.length > 0 ? hoveredAnalysis.join("<br />") + "<br />" : ""}${this.getFormattedTemperature(x, y, file)}<br />X: ${x}<br />Y: ${y}`;
 	}
 };
 //#endregion
@@ -7080,7 +7187,7 @@ var InspectTool = class extends AbstractTool {
 	getLabelValue = (x, y, file) => {
 		if (file === void 0) return "";
 		try {
-			return file.getTemperatureAtPoint(x, y).toFixed(2) + " °C";
+			return this.getFormattedTemperature(x, y, file);
 		} catch (error) {
 			console.error("Error getting tool label at point", error);
 			return "";
@@ -8318,7 +8425,7 @@ var MinmaxRegistryProperty = class extends AbstractMinmaxProperty {
 };
 //#endregion
 //#region src/properties/scale/RangeDriver.ts
-/** Handles the thermal range display. */
+/** Handles the thermal range display. Internal value is always stored in Celsius. */
 var RangeDriver = class extends AbstractProperty {
 	onAutoValueChanged = new CallbacksManager();
 	_autoValue = void 0;
@@ -8350,11 +8457,11 @@ var RangeDriver = class extends AbstractProperty {
 	* Imposes a range to itself and below
 	* - needs to be called before the minmax is calculated!
 	*/
-	imposeRange(value) {
-		if (value === void 0 && this.value === void 0) {} else if (value === void 0 && this.value !== void 0) this.value = value;
-		if (value !== void 0 && this.value === void 0) this.value = value;
-		else if (value !== void 0 && this.value !== void 0) {
-			if (this.value.from !== value.from || this.value.to !== value.to) this.value = value;
+	imposeRange(valueInCelsius) {
+		if (valueInCelsius === void 0 && this.value === void 0) {} else if (valueInCelsius === void 0 && this.value !== void 0) this.value = valueInCelsius;
+		if (valueInCelsius !== void 0 && this.value === void 0) this.value = valueInCelsius;
+		else if (valueInCelsius !== void 0 && this.value !== void 0) {
+			if (this.value.from !== valueInCelsius.from || this.value.to !== valueInCelsius.to) this.value = valueInCelsius;
 		}
 		return this.value;
 	}
@@ -8839,6 +8946,7 @@ var ThermalManager = class extends BaseStructureObject {
 	smooth = new SmoothDrive(this, false);
 	graphSmooth = new GraphSmoothDrive(this, false);
 	tool = new ToolDrive(this, new InspectTool(this));
+	unit = new UnitDrive(this, "C");
 	pool;
 	constructor(pool, options) {
 		super();
@@ -8941,13 +9049,16 @@ exports.ThermalGroup = ThermalGroup;
 exports.ThermalManager = ThermalManager;
 exports.ThermalPalettes = ThermalPalettes;
 exports.ThermalRegistry = ThermalRegistry;
+exports.ThermalUnit = ThermalUnit;
 exports.TimeFormat = TimeFormat;
 exports.TimePeriod = TimePeriod;
 exports.TimeRound = TimeRound;
+exports.UnitDrive = UnitDrive;
 exports.availableAnalysisColors = availableAnalysisColors;
 exports.getPool = getPool;
 exports.playbackSpeed = playbackSpeed;
 exports.supportedFileTypes = supportedFileTypes;
 exports.supportedFileTypesInputProperty = supportedFileTypesInputProperty;
+exports.thermalUnits = thermalUnits;
 
 //# sourceMappingURL=index.cjs.map

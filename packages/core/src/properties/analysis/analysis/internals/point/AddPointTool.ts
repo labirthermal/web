@@ -61,7 +61,7 @@ export class AddPointTool extends AbstractAddTool implements ITool {
 
 
     public getLabelValue = (x: number, y: number, file: ThermalFileInstance): string => {
-        const temperature = file.group.tool.tools.inspect.getLabelValue(x, y, file);
+        const temperature = this.getFormattedTemperature(x, y, file);
         return `X:${x}<br />Y:${y}<br />${temperature}`;
     }
 
