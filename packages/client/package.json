@@ -7,6 +7,7 @@
   "module": "./dist/lib/index.export.mjs",
   "types": "./dist/lib/index.export.d.mts",
   "type": "module",
+  "private": true,
   "files": [
     "dist",
     "README.md"
