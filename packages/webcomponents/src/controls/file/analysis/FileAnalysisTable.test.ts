@@ -235,6 +235,20 @@ describe("FileAnalysisTable", () => {
         expect(rows()[0].shadowRoot?.querySelector('thermal-btn[aria-pressed]')).toBeNull();
     });
 
+    it("reads the analysis values from the job data of the current frame", async () => {
+        expect(area.avg).toBe(17.5);
+        expect(area.min).toBe(10);
+        expect(area.max).toBe(25);
+
+        await instance.timeline.setRelativeTime(100);
+        await settle();
+
+        expect(area.avg).toBe(18.5);
+        expect(area.min).toBe(11);
+        expect(area.max).toBe(26);
+        expect(rows()[0].shadowRoot?.querySelectorAll("td")[1].textContent).toContain("18.50");
+    });
+
     it("updates names, colors, dimensions and values without replacing keyed rows", async () => {
         const row = rows()[0];
         area.setName("renamed");

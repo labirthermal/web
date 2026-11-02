@@ -633,10 +633,13 @@ export abstract class AbstractAnalysis {
 
 
 
-    /** Recalculate the analysis' values from the current position and dimensions. Called whenever the analysis is resized or whenever file's `pixels` change. */
+    /**
+     * Refresh the analysis' values for the current frame from the graph data computed by the parser jobs.
+     * The graph and the values therefore always share one source. Until the jobs resolve, the last known data are used.
+     */
     public recalculateValues() {
 
-        const { min, max, avg } = this.getValues();
+        const { min, max, avg } = this.getValuesFromGraphData();
         this._min = min;
         this._max = max;
         this._avg = avg;
@@ -644,7 +647,43 @@ export abstract class AbstractAnalysis {
 
     }
 
-    /** Obtain the current values of the analysis using current position and dimensions */
+    /** Read the values of the current frame from the graph data. Non-finite values (empty selection, invalid point) become `undefined`. */
+    protected getValuesFromGraphData(): { min?: number, max?: number, avg?: number } {
+
+        const data = this.graph.value;
+        const relativeTime = this.file.timeline?.currentStep?.relative;
+
+        if (data === undefined || relativeTime === undefined) {
+            return {};
+        }
+
+        const entry = data[relativeTime];
+
+        const finite = (value: number | undefined) => value !== undefined && Number.isFinite(value)
+            ? value
+            : undefined;
+
+        if (entry === undefined) {
+            return {};
+        }
+
+        if (typeof entry === "number") {
+            const value = finite(entry);
+            return { min: value, max: value, avg: value };
+        }
+
+        return {
+            min: finite(entry.min),
+            max: finite(entry.max),
+            avg: finite(entry.avg)
+        };
+
+    }
+
+    /**
+     * Obtain the current values of the analysis using current position and dimensions
+     * @deprecated Values are read from the graph data computed by the parser jobs, see `recalculateValues`. This synchronous calculation does not follow the parser contract boundaries and is not used anymore.
+     */
     protected abstract getValues(): { min?: number, max?: number, avg?: number }
 
     /** Override this method to get proper analysis data. */

@@ -33,9 +33,27 @@ export class AnalysisGraph {
         return this._value;
     }
 
+    /** The analysis values are derived from the graph data, so they are refreshed before the graph listeners are called. */
     protected set value( value: GraphDataTypes|undefined ) {
         this._value = value;
+        this.analysis.recalculateValues();
         this.onGraphData.call( value, this.analysis );
+    }
+
+    /** Identifier of the latest data request. Older responses are discarded so that they never overwrite newer data. */
+    protected _dataRequest: number = 0;
+
+    /** Fetch the analysis data and store them only if no newer request was made meanwhile. */
+    protected async fetchGraphData(): Promise<void> {
+
+        const request = ++this._dataRequest;
+
+        const data = await this.getGraphData();
+
+        if ( request === this._dataRequest ) {
+            this.value = data;
+        }
+
     }
 
     setMinActivation( active: boolean ) {
@@ -104,16 +122,14 @@ export class AnalysisGraph {
         } );
 
         // Listen to analysis move or resize and fetch data
-        this.analysis.onMoveOrResize.set( "__graphs", async ( analysis ) => {
+        this.analysis.onMoveOrResize.set( "__graphs", async () => {
 
-            const data = await analysis.getAnalysisData();
-            this.value = data;
+            await this.fetchGraphData();
 
         } );
 
         // Initial graph data
-        const data = await this.getGraphData();
-        this.value = data;
+        await this.fetchGraphData();
 
     }
 

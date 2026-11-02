@@ -371,8 +371,16 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
     private handleGraphClick = (relativeTimeMs: number): void => {
         const file = this.file;
         if (file?.timeline.isSequence) {
-            void file.timeline.setRelativeTime(relativeTimeMs);
+            void file.timeline.setRelativeTime(this.nearestFrameTime(file.timeline.relativeSteps, relativeTimeMs));
         }
+    }
+
+    /** The click position is continuous, while the timeline selects the previous frame. Snap to the nearest frame instead. */
+    private nearestFrameTime(steps: number[], relativeTimeMs: number): number {
+        return steps.reduce(
+            (nearest, step) => Math.abs(step - relativeTimeMs) < Math.abs(nearest - relativeTimeMs) ? step : nearest,
+            steps[0] ?? relativeTimeMs
+        );
     }
 
     private handleGraphHover = (percentage: number | undefined): void => {

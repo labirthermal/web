@@ -1300,7 +1300,12 @@ export declare class AnalysisGraph {
   };
   protected _value?: GraphDataTypes;
   get value(): GraphDataTypes | undefined;
+  /** The analysis values are derived from the graph data, so they are refreshed before the graph listeners are called. */
   protected set value(value: GraphDataTypes | undefined);
+  /** Identifier of the latest data request. Older responses are discarded so that they never overwrite newer data. */
+  protected _dataRequest: number;
+  /** Fetch the analysis data and store them only if no newer request was made meanwhile. */
+  protected fetchGraphData(): Promise<void>;
   setMinActivation(active: boolean): void;
   setMaxActivation(active: boolean): void;
   setAvgActivation(active: boolean): void;
@@ -1419,6 +1424,7 @@ export declare class EllipsisAnalysis extends AbstractAreaAnalysis {
   static startAddingAtPoint(key: string, color: string, file: ThermalFileInstance, top: number, left: number): EllipsisAnalysis;
   static build(key: string, color: string, file: ThermalFileInstance, _top: number, _left: number, _right: number, _bottom: number): EllipsisAnalysis;
   protected buildArea(x: number, y: number, width?: number, height?: number): AbstractArea;
+  /** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
   protected getValues(): {
     min?: number;
     max?: number;
@@ -1471,6 +1477,7 @@ export declare class PointAnalysis extends AbstractAnalysis {
   protected constructor(key: string, color: string, file: ThermalFileInstance, top: number, left: number);
   setColorCallback(value: string): void;
   isWithin(x: number, y: number): boolean;
+  /** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
   protected getValues(): {
     min?: number;
     max?: number;
@@ -1503,6 +1510,7 @@ export declare class RectangleAnalysis extends AbstractAreaAnalysis {
   static startAddingAtPoint(key: string, color: string, file: ThermalFileInstance, top: number, left: number): RectangleAnalysis;
   static build(key: string, color: string, file: ThermalFileInstance, _top: number, _left: number, _right: number, _bottom: number): RectangleAnalysis;
   protected buildArea(x: number, y: number, width?: number, height?: number): AbstractArea;
+  /** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
   protected getValues(): {
     min?: number;
     max?: number;
@@ -1764,9 +1772,21 @@ export declare abstract class AbstractAnalysis {
   setDeselected(emitGlobalEvent?: boolean): void;
   /** Detect whether a coordinate is withing the analysis. */
   abstract isWithin(x: number, y: number): boolean;
-  /** Recalculate the analysis' values from the current position and dimensions. Called whenever the analysis is resized or whenever file's `pixels` change. */
+  /**
+   * Refresh the analysis' values for the current frame from the graph data computed by the parser jobs.
+   * The graph and the values therefore always share one source. Until the jobs resolve, the last known data are used.
+   */
   recalculateValues(): void;
-  /** Obtain the current values of the analysis using current position and dimensions */
+  /** Read the values of the current frame from the graph data. Non-finite values (empty selection, invalid point) become `undefined`. */
+  protected getValuesFromGraphData(): {
+    min?: number;
+    max?: number;
+    avg?: number;
+  };
+  /**
+   * Obtain the current values of the analysis using current position and dimensions
+   * @deprecated Values are read from the graph data computed by the parser jobs, see `recalculateValues`. This synchronous calculation does not follow the parser contract boundaries and is not used anymore.
+   */
   protected abstract getValues(): {
     min?: number;
     max?: number;
@@ -2701,6 +2721,11 @@ declare class AnalysisDataState extends AbstractProperty<AnalysisDataStateValue,
   dangerouslyUpdateValue(value: AnalysisDataStateValue): void;
   /** Assamble the current analysis data and download them as CSV directly. */
   downloadData(): void;
+  /** Refresh the values of all analyses for the current frame from their graph data. No calculation is performed. */
+  refreshAllAnalysesValues(): void;
+  /**
+   * @deprecated The analysis values are read from the graph data computed by the parser jobs, use `refreshAllAnalysesValues`. This worker calculation does not follow the parser contract boundaries (rectangle excludes its last row and column, ellipsis uses the image dimensions) and is not used anymore.
+   */
   updateAllAnalysesValues(): Promise<void>;
 }
 //#endregion

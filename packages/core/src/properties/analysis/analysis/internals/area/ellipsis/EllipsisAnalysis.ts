@@ -78,6 +78,7 @@ export class EllipsisAnalysis extends AbstractAreaAnalysis {
         return new EllipsisArea(this, x, y, x, y);
     }
 
+    /** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
     protected getValues(): { min?: number; max?: number; avg?: number; } {
 
         const fromX = this.left;

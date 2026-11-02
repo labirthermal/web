@@ -70,6 +70,7 @@ export class PointAnalysis extends AbstractAnalysis {
     public isWithin(x: number, y: number): boolean {
         return this.center.isWithin( y, x );
     }
+    /** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
     protected getValues(): { min?: number; max?: number; avg?: number; } {
         const value = this.file.getTemperatureAtPoint( this.center.x, this.center.y );
         return {

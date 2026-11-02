@@ -95,6 +95,15 @@ export class AnalysisDataState extends AbstractProperty<AnalysisDataStateValue, 
     }
 
 
+    /** Refresh the values of all analyses for the current frame from their graph data. No calculation is performed. */
+    public refreshAllAnalysesValues(): void {
+        this.parent.analysis.value.forEach( analysis => analysis.recalculateValues() );
+    }
+
+
+    /**
+     * @deprecated The analysis values are read from the graph data computed by the parser jobs, use `refreshAllAnalysesValues`. This worker calculation does not follow the parser contract boundaries (rectangle excludes its last row and column, ellipsis uses the image dimensions) and is not used anymore.
+     */
     public async updateAllAnalysesValues(): Promise<void> {
 
         const instance = this.parent;

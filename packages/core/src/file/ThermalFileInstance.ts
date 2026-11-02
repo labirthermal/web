@@ -170,7 +170,7 @@ export class ThermalFileInstance extends AbstractThermalFile {
                 this.dom.cursorLayer?.setLabel(this.group.cursorPosition.value.x, this.group.cursorPosition.value.y, label);
             }
 
-            this.analysisData.updateAllAnalysesValues();
+            this.analysisData.refreshAllAnalysesValues();
         }
 
     }

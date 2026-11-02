@@ -2040,13 +2040,38 @@ var AbstractAnalysis = class AbstractAnalysis {
 		const slot = this.file.slots.getAnalysisSlot(this);
 		if (slot) this.file.group.analysisSync.setSlotDeselected(this.file, slot);
 	}
-	/** Recalculate the analysis' values from the current position and dimensions. Called whenever the analysis is resized or whenever file's `pixels` change. */
+	/**
+	* Refresh the analysis' values for the current frame from the graph data computed by the parser jobs.
+	* The graph and the values therefore always share one source. Until the jobs resolve, the last known data are used.
+	*/
 	recalculateValues() {
-		const { min, max, avg } = this.getValues();
+		const { min, max, avg } = this.getValuesFromGraphData();
 		this._min = min;
 		this._max = max;
 		this._avg = avg;
 		this.onValues.call(this.min, this.max, this.avg);
+	}
+	/** Read the values of the current frame from the graph data. Non-finite values (empty selection, invalid point) become `undefined`. */
+	getValuesFromGraphData() {
+		const data = this.graph.value;
+		const relativeTime = this.file.timeline?.currentStep?.relative;
+		if (data === void 0 || relativeTime === void 0) return {};
+		const entry = data[relativeTime];
+		const finite = (value) => value !== void 0 && Number.isFinite(value) ? value : void 0;
+		if (entry === void 0) return {};
+		if (typeof entry === "number") {
+			const value = finite(entry);
+			return {
+				min: value,
+				max: value,
+				avg: value
+			};
+		}
+		return {
+			min: finite(entry.min),
+			max: finite(entry.max),
+			avg: finite(entry.avg)
+		};
 	}
 	/**
 	* @deprecated Use with caution! This method forcefully sets the analysis values. The calculation mechanisms should happen elsewhere. Now they happen in the canvas layer wich calculates them upon rendering. That is not good at all!
@@ -2419,6 +2444,7 @@ var PointAnalysis = class PointAnalysis extends AbstractAnalysis {
 	isWithin(x, y) {
 		return this.center.isWithin(y, x);
 	}
+	/** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
 	getValues() {
 		const value = this.file.getTemperatureAtPoint(this.center.x, this.center.y);
 		return {
@@ -2520,9 +2546,19 @@ var AnalysisGraph = class {
 	get value() {
 		return this._value;
 	}
+	/** The analysis values are derived from the graph data, so they are refreshed before the graph listeners are called. */
 	set value(value) {
 		this._value = value;
+		this.analysis.recalculateValues();
 		this.onGraphData.call(value, this.analysis);
+	}
+	/** Identifier of the latest data request. Older responses are discarded so that they never overwrite newer data. */
+	_dataRequest = 0;
+	/** Fetch the analysis data and store them only if no newer request was made meanwhile. */
+	async fetchGraphData() {
+		const request = ++this._dataRequest;
+		const data = await this.getGraphData();
+		if (request === this._dataRequest) this.value = data;
 	}
 	setMinActivation(active) {
 		if (this._min !== active) {
@@ -2558,12 +2594,10 @@ var AnalysisGraph = class {
 		this.analysis.onSelected.set("__graphs", (analysis) => {
 			this.onAnalysisSelection.call(true, analysis);
 		});
-		this.analysis.onMoveOrResize.set("__graphs", async (analysis) => {
-			const data = await analysis.getAnalysisData();
-			this.value = data;
+		this.analysis.onMoveOrResize.set("__graphs", async () => {
+			await this.fetchGraphData();
 		});
-		const data = await this.getGraphData();
-		this.value = data;
+		await this.fetchGraphData();
 	}
 	async getGraphData() {
 		return await this.analysis.getAnalysisData();
@@ -3100,6 +3134,7 @@ var EllipsisAnalysis = class EllipsisAnalysis extends AbstractAreaAnalysis {
 		if (width !== void 0 && height !== void 0) return new EllipsisArea(this, x, y, x + width, y + height);
 		return new EllipsisArea(this, x, y, x, y);
 	}
+	/** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
 	getValues() {
 		const fromX = this.left;
 		const toX = this.left + this.width;
@@ -3170,6 +3205,7 @@ var RectangleAnalysis = class RectangleAnalysis extends AbstractAreaAnalysis {
 		if (width !== void 0 && height !== void 0) return new RectangleArea(this, x, y, x + width, y + height);
 		return new RectangleArea(this, x, y, x, y);
 	}
+	/** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
 	getValues() {
 		const fromX = this.left;
 		const toX = this.left + this.width;
@@ -3672,6 +3708,13 @@ var AnalysisDataState = class extends AbstractProperty {
 		const csv = (0, export_to_csv.generateCsv)(csvConfig)(data);
 		(0, export_to_csv.download)(csvConfig)(csv);
 	}
+	/** Refresh the values of all analyses for the current frame from their graph data. No calculation is performed. */
+	refreshAllAnalysesValues() {
+		this.parent.analysis.value.forEach((analysis) => analysis.recalculateValues());
+	}
+	/**
+	* @deprecated The analysis values are read from the graph data computed by the parser jobs, use `refreshAllAnalysesValues`. This worker calculation does not follow the parser contract boundaries (rectangle excludes its last row and column, ellipsis uses the image dimensions) and is not used anymore.
+	*/
 	async updateAllAnalysesValues() {
 		const instance = this.parent;
 		try {
@@ -6108,7 +6151,7 @@ var ThermalFileInstance = class ThermalFileInstance extends AbstractThermalFile 
 				const label = this.group.tool.value.getLabelValue(this.group.cursorPosition.value.x, this.group.cursorPosition.value.y, this);
 				this.dom.cursorLayer?.setLabel(this.group.cursorPosition.value.x, this.group.cursorPosition.value.y, label);
 			}
-			this.analysisData.updateAllAnalysesValues();
+			this.analysisData.refreshAllAnalysesValues();
 		}
 	}
 	getPixelsForHistogram() {

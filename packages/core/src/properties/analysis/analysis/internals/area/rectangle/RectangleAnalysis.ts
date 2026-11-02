@@ -78,6 +78,7 @@ export class RectangleAnalysis extends AbstractAreaAnalysis {
         return new RectangleArea(this, x, y, x, y);
     }
 
+    /** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
     protected getValues(): { min?: number; max?: number; avg?: number; } {
 
         const fromX = this.left;
