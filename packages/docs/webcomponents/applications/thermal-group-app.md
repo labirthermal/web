@@ -327,21 +327,16 @@ After the files from [`group-files`](#group-files) are loaded, the application s
 
 </ComponentAttribute>
 
-<ComponentAttribute name="smooth-thermograms + smooth-graph">
+<ComponentAttribute name="smooth-thermograms" type="boolean" default="false" tag="thermal-group-app">
 
-Initial smoothing settings:
-
-- `smooth-thermograms` (`'true' | 'false'`, default `false`) smooths the rendering of the thermal images.
-- `smooth-graph` (`'true' | 'false'`, default `false`) smooths the lines of the analysis graphs.
-
-Only `"true"` is true; omitted, empty, `"false"` and other values are false.
+When `smooth-thermograms` is present, the thermal images start in the smoothed rendering mode. See also [`smooth-graph`](#smooth-graph).
 
 ```html
 <thermal-group-app
     label="Rhinoceros"
     style="width: 100%"
     group-files="thermal~/files/nosorozec_01.lrc;thermal~/files/nosorozec_02.lrc"
-    smooth-thermograms="true"
+    smooth-thermograms
 ></thermal-group-app>
 ```
 
@@ -350,24 +345,22 @@ Only `"true"` is true; omitted, empty, `"false"` and other values are false.
         label="Rhinoceros"
         style="width: 100%"
         :group-files="rhinos"
-        smooth-thermograms="true"
+        smooth-thermograms
     ></thermal-group-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="locale" type="'en' | 'cs' | 'de' | 'fr' | 'cy'">
+<ComponentAttribute name="smooth-graph" type="boolean" default="false" tag="thermal-group-app">
 
-Language of the user interface. Regional variants such as `en_GB`, `cs_CZ` or `de_AT` are accepted as well; an unknown value falls back to `en`. When omitted, the current language of the page is kept. The language is shared by all webcomponents on the page, so changing it in one application also changes it in the others.
-
-Some texts of the file list and the detail header (for example the file count, *Back* and the empty-group message) are currently in Czech regardless of the language.
+When `smooth-graph` is present, the lines of the analysis graphs start in the smoothed rendering mode. See also [`smooth-thermograms`](#smooth-thermograms).
 
 ```html
 <thermal-group-app
     label="Rhinoceros"
     style="width: 100%"
     group-files="thermal~/files/nosorozec_01.lrc;thermal~/files/nosorozec_02.lrc"
-    locale="de"
+    smooth-graph
 ></thermal-group-app>
 ```
 
@@ -376,21 +369,29 @@ Some texts of the file list and the detail header (for example the file count, *
         label="Rhinoceros"
         style="width: 100%"
         :group-files="rhinos"
-        locale="de"
+        smooth-graph
     ></thermal-group-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="analysis1 … analysis7 + ms + speed">
+<ComponentAttribute name="analysis1 … analysis7" type="string">
 
-State of the file opened in the detail. These attributes are **not** initial settings for the group: opening a detail overwrites them with the analyses, the current time and the playback speed of the opened file.
-
-- `analysis1` … `analysis7` (`string`) – serialized analyses of the opened file, in the same format as in [`thermal-file-app`](./thermal-file-app.md#analysis1-analysis7). While a detail is open, they are synchronised in both directions: editing an analysis updates the attribute and setting an attribute updates the analysis of the opened file.
-- `ms` (`number`) – current position in the opened sequence in milliseconds.
-- `speed` (`0.5 | 1 | 2 | 3 | 5 | 10`) – playback speed of the opened sequence.
+Serialized analyses of the file opened in the detail, in the same format as in [`thermal-file-app`](./thermal-file-app.md#analysis1-analysis7). These attributes are **not** initial settings for the group: opening a detail overwrites them with the analyses of the opened file. While a detail is open, they are synchronised in both directions: editing an analysis updates the attribute and setting an attribute updates the analysis of the opened file.
 
 After returning to the list, the attributes keep the last values of the detail, and the analyses stay on the file.
+
+</ComponentAttribute>
+
+<ComponentAttribute name="ms" type="number">
+
+Current position of the sequence opened in the detail, in milliseconds. Like [`analysis1 … analysis7`](#analysis1-analysis7), this is **not** an initial setting for the group: opening a detail overwrites the attribute with the current time of the opened file. See also [`speed`](#speed).
+
+</ComponentAttribute>
+
+<ComponentAttribute name="speed" type="0.5 | 1 | 2 | 3 | 5 | 10">
+
+Playback speed of the sequence opened in the detail. Like [`ms`](#ms), this is **not** an initial setting for the group: opening a detail overwrites the attribute with the playback speed of the opened file.
 
 </ComponentAttribute>
 
@@ -434,15 +435,8 @@ Because `slug` is used as a fallback by all three identifiers, setting only `slu
 
 </ComponentAttribute>
 
-<ComponentAttribute name="autoclear-group" type="'true' | 'false'" default="true">
-
-Removes the internal group (and its files) when the application is removed from the page. Set `autoclear-group="false"` only when the group is shared with other elements by [`group-slug`](#manager-slug-registry-slug-group-slug) and should survive the removal of this application.
-
-</ComponentAttribute>
-
 ### Other attributes
 
-- `author` and `license` are accepted but not displayed (see [`label`](#label)).
 - `autohighlight` is inherited from the file context but has no effect in this application. Hovering a card always highlights the file's range on the histogram and range slider.
 - The order of the files cannot be set from HTML; files are always ordered by the time of acquisition, oldest first.
 

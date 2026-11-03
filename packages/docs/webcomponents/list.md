@@ -106,7 +106,7 @@ Lets users drop and analyze their own LRC files.
 
 <thermal-dropin-app
     palette="iron"
-    advanced-palettes="true"
+    advanced-palettes
     tool="edit"
     style="width: 100%"
 ></thermal-dropin-app>

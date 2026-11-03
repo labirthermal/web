@@ -11,7 +11,7 @@ The *drop-in* webcomponent enables the user to analyze his own LRC files. It is 
 ```html
 <thermal-dropin-app
   palette="iron"
-  advanced-palettes="true"
+  advanced-palettes
   tool="edit"
 ></thermal-dropin-app>
 ```

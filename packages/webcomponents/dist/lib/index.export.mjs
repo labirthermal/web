@@ -11,7 +11,7 @@ import { styleMap } from "lit/directives/style-map.js";
 import { property, queryAssignedElements, state } from "lit/decorators.js";
 import { cache } from "lit/directives/cache.js";
 import { map } from "lit/directives/map.js";
-import { Placement, arrow, autoUpdate, computePosition, flip, inline, offset, shift } from "@floating-ui/dom";
+import { arrow, autoUpdate, computePosition, flip, inline, offset, shift } from "@floating-ui/dom";
 import { classMap } from "lit/directives/class-map.js";
 import { state as state$1 } from "lit/decorators/state.js";
 import { live } from "lit/directives/live.js";
@@ -10341,7 +10341,7 @@ __decorate([property({
 	type: String,
 	reflect: true,
 	attribute: "tooltip-placement"
-}), __decorateMetadata("design:type", typeof Placement === "undefined" ? Object : Placement)], ManagerToolBar.prototype, "tooltipPlacement", void 0);
+}), __decorateMetadata("design:type", Object)], ManagerToolBar.prototype, "tooltipPlacement", void 0);
 //#endregion
 //#region src/controls/registry/RegistryRangeForm.ts
 /**
@@ -14460,6 +14460,7 @@ var FileRangePropagator = class extends AbstractFileButton {
 		if (!this.file) return t$1("range");
 		return this.managerController.formatRange(this.managerController.toCurrentUnit(this.file.min), this.managerController.toCurrentUnit(this.file.max));
 	}
+	/** The file context and metadata listener provide the tooltip values. */
 	onInstanceCreated() {}
 	enter() {
 		if (this.registryController && this.file) this.registryController.setHighlight({
@@ -18118,7 +18119,7 @@ __decorate([
 		context: managerUnitContext,
 		subscribe: true
 	}),
-	__decorateMetadata("design:type", typeof ThermalUnit === "undefined" ? Object : ThermalUnit)
+	__decorateMetadata("design:type", Object)
 ], FileInfoButton.prototype, "unit", void 0);
 //#endregion
 //#region src/controls/file/fileLabel.ts
@@ -20391,7 +20392,7 @@ __decorate([property$1({
 __decorate([consume({
 	context: managerUnitContext,
 	subscribe: true
-}), __decorateMetadata("design:type", typeof ThermalUnit === "undefined" ? Object : ThermalUnit)], ManagerUnitSwitch.prototype, "unit", void 0);
+}), __decorateMetadata("design:type", Object)], ManagerUnitSwitch.prototype, "unit", void 0);
 //#endregion
 //#region src/renderers/FileDetail.ts
 var FileDetailElement = class extends AbstractFileConsumer {

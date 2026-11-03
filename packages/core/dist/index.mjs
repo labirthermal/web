@@ -7173,7 +7173,6 @@ var EditTool = class extends AbstractTool {
 		if (point.active === true) point.deactivate();
 	}
 	getLabelValue(x, y, file) {
-		file.getTemperatureAtPoint(x, y);
 		const hoveredAnalysis = file.analysis.layers.all.filter((analysis) => analysis.isWithin(x, y)).map((analysis) => {
 			const element = analysis.selected ? "span" : "s";
 			return `<${element} style="color: ${analysis.initialColor};">

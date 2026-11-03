@@ -4648,7 +4648,7 @@ declare global {
 export declare class RegistryRangeDisplay extends AbstractRegistryConsumer {
   protected from?: number;
   protected to?: number;
-  /** The manager's current unit; Celsius is used until it is provided. */
+  /** Rerenders the labels when the manager's display unit changes. */
   protected unit?: ThermalUnit;
   fixed: number;
   separator: string;
@@ -5071,6 +5071,7 @@ export declare class FileRangePropagator extends AbstractFileButton {
   private unbindFile;
   /** The file bounds and all range interactions remain in Celsius. */
   protected get tooltip(): string;
+  /** The file context and metadata listener provide the tooltip values. */
   onInstanceCreated(): void;
   enter(): void;
   leave(): void;

@@ -10365,7 +10365,7 @@ __decorate([(0, lit_decorators_js.property)({
 	type: String,
 	reflect: true,
 	attribute: "tooltip-placement"
-}), __decorateMetadata("design:type", typeof _floating_ui_dom.Placement === "undefined" ? Object : _floating_ui_dom.Placement)], ManagerToolBar.prototype, "tooltipPlacement", void 0);
+}), __decorateMetadata("design:type", Object)], ManagerToolBar.prototype, "tooltipPlacement", void 0);
 //#endregion
 //#region src/controls/registry/RegistryRangeForm.ts
 /**
@@ -14484,6 +14484,7 @@ var FileRangePropagator = class extends AbstractFileButton {
 		if (!this.file) return t$1("range");
 		return this.managerController.formatRange(this.managerController.toCurrentUnit(this.file.min), this.managerController.toCurrentUnit(this.file.max));
 	}
+	/** The file context and metadata listener provide the tooltip values. */
 	onInstanceCreated() {}
 	enter() {
 		if (this.registryController && this.file) this.registryController.setHighlight({
@@ -18142,7 +18143,7 @@ __decorate([
 		context: managerUnitContext,
 		subscribe: true
 	}),
-	__decorateMetadata("design:type", typeof _labirthermal_core.ThermalUnit === "undefined" ? Object : _labirthermal_core.ThermalUnit)
+	__decorateMetadata("design:type", Object)
 ], FileInfoButton.prototype, "unit", void 0);
 //#endregion
 //#region src/controls/file/fileLabel.ts
@@ -20415,7 +20416,7 @@ __decorate([(0, lit_decorators_property_js.property)({
 __decorate([(0, _lit_context.consume)({
 	context: managerUnitContext,
 	subscribe: true
-}), __decorateMetadata("design:type", typeof _labirthermal_core.ThermalUnit === "undefined" ? Object : _labirthermal_core.ThermalUnit)], ManagerUnitSwitch.prototype, "unit", void 0);
+}), __decorateMetadata("design:type", Object)], ManagerUnitSwitch.prototype, "unit", void 0);
 //#endregion
 //#region src/renderers/FileDetail.ts
 var FileDetailElement = class extends AbstractFileConsumer {
