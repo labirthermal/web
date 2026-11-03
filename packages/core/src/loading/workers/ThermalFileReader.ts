@@ -16,6 +16,16 @@ export class ThermalFileReader extends AbstractFileResult {
     /** For the purpose of testing we have a unique ID */
     public readonly id = Math.random();
 
+    /**
+     * Buffers smaller than this run their data jobs directly on the main thread.
+     *
+     * Workerpool sends buffers through a structured clone which is paid synchronously
+     * by the calling thread, plus a roundtrip overhead of the task itself. For small
+     * buffers (still images, short sequences) this overhead costs more than the job,
+     * while long sequences benefit from offloading the heavy per-pixel computation.
+     */
+    public static readonly WORKER_THRESHOLD_BYTES = 4 * 1024 * 1024;
+
     /** In-memory cache of the `baseInfo` request. This request might be expensive in larger files or in Vario Cam files. Because the return value is allways the same, there is no need to make the call repeatedly. */
     protected baseInfoCache?: ParsedFileBaseInfo;
 
@@ -124,6 +134,11 @@ export class ThermalFileReader extends AbstractFileResult {
         
     }
 
+    /** Decide whether a job reading the given buffer is worth offloading to the worker pool. */
+    protected shouldUseWorker( buffer: ArrayBuffer ): boolean {
+        return buffer.byteLength >= ThermalFileReader.WORKER_THRESHOLD_BYTES;
+    }
+
     /** 
      * Before requesting a frame, create a dedicated `ArrayBuffer` containing only the frame's data 
      * 
@@ -140,9 +155,17 @@ export class ThermalFileReader extends AbstractFileResult {
 
         const data = this.getFrameSubset( index );
 
-        const result = await this.pool.exec( this.parser.frameData, [ data.array, data.dataType ] );
+        if ( !this.shouldUseWorker( data.array ) ) {
+            return await this.parser.frameData( data.array, data.dataType );
+        }
 
-        return result;
+        // The subset is independently owned, so it is transferred to the worker
+        // without a copy. The retained working buffer must never be transferred.
+        return await this.pool.exec(
+            this.parser.frameData,
+            [ data.array, data.dataType ],
+            { transfer: [ data.array ] }
+        );
 
     }
 
@@ -150,13 +173,17 @@ export class ThermalFileReader extends AbstractFileResult {
      * 
      * Retrieves the point analysis data at the specified coordinates.
      * 
-     * Runs in workerpool for the heavy computation.
+     * Large buffers run in the workerpool, small ones directly on the main thread
+     * (see `WORKER_THRESHOLD_BYTES`).
      * 
      * @param x The x-coordinate of the point.
      * @param y The y-coordinate of the point.
      * @returns The analysis data for the specified point.
      */
     public async pointAnalysisData( x: number, y: number ): ReturnType<IParserObject["pointAnalysisData"]> {
+        if ( !this.shouldUseWorker( this.buffer ) ) {
+            return await this.parser.pointAnalysisData( this.buffer, x, y );
+        }
         return await this.pool.exec(
             this.parser.pointAnalysisData, 
             [ this.buffer, x, y ]
@@ -167,7 +194,8 @@ export class ThermalFileReader extends AbstractFileResult {
      * 
      * Retrieves the rectangle analysis data for the specified area.
      * 
-     * Runs in workerpool for heavy computation.
+     * Large buffers run in the workerpool, small ones directly on the main thread
+     * (see `WORKER_THRESHOLD_BYTES`).
      * 
      * @param x The x-coordinate of the top-left corner of the rectangle.
      * @param y The y-coordinate of the top-left corner of the rectangle.
@@ -176,6 +204,9 @@ export class ThermalFileReader extends AbstractFileResult {
      * @returns The analysis data for the specified rectangle.
      */
     public async rectAnalysisData( x: number, y: number, width: number, height: number ): ReturnType<IParserObject["rectAnalysisData"]> {
+        if ( !this.shouldUseWorker( this.buffer ) ) {
+            return await this.parser.rectAnalysisData( this.buffer, x, y, width, height );
+        }
         return await this.pool.exec( 
             this.parser.rectAnalysisData, 
             [ this.buffer, x, y, width, height ] 
@@ -185,13 +216,21 @@ export class ThermalFileReader extends AbstractFileResult {
 
     /**
      * 
-     * @param x The x-coordinate of the top-left corner of the rectangle.
-     * @param y The 
-     * @param width 
-     * @param height 
-     * @returns 
+     * Retrieves the elliptical area analysis data.
+     * 
+     * Large buffers run in the workerpool, small ones directly on the main thread
+     * (see `WORKER_THRESHOLD_BYTES`).
+     * 
+     * @param x The x-coordinate of the top-left corner of the bounding rectangle.
+     * @param y The y-coordinate of the top-left corner of the bounding rectangle.
+     * @param width The width of the bounding rectangle.
+     * @param height The height of the bounding rectangle.
+     * @returns The analysis data for the specified ellipse.
      */
     public async ellipsisAnalysisData( x: number, y: number, width: number, height: number ): ReturnType<IParserObject["ellipsisAnalysisData"]> {
+        if ( !this.shouldUseWorker( this.buffer ) ) {
+            return await this.parser.ellipsisAnalysisData( this.buffer, x, y, width, height );
+        }
         return await this.pool.exec(
             this.parser.ellipsisAnalysisData,
             [ this.buffer, x, y, width, height ]

@@ -4,9 +4,9 @@ Documentation and examples at [https://labirthermal.github.io/web/](https://labi
 
 Set of JS/TS packages for work with recordings from thermal cameras:
 
-- `@labir/core` - the core functionality in pure TS
-- `@labir/embed` - webcomponents on top of `@labir/core`
-- `@labir/thermal-display` - a Wordpress plugin using `@labir/embed`
+- `@labirthermal/core` - the core functionality in pure TS
+- `@labirthermal/webcomponents` - webcomponents on top of `@labirthermal/core`
+- `thermal-display` - a Wordpress plugin using `@labirthermal/webcomponents`
 
 ## Features
 
@@ -72,3 +72,7 @@ pnpm run version
 # 7. publish the packages
 pnpm publish --recursive
 ```
+
+## License
+
+[MIT](./LICENSE), except for the `thermal-display` WordPress plugin, which is licensed under GPL-2.0-or-later following the WordPress ecosystem convention.

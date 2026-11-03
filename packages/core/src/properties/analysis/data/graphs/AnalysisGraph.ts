@@ -40,23 +40,61 @@ export class AnalysisGraph {
         this.onGraphData.call( value, this.analysis );
     }
 
-    /** Identifier of the latest data request. Older responses are discarded so that they never overwrite newer data. */
-    protected _dataRequest: number = 0;
+    /** True while a data job is running. Guards the coalescing in `fetchGraphData`. */
+    protected _fetching: boolean = false;
 
-    /** The currently pending (or last finished) data request. */
+    /** Set when a request arrives while a job runs. The running loop then performs one trailing refetch. */
+    protected _refetchRequested: boolean = false;
+
+    /** The currently running (or last finished) fetch, including its eventual trailing refetches. */
     protected _fetchPromise?: Promise<void>;
 
-    /** Fetch the analysis data and store them only if no newer request was made meanwhile. */
+    /**
+     * Fetch the analysis data from the parser job and store them.
+     *
+     * Requests are **coalesced**: at most one job runs per analysis at any time.
+     * Reading the data means handing the whole working buffer to the parser job
+     * (and cloning it when the job runs in the worker pool), so an unthrottled
+     * source of requests - typically `onMoveOrResize` firing on every mouse move
+     * while dragging - must not start one job per event.
+     *
+     * - When no job is running, the job starts immediately.
+     * - When a job is already running, only a *trailing* refetch is noted and the
+     *   in-flight promise is returned. Once the running job finishes, a single
+     *   refetch reads the latest geometry, no matter how many requests arrived.
+     *
+     * The returned promise resolves after the data settle, i.e. after the eventual
+     * trailing refetch. Intermediate results are applied as they arrive, so the
+     * graph updates progressively even during a long drag.
+     */
     protected fetchGraphData(): Promise<void> {
+
+        // A job is already running - note the request and let the running loop handle it.
+        if ( this._fetching ) {
+            this._refetchRequested = true;
+            return this._fetchPromise!;
+        }
 
         const promise = (async () => {
 
-            const request = ++this._dataRequest;
+            this._fetching = true;
 
-            const data = await this.getGraphData();
+            try {
 
-            if ( request === this._dataRequest ) {
-                this.value = data;
+                do {
+
+                    // Consume the pending request before reading, so that any request
+                    // arriving *during* the read triggers one more trailing iteration.
+                    this._refetchRequested = false;
+
+                    // Jobs run serially, therefore the result is always the newest one.
+                    this.value = await this.getGraphData();
+
+                } while ( this._refetchRequested );
+
+            } finally {
+                // Always release the guard - a failed job must not block future requests.
+                this._fetching = false;
             }
 
         })();
@@ -74,6 +112,9 @@ export class AnalysisGraph {
      * is created, moved or resized. Consumers reading `analysis.min/max/avg` or `graph.value`
      * right after creating an analysis (e.g. exports working on a copied file) must await
      * this method first - otherwise they read the values before the jobs resolve.
+     *
+     * When a fetch is in flight, the promise resolves after the data settle,
+     * including the eventual trailing refetch (see `fetchGraphData`).
      */
     public async whenData(): Promise<GraphDataTypes|undefined> {
 

@@ -39,7 +39,7 @@ if ( result instanceof ThermalFileReader ) {
 
 ## Relation to the parser
 
-Every reader holds a reference to the parser that recognised the file (<code>reader.parser</code>). All data-reading methods below are thin wrappers that pass the reader's buffer to the corresponding parser method – expensive calls run in the manager's worker pool. See [Writing a custom parser](./supported-files/custom-parser) for the parser interface.
+Every reader holds a reference to the parser that recognised the file (<code>reader.parser</code>). All data-reading methods below are thin wrappers that pass the reader's buffer to the corresponding parser method. Buffers of at least `ThermalFileReader.WORKER_THRESHOLD_BYTES` (4 MB) are processed in the manager's worker pool; smaller ones run directly on the main thread, where the job finishes faster than the worker roundtrip would take. See [Writing a custom parser](./supported-files/custom-parser) for the parser interface.
 
 The reader keeps up to two buffers:
 

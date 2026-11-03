@@ -8,7 +8,7 @@ import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { AbstractManagerConsumer } from "../../hierarchy/consumers/AbstractManagerConsumer";
 import { managerToolContext } from "../../controllers/ManagerController";
 import { T } from "../../translations/Languages";
-import { Placement } from "@floating-ui/dom";
+import type { Placement } from "@floating-ui/dom";
 import { ifDefined } from "lit/directives/if-defined.js";
 
 

@@ -1,4 +1,5 @@
-import { ThermalUnit, TimeFormat } from "@labirthermal/core";
+import type { ThermalUnit} from "@labirthermal/core";
+import { TimeFormat } from "@labirthermal/core";
 import { t } from "i18next";
 import { css, html, nothing } from "lit";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';

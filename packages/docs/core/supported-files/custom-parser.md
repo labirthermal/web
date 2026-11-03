@@ -45,7 +45,7 @@ The full contract, including edge cases, is documented in the JSDoc of `IParserO
 - **Temperatures are in °C.** Pixels are row-major, starting from the top-left corner.
 - **All data methods describe the same temperatures.** A frame, a point, an area and the histogram must agree, allowing for Float32 rounding.
 - **Do not mutate input buffers.** The working buffer is shared by all reads of the file.
-- **Data methods run in web workers.** `baseInfo`, `frameData`, `histogramPixels` and the analysis methods are serialised and executed in a worker pool. They must be **self-contained**: no imports used at runtime and no variables from the outer scope. Type-only imports are fine.
+- **Data methods may run in web workers.** `baseInfo` and `histogramPixels` always run in a worker pool. `frameData` and the analysis methods run in the pool only for buffers of at least `ThermalFileReader.WORKER_THRESHOLD_BYTES` (4 MB) – smaller buffers (still images, short sequences) are processed directly on the main thread, because the structured clone of the buffer would cost more than the job itself. All of these methods must be **self-contained** either way: no imports used at runtime and no variables from the outer scope. Type-only imports are fine.
 - **Areas are clipped to the image.** An area outside the image returns `min: Infinity`, `max: -Infinity`, `avg: NaN` and `count: 0`.
 - **Values that are not temperatures are `NaN`** in `histogramPixels`. The shared histogram ignores them.
 - **Do not compute the histogram.** Binning is done by the shared `histogramFromPixels`, so all formats follow the same rules.

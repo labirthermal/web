@@ -108,15 +108,55 @@ Initial opacity of the thermogram, from `0` (fully transparent) to `1` (fully op
 
 </ComponentAttribute>
 
-<ComponentAttribute name="label + author + license">
+<ComponentAttribute name="label" type="string">
 
-Texts displayed in the application bar:
+Title of the application displayed in the application bar. When omitted, no title is displayed. See also [`author`](#author) and [`license`](#license).
 
-- `label` (`string`) – title of the application.
-- `author` (`string`) – author credit.
-- `license` (`string`) – license credit.
+```html
+<thermal-file-app
+    style="width: 100%"
+    thermal="/files/klokan.lrc"
+    label="Kangaroo"
+></thermal-file-app>
+```
 
-Each attribute is optional; omitted texts are not displayed.
+<div class="thermal-file-example">
+    <thermal-file-app
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        label="Kangaroo"
+    ></thermal-file-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="author" type="string">
+
+Author credit displayed in the application bar next to the [`label`](#label). Optional; omitted text is not displayed.
+
+```html
+<thermal-file-app
+    style="width: 100%"
+    thermal="/files/klokan.lrc"
+    label="Kangaroo"
+    author="LabIR Team"
+></thermal-file-app>
+```
+
+<div class="thermal-file-example">
+    <thermal-file-app
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        label="Kangaroo"
+        author="LabIR Team"
+    ></thermal-file-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="license" type="string">
+
+License credit displayed in the application bar next to the [`label`](#label) and [`author`](#author). Optional; omitted text is not displayed.
 
 ```html
 <thermal-file-app
@@ -135,30 +175,6 @@ Each attribute is optional; omitted texts are not displayed.
         label="Kangaroo"
         author="LabIR Team"
         license="CC BY 4.0"
-    ></thermal-file-app>
-</div>
-
-</ComponentAttribute>
-
-<ComponentAttribute name="show-fullscreen" type="'true' | 'false'" default="false">
-
-Shows the fullscreen toggle in the application bar. Only `"true"` shows the button; omitted, empty, `"false"` and other values keep it hidden.
-
-```html
-<thermal-file-app
-    style="width: 100%"
-    thermal="/files/husy.lrc"
-    label="Geese"
-    show-fullscreen="true"
-></thermal-file-app>
-```
-
-<div class="thermal-file-example">
-    <thermal-file-app
-        style="width: 100%"
-        :thermal="withBase('/files/husy.lrc')"
-        label="Geese"
-        show-fullscreen="true"
     ></thermal-file-app>
 </div>
 
@@ -184,7 +200,7 @@ When `advanced-palettes` is present, the palette dropdown offers the extended pa
     style="width: 100%"
     thermal="/files/makak.lrc"
     palette="lava"
-    advanced-palettes="true"
+    advanced-palettes
 ></thermal-file-app>
 ```
 
@@ -194,7 +210,7 @@ When `advanced-palettes` is present, the palette dropdown offers the extended pa
         style="width: 100%"
         :thermal="withBase('/files/makak.lrc')"
         palette="lava"
-        advanced-palettes="true"
+        advanced-palettes
     ></thermal-file-app>
 </div>
 
@@ -341,38 +357,34 @@ The attributes are synchronised in both directions: editing, adding or removing 
 
 </ComponentAttribute>
 
-<ComponentAttribute name="interactiveanalysis" type="'true' | 'false'" default="true">
+<ComponentAttribute name="interactive-analysis" type="boolean" default="true">
 
-Enables selecting, editing and removing analyses in the analysis table. With `interactiveanalysis="false"`, the table only displays the analyses. An omitted or empty attribute means `true`; only the exact string `"true"` is true otherwise.
+Enables selecting, editing and removing analyses in the analysis table. The default is `true`, so the table is interactive out of the box.
+
+::: warning Non-standard boolean
+This attribute does not follow the [boolean attribute standard](../guide/boolean-attributes.md) yet. Its default is `true` and any present value — including `interactive-analysis="false"` — also means `true`, so **it cannot be turned off from HTML**. To display the analyses read-only, set the JavaScript property `interactiveAnalysis` to `false`:
+:::
 
 ```html
 <thermal-file-app
+    id="read-only-example"
     label="Example"
     style="width: 100%"
     thermal="/files/klokan.lrc"
-    interactiveanalysis="false"
     analysis1="Body;rectangle;color:Blue;top:153;left:200;width:431;height:179;avg"
 ></thermal-file-app>
+<script>
+    customElements.whenDefined('thermal-file-app').then(() => {
+        document.getElementById('read-only-example').interactiveAnalysis = false;
+    });
+</script>
 ```
-
-<div class="thermal-file-example">
-    <thermal-file-app
-        label="Example"
-        style="width: 100%"
-        :thermal="withBase('/files/klokan.lrc')"
-        interactiveanalysis="false"
-        analysis1="Body;rectangle;color:Blue;top:153;left:200;width:431;height:179;avg"
-    ></thermal-file-app>
-</div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="ms + speed">
+<ComponentAttribute name="ms" type="number" default="0">
 
-Playback settings of sequences (files with more frames). They have no effect on single-frame images.
-
-- `ms` (`number`, default `0`) – initial position in the sequence in milliseconds. The value is clamped to the duration of the sequence and is updated while the sequence plays.
-- `speed` (`0.5 | 1 | 2 | 3 | 5 | 10`, default `1`) – initial playback speed multiplier.
+Initial position in a sequence (a file with more frames) in milliseconds. The value is clamped to the duration of the sequence and is updated while the sequence plays. It has no effect on single-frame images. See also [`speed`](#speed).
 
 ```html
 <thermal-file-app
@@ -380,7 +392,6 @@ Playback settings of sequences (files with more frames). They have no effect on 
     style="width: 100%"
     thermal="/files/sequence.lrc"
     ms="2000"
-    speed="2"
 ></thermal-file-app>
 ```
 
@@ -390,27 +401,45 @@ Playback settings of sequences (files with more frames). They have no effect on 
         style="width: 100%"
         :thermal="withBase('/files/sequence.lrc')"
         ms="2000"
+    ></thermal-file-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="speed" type="0.5 | 1 | 2 | 3 | 5 | 10" default="1">
+
+Initial playback speed multiplier of a sequence. It has no effect on single-frame images. See also [`ms`](#ms).
+
+```html
+<thermal-file-app
+    label="Example"
+    style="width: 100%"
+    thermal="/files/sequence.lrc"
+    speed="2"
+></thermal-file-app>
+```
+
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/sequence.lrc')"
         speed="2"
     ></thermal-file-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="smooth-thermograms + smooth-graph">
+<ComponentAttribute name="smooth-thermograms" type="boolean" default="false" tag="thermal-file-app">
 
-Initial smoothing settings:
-
-- `smooth-thermograms` (`'true' | 'false'`, default `false`) smooths the rendering of the thermal image.
-- `smooth-graph` (`'true' | 'false'`, default `false`) smooths the lines of the analysis graph.
-
-Only `"true"` is true; omitted, empty, `"false"` and other values are false.
+When `smooth-thermograms` is present, the thermal image starts in the smoothed rendering mode. See also [`smooth-graph`](#smooth-graph).
 
 ```html
 <thermal-file-app
     label="Example"
     style="width: 100%"
     thermal="/files/husy.lrc"
-    smooth-thermograms="true"
+    smooth-thermograms
 ></thermal-file-app>
 ```
 
@@ -419,22 +448,23 @@ Only `"true"` is true; omitted, empty, `"false"` and other values are false.
         label="Example"
         style="width: 100%"
         :thermal="withBase('/files/husy.lrc')"
-        smooth-thermograms="true"
+        smooth-thermograms
     ></thermal-file-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="locale" type="'en' | 'cs' | 'de' | 'fr' | 'cy'">
+<ComponentAttribute name="smooth-graph" type="boolean" default="false" tag="thermal-file-app">
 
-Language of the user interface. Regional variants such as `en_GB`, `cs_CZ` or `de_AT` are accepted as well; an unknown value falls back to `en`. When omitted, the current language of the page is kept. The language is shared by all webcomponents on the page, so changing it in one application also changes it in the others.
+When `smooth-graph` is present, the lines of the analysis graph start in the smoothed rendering mode. See also [`smooth-thermograms`](#smooth-thermograms).
 
 ```html
 <thermal-file-app
     label="Example"
     style="width: 100%"
     thermal="/files/husy.lrc"
-    locale="cs"
+    smooth-graph
+    analysis1="Body;rectangle;color:Blue;top:54;left:64;width:64;height:47;avg"
 ></thermal-file-app>
 ```
 
@@ -443,15 +473,16 @@ Language of the user interface. Regional variants such as `en_GB`, `cs_CZ` or `d
         label="Example"
         style="width: 100%"
         :thermal="withBase('/files/husy.lrc')"
-        locale="cs"
+        smooth-graph
+        analysis1="Body;rectangle;color:Blue;top:54;left:64;width:64;height:47;avg"
     ></thermal-file-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="autohighlight" type="boolean" default="false">
+<ComponentAttribute name="autohighlight" type="boolean" default="false" tag="thermal-file-app">
 
-When present, the temperature range of the loaded file is highlighted on the histogram and range slider. Use the attribute without a value; note that `autohighlight="false"` is also treated as present.
+When `autohighlight` is present, the temperature range of the loaded file is highlighted on the histogram and range slider.
 
 ```html
 <thermal-file-app
@@ -510,12 +541,6 @@ Because `slug` is used as a fallback by all three identifiers, setting only `slu
         manager-slug="shared-file-apps"
     ></thermal-file-app>
 </div>
-
-</ComponentAttribute>
-
-<ComponentAttribute name="autoclear-group" type="'true' | 'false'" default="true">
-
-Removes the internal group (and its file) when the application is removed from the page. Set `autoclear-group="false"` only when the group is shared with other elements by [`group-slug`](#manager-slug-registry-slug-group-slug) and should survive the removal of this application.
 
 </ComponentAttribute>
 

@@ -11,7 +11,7 @@ Thermal range is bound to `ThermalManager` provider and its value is synchronise
 ## Overview of related elements
 
 <Hierarchy>
-    <HierarchyManager :watch="{palette: null, ['advanced-palettes']:null}">
+    <HierarchyManager :watch="{palette: null, ['advanced-palettes']:null}" advanced-palettes>
         <p>The thermal palette is controlled on the level of <code>ThermalManager</code>.</p>
             <table>
                 <tbody>
@@ -89,7 +89,7 @@ After the `advanced-palettes` attribute is set to `true`, the following palettes
 If you want to have a particular setting by default, you can provide `palette` and/or `advanced-palettes` attribute to the `manager-provider`.
 
 ```html
-<manager-provider palette="lava" advanced-palettes="true"></manager-provider>
+<manager-provider palette="lava" advanced-palettes></manager-provider>
 ```
 
 These attributes are also supported by the following applications:
@@ -102,4 +102,13 @@ These attributes are also supported by the following applications:
 
 Example - a `thermal-file-app` with `lava` as default palette;
 
-<thermal-file-app label="Example of default palette" palette="lava" advanced-palettes="true" :thermal="withBase('/files/makak.lrc')"></thermal-file-app>
+```html
+<thermal-file-app 
+    label="Example of default palette" 
+    palette="lava" 
+    advanced-palettes
+    thermal="/files/makak.lrc"
+></thermal-file-app>
+```
+
+<thermal-file-app label="Example of default palette" palette="lava" advanced-palettes :thermal="withBase('/files/makak.lrc')"></thermal-file-app>

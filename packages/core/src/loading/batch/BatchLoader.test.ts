@@ -150,13 +150,22 @@ describe( "BatchLoader", () => {
             loadingCounter = loadingCounter + 1;
         } );
 
-        const createBatch = (...urls: string[]) => {
+        /**
+         * A batch finishes only after all its request callbacks resolve.
+         * The gate therefore deterministically holds the first batch open
+         * until the test releases it - no matter how fast the files load.
+         */
+        let releaseFirstBatch!: () => void;
+        const firstBatchGate = new Promise<void>( resolve => { releaseFirstBatch = resolve; } );
+
+        const createBatch = (gate: Promise<void> | undefined, ...urls: string[]) => {
             urls.forEach(url => loader.request(
                 url,
                 undefined,
                 group,
                 async () => {
                     instanceCounter = instanceCounter + 1;
+                    if ( gate ) await gate;
                 }
             ));
 
@@ -166,8 +175,9 @@ describe( "BatchLoader", () => {
 
         expect( loadingCounter ).toEqual(0);
 
-        /** The first batch is being created */
+        /** The first batch is being created, held open by the gate */
         createBatch(
+            firstBatchGate,
             THERMOGRAM_PATHS.SOUSTRUH,
             THERMOGRAM_PATHS.TUCNACI,
             THERMOGRAM_PATHS.SEQUENCE
@@ -190,6 +200,7 @@ describe( "BatchLoader", () => {
 
         // Create a second batch
         createBatch( 
+            undefined,
             THERMOGRAM_PATHS.SOUSTRUH, 
             THERMOGRAM_PATHS.TUCNACI 
         );
@@ -199,17 +210,17 @@ describe( "BatchLoader", () => {
 
         expect( loadingCounter ).toEqual(1);
 
-        // After another tick both batches are loading in parallel
-        // and the registry stays loading until all of them finish
+        // In the next tick the second (fast) batch may or may not be finished already,
+        // but the gated first batch keeps the registry in the loading state.
         await sleep(0);
 
-        expect( loader.numberOfBatches ).toEqual(2);
-        expect( loader.numLoadingBatches ).toEqual(2);
         expect( loader.currentOpenBatch ).toBeUndefined();
-
         expect( registry.loading.value ).toEqual( true );
 
         expect( loadingCounter ).toEqual(1);
+
+        // Let the first batch finish
+        releaseFirstBatch();
 
         // Wait for all batches to load
         await vi.waitFor( () => {

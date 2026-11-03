@@ -593,7 +593,14 @@ declare class BatchLoader {
   get hasLoadingBatches(): boolean;
   get numLoadingBatches(): number;
   constructor(registry: ThermalRegistry);
+  /**
+   * Get an open batch by its ID, creating it if necessary.
+   *
+   * A batch that already started loading is sealed - a new batch
+   * with the same ID is created instead of reusing it.
+   */
   getBatchById(id: string): Batch;
+  /** Create a new batch and mark the registry as loading. */
   createBatch(id?: string): Batch;
   /**
    * Request a file through a batch
@@ -723,6 +730,15 @@ export declare class ThermalFileReader extends AbstractFileResult {
   readonly parser: IParserObject;
   /** For the purpose of testing we have a unique ID */
   readonly id: number;
+  /**
+   * Buffers smaller than this run their data jobs directly on the main thread.
+   *
+   * Workerpool sends buffers through a structured clone which is paid synchronously
+   * by the calling thread, plus a roundtrip overhead of the task itself. For small
+   * buffers (still images, short sequences) this overhead costs more than the job,
+   * while long sequences benefit from offloading the heavy per-pixel computation.
+   */
+  static readonly WORKER_THRESHOLD_BYTES: number;
   /** In-memory cache of the `baseInfo` request. This request might be expensive in larger files or in Vario Cam files. Because the return value is allways the same, there is no need to make the call repeatedly. */
   protected baseInfoCache?: ParsedFileBaseInfo;
   readonly fileName: string;
@@ -749,6 +765,8 @@ export declare class ThermalFileReader extends AbstractFileResult {
   protected cloneForInstance(): ThermalFileReader;
   /** Read the fundamental data of the file. If this method had been called before, return the cached result. */
   baseInfo(): ReturnType<IParserObject["baseInfo"]>;
+  /** Decide whether a job reading the given buffer is worth offloading to the worker pool. */
+  protected shouldUseWorker(buffer: ArrayBuffer): boolean;
   /**
    * Before requesting a frame, create a dedicated `ArrayBuffer` containing only the frame's data
    *
@@ -759,8 +777,45 @@ export declare class ThermalFileReader extends AbstractFileResult {
    * @todo Implement index range check
    */
   frameData(index: number): ReturnType<IParserObject["frameData"]>;
+  /**
+   *
+   * Retrieves the point analysis data at the specified coordinates.
+   *
+   * Large buffers run in the workerpool, small ones directly on the main thread
+   * (see `WORKER_THRESHOLD_BYTES`).
+   *
+   * @param x The x-coordinate of the point.
+   * @param y The y-coordinate of the point.
+   * @returns The analysis data for the specified point.
+   */
   pointAnalysisData(x: number, y: number): ReturnType<IParserObject["pointAnalysisData"]>;
+  /**
+   *
+   * Retrieves the rectangle analysis data for the specified area.
+   *
+   * Large buffers run in the workerpool, small ones directly on the main thread
+   * (see `WORKER_THRESHOLD_BYTES`).
+   *
+   * @param x The x-coordinate of the top-left corner of the rectangle.
+   * @param y The y-coordinate of the top-left corner of the rectangle.
+   * @param width The width of the rectangle.
+   * @param height The height of the rectangle.
+   * @returns The analysis data for the specified rectangle.
+   */
   rectAnalysisData(x: number, y: number, width: number, height: number): ReturnType<IParserObject["rectAnalysisData"]>;
+  /**
+   *
+   * Retrieves the elliptical area analysis data.
+   *
+   * Large buffers run in the workerpool, small ones directly on the main thread
+   * (see `WORKER_THRESHOLD_BYTES`).
+   *
+   * @param x The x-coordinate of the top-left corner of the bounding rectangle.
+   * @param y The y-coordinate of the top-left corner of the bounding rectangle.
+   * @param width The width of the bounding rectangle.
+   * @param height The height of the bounding rectangle.
+   * @returns The analysis data for the specified ellipse.
+   */
   ellipsisAnalysisData(x: number, y: number, width: number, height: number): ReturnType<IParserObject["ellipsisAnalysisData"]>;
   /**
    * Recalculates the core array buffer using all available filters.
@@ -936,13 +991,31 @@ export declare class Batch {
   static init(loader: BatchLoader, id?: string): Batch;
   static initWithRequest(loader: BatchLoader, thermalUrl: string, visibleUrl: undefined | string, group: ThermalGroup, callback: BatchLoadingCallback): Batch;
   /**
-   * Request a thermal file
+   * Request a thermal file.
    *
-   * Requesting adds new record to the queue and creates a new
-   * timeout closure.
+   * Every request re-arms a zero timeout, so the batch executes automatically
+   * one tick after the last registered request. Calling `close()` skips the
+   * waiting and executes the batch immediately.
+   *
+   * A request arriving after the batch started loading is delegated back to
+   * the loader: it joins (or opens) another batch instead of being lost or
+   * re-executing this one.
    */
   request(thermalUrl: string, visibleUrl: string | undefined, group: ThermalGroup, callback: BatchLoadingCallback): void;
+  /** Seal the batch and execute it immediately instead of waiting for the next tick. */
   close(): void;
+  /**
+   * Load all queued files, create their instances and resolve the batch.
+   *
+   * - Every file runs its whole pipeline (fetch → parse → instance) independently,
+   *   so a slow download of one file does not delay the processing of the others.
+   * - The registry post-processing and the request callbacks run only after
+   *   all the files of the batch settle.
+   * - The batch always finishes and removes itself from the loader - even when
+   *   a file or a callback throws. Otherwise the registry would stay in the
+   *   loading state forever.
+   */
+  private execute;
 }
 //#endregion
 //#region src/properties/analysis/group/AnalysisGroupGraph.d.ts
@@ -1306,11 +1379,30 @@ export declare class AnalysisGraph {
   get value(): GraphDataTypes | undefined;
   /** The analysis values are derived from the graph data, so they are refreshed before the graph listeners are called. */
   protected set value(value: GraphDataTypes | undefined);
-  /** Identifier of the latest data request. Older responses are discarded so that they never overwrite newer data. */
-  protected _dataRequest: number;
-  /** The currently pending (or last finished) data request. */
+  /** True while a data job is running. Guards the coalescing in `fetchGraphData`. */
+  protected _fetching: boolean;
+  /** Set when a request arrives while a job runs. The running loop then performs one trailing refetch. */
+  protected _refetchRequested: boolean;
+  /** The currently running (or last finished) fetch, including its eventual trailing refetches. */
   protected _fetchPromise?: Promise<void>;
-  /** Fetch the analysis data and store them only if no newer request was made meanwhile. */
+  /**
+   * Fetch the analysis data from the parser job and store them.
+   *
+   * Requests are **coalesced**: at most one job runs per analysis at any time.
+   * Reading the data means handing the whole working buffer to the parser job
+   * (and cloning it when the job runs in the worker pool), so an unthrottled
+   * source of requests - typically `onMoveOrResize` firing on every mouse move
+   * while dragging - must not start one job per event.
+   *
+   * - When no job is running, the job starts immediately.
+   * - When a job is already running, only a *trailing* refetch is noted and the
+   *   in-flight promise is returned. Once the running job finishes, a single
+   *   refetch reads the latest geometry, no matter how many requests arrived.
+   *
+   * The returned promise resolves after the data settle, i.e. after the eventual
+   * trailing refetch. Intermediate results are applied as they arrive, so the
+   * graph updates progressively even during a long drag.
+   */
   protected fetchGraphData(): Promise<void>;
   /**
    * Resolve once the graph data are available.
@@ -1319,6 +1411,9 @@ export declare class AnalysisGraph {
    * is created, moved or resized. Consumers reading `analysis.min/max/avg` or `graph.value`
    * right after creating an analysis (e.g. exports working on a copied file) must await
    * this method first - otherwise they read the values before the jobs resolve.
+   *
+   * When a fetch is in flight, the promise resolves after the data settle,
+   * including the eventual trailing refetch (see `fetchGraphData`).
    */
   whenData(): Promise<GraphDataTypes | undefined>;
   setMinActivation(active: boolean): void;
@@ -1954,7 +2049,7 @@ declare class GroupExportPNG extends AbstractPngExport<GroupExportPNGParams, Gro
   /** @deprecated not needed anymore */
   protected buildHeader(): HTMLDivElement;
   protected buildList(): HTMLDivElement;
-  protected buildInstance(instance: ThermalFileInstance, width: number, showAnalysis: boolean, showFileDate: boolean, showFileName: boolean, fontSize: string): void;
+  protected buildInstance(instance: ThermalFileInstance, width: number, showAnalysis: boolean, showFileDate: boolean, showFileName: boolean, fontSize: string): Promise<void>;
   protected onBuildDom(): void;
   protected beforeDomRemoved(): void;
   protected afterDomRemoved(): void;

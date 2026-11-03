@@ -129,21 +129,20 @@ const group = registry.groups.addOrGetGroup( "series" );
 
 ### How a batch executes
 
-The batch starts automatically in the next tick after the last `request()` call. It then:
+The batch starts automatically in the next tick after the last `request()` call, or immediately when it is closed. It then:
 
-1. Loads all queued URLs through `FilesService.loadFile()` in parallel.
-2. Creates a [ThermalFileInstance](./thermal-file-instance) in the target group for every successful result.
-3. Runs `registry.postLoadedProcessing()` once.
-4. Fires the per-file callbacks with either the instance or the [ThermalFileFailure](./thermal-file-failure).
-5. Fires `onBatchComplete` on the loader and `onResolve` on the batch, and removes the batch.
+1. Loads every queued URL through `FilesService.loadFile()` and creates its [ThermalFileInstance](./thermal-file-instance) in the target group. Every file runs this pipeline independently in parallel, so one slow download does not delay the processing of the other files. Unexpected errors of a single file are converted to a [ThermalFileFailure](./thermal-file-failure) instead of aborting the whole batch.
+2. Runs `registry.postLoadedProcessing()` once, after all files of the batch settle.
+3. Fires the per-file callbacks with either the instance or the [ThermalFileFailure](./thermal-file-failure). A throwing callback does not block the remaining callbacks.
+4. Fires `onBatchComplete` on the loader and `onResolve` on the batch, and removes the batch. This happens even when something fails, so the registry never stays in the loading state forever.
 
-While any batch is loading, the observable <code>registry.loading</code> property is `true`.
+While any batch is loading, the observable <code>registry.loading</code> property is `true`. It turns `false` only after the last loading batch finishes.
 
 ### Methods
 
-- `registry.batch.request( thermalUrl, visibleUrl, group, callback, id? )` – register a file request; opens a new batch when none is open. Passing an `id` targets a named batch.
-- `registry.batch.createBatch( id? )` / `registry.batch.getBatchById( id )` – manual batch management.
-- `registry.batch.closeBatch()` – close the currently open batch so that subsequent requests form a new one.
+- `registry.batch.request( thermalUrl, visibleUrl, group, callback, id? )` – register a file request; opens a new batch when none is open. Passing an `id` targets a named batch. A request arriving after its batch started loading joins (or opens) a new batch instead.
+- `registry.batch.createBatch( id? )` / `registry.batch.getBatchById( id )` – manual batch management. A batch that already started loading is sealed; `getBatchById` then creates a new batch with the same ID.
+- `registry.batch.closeBatch()` – seal the currently open batch and execute it immediately instead of waiting for the next tick; subsequent requests form a new batch.
 - `registry.batch.numberOfBatches`, `registry.batch.hasLoadingBatches`, `registry.batch.numLoadingBatches` – inspection getters.
 
 ### Events

@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { THERMOGRAM_PATHS } from '../../../../../devserver/node/mocks';
 import { loadFileForTests } from '../../../../../devserver/node/scaffold';
 
@@ -57,6 +57,38 @@ describe("AnalysisGraph.whenData", () => {
         expect(analysis.avg).toEqual(expected);
         expect(analysis.min).toEqual(expected);
         expect(analysis.max).toEqual(expected);
+
+    });
+
+    test("rapid move/resize requests are coalesced into one running and one trailing job", async () => {
+
+        const instance = await loadFileForTests(THERMOGRAM_PATHS.SOUSTRUH);
+
+        const analysis = instance.slots.createAnalysisFromSerialized("Dragged rect;rectangle;top:10;left:10;width:20;height:20;color:red;avg");
+
+        expect(analysis).not.toBeUndefined();
+
+        if (analysis === undefined) {
+            return;
+        }
+
+        // Let the initial fetch settle first
+        await analysis.graph.whenData();
+
+        const jobSpy = vi.spyOn(analysis, "getAnalysisData");
+
+        // Simulate a drag: the edit tool fires the event on every mouse move
+        for (let i = 0; i < 10; i++) {
+            analysis.onMoveOrResize.call(analysis);
+        }
+
+        const data = await analysis.graph.whenData();
+
+        // The first event starts a job, the remaining nine coalesce into a single trailing one
+        expect(jobSpy).toHaveBeenCalledTimes(2);
+        expect(data).not.toBeUndefined();
+
+        jobSpy.mockRestore();
 
     });
 

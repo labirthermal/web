@@ -156,7 +156,18 @@ These attributes are also supported by the following applications and use their 
 
 Example - set the default temperature range `from` 25 `to` 30 °C (the default unit):
 
+```html
+<thermal-file-app 
+    label="Example of default range" 
+    from="25" 
+    to="30" 
+    thermal="/files/makak.lrc"
+></thermal-file-app>
+```
+
 <thermal-file-app label="Example of default range" from="25" to="30" :thermal="withBase('/files/makak.lrc')"></thermal-file-app>
+
+When using other units than `Celsius`, you need to provide range values in your unit. See [examples at the end of this page](#setting-default-range-with-unit)
 
 ## Temperature units
 
@@ -219,7 +230,7 @@ provider.managerController.formatSingle(77);    // formatted with the unit symbo
 Switch the unit and watch the `unit` attribute of the manager and the `from`/`to` attributes of the registry change, while the displayed range stays physically the same.
 
 <Hierarchy>
-    <HierarchyManager watch="unit">
+    <HierarchyManager watch="unit" unit="F">
         <WebcomponentTable components="manager-unit-switch" />
         <HierarchyRegistry watch="from, to" from="20" to="35">
             <WebcomponentTable components="registry-range-form,registry-range-slider, registry-ticks-bar" />
@@ -231,3 +242,60 @@ Switch the unit and watch the `unit` attribute of the manager and the `from`/`to
         </HierarchyRegistry>
     </HierarchyManager>
 </Hierarchy>
+
+### Setting default range with unit
+
+When setting the default range, keep in mind that its value needs to be in the unit you use. Even through the internal state of `@labirthermal/core` is in Celsius, when using webcomponents, you need to provide the range in the units you use, otherwise the range will probably fail.
+
+#### Example 1: Range in Fahrenheit
+
+```html
+<thermal-file-app
+    label="Default range in F"
+    unit="F"
+    from="65"
+    to="70"
+    thermal="/files/soustruh.lrc"
+></thermal-file-app>
+```
+<thermal-file-app
+    label="Default range in F"
+    unit="F"
+    from="65"
+    to="70" :thermal="withBase('/files/soustruh.lrc')"
+></thermal-file-app>
+
+#### Example 2: Range in Kelvin
+
+```html
+<thermal-file-app
+    label="Default range in K"
+    unit="K"
+    from="291"
+    to="295"
+    thermal="/files/soustruh.lrc"
+></thermal-file-app>
+```
+<thermal-file-app
+    label="Default range in K"
+    unit="K"
+    from="291"
+    to="295" :thermal="withBase('/files/soustruh.lrc')"
+></thermal-file-app>
+
+#### Example 3: Range in Celsius
+
+```html
+<!-- You do not need to specify the unit when using C, because C is default-->
+<thermal-file-app
+    label="Default range in C"
+    from="18"
+    to="22"
+    thermal="/files/soustruh.lrc"
+></thermal-file-app>
+```
+<thermal-file-app
+    label="Default range in C"
+    from="18"
+    to="22" :thermal="withBase('/files/soustruh.lrc')"
+></thermal-file-app>

@@ -2554,16 +2554,45 @@ var AnalysisGraph = class {
 		this.analysis.recalculateValues();
 		this.onGraphData.call(value, this.analysis);
 	}
-	/** Identifier of the latest data request. Older responses are discarded so that they never overwrite newer data. */
-	_dataRequest = 0;
-	/** The currently pending (or last finished) data request. */
+	/** True while a data job is running. Guards the coalescing in `fetchGraphData`. */
+	_fetching = false;
+	/** Set when a request arrives while a job runs. The running loop then performs one trailing refetch. */
+	_refetchRequested = false;
+	/** The currently running (or last finished) fetch, including its eventual trailing refetches. */
 	_fetchPromise;
-	/** Fetch the analysis data and store them only if no newer request was made meanwhile. */
+	/**
+	* Fetch the analysis data from the parser job and store them.
+	*
+	* Requests are **coalesced**: at most one job runs per analysis at any time.
+	* Reading the data means handing the whole working buffer to the parser job
+	* (and cloning it when the job runs in the worker pool), so an unthrottled
+	* source of requests - typically `onMoveOrResize` firing on every mouse move
+	* while dragging - must not start one job per event.
+	*
+	* - When no job is running, the job starts immediately.
+	* - When a job is already running, only a *trailing* refetch is noted and the
+	*   in-flight promise is returned. Once the running job finishes, a single
+	*   refetch reads the latest geometry, no matter how many requests arrived.
+	*
+	* The returned promise resolves after the data settle, i.e. after the eventual
+	* trailing refetch. Intermediate results are applied as they arrive, so the
+	* graph updates progressively even during a long drag.
+	*/
 	fetchGraphData() {
+		if (this._fetching) {
+			this._refetchRequested = true;
+			return this._fetchPromise;
+		}
 		const promise = (async () => {
-			const request = ++this._dataRequest;
-			const data = await this.getGraphData();
-			if (request === this._dataRequest) this.value = data;
+			this._fetching = true;
+			try {
+				do {
+					this._refetchRequested = false;
+					this.value = await this.getGraphData();
+				} while (this._refetchRequested);
+			} finally {
+				this._fetching = false;
+			}
 		})();
 		this._fetchPromise = promise;
 		return promise;
@@ -2575,6 +2604,9 @@ var AnalysisGraph = class {
 	* is created, moved or resized. Consumers reading `analysis.min/max/avg` or `graph.value`
 	* right after creating an analysis (e.g. exports working on a copied file) must await
 	* this method first - otherwise they read the values before the jobs resolve.
+	*
+	* When a fetch is in flight, the promise resolves after the data settle,
+	* including the eventual trailing refetch (see `fetchGraphData`).
 	*/
 	async whenData() {
 		await (this._fetchPromise ?? this.fetchGraphData());
@@ -6082,11 +6114,20 @@ var ThermalFileInstance = class ThermalFileInstance extends AbstractThermalFile 
 * - this service is registered in FilesService
 * - the instances are retrieved using `FilesService.loadOneFile`
 */
-var ThermalFileReader = class extends AbstractFileResult {
+var ThermalFileReader = class ThermalFileReader extends AbstractFileResult {
 	service;
 	parser;
 	/** For the purpose of testing we have a unique ID */
 	id = Math.random();
+	/**
+	* Buffers smaller than this run their data jobs directly on the main thread.
+	*
+	* Workerpool sends buffers through a structured clone which is paid synchronously
+	* by the calling thread, plus a roundtrip overhead of the task itself. For small
+	* buffers (still images, short sequences) this overhead costs more than the job,
+	* while long sequences benefit from offloading the heavy per-pixel computation.
+	*/
+	static WORKER_THRESHOLD_BYTES = 4194304;
 	/** In-memory cache of the `baseInfo` request. This request might be expensive in larger files or in Vario Cam files. Because the return value is allways the same, there is no need to make the call repeatedly. */
 	baseInfoCache;
 	fileName;
@@ -6146,6 +6187,10 @@ var ThermalFileReader = class extends AbstractFileResult {
 		this.baseInfoCache = baseInfo;
 		return baseInfo;
 	}
+	/** Decide whether a job reading the given buffer is worth offloading to the worker pool. */
+	shouldUseWorker(buffer) {
+		return buffer.byteLength >= ThermalFileReader.WORKER_THRESHOLD_BYTES;
+	}
 	/** 
 	* Before requesting a frame, create a dedicated `ArrayBuffer` containing only the frame's data 
 	* 
@@ -6159,16 +6204,43 @@ var ThermalFileReader = class extends AbstractFileResult {
 	*/
 	async frameData(index) {
 		const data = this.getFrameSubset(index);
-		return await this.pool.exec(this.parser.frameData, [data.array, data.dataType]);
+		if (!this.shouldUseWorker(data.array)) return await this.parser.frameData(data.array, data.dataType);
+		return await this.pool.exec(this.parser.frameData, [data.array, data.dataType], { transfer: [data.array] });
 	}
+	/**
+	* 
+	* Retrieves the point analysis data at the specified coordinates.
+	* 
+	* Large buffers run in the workerpool, small ones directly on the main thread
+	* (see `WORKER_THRESHOLD_BYTES`).
+	* 
+	* @param x The x-coordinate of the point.
+	* @param y The y-coordinate of the point.
+	* @returns The analysis data for the specified point.
+	*/
 	async pointAnalysisData(x, y) {
+		if (!this.shouldUseWorker(this.buffer)) return await this.parser.pointAnalysisData(this.buffer, x, y);
 		return await this.pool.exec(this.parser.pointAnalysisData, [
 			this.buffer,
 			x,
 			y
 		]);
 	}
+	/**
+	* 
+	* Retrieves the rectangle analysis data for the specified area.
+	* 
+	* Large buffers run in the workerpool, small ones directly on the main thread
+	* (see `WORKER_THRESHOLD_BYTES`).
+	* 
+	* @param x The x-coordinate of the top-left corner of the rectangle.
+	* @param y The y-coordinate of the top-left corner of the rectangle.
+	* @param width The width of the rectangle.
+	* @param height The height of the rectangle.
+	* @returns The analysis data for the specified rectangle.
+	*/
 	async rectAnalysisData(x, y, width, height) {
+		if (!this.shouldUseWorker(this.buffer)) return await this.parser.rectAnalysisData(this.buffer, x, y, width, height);
 		return await this.pool.exec(this.parser.rectAnalysisData, [
 			this.buffer,
 			x,
@@ -6177,7 +6249,21 @@ var ThermalFileReader = class extends AbstractFileResult {
 			height
 		]);
 	}
+	/**
+	* 
+	* Retrieves the elliptical area analysis data.
+	* 
+	* Large buffers run in the workerpool, small ones directly on the main thread
+	* (see `WORKER_THRESHOLD_BYTES`).
+	* 
+	* @param x The x-coordinate of the top-left corner of the bounding rectangle.
+	* @param y The y-coordinate of the top-left corner of the bounding rectangle.
+	* @param width The width of the bounding rectangle.
+	* @param height The height of the bounding rectangle.
+	* @returns The analysis data for the specified ellipse.
+	*/
 	async ellipsisAnalysisData(x, y, width, height) {
+		if (!this.shouldUseWorker(this.buffer)) return await this.parser.ellipsisAnalysisData(this.buffer, x, y, width, height);
 		return await this.pool.exec(this.parser.ellipsisAnalysisData, [
 			this.buffer,
 			x,
@@ -7212,12 +7298,21 @@ var Batch = class Batch {
 		return item;
 	}
 	/**
-	* Request a thermal file
-	* 
-	* Requesting adds new record to the queue and creates a new
-	* timeout closure.
+	* Request a thermal file.
+	*
+	* Every request re-arms a zero timeout, so the batch executes automatically
+	* one tick after the last registered request. Calling `close()` skips the
+	* waiting and executes the batch immediately.
+	*
+	* A request arriving after the batch started loading is delegated back to
+	* the loader: it joins (or opens) another batch instead of being lost or
+	* re-executing this one.
 	*/
 	request(thermalUrl, visibleUrl, group, callback) {
+		if (this._loading) {
+			this.loader.request(thermalUrl, visibleUrl, group, callback);
+			return;
+		}
 		this.queue.push({
 			thermalUrl,
 			visibleUrl,
@@ -7225,33 +7320,60 @@ var Batch = class Batch {
 			callback
 		});
 		if (this.timeout !== void 0) clearTimeout(this.timeout);
-		this.timeout = setTimeout(async () => {
-			this._loading = true;
-			const loadedReaders = await Promise.all(this.queue.map(async (item) => {
-				return {
-					result: await this.loader.registry.service.loadFile(item.thermalUrl, item.visibleUrl),
-					callback: item.callback,
-					group: item.group
-				};
-			}));
-			const createdInstances = await Promise.all(loadedReaders.map(async (result) => {
-				return {
-					result: result.result instanceof ThermalFileReader ? await result.result.createInstance(result.group) : await result.result,
-					callback: result.callback
-				};
+		this.timeout = setTimeout(() => this.execute(), 0);
+	}
+	/** Seal the batch and execute it immediately instead of waiting for the next tick. */
+	close() {
+		this.execute();
+	}
+	/**
+	* Load all queued files, create their instances and resolve the batch.
+	*
+	* - Every file runs its whole pipeline (fetch → parse → instance) independently,
+	*   so a slow download of one file does not delay the processing of the others.
+	* - The registry post-processing and the request callbacks run only after
+	*   all the files of the batch settle.
+	* - The batch always finishes and removes itself from the loader - even when
+	*   a file or a callback throws. Otherwise the registry would stay in the
+	*   loading state forever.
+	*/
+	async execute() {
+		if (this._loading) return;
+		this._loading = true;
+		if (this.timeout !== void 0) {
+			clearTimeout(this.timeout);
+			this.timeout = void 0;
+		}
+		const results = [];
+		try {
+			const settled = await Promise.all(this.queue.map(async (item) => {
+				try {
+					const result = await this.loader.registry.service.loadFile(item.thermalUrl, item.visibleUrl);
+					return {
+						result: result instanceof ThermalFileReader ? await result.createInstance(item.group) : result,
+						callback: item.callback
+					};
+				} catch (error) {
+					return {
+						result: new ThermalFileFailure(item.thermalUrl, 0, error.message),
+						callback: item.callback
+					};
+				}
 			}));
 			this.loader.registry.postLoadedProcessing();
-			const results = await Promise.all(createdInstances.map(async (result) => {
-				await result.callback(result.result);
-				return result.result;
+			await Promise.all(settled.map(async (item) => {
+				try {
+					await item.callback(item.result);
+				} catch (error) {
+					console.error(`A batch request callback of '${item.result.thermalUrl}' failed:`, error);
+				}
 			}));
+			results.push(...settled.map((item) => item.result));
 			this.loader.onBatchComplete.call(results);
+		} finally {
 			this.loader.batchFinished(this);
 			this.onResolve.call(results);
-		}, 0);
-	}
-	close() {
-		this._loading = true;
+		}
 	}
 };
 //#endregion
@@ -7281,14 +7403,22 @@ var BatchLoader = class {
 	constructor(registry) {
 		this.registry = registry;
 	}
+	/**
+	* Get an open batch by its ID, creating it if necessary.
+	*
+	* A batch that already started loading is sealed - a new batch
+	* with the same ID is created instead of reusing it.
+	*/
 	getBatchById(id) {
-		const found = Array.from(this.set).find((batch) => batch.id === id);
+		const found = Array.from(this.set).find((batch) => batch.id === id && batch.loading === false);
 		if (found) return found;
 		return this.createBatch(id);
 	}
+	/** Create a new batch and mark the registry as loading. */
 	createBatch(id) {
 		const item = Batch.init(this, id);
 		this.set.add(item);
+		this.registry.loading.markAsLoading();
 		return item;
 	}
 	/**
@@ -7300,13 +7430,7 @@ var BatchLoader = class {
 	* The batch will execute automatically in the next tick.
 	*/
 	request(thermalUrl, visibleUrl, group, callback, id) {
-		let openBatch = id ? this.getBatchById(id) : this.currentOpenBatch;
-		if (openBatch === void 0) {
-			openBatch = Batch.init(this);
-			this.set.add(openBatch);
-			/** Mark the registry as loading - in any case */
-			this.registry.loading.markAsLoading();
-		}
+		const openBatch = (id ? this.getBatchById(id) : this.currentOpenBatch) ?? this.createBatch();
 		openBatch.request(thermalUrl, visibleUrl, group, callback);
 		return openBatch;
 	}
@@ -7556,7 +7680,7 @@ var GroupExportPNG = class GroupExportPNG extends AbstractPngExport {
 		element.style.flexWrap = "wrap";
 		return element;
 	}
-	buildInstance(instance, width, showAnalysis, showFileDate, showFileName, fontSize) {
+	async buildInstance(instance, width, showAnalysis, showFileDate, showFileName, fontSize) {
 		const container = document.createElement("div");
 		container.style.width = width.toString() + "%";
 		container.style.padding = GroupExportPNG.GAP_SMALL;
@@ -7604,32 +7728,38 @@ var GroupExportPNG = class GroupExportPNG extends AbstractPngExport {
 					});
 					table.appendChild(header);
 					wrapper.appendChild(table);
+					const localAnalyses = [];
 					referenceInstance.slots.forEveryExistingSlot((slot, number) => {
 						const localAnalysis = instance.slots.createAnalysisFromSerialized(slot.serialized, number);
-						if (localAnalysis) {
-							const row = document.createElement("tr");
-							const name = this.createElementWithText("td", slot.analysis.name, fontSize, void 0, slot.analysis.initialColor);
-							name.style.borderTop = `1px solid ${GroupExportPNG.COLOR_LIGHT}`;
-							name.style.padding = `${GroupExportPNG.GAP_SMALL}px 0px ${GroupExportPNG.GAP_SMALL} 0px`;
-							row.appendChild(name);
-							const createAndAppendValue = (color, value) => {
-								const td = this.createElementWithText("td", value ? value.toFixed(3) + " °C" : "", fontSize, void 0);
-								td.style.borderTop = `1px solid ${GroupExportPNG.COLOR_LIGHT}`;
-								td.style.paddingTop = `${GroupExportPNG.GAP_SMALL}px`;
-								td.style.paddingBottom = `${GroupExportPNG.GAP_SMALL}px`;
-								row.appendChild(td);
-							};
-							if (slot.analysis instanceof AbstractAreaAnalysis) {
-								createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
-								createAndAppendValue(slot.analysis.initialColor, localAnalysis.min);
-								createAndAppendValue(slot.analysis.initialColor, localAnalysis.max);
-							} else if (slot.analysis instanceof PointAnalysis) {
-								createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
-								createAndAppendValue(slot.analysis.initialColor);
-								createAndAppendValue(slot.analysis.initialColor);
-							}
-							table.appendChild(row);
+						if (localAnalysis) localAnalyses.push({
+							slot,
+							localAnalysis
+						});
+					});
+					await Promise.all(localAnalyses.map(({ localAnalysis }) => localAnalysis.graph.whenData()));
+					localAnalyses.forEach(({ slot, localAnalysis }) => {
+						const row = document.createElement("tr");
+						const name = this.createElementWithText("td", slot.analysis.name, fontSize, void 0, slot.analysis.initialColor);
+						name.style.borderTop = `1px solid ${GroupExportPNG.COLOR_LIGHT}`;
+						name.style.padding = `${GroupExportPNG.GAP_SMALL}px 0px ${GroupExportPNG.GAP_SMALL} 0px`;
+						row.appendChild(name);
+						const createAndAppendValue = (color, value) => {
+							const td = this.createElementWithText("td", value ? value.toFixed(3) + " °C" : "", fontSize, void 0);
+							td.style.borderTop = `1px solid ${GroupExportPNG.COLOR_LIGHT}`;
+							td.style.paddingTop = `${GroupExportPNG.GAP_SMALL}px`;
+							td.style.paddingBottom = `${GroupExportPNG.GAP_SMALL}px`;
+							row.appendChild(td);
+						};
+						if (slot.analysis instanceof AbstractAreaAnalysis) {
+							createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
+							createAndAppendValue(slot.analysis.initialColor, localAnalysis.min);
+							createAndAppendValue(slot.analysis.initialColor, localAnalysis.max);
+						} else if (slot.analysis instanceof PointAnalysis) {
+							createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
+							createAndAppendValue(slot.analysis.initialColor);
+							createAndAppendValue(slot.analysis.initialColor);
 						}
+						table.appendChild(row);
 					});
 				}
 			}
@@ -7671,11 +7801,11 @@ var GroupExportPNG = class GroupExportPNG extends AbstractPngExport {
 		imagesThermalUrls.forEach((url) => {
 			batch = registry.batch.request(url, void 0, group, async () => {});
 		});
-		batch.onResolve.set("temporary export listener", (results) => {
+		batch.onResolve.set("temporary export listener", async (results) => {
 			const width = 100 / params.columns;
-			results.forEach((result) => {
-				if (result instanceof ThermalFileInstance) this.buildInstance(result, width, params.showAnalysis, params.showFileDate, params.showFileName, params.fontSize.toString() + "px");
-			});
+			await Promise.all(results.map((result) => {
+				if (result instanceof ThermalFileInstance) return this.buildInstance(result, width, params.showAnalysis, params.showFileDate, params.showFileName, params.fontSize.toString() + "px");
+			}));
 			setTimeout(() => {
 				if (this.container) this.downloadImage(params.fileName, this.container);
 			}, 2e3);
@@ -8776,7 +8906,7 @@ var ThermalRegistry = class extends BaseStructureObject {
 			});
 		}
 		this.histogram.recalculateHistogramBufferInWorker();
-		this.loading.markAsLoaded();
+		if (this._batch === void 0 || this._batch.hasLoadingBatches === false) this.loading.markAsLoaded();
 		this.onProcessingEnd.call();
 	}
 	reset() {

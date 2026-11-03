@@ -1,6 +1,6 @@
 import { html } from "lit";
 import { AbstractManagerConsumer } from "../../hierarchy/consumers/AbstractManagerConsumer";
-import { ThermalUnit, ThermalUnitDefinition } from "@labirthermal/core";
+import type { ThermalUnit, ThermalUnitDefinition } from "@labirthermal/core";
 import { property } from "lit/decorators/property.js";
 import { consume } from "@lit/context";
 import { managerUnitContext } from "../../controllers/ManagerController";

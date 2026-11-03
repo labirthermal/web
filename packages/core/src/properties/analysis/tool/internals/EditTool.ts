@@ -78,8 +78,6 @@ export class EditTool extends AbstractTool implements ITool {
 
     public getLabelValue(x: number, y: number, file: ThermalFileInstance): string {
 
-        const temperature = file.getTemperatureAtPoint(x, y);
-
         const hoveredAnalysis = file.analysis.layers.all
             .filter(analysis => analysis.isWithin(x, y))
             .map(analysis => {

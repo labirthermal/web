@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
+import { version } from '../../../lerna.json'
 
 // Keep in sync with the registrations in packages/embed/src/iifeCatalog.ts.
 const customElements = new Set([
@@ -113,6 +114,7 @@ export default defineConfig({
 
       },
       { text: 'Webcomponents', link: '/webcomponents/list' },
+      { text: `v${version}`, link: 'https://github.com/labirthermal/web/releases' },
     ],
 
     sidebar: [

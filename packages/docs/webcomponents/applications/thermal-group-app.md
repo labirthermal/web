@@ -81,9 +81,7 @@ Because `;`, `|` and `~` are separators, they cannot appear in URLs or labels.
 
 <ComponentAttribute name="label" type="string" default="LabIR Web Analyser">
 
-Title displayed in the application bar. When omitted, `LabIR Web Analyser` is displayed.
-
-The `author` and `license` attributes inherited from the common application class are accepted but are not displayed by this application.
+Title displayed in the application bar. When omitted, `LabIR Web Analyser` is displayed. See also [`author`](#author) and [`license`](#license).
 
 ```html
 <thermal-group-app
@@ -103,16 +101,66 @@ The `author` and `license` attributes inherited from the common application clas
 
 </ComponentAttribute>
 
-<ComponentAttribute name="show-fullscreen" type="'true' | 'false'" default="false">
+<ComponentAttribute name="author" type="string">
 
-Shows the fullscreen toggle in the application bar. Only `"true"` shows the button; omitted, empty, `"false"` and other values keep it hidden.
+Author credit displayed in the application bar next to the [`label`](#label). Optional; omitted text is not displayed.
+
+```html
+<thermal-group-app
+    label="Rhinoceros"
+    author="LabIR Team"
+    style="width: 100%"
+    group-files="thermal~/files/nosorozec_01.lrc;thermal~/files/nosorozec_02.lrc"
+></thermal-group-app>
+```
+
+<div class="thermal-group-example">
+    <thermal-group-app
+        label="Rhinoceros"
+        author="LabIR Team"
+        style="width: 100%"
+        :group-files="rhinos"
+    ></thermal-group-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="license" type="string">
+
+License credit displayed in the application bar next to the [`label`](#label) and [`author`](#author). Optional; omitted text is not displayed.
+
+```html
+<thermal-group-app
+    label="Rhinoceros"
+    author="LabIR Team"
+    license="CC BY 4.0"
+    style="width: 100%"
+    group-files="thermal~/files/nosorozec_01.lrc;thermal~/files/nosorozec_02.lrc"
+></thermal-group-app>
+```
+
+<div class="thermal-group-example">
+    <thermal-group-app
+        label="Rhinoceros"
+        author="LabIR Team"
+        license="CC BY 4.0"
+        style="width: 100%"
+        :group-files="rhinos"
+    ></thermal-group-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="show-fullscreen" type="boolean" default="false" tag="thermal-group-app">
+
+When `show-fullscreen` is present, the fullscreen toggle is shown in the application bar.
 
 ```html
 <thermal-group-app
     label="Rhinoceros"
     style="width: 100%"
     group-files="thermal~/files/nosorozec_01.lrc;thermal~/files/nosorozec_02.lrc"
-    show-fullscreen="true"
+    show-fullscreen
 ></thermal-group-app>
 ```
 
@@ -121,7 +169,7 @@ Shows the fullscreen toggle in the application bar. Only `"true"` shows the butt
         label="Rhinoceros"
         style="width: 100%"
         :group-files="rhinos"
-        show-fullscreen="true"
+        show-fullscreen
     ></thermal-group-app>
 </div>
 

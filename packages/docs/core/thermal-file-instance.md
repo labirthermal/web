@@ -240,6 +240,8 @@ The temperature under the cursor, or `undefined` when the cursor is not above an
 
 The analyses (points, rectangles and ellipses) drawn on this image. The value is the current array of analyses. The actual storage and manipulation lives in <code>analysis.layers</code> (`AnalysisLayersStorage`), which the drive mirrors.
 
+The values of an analysis (`analysis.min`, `analysis.max`, `analysis.avg`) are computed asynchronously from the graph data read by the parser jobs. When creating an analysis programmatically (e.g. for an export), await `analysis.graph.whenData()` before reading the values – otherwise they may still be `undefined`.
+
 ### Setter methods
 
 - `analysis.layers.createPointAt( top, left )` – create a point analysis.
