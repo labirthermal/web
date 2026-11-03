@@ -164,14 +164,19 @@ Shows the fullscreen toggle in the application bar. Only `"true"` shows the butt
 
 </ComponentAttribute>
 
-<ComponentAttribute name="palette + advanced-palettes">
+<ComponentAttribute name="palette" type="'iron' | 'jet' | 'white_hot' | 'black_hot' | 'lava' | 'arctic' | 'rainbow' | 'rainbow_hc'" default="jet">
 
-These two attributes configure the initial palette and which palette choices are offered in the palette dropdown:
+Sets the initial palette. Empty or invalid values fall back to `jet`. See [Thermal palette](../guide/thermal-palette.md) for the available choices.
 
-- `palette` (`'iron' | 'jet' | 'white_hot' | 'black_hot' | 'lava' | 'arctic' | 'rainbow' | 'rainbow_hc'`, default `jet`) sets the initial palette. Empty or invalid values convert to `iron`.
-- `advanced-palettes` (`'true' | 'false'`, default `false`) enables the extended palette choices. Only the exact string `"true"` is true.
+```html
+<thermal-file-app thermal="/files/makak.lrc" palette="lava"></thermal-file-app>
+```
 
-See [Thermal palette](../guide/thermal-palette.md) for the available choices.
+</ComponentAttribute>
+
+<ComponentAttribute name="advanced-palettes" type="boolean" default="false" tag="thermal-file-app">
+
+When `advanced-palettes` is present, the palette dropdown offers the extended palette choices. Set it when `palette` is one of the advanced choices.
 
 ```html
 <thermal-file-app
@@ -195,22 +200,44 @@ See [Thermal palette](../guide/thermal-palette.md) for the available choices.
 
 </ComponentAttribute>
 
-<ComponentAttribute name="from + to">
+<ComponentAttribute name="unit" type="'C' | 'F' | 'K'" default="C">
 
-Initial thermal range in °C:
+Selects the temperature unit used for displayed values and user-entered temperatures. Values are case-insensitive. On initial connection, an unrecognized value is treated like an omitted attribute: a new manager starts in Celsius, while a reused manager keeps its current unit. Internal temperatures remain in Celsius.
 
-- `from` (`number`) – lower bound of the range.
-- `to` (`number`) – upper bound of the range.
+When applications share a manager through `manager-slug`, an explicit valid `unit` sets the shared unit. If `unit` is omitted, the application uses the manager's current unit; a new manager starts in Celsius. The application bar also includes a unit switch.
 
-The range is applied only when both attributes are set; if either is missing, the full range of the file is used. The user can change the range later with the range form, slider or histogram. See [Thermal range](../guide/thermal-range.md).
+```html
+<thermal-file-app
+    label="Example"
+    style="width: 100%"
+    thermal="/files/makak.lrc"
+    unit="F"
+></thermal-file-app>
+```
+
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/makak.lrc')"
+        unit="F"
+    ></thermal-file-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="from" type="number">
+
+Sets the lower endpoint of the initial thermal range in the current unit selected by [`unit`](#unit). The range is applied only when both `from` and [`to`](#to) are set; if either is missing, the full range of the file is used. The internal range remains in Celsius. The user can change the range later with the range form, slider or histogram. See [Thermal range](../guide/thermal-range-and-units.md#thermal-range).
 
 ```html
 <thermal-file-app
     label="Example"
     style="width: 100%"
     thermal="/files/klokan.lrc"
-    from="20"
-    to="30"
+    unit="F"
+    from="68"
+    to="86"
 ></thermal-file-app>
 ```
 
@@ -219,8 +246,37 @@ The range is applied only when both attributes are set; if either is missing, th
         label="Example"
         style="width: 100%"
         :thermal="withBase('/files/klokan.lrc')"
-        from="20"
-        to="30"
+        unit="F"
+        from="68"
+        to="86"
+    ></thermal-file-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="to" type="number">
+
+Sets the upper endpoint of the initial thermal range in the current unit selected by [`unit`](#unit). The range is applied only when both [`from`](#from) and `to` are set; if either is missing, the full range of the file is used. The internal range remains in Celsius. The user can change the range later with the range form, slider or histogram. See [Thermal range](../guide/thermal-range-and-units.md#thermal-range).
+
+```html
+<thermal-file-app
+    label="Example"
+    style="width: 100%"
+    thermal="/files/klokan.lrc"
+    unit="F"
+    from="68"
+    to="86"
+></thermal-file-app>
+```
+
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        unit="F"
+        from="68"
+        to="86"
     ></thermal-file-app>
 </div>
 
@@ -421,7 +477,7 @@ When present, the temperature range of the loaded file is highlighted on the his
 
 Identifiers of the internal manager, registry and group. If omitted, the generic `slug` attribute is used; without either of them, a unique identifier is generated, so every application is independent by default.
 
-Two applications with the same `manager-slug` share the palette, tool and smoothing settings. Applications sharing a manager **and** the same `registry-slug` also share the thermal range and opacity. See [Context providers and consumers](../guide/hierarchy.md).
+Two applications with the same `manager-slug` share the palette, temperature unit, tool and smoothing settings. Applications sharing a manager **and** the same `registry-slug` also share the thermal range and opacity. See [Context providers and consumers](../guide/hierarchy.md).
 
 Because `slug` is used as a fallback by all three identifiers, setting only `slug` on two applications makes them share everything, including the group.
 

@@ -4,7 +4,7 @@ import { property, state } from "lit/decorators.js";
 import { AbstractRegistryConsumer } from "../../hierarchy/consumers/AbstractRegistryConsumer";
 import { registryRangeToContext } from "../../controllers/RegistryController";
 import { registryRangeFromContext } from "../../controllers/RegistryController";
-import { ThermalUnit } from "@labirthermal/core/src/properties/scale/units";
+import type { ThermalUnit } from "@labirthermal/core";
 import { managerUnitContext } from "../../controllers/ManagerController";
 
 export class RegistryRangeDisplay extends AbstractRegistryConsumer {
@@ -15,7 +15,7 @@ export class RegistryRangeDisplay extends AbstractRegistryConsumer {
     @consume({ context: registryRangeToContext, subscribe: true })
     protected to?: number;
 
-    /** The manager's current unit; Celsius is used until it is provided. */
+    /** Rerenders the labels when the manager's display unit changes. */
     @state()
     @consume({ context: managerUnitContext, subscribe: true })
     protected unit?: ThermalUnit;
@@ -41,11 +41,15 @@ export class RegistryRangeDisplay extends AbstractRegistryConsumer {
             return nothing;
         }
 
+        const from = this.managerController.toCurrentUnit(this.from);
+        const to = this.managerController.toCurrentUnit(this.to);
+        const symbol = this.managerController.currentUnit.symbol;
+
         return html`
             <div>
-                <span>${this.from?.toFixed(this.fixed)} °C</span>
+                <span>${from.toFixed(this.fixed)} ${symbol}</span>
                 <span>${this.separator}</span>
-                <span>${this.to?.toFixed(this.fixed)} °C</span>
+                <span>${to.toFixed(this.fixed)} ${symbol}</span>
             </div>
         `;
     }

@@ -127,7 +127,7 @@ export class ThermalFileReader extends AbstractFileResult {
     /** 
      * Before requesting a frame, create a dedicated `ArrayBuffer` containing only the frame's data 
      * 
-     * **THIS IS SYNCHRONOUSE AND MIGHT BE EXPENSIVE**
+     * @remark THIS IS SYNCHRONOUS AND MIGHT BE EXPENSIVE**
      */
     protected getFrameSubset( frameIndex: number ): ReturnType<IParserObject["getFrameSubset"]> {
         return this.parser.getFrameSubset( this.buffer, frameIndex );
@@ -140,22 +140,62 @@ export class ThermalFileReader extends AbstractFileResult {
 
         const data = this.getFrameSubset( index );
 
-        const result = await this.parser.frameData( data.array, data.dataType);
+        const result = await this.pool.exec( this.parser.frameData, [ data.array, data.dataType ] );
 
         return result;
 
     }
 
+    /**
+     * 
+     * Retrieves the point analysis data at the specified coordinates.
+     * 
+     * Runs in workerpool for the heavy computation.
+     * 
+     * @param x The x-coordinate of the point.
+     * @param y The y-coordinate of the point.
+     * @returns The analysis data for the specified point.
+     */
     public async pointAnalysisData( x: number, y: number ): ReturnType<IParserObject["pointAnalysisData"]> {
-        return await this.parser.pointAnalysisData( this.buffer, x, y );
+        return await this.pool.exec(
+            this.parser.pointAnalysisData, 
+            [ this.buffer, x, y ]
+        );
     }
 
+    /**
+     * 
+     * Retrieves the rectangle analysis data for the specified area.
+     * 
+     * Runs in workerpool for heavy computation.
+     * 
+     * @param x The x-coordinate of the top-left corner of the rectangle.
+     * @param y The y-coordinate of the top-left corner of the rectangle.
+     * @param width The width of the rectangle.
+     * @param height The height of the rectangle.
+     * @returns The analysis data for the specified rectangle.
+     */
     public async rectAnalysisData( x: number, y: number, width: number, height: number ): ReturnType<IParserObject["rectAnalysisData"]> {
-        return await this.parser.rectAnalysisData( this.buffer, x, y, width, height );
+        return await this.pool.exec( 
+            this.parser.rectAnalysisData, 
+            [ this.buffer, x, y, width, height ] 
+        );
     }
 
+
+    /**
+     * 
+     * @param x The x-coordinate of the top-left corner of the rectangle.
+     * @param y The 
+     * @param width 
+     * @param height 
+     * @returns 
+     */
     public async ellipsisAnalysisData( x: number, y: number, width: number, height: number ): ReturnType<IParserObject["ellipsisAnalysisData"]> {
-        return await this.parser.ellipsisAnalysisData( this.buffer, x, y, width, height );
+        return await this.pool.exec(
+            this.parser.ellipsisAnalysisData,
+            [ this.buffer, x, y, width, height ]
+        );
     }
 
     /** 

@@ -1,36 +1,64 @@
+import type { ThermalRangeOrUndefined, ThermalRegistry, ThermalUnit } from "@labirthermal/core";
+import { consume } from "@lit/context";
 import { t } from "i18next";
-import { html } from "lit";
+import { html, type PropertyValues } from "lit";
 import { state } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
+import { managerUnitContext } from "../../controllers/ManagerController";
 import { AbstractRegistryConsumer } from "../../hierarchy/consumers/AbstractRegistryConsumer";
 import { T } from "../../translations/Languages";
 
 export class RegistryRangeAutoButton extends AbstractRegistryConsumer {
 
+    /** The auto range remains in Celsius until it is formatted for the tooltip. */
     @state()
-    private value?: string;
+    private autoRange: ThermalRangeOrUndefined;
 
-    connectedCallback() {
+    @state()
+    @consume({ context: managerUnitContext, subscribe: true })
+    private unit?: ThermalUnit;
 
+    private boundRegistry?: ThermalRegistry;
+
+    connectedCallback(): void {
         super.connectedCallback();
-
-        this.registryObject.histogram.addListener(
-            this.UUID,
-            () => this.setValue()
-        );
-
+        this.bindRegistry();
     }
 
-    private setValue() {
+    disconnectedCallback(): void {
+        this.unbindRegistry();
+        super.disconnectedCallback();
+    }
 
-        const value = this.registryController.registryObject.range.autoValue;
+    willUpdate(changedProperties: PropertyValues<this>): void {
+        super.willUpdate(changedProperties);
+        this.bindRegistry();
+    }
 
-        if (value) {
-            this.value = `${value.from.toFixed(2)} — ${value.to.toFixed(2)} °C`;
-        } else {
-            this.value = undefined;
-        }
+    /** Follow the auto range itself and remove the listener from the original registry. */
+    private bindRegistry(): void {
+        const registry = this.registryController?.registryObject;
+        if (!this.isConnected || registry === this.boundRegistry) return;
 
+        this.unbindRegistry();
+        this.boundRegistry = registry;
+        this.autoRange = registry?.range.autoValue;
+        registry?.range.onAutoValueChanged.set(this.UUID, value => {
+            this.autoRange = value;
+        });
+    }
+
+    private unbindRegistry(): void {
+        this.boundRegistry?.range.onAutoValueChanged.delete(this.UUID);
+        this.boundRegistry = undefined;
+    }
+
+    private get value(): string | undefined {
+        if (!this.autoRange) return undefined;
+        return this.managerController.formatRange(
+            this.managerController.toCurrentUnit(this.autoRange.from),
+            this.managerController.toCurrentUnit(this.autoRange.to)
+        );
     }
 
     doAction() {
@@ -54,8 +82,8 @@ export class RegistryRangeAutoButton extends AbstractRegistryConsumer {
             @click=${this.doAction}
             @mouseenter=${this.onHighlight}
             @mouseleave=${this.onOut}
-            @onfocus=${this.onHighlight}
-            @onblur=${this.onOut}
+            @focus=${this.onHighlight}
+            @blur=${this.onOut}
             tooltip="${ifDefined( this.value )}"
         >${t(T.automaticrange)}</thermal-btn>`;
     }

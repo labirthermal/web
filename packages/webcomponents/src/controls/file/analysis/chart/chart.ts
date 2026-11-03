@@ -358,6 +358,12 @@ export class ThermalChartElement extends LitElement {
 
   private redrawTimeoutId: number|undefined = undefined;
 
+  /** Identifies the newest asynchronous conversion of the data property. */
+  private dataVersion = 0;
+
+  /** Prevents old data from being drawn with options for a newer data set. */
+  private dataPending = false;
+
   protected chartRef: Ref<HTMLDivElement> = createRef();
 
   protected override render() {
@@ -594,6 +600,13 @@ export class ThermalChartElement extends LitElement {
     }
   }
 
+  private cancelScheduledRedraw(): void {
+    if (this.redrawTimeoutId !== undefined) {
+      clearTimeout(this.redrawTimeoutId);
+      this.redrawTimeoutId = undefined;
+    }
+  }
+
   /**
    * Redraws the chart.
    *
@@ -601,15 +614,16 @@ export class ThermalChartElement extends LitElement {
    * Call manually to handle view updates, page resizes, etc.
    */
   redraw() {
-    if (this.chartWrapper == null || this._data == null) return;
+    if (this.dataPending || this.chartWrapper == null || this._data == null) return;
     // `ChartWrapper` can be initialized with `DataView` instead of `DataTable`.
     this.chartWrapper.setDataTable(
         this._data as google.visualization.DataTable);
     this.chartWrapper.setOptions(this.options || {});
 
     this.drawn = false;
-    if (this.redrawTimeoutId !== undefined) clearTimeout(this.redrawTimeoutId);
+    this.cancelScheduledRedraw();
     this.redrawTimeoutId = window.setTimeout(() => {
+      this.redrawTimeoutId = undefined;
       // Drawing happens after `chartWrapper` is initialized.
       this.chartWrapper!.draw();
 
@@ -658,34 +672,42 @@ export class ThermalChartElement extends LitElement {
    * Handles changes to the `data` attribute.
    */
   private dataChanged() {
-    let data = this.data;
-    let dataPromise;
+    const version = ++this.dataVersion;
+    const data = this.data;
+    this.dataPending = !!data;
+    if (this.dataPending) this.cancelScheduledRedraw();
     if (!data) {
       return;
     }
 
-    let isString = false;
-
-    // Polymer 2 will not call observer if type:Object is set and fails, so
-    // we must parse the string ourselves.
-    try {
-      // Try to deserialize the value of the `data` property which might be a
-      // serialized array.
-      data = JSON.parse(data as string) as DataTableLike;
-    } catch (e) {
-      console.error(e);
-      isString = typeof data === 'string' || data instanceof String;
-    }
-
-    if (isString) {
-      // Load data asynchronously, from external URL.
-      dataPromise = fetch(data as string).then(response => response.json());
+    let dataPromise: Promise<DataTableLike>;
+    if (typeof data === 'string' || data instanceof String) {
+      const dataString = String(data);
+      try {
+        dataPromise = Promise.resolve(JSON.parse(dataString) as DataTableLike);
+      } catch {
+        // Load data asynchronously when the string is a URL, not JSON.
+        dataPromise = fetch(dataString).then(response => response.json());
+      }
     } else {
-      // Data is all ready to be processed.
       dataPromise = Promise.resolve(data);
     }
-    dataPromise.then(dataTable).then(data => {
-      this._data = data;
+
+    dataPromise.then(dataTable).then(converted => {
+      if (version === this.dataVersion && this.data === data) {
+        this.dataPending = false;
+        const unchanged = this._data === converted;
+        this._data = converted;
+        if (unchanged) this.redraw();
+      }
+    }).catch((reason: unknown) => {
+      console.error('Failed to prepare chart data:', reason);
+      if (version === this.dataVersion && this.data === data) {
+        this.dataPending = false;
+        this._data = undefined;
+        const chart = this.shadowRoot?.getElementById('chartdiv');
+        if (chart) chart.textContent = String(reason);
+      }
     });
   }
 

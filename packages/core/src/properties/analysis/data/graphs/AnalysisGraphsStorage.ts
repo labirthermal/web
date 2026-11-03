@@ -144,11 +144,10 @@ export class AnalysisGraphsStorage {
 
     }
 
-    hasGraph(): boolean {
-        return Object.values(this.graphs).find(graph => graph.hasDataToPrint()).length > 0;
-    }
-
     public generateExportData() {
+
+        // The export converts values from internal Celsius to the current thermal unit of the manager context.
+        const unit = this.drive.parent.group.registry.manager.unit;
 
         const dataBuffer: {
             [index: string]: {
@@ -183,7 +182,7 @@ export class AnalysisGraphsStorage {
             for (const label of labels) {
                 header.push({
                     key: label,
-                    displayLabel: `${label} (${graph.analysis.initialColor}, ${graph.analysis.width} x ${graph.analysis.height} px)`
+                    displayLabel: `${label} (${graph.analysis.initialColor}, ${graph.analysis.width} x ${graph.analysis.height} px) [${unit.current.symbol}]`
                 });
             }
 
@@ -206,7 +205,7 @@ export class AnalysisGraphsStorage {
 
                     const values = graph.getDtaAtTime(parseInt(key));
                     labels.forEach((label, index) => {
-                        dataBuffer[key][label] = values[index];
+                        dataBuffer[key][label] = unit.celsiusToCurrent(values[index]);
                     });
 
                 });

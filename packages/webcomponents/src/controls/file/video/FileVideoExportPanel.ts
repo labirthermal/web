@@ -165,8 +165,6 @@ export class FileVideoExportPanel extends AbstractSingleVideoExport {
                 max-height: 100%;
             }
 
-            .controls {
-            }
 
             .preview {
                 overflow: hidden;
@@ -179,10 +177,6 @@ export class FileVideoExportPanel extends AbstractSingleVideoExport {
                 background: var( --thermal-slate );
 
                 border-radius: var( --thermal-radius );
-
-                & > * {
-                
-                }
 
 
                 .preview-size {
@@ -222,9 +216,6 @@ export class FileVideoExportPanel extends AbstractSingleVideoExport {
                         }
                     }
 
-                    .preview-size--preview {
-                    }
-
                     .preview-size--export {
                         thermal-radio {
                             display: inline-block;
@@ -233,13 +224,6 @@ export class FileVideoExportPanel extends AbstractSingleVideoExport {
 
                 }
 
-
-
-
-
-            }
-
-            .footer {
             }
 
             .progress-overlay {

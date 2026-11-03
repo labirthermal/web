@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { thermalUnits, ThermalUnit } from "@labirthermal/core";
 import type { ThermalMinmaxOrUndefined } from "@labirthermal/core";
+import { ContextProvider } from "@lit/context";
+import { html, LitElement } from "lit";
+import { managerUnitContext } from "../../controllers/ManagerController";
+import { registryHighlightContext } from "../../controllers/RegistryController";
 import { RegistryTicksBar } from "./RegistryTicksBar";
 
 vi.mock("../../hierarchy/consumers/AbstractRegistryConsumer", async () => {
@@ -8,12 +13,28 @@ vi.mock("../../hierarchy/consumers/AbstractRegistryConsumer", async () => {
     class AbstractRegistryConsumer extends LitElement {
         static properties = { registryController: { attribute: false } };
         declare public registryController?: unknown;
+        public managerController = { toCurrentUnit: (value: number) => value };
         public readonly UUID = "ticks-test";
     }
     return { AbstractRegistryConsumer };
 });
 
 customElements.define("test-registry-ticks-lifecycle", RegistryTicksBar);
+
+class TestContexts extends LitElement {
+    public readonly unit = new ContextProvider(this, {
+        context: managerUnitContext, initialValue: ThermalUnit.C,
+    });
+    public readonly highlight = new ContextProvider(this, {
+        context: registryHighlightContext, initialValue: undefined,
+    });
+
+    protected render() {
+        return html`<slot></slot>`;
+    }
+}
+
+customElements.define("test-registry-ticks-contexts", TestContexts);
 
 class TestResizeObserver implements ResizeObserver {
     static instances: TestResizeObserver[] = [];
@@ -144,5 +165,43 @@ describe("RegistryTicksBar lifecycle", () => {
 
         observer.emit(ticks, 400);
         expect(labels(bar)).toEqual(["10.00", "20.00", "30.00", "40.00", "50.00"]);
+    });
+
+    it("updates unit labels and Celsius highlight geometry independently", async () => {
+        const host = new TestContexts();
+        const bar = new RegistryTicksBar();
+        const source = fixture({ min: 0, max: 100 });
+        Object.assign(bar, {
+            registryController: source.controller,
+            managerController: {
+                toCurrentUnit: (value: number) => thermalUnits[host.unit.value ?? ThermalUnit.C].fromCelsius(value),
+            },
+        });
+        host.append(bar);
+        document.body.append(host);
+        await bar.updateComplete;
+
+        host.highlight.setValue({ from: 25, to: 75 });
+        await bar.updateComplete;
+        const marker = bar.shadowRoot?.querySelector<HTMLElement>(".highlight");
+        expect(marker?.style.left).toBe("25%");
+        expect(marker?.style.width).toBe("50%");
+
+        host.unit.setValue(ThermalUnit.F);
+        await bar.updateComplete;
+        expect(labels(bar)).toEqual(["32.00", "212.00"]);
+        expect(marker?.style.left).toBe("25%");
+        expect(marker?.style.width).toBe("50%");
+
+        host.unit.setValue(ThermalUnit.K);
+        await bar.updateComplete;
+        expect(labels(bar)).toEqual(["273.15", "373.15"]);
+        expect(source.registry.minmax.value).toEqual({ min: 0, max: 100 });
+        expect(marker?.style.left).toBe("25%");
+        expect(marker?.style.width).toBe("50%");
+
+        host.highlight.setValue(undefined);
+        await bar.updateComplete;
+        expect(bar.shadowRoot?.querySelector(".highlight")).toBeNull();
     });
 });

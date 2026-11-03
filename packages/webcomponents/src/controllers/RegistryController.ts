@@ -6,6 +6,7 @@ import type { AbstractThermalElement } from "../hierarchy/AbstractThermalElement
 import type { HostReactiveProperties } from "./AbstractHierarchyController";
 import { AbstractHierarchyController, INTERNAL_STATE_DECLARATION } from "./AbstractHierarchyController";
 import type { ManagerController } from "./ManagerController";
+import { optionalNumberConverter } from "../utils/converters/optionalNumberConverter";
 
 type IHostProperties = {
 
@@ -56,10 +57,10 @@ export const registryObjectContext = createContext<ThermalRegistry>("registry-ob
 /** Exposes the current opacity value context from the `RegistryController`. */
 export const registryOpacityContext = createContext<number>("registry-opacity");
 
-/** Exposes the current range from value from the `RegistryController`. */
+/** Exposes the current range from value in Celsius from the `RegistryController`. */
 export const registryRangeFromContext = createContext<undefined | number>("registry-range-from");
 
-/** Exposes the current range to value from the `RegistryController`. */
+/** Exposes the current range to value in Celsius from the `RegistryController`. */
 export const registryRangeToContext = createContext<undefined | number>("registry-range-to");
 
 /** Exposes the current registry loading value from the `RegistryController`. */
@@ -86,6 +87,9 @@ export const registryHighlightContext = createContext<ThermalRangeOrUndefined>("
 export class RegistryController extends AbstractHierarchyController<IElementWithRegistryController> {
 
     private _UUID: string;
+    private _syncedFrom: number | undefined;
+    private _syncedTo: number | undefined;
+    private _hasSyncedRange = false;
 
     public get UUID(): string {
         return this._UUID;
@@ -99,8 +103,8 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
         opacity: { type: Number, reflect: true, attribute: "opacity" },
         min: { type: Number, reflect: false, state: true },
         max: { type: Number, reflect: false, state: true },
-        from: { type: Number, reflect: true, attribute: "from" },
-        to: { type: Number, reflect: true, attribute: "to" },
+        from: { type: Number, reflect: true, attribute: "from", converter: optionalNumberConverter },
+        to: { type: Number, reflect: true, attribute: "to", converter: optionalNumberConverter },
         loading: { type: Boolean, attribute: "is-loading", reflect: true },
         highlight: { type: Object, reflect: false, state: true },
     }
@@ -271,6 +275,12 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
             this._rangeListener.bind(this)
         );
 
+        // Keep the public range attributes in sync when the manager unit changes.
+        this.host.managerController.managerObject.unit.addListener(
+            this.UUID,
+            this._unitListener.bind(this)
+        );
+
 
         // Loading
         this.registryObject.loading.addListener(this.UUID, this._loadingListener.bind(this));
@@ -283,6 +293,7 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
         this.registryObject.opacity.removeListener(this.UUID);
         this.registryObject.minmax.removeListener(this.UUID);
         this.registryObject.range.removeListener(this.UUID);
+        this.host.managerController.managerObject.unit.removeListener(this.UUID);
         this.registryObject.loading.removeListener(this.UUID);
 
     }
@@ -295,7 +306,7 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
             this.setOpacity(this.host.opacity ?? 1);
         }
 
-        if (value.has("from") || value.has("to")) {
+        if ((value.has("from") || value.has("to")) && !this._isRangeSynced()) {
 
             if (
                 this.host.from === undefined
@@ -303,7 +314,10 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
             ) {
                 this._clearRange();
             } else {
-                this.setRange(this.host.from, this.host.to);
+                this.setRange(
+                    this.host.managerController.fromCurrentUnit(this.host.from),
+                    this.host.managerController.fromCurrentUnit(this.host.to)
+                );
             }
 
         }
@@ -374,18 +388,8 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
             this.registryObject.range.imposeRange({ from: fromCelsius, to: toCelsius });
         }
 
-        // Now the value should be changed, so impose its current internal value to attribute
-
-        const currentInternalRange = this.registryObject.range.value;
-
-        if (currentInternalRange === undefined) {
-            this._clearRange();
-        } else {
-            this.host.from = currentInternalRange.from;
-            this.host.to = currentInternalRange.to;
-            this.fromContextProvider.setValue(currentInternalRange.from);
-            this.toContextProvider.setValue(currentInternalRange.to);
-        }
+        // Publish current-unit values to the attributes and Celsius values to contexts.
+        this._publishRange(this.registryObject.range.value);
 
     }
 
@@ -399,18 +403,64 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
     private _rangeListener(
         value: ThermalRangeOrUndefined
     ) {
-        if (value !== undefined) {
-            this.setRange(value.from, value.to);
-        } else {
+        this._publishRange(value);
+    }
+
+    private _unitListener(): void {
+        // Preserve attributes that were explicitly changed but have not reached the core yet.
+        if (this._isRangeSynced()) {
+            this._publishRange(this.registryObject.range.value);
+        }
+    }
+
+    private _isRangeSynced(): boolean {
+        return this._hasSyncedRange
+            && this.host.from === this._syncedFrom
+            && this.host.to === this._syncedTo;
+    }
+
+    private _publishRange(value: ThermalRangeOrUndefined): void {
+        if (value === undefined) {
             this._clearRange();
+            return;
+        }
+
+        const from = this.host.managerController.toCurrentUnit(value.from);
+        const to = this.host.managerController.toCurrentUnit(value.to);
+
+        this._syncedFrom = from;
+        this._syncedTo = to;
+        this._hasSyncedRange = true;
+
+        if (this.host.from !== from) {
+            this.host.from = from;
+        }
+        if (this.host.to !== to) {
+            this.host.to = to;
+        }
+
+        if (this.fromContextProvider.value !== value.from) {
+            this.fromContextProvider.setValue(value.from);
+        }
+        if (this.toContextProvider.value !== value.to) {
+            this.toContextProvider.setValue(value.to);
         }
     }
 
     private _clearRange() {
+        this._syncedFrom = undefined;
+        this._syncedTo = undefined;
+        this._hasSyncedRange = true;
+
         this.host.from = undefined;
         this.host.to = undefined;
-        this.fromContextProvider.setValue(undefined);
-        this.toContextProvider.setValue(undefined);
+
+        if (this.fromContextProvider.value !== undefined) {
+            this.fromContextProvider.setValue(undefined);
+        }
+        if (this.toContextProvider.value !== undefined) {
+            this.toContextProvider.setValue(undefined);
+        }
     }
 
     private _loadingListener(
@@ -437,6 +487,3 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
 
 
 }
-
-
-

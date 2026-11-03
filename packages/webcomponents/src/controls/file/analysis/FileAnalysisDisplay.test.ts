@@ -49,6 +49,19 @@ function fixture() {
     };
 }
 
+function analysisFixture() {
+    const listeners = new Map<string, () => void>();
+    return {
+        analysis: {
+            onValues: {
+                set: vi.fn((id: string, listener: () => void) => listeners.set(id, listener)),
+                delete: vi.fn((id: string) => listeners.delete(id)),
+            },
+        } as unknown as AbstractAnalysis,
+        listeners,
+    };
+}
+
 afterEach(() => {
     document.body.replaceChildren();
 });
@@ -106,5 +119,41 @@ describe("FileAnalysisDisplay lifecycle", () => {
         expect(file.listeners.size).toBe(1);
         expect(file.frames.size).toBe(1);
         expect(file.analysis.addListener).toHaveBeenCalledTimes(2);
+    });
+
+    it("rerenders on current analysis value changes and replaces stale value listeners", async () => {
+        const display = new TestDisplay();
+        const file = fixture();
+        const first = analysisFixture();
+        const second = analysisFixture();
+        file.analysis.value = [first.analysis, second.analysis];
+        Object.assign(display, { file });
+        document.body.append(display);
+        await display.updateComplete;
+
+        expect(first.listeners.has(display.UUID)).toBe(true);
+        expect(second.listeners.has(display.UUID)).toBe(true);
+
+        const requestUpdate = vi.spyOn(display, "requestUpdate");
+        first.listeners.get(display.UUID)!();
+        expect(requestUpdate).toHaveBeenCalledTimes(1);
+        await display.updateComplete;
+
+        const replacement = analysisFixture();
+        file.analysis.value = [second.analysis, replacement.analysis];
+        file.listeners.get(display.UUID)!(file.analysis.value);
+        await display.updateComplete;
+
+        expect(first.listeners.has(display.UUID)).toBe(false);
+        expect(second.listeners.has(display.UUID)).toBe(true);
+        expect(replacement.listeners.has(display.UUID)).toBe(true);
+
+        requestUpdate.mockClear();
+        second.listeners.get(display.UUID)!();
+        expect(requestUpdate).toHaveBeenCalledTimes(1);
+
+        display.remove();
+        expect(second.listeners.has(display.UUID)).toBe(false);
+        expect(replacement.listeners.has(display.UUID)).toBe(false);
     });
 });

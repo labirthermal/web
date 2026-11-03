@@ -39,13 +39,14 @@ let _floating_ui_dom = require("@floating-ui/dom");
 let lit_directives_class_map_js = require("lit/directives/class-map.js");
 let lit_decorators_state_js = require("lit/decorators/state.js");
 let lit_directives_live_js = require("lit/directives/live.js");
+let lit_directives_guard_js = require("lit/directives/guard.js");
 let public_ip = require("public-ip");
 let date_fns = require("date-fns");
 let lit_directives_when_js = require("lit/directives/when.js");
 let lit_directives_unsafe_html_js = require("lit/directives/unsafe-html.js");
-let lit_directives_guard_js = require("lit/directives/guard.js");
 let mediabunny = require("mediabunny");
 let lit_directive_js = require("lit/directive.js");
+let lit_decorators_property_js = require("lit/decorators/property.js");
 //#region src/utils/converters/numberRangeConverter.ts
 const numberRangeConverter = (emptyValue, min, max) => {
 	const fromAttribute = (value) => {
@@ -96,13 +97,15 @@ const booleanConverter = (emptyValue) => {
 *          reflect: true,
 *          converter: paletteConverter,
 *      })
-*      public palette: AvailableThermalPalette = "iron"; // IRON is used as default
+*      public palette: AvailableThermalPalette = "jet";
 * }
 * ```
+*
+* Empty or invalid values fall back to `jet`, the default palette of the core manager.
 */
 const paletteConverter = {
 	fromAttribute: (value) => {
-		if (value === void 0 || value === null || typeof value !== "string" || value === "" || !(value in _labirthermal_core.ThermalPalettes)) return "iron";
+		if (value === void 0 || value === null || typeof value !== "string" || value === "" || !(value in _labirthermal_core.ThermalPalettes)) return "jet";
 		return value;
 	},
 	toAttribute: (value) => value
@@ -149,6 +152,64 @@ const durationConverter = {
 			if (hours > 0) return `${hours}:${minutes}:${formattedSeconds}:${formattedMilliseconds}`;
 			return `${minutes}:${formattedSeconds}:${formattedMilliseconds}`;
 		}
+	}
+};
+//#endregion
+//#region src/utils/converters/unitConverter.ts
+/**
+* Normalize any value to a `ThermalUnit` key. The comparison is case-insensitive
+* and surrounding whitespace is ignored, so `"f"` and `" F "` both give `ThermalUnit.F`.
+*
+* @returns The unit key, or `undefined` when the value is missing or not a known unit.
+*/
+const parseThermalUnit = (value) => {
+	if (typeof value !== "string") return;
+	const normalized = value.trim().toUpperCase();
+	return normalized in _labirthermal_core.ThermalUnit ? normalized : void 0;
+};
+/**
+* A unified converter for the `unit` attribute.
+*
+* A missing or invalid attribute gives `undefined` (not a default unit), so that
+* the consumer can distinguish "not set" from an explicit value and pick the
+* default itself, for example by taking over the unit of an existing manager.
+*
+* @example
+* ```ts
+* @property({ type: String, reflect: true, converter: unitConverter })
+* public unit?: ThermalUnit;
+* ```
+*/
+const unitConverter = {
+	fromAttribute: (value) => parseThermalUnit(value),
+	toAttribute: (value) => parseThermalUnit(value)
+};
+//#endregion
+//#region src/utils/converters/optionalNumberConverter.ts
+/**
+* Converter for optional numeric attributes.
+*
+* Unlike Lit's built-in `type: Number`, which turns a removed attribute into
+* `null`, an empty attribute into `0` and an invalid one into `NaN`, this
+* converter gives `undefined` for all of them. A property value that is not a
+* finite number removes the reflected attribute.
+*
+* @example
+* ```ts
+* @property({ reflect: true, converter: optionalNumberConverter })
+* public from?: number;
+* ```
+*/
+const optionalNumberConverter = {
+	fromAttribute(value) {
+		if (typeof value !== "string") return;
+		const trimmed = value.trim();
+		if (trimmed.length === 0) return;
+		const parsed = Number(trimmed);
+		return Number.isFinite(parsed) ? parsed : void 0;
+	},
+	toAttribute(value) {
+		return typeof value === "number" && Number.isFinite(value) ? String(value) : void 0;
 	}
 };
 //#endregion
@@ -6178,15 +6239,15 @@ const registryControllerContext = (0, _lit_context.createContext)("registry-cont
 const registryObjectContext = (0, _lit_context.createContext)("registry-object-context");
 /** Exposes the current opacity value context from the `RegistryController`. */
 const registryOpacityContext = (0, _lit_context.createContext)("registry-opacity");
-/** Exposes the current range from value from the `RegistryController`. */
+/** Exposes the current range from value in Celsius from the `RegistryController`. */
 const registryRangeFromContext = (0, _lit_context.createContext)("registry-range-from");
-/** Exposes the current range to value from the `RegistryController`. */
+/** Exposes the current range to value in Celsius from the `RegistryController`. */
 const registryRangeToContext = (0, _lit_context.createContext)("registry-range-to");
 /** Exposes the current registry loading value from the `RegistryController`. */
 const registryLoadingContext = (0, _lit_context.createContext)("registry-loading");
-/** Exposes the current registry min context from the `RegistryController` */
+/** Exposes the current registry minimum in Celsius from the `RegistryController`. */
 const registryMinContext = (0, _lit_context.createContext)("registry-min");
-/** Exposes the current registry max value from the `RegistryController` */
+/** Exposes the current registry maximum in Celsius from the `RegistryController`. */
 const registryMaxContext = (0, _lit_context.createContext)("registry-max");
 /**
 * Highlight is an optional range of temperatures highlighted graphically on the thermal scale. It is used to indicate for example:
@@ -6229,12 +6290,14 @@ var RegistryController = class extends AbstractHierarchyController {
 			from: {
 				type: Number,
 				reflect: true,
-				attribute: "from"
+				attribute: "from",
+				converter: optionalNumberConverter
 			},
 			to: {
 				type: Number,
 				reflect: true,
-				attribute: "to"
+				attribute: "to",
+				converter: optionalNumberConverter
 			},
 			loading: {
 				type: Boolean,
@@ -6274,6 +6337,7 @@ var RegistryController = class extends AbstractHierarchyController {
 	}
 	constructor(host) {
 		super(host);
+		this._hasSyncedRange = false;
 		this.onInternalObject = new _labirthermal_core.CallbacksManager();
 		this._UUID = host.UUID + "_registry-controller";
 		this.registryControllerContextProvider = new _lit_context.ContextProvider(this.host, {
@@ -6311,19 +6375,21 @@ var RegistryController = class extends AbstractHierarchyController {
 			}
 		});
 		this.registryObject.range.addListener(this.UUID, this._rangeListener.bind(this));
+		this.host.managerController.managerObject.unit.addListener(this.UUID, this._unitListener.bind(this));
 		this.registryObject.loading.addListener(this.UUID, this._loadingListener.bind(this));
 	}
 	hostDisconnected() {
 		this.registryObject.opacity.removeListener(this.UUID);
 		this.registryObject.minmax.removeListener(this.UUID);
 		this.registryObject.range.removeListener(this.UUID);
+		this.host.managerController.managerObject.unit.removeListener(this.UUID);
 		this.registryObject.loading.removeListener(this.UUID);
 	}
 	hostWillUpdateWatcher(value) {
 		if (value.has("opacity")) this.setOpacity(this.host.opacity ?? 1);
-		if (value.has("from") || value.has("to")) {
+		if ((value.has("from") || value.has("to")) && !this._isRangeSynced()) {
 			if (this.host.from === void 0 || this.host.to === void 0) this._clearRange();
-			else this.setRange(this.host.from, this.host.to);
+			else this.setRange(this.host.managerController.fromCurrentUnit(this.host.from), this.host.managerController.fromCurrentUnit(this.host.to));
 		}
 	}
 	hostUpdatedWatcher() {}
@@ -6345,39 +6411,61 @@ var RegistryController = class extends AbstractHierarchyController {
 		if (this.registryObject && this.registryObject.opacity.value !== safeValue) this.registryObject.opacity.imposeOpacity(safeValue);
 		if (this.opacityContextProvider.value !== safeValue) this.opacityContextProvider.setValue(safeValue);
 	}
-	setRange(from, to) {
-		if (this.registryObject.range.value === void 0 || this.registryObject.range.value.from !== from || this.registryObject.range.value.to !== to) this.registryObject.range.imposeRange({
-			from,
-			to
+	/** 
+	* Set the range of the registry in Celsius. The range needs to be within the registry's minimum and maximum bounds which are controlled internally by `@labirthermal/core`.
+	* The internal value of all contexts is in Celsius with an exception of the public attribute which is in the current unit.
+	*/
+	setRange(fromCelsius, toCelsius) {
+		if (this.registryObject.range.value === void 0 || this.registryObject.range.value.from !== fromCelsius || this.registryObject.range.value.to !== toCelsius) this.registryObject.range.imposeRange({
+			from: fromCelsius,
+			to: toCelsius
 		});
-		const currentInternalRange = this.registryObject.range.value;
-		if (currentInternalRange === void 0) this._clearRange();
-		else {
-			this.host.from = currentInternalRange.from;
-			this.host.to = currentInternalRange.to;
-			this.fromContextProvider.setValue(currentInternalRange.from);
-			this.toContextProvider.setValue(currentInternalRange.to);
-		}
+		this._publishRange(this.registryObject.range.value);
 	}
+	/** Sets the range to the full span of the registry's bounds, if both minimum and maximum are defined. Internal units are Celsius. */
 	setRangeFull() {
 		if (this.host.min !== void 0 && this.host.max !== void 0) this.setRange(this.host.min, this.host.max);
 	}
 	_rangeListener(value) {
-		if (value !== void 0) this.setRange(value.from, value.to);
-		else this._clearRange();
+		this._publishRange(value);
+	}
+	_unitListener() {
+		if (this._isRangeSynced()) this._publishRange(this.registryObject.range.value);
+	}
+	_isRangeSynced() {
+		return this._hasSyncedRange && this.host.from === this._syncedFrom && this.host.to === this._syncedTo;
+	}
+	_publishRange(value) {
+		if (value === void 0) {
+			this._clearRange();
+			return;
+		}
+		const from = this.host.managerController.toCurrentUnit(value.from);
+		const to = this.host.managerController.toCurrentUnit(value.to);
+		this._syncedFrom = from;
+		this._syncedTo = to;
+		this._hasSyncedRange = true;
+		if (this.host.from !== from) this.host.from = from;
+		if (this.host.to !== to) this.host.to = to;
+		if (this.fromContextProvider.value !== value.from) this.fromContextProvider.setValue(value.from);
+		if (this.toContextProvider.value !== value.to) this.toContextProvider.setValue(value.to);
 	}
 	_clearRange() {
+		this._syncedFrom = void 0;
+		this._syncedTo = void 0;
+		this._hasSyncedRange = true;
 		this.host.from = void 0;
 		this.host.to = void 0;
-		this.fromContextProvider.setValue(void 0);
-		this.toContextProvider.setValue(void 0);
+		if (this.fromContextProvider.value !== void 0) this.fromContextProvider.setValue(void 0);
+		if (this.toContextProvider.value !== void 0) this.toContextProvider.setValue(void 0);
 	}
 	_loadingListener(value) {
 		if (value !== this.host.loading) this.host.loading = value;
 		if (value !== this.loadingContextProvider.value) this.loadingContextProvider.setValue(value);
 	}
-	setHighlight(value) {
-		if (this.highlightContextProvider.value !== value) this.highlightContextProvider.setValue(value);
+	/** Set the highlight range for the registry. Internal units are Celsius. */
+	setHighlight(valueInCelsius) {
+		if (this.highlightContextProvider.value !== valueInCelsius) this.highlightContextProvider.setValue(valueInCelsius);
 	}
 };
 //#endregion
@@ -6422,6 +6510,7 @@ const managerSmoothContext = (0, _lit_context.createContext)("manager-smooth-con
 const managerGraphFunctionContext = (0, _lit_context.createContext)("manager-graph-function-context");
 const managerToolContext = (0, _lit_context.createContext)("manager-tool-context");
 const managerInteractiveAnalysesContext = (0, _lit_context.createContext)("manager-interactive-analysis-context");
+const managerUnitContext = (0, _lit_context.createContext)("manager-unit-context");
 var ManagerController = class extends AbstractHierarchyController {
 	get UUID() {
 		return this._UUID;
@@ -6460,6 +6549,12 @@ var ManagerController = class extends AbstractHierarchyController {
 				type: String,
 				reflect: true,
 				attribute: "tool"
+			},
+			unit: {
+				type: String,
+				reflect: true,
+				attribute: "unit",
+				converter: unitConverter
 			}
 		};
 	}
@@ -6504,15 +6599,24 @@ var ManagerController = class extends AbstractHierarchyController {
 		this.smoothThermogramsContextProvider = new _lit_context.ContextProvider(this.host, { context: managerSmoothContext });
 		this.toolContextProvider = new _lit_context.ContextProvider(this.host, { context: managerToolContext });
 		this.smoothGraphContextProvider = new _lit_context.ContextProvider(this.host, { context: managerGraphFunctionContext });
+		this.unitContextProvider = new _lit_context.ContextProvider(this.host, { context: managerUnitContext });
 	}
 	hostConnected() {
 		const slug = this._getDefaultSlugFromHost("manager-slug");
 		this.host.managerSlug = slug;
-		this.host.managerObject = createOrGetManager(slug);
+		const requestedUnit = parseThermalUnit(this.host.unit);
+		const requestedPalette = paletteConverter.fromAttribute(this.host.palette);
+		const managerExisted = window.Thermal.managers.has(slug);
+		this.host.managerObject = createOrGetManager(slug, {
+			unit: requestedUnit ?? _labirthermal_core.ThermalUnit.C,
+			palette: requestedPalette
+		});
 		this.managerObjectContextPtovider.setValue(this.host.managerObject);
 		this.onInternalObject.call(this.host.managerObject);
-		const initialPaletteValue = paletteConverter.fromAttribute(this.host.palette);
-		this.setPalette(initialPaletteValue);
+		const initialUnit = requestedUnit ?? (managerExisted ? this.managerObject.unit.value : _labirthermal_core.ThermalUnit.C);
+		this.setUnit(initialUnit);
+		this.managerObject.unit.addListener(this.UUID, this.setUnit.bind(this));
+		this.setPalette(requestedPalette);
 		this.managerObject.palette.addListener(this.UUID, this.setPalette.bind(this));
 		this.setAdvancedPalettes(this.host.advancedPalettes);
 		this.setSmoothThermograms(this.host.smoothThermograms);
@@ -6527,6 +6631,7 @@ var ManagerController = class extends AbstractHierarchyController {
 		this.managerObject.smooth.removeListener(this.UUID);
 		this.managerObject.graphSmooth.removeListener(this.UUID);
 		this.managerObject.tool.removeListener(this.UUID);
+		this.managerObject.unit.removeListener(this.UUID);
 	}
 	hostUpdate() {}
 	hostWillUpdateWatcher(value) {
@@ -6536,6 +6641,7 @@ var ManagerController = class extends AbstractHierarchyController {
 		if (value.has("smoothThermograms")) this.setSmoothThermograms(this.host.smoothThermograms);
 		if (value.has("smoothGraph")) this.setSmoothGraph(this.host.smoothGraph);
 		if (value.has("tool")) this._setToolByKey(this.host.tool);
+		if (value.has("unit")) this.setUnit(this.host.unit);
 	}
 	hostUpdatedWatcher() {}
 	/** 
@@ -6600,6 +6706,37 @@ var ManagerController = class extends AbstractHierarchyController {
 		if (this.host.smoothGraph !== value) this.host.smoothGraph = value;
 		if (this.smoothGraphContextProvider.value !== value) this.smoothGraphContextProvider.setValue(value);
 		if (this.managerObject.graphSmooth.value !== value) this.managerObject.graphSmooth.setGraphSmooth(value);
+	}
+	/** 
+	* This is the recommended way to set the unit - updates the value in the core manager object, the context provider, and the host element. All updates are performed only when the new value differs from the current one.
+	* 
+	* The value is normalized case-insensitively; a missing or invalid value falls back to Celsius.
+	* The unit affects only the display and the user inputs. All internal values stay in Celsius.
+	*/
+	setUnit(value) {
+		const unit = parseThermalUnit(value) ?? _labirthermal_core.ThermalUnit.C;
+		if (this.host.unit !== unit) this.host.unit = unit;
+		if (this.unitContextProvider.value !== unit) this.unitContextProvider.setValue(unit);
+		if (this.managerObject.unit.value !== unit) this.managerObject.unit.set(unit);
+	}
+	/** Format a single value in current unit and output it along with its unit symbol. */
+	formatSingle(valueInCurrentUnit) {
+		return this.managerObject.unit.formatSingle(valueInCurrentUnit);
+	}
+	/** Format a range of values in the current unit and output it along with its unit symbol. */
+	formatRange(fromInCurrentUnit, toInCurrentUnit) {
+		return this.managerObject.unit.formatRange(fromInCurrentUnit, toInCurrentUnit);
+	}
+	/** Convert a value in Celsius unit to the current unit and return the number. */
+	toCurrentUnit(valueInCelsius) {
+		return this.managerObject.unit.celsiusToCurrent(valueInCelsius);
+	}
+	/** Convert a value in the current unit to Celsius. */
+	fromCurrentUnit(valueInCurrentUnit) {
+		return this.managerObject.unit.currentToCelsius(valueInCurrentUnit);
+	}
+	get currentUnit() {
+		return this.managerObject.unit.current;
 	}
 };
 //#endregion
@@ -9324,22 +9461,6 @@ var AbstractManagerProvider = class extends AbstractThermalElement {
 		return lit.html`<slot></slot>`;
 	}
 };
-__decorate([(0, lit_decorators_js.property)({
-	type: String,
-	reflect: true
-}), __decorateMetadata("design:type", Object)], AbstractManagerProvider.prototype, "palette", void 0);
-__decorate([(0, lit_decorators_js.property)({
-	type: Boolean,
-	reflect: true
-}), __decorateMetadata("design:type", Boolean)], AbstractManagerProvider.prototype, "advancedPalettes", void 0);
-__decorate([(0, lit_decorators_js.property)({
-	type: String,
-	reflect: true
-}), __decorateMetadata("design:type", Boolean)], AbstractManagerProvider.prototype, "smoothThermograms", void 0);
-__decorate([(0, lit_decorators_js.property)({
-	type: String,
-	reflect: true
-}), __decorateMetadata("design:type", Boolean)], AbstractManagerProvider.prototype, "smoothGraph", void 0);
 //#endregion
 //#region src/hierarchy/abstraction/AbstractRegistryProvider.ts
 var AbstractRegistryProvider = class extends AbstractManagerConsumer {
@@ -9753,6 +9874,7 @@ var FileCopyElement = class extends AbstractThermalElement {
 		this.setAttribute("registry-slug", this.getSlugRegistry());
 		this.palette = this.originalFile.group.registry.manager.palette.value;
 		this.opacity = this.originalFile.group.registry.opacity.value;
+		this.unit = this.originalFile.group.registry.manager.unit.value;
 		this.ms = originalFile.timeline.currentMs;
 		if (this.withAnalyses) this.copyAnalysesFromParent();
 		super.connectedCallback();
@@ -10214,7 +10336,7 @@ thermal-btn {
 		};
 		return lit.html`<thermal-btn 
     tooltip=${t$1(T[tool.name])}
-    tooltip-placement="right"
+    tooltip-placement="${(0, lit_directives_if_defined_js.ifDefined)(this.tooltipPlacement)}"
     class=${(0, lit_directives_class_map_js.classMap)(classes)} 
     @click=${() => {
 			this.managerObject.tool.selectTool(tool);
@@ -10239,12 +10361,21 @@ __decorate([
 	(0, lit_decorators_js.state)(),
 	__decorateMetadata("design:type", Object)
 ], ManagerToolBar.prototype, "value", void 0);
+__decorate([(0, lit_decorators_js.property)({
+	type: String,
+	reflect: true,
+	attribute: "tooltip-placement"
+}), __decorateMetadata("design:type", typeof _floating_ui_dom.Placement === "undefined" ? Object : _floating_ui_dom.Placement)], ManagerToolBar.prototype, "tooltipPlacement", void 0);
 //#endregion
 //#region src/controls/registry/RegistryRangeForm.ts
 /**
 * Form control for editing a thermal registry's active range. It keeps its
 * inputs synchronized with registry range data and provides range presets,
 * bounded stepping, and rounding.
+*
+* All values, steps and rounding of the form are in the manager's current
+* unit. The registry always stays in degrees Celsius: incoming values are
+* converted for display and edited values are converted back to Celsius.
 *
 * @see AbstractRegistryConsumer
 * @see RegistryController
@@ -10270,8 +10401,10 @@ var RegistryRangeForm = class extends AbstractRegistryConsumer {
 		this.autoRangeHovered = false;
 		this.recieveMinmax = (value) => {
 			if (value) {
-				if (this.min !== value.min) this.min = value.min;
-				if (this.max !== value.max) this.max = value.max;
+				const min = this.toDisplayed(value.min);
+				const max = this.toDisplayed(value.max);
+				if (this.min !== min) this.min = min;
+				if (this.max !== max) this.max = max;
 			} else {
 				this.min = void 0;
 				this.max = void 0;
@@ -10286,18 +10419,20 @@ var RegistryRangeForm = class extends AbstractRegistryConsumer {
 		this.recieveRange = (value) => {
 			this.isUpdatingFromRegistry = true;
 			if (value) {
-				if (this.from !== value.from) {
-					this.from = value.from;
+				const from = this.toDisplayed(value.from);
+				const to = this.toDisplayed(value.to);
+				if (this.from !== from) {
+					this.from = from;
 					this.inputValues = {
 						...this.inputValues,
-						from: value.from?.toFixed(2) ?? ""
+						from: from.toFixed(2)
 					};
 				}
-				if (this.to !== value.to) {
-					this.to = value.to;
+				if (this.to !== to) {
+					this.to = to;
 					this.inputValues = {
 						...this.inputValues,
-						to: value.to?.toFixed(2) ?? ""
+						to: to.toFixed(2)
 					};
 				}
 			} else {
@@ -10336,6 +10471,18 @@ var RegistryRangeForm = class extends AbstractRegistryConsumer {
 			this.registryController.setHighlight(void 0);
 		};
 	}
+	/** Definition of the displayed unit. */
+	get unitDefinition() {
+		return _labirthermal_core.thermalUnits[this.unit ?? _labirthermal_core.ThermalUnit.C] ?? _labirthermal_core.thermalUnits[_labirthermal_core.ThermalUnit.C];
+	}
+	/** Convert a registry value in Celsius to the displayed unit. */
+	toDisplayed(celsius) {
+		return this.unitDefinition.fromCelsius(celsius);
+	}
+	/** Convert a displayed value back to Celsius for the registry. */
+	toCelsius(displayed) {
+		return this.unitDefinition.toCelsius(displayed);
+	}
 	connectedCallback() {
 		super.connectedCallback();
 		this.hydrate();
@@ -10343,6 +10490,14 @@ var RegistryRangeForm = class extends AbstractRegistryConsumer {
 	willUpdate(changedProperties) {
 		super.willUpdate(changedProperties);
 		this.hydrate();
+		if (changedProperties.has("unit") && this.subscribedRegistry) {
+			if (this.debounceTimer) {
+				clearTimeout(this.debounceTimer);
+				this.debounceTimer = void 0;
+			}
+			this.recieveMinmax(this.subscribedRegistry.minmax.value);
+			this.recieveRange(this.subscribedRegistry.range.value);
+		}
 	}
 	disconnectedCallback() {
 		super.disconnectedCallback();
@@ -10381,14 +10536,14 @@ var RegistryRangeForm = class extends AbstractRegistryConsumer {
 	* Updates the lower endpoint and imposes the resulting range on the registry
 	* when both endpoints are available.
 	*
-	* @param value The new lower endpoint.
+	* @param value The new lower endpoint in the displayed unit.
 	*/
 	updateFrom(value) {
 		if (this.registryObject && value !== void 0 && this.to !== void 0) {
 			this.from = value;
 			this.registryObject.range.imposeRange({
-				from: value,
-				to: this.to
+				from: this.toCelsius(value),
+				to: this.registryObject.range.value?.to ?? this.toCelsius(this.to)
 			});
 		}
 	}
@@ -10396,14 +10551,14 @@ var RegistryRangeForm = class extends AbstractRegistryConsumer {
 	* Updates the upper endpoint and imposes the resulting range on the registry
 	* when both endpoints are available.
 	*
-	* @param value The new upper endpoint.
+	* @param value The new upper endpoint in the displayed unit.
 	*/
 	updateTo(value) {
 		if (this.registryObject && value !== void 0 && this.from !== void 0) {
 			this.to = value;
 			this.registryObject.range.imposeRange({
-				from: this.from,
-				to: value
+				from: this.registryObject.range.value?.from ?? this.toCelsius(this.from),
+				to: this.toCelsius(value)
 			});
 		}
 	}
@@ -10959,7 +11114,7 @@ var RegistryRangeForm = class extends AbstractRegistryConsumer {
 			}
 		}}
                 ></input>
-                <aside>°C</aside>
+                <aside>${this.unitDefinition.symbol}</aside>
                 <button 
                     class="right"
                     ?disabled=${!canStepUp}
@@ -11093,6 +11248,14 @@ __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
 	reflect: true
 }), __decorateMetadata("design:type", Boolean)], RegistryRangeForm.prototype, "stacked", void 0);
+__decorate([
+	(0, lit_decorators_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", typeof _labirthermal_core.ThermalUnit === "undefined" ? Object : _labirthermal_core.ThermalUnit)
+], RegistryRangeForm.prototype, "unit", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeForm.prototype, "min", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeForm.prototype, "max", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeForm.prototype, "from", void 0);
@@ -11298,7 +11461,7 @@ var RegistryTicksBar = class RegistryTicksBar extends AbstractRegistryConsumer {
                     <div class="tick" >
                         <div class="tick-marker"></div>
                         <div class="tick-value">
-                            ${tick.value.toFixed(RegistryTicksBar.TICK_FIXED)}
+                            ${this.managerController.toCurrentUnit(tick.value).toFixed(RegistryTicksBar.TICK_FIXED)}
                         </div>
                     </div>
                         `;
@@ -11316,6 +11479,14 @@ __decorate([(0, _lit_context.consume)({
 	context: registryHighlightContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Object)], RegistryTicksBar.prototype, "highlight", void 0);
+__decorate([
+	(0, lit_decorators_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Object)
+], RegistryTicksBar.prototype, "unit", void 0);
 __decorate([(0, lit_decorators_js.property)({
 	type: String,
 	reflect: true
@@ -11324,6 +11495,17 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Ob
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Array)], RegistryTicksBar.prototype, "ticks", void 0);
 //#endregion
 //#region src/controls/registry/RegistryRangeSlider.ts
+/**
+* Two-handle slider for the enclosing registry's temperature range.
+*
+* Bounds, committed endpoints, drag previews and all interaction calculations stay
+* in Celsius. Only tooltips and ARIA values use the manager's current display unit.
+*
+* Pointer movement previews a range locally; releasing the pointer commits it once.
+* Keyboard and wheel changes commit immediately. Left/right arrows and the wheel
+* step by 1% of the full interval; Home/End and up/down select the exact bounds.
+* Handles stop at the registry bounds and cannot cross each other.
+*/
 var RegistryRangeSlider = class extends AbstractRegistryConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -11335,51 +11517,51 @@ var RegistryRangeSlider = class extends AbstractRegistryConsumer {
 	getClassName() {
 		return "RangeSliderElement";
 	}
+	/** Discards previews and releases pointer capture before leaving the document. */
 	disconnectedCallback() {
 		this.cancelDrag();
 		super.disconnectedCallback();
 	}
+	/** Reapplies the height override and invalidates drags after registry changes. */
 	willUpdate(changed) {
 		super.willUpdate(changed);
-		if (changed.has("height") || changed.has("heightStyle")) {
-			const height = this.height?.trim();
-			const style = document.createElement("div").style;
-			if (height) style.height = height;
-			const current = this.style.getPropertyValue("--_range-slider-attribute-height");
-			if (height && style.height && !/^(auto|inherit|initial|unset|revert|revert-layer|min-content|max-content|fit-content|stretch|contain)$/i.test(height)) {
-				if (current !== height) this.style.setProperty("--_range-slider-attribute-height", height);
-			} else {
-				if (current) this.style.removeProperty("--_range-slider-attribute-height");
-				if (height && changed.has("height")) this.log("Invalid range slider height", { height: this.height });
-			}
-		}
-		if ([
-			"min",
-			"max",
-			"from",
-			"to",
-			"loading",
-			"registryController"
-		].some((key) => changed.has(key))) {
-			this.cancelDrag();
-			if (this.min !== void 0 && this.max !== void 0 && this.from !== void 0 && this.to !== void 0 && !this.values) this.log("Invalid range slider values", {
-				min: this.min,
-				max: this.max,
-				from: this.from,
-				to: this.to
-			});
+		const changes = changed;
+		if (changes.has("height") || changes.has("heightStyle")) this.updateHeightOverride(changes.has("height"));
+		if (!(changes.has("min") || changes.has("max") || changes.has("from") || changes.has("to") || changes.has("loading") || changes.has("registryController"))) return;
+		this.cancelDrag();
+		if (this.min !== void 0 && this.max !== void 0 && this.from !== void 0 && this.to !== void 0 && !this.values) this.log("Invalid range slider values", {
+			min: this.min,
+			max: this.max,
+			from: this.from,
+			to: this.to
+		});
+	}
+	/** Validates CSS height; style-only changes must not repeat invalid-height logs. */
+	updateHeightOverride(reportInvalidHeight) {
+		const height = this.height?.trim();
+		const style = document.createElement("div").style;
+		if (height) style.height = height;
+		const property = "--_range-slider-attribute-height";
+		const current = this.style.getPropertyValue(property);
+		const isUnsupportedHeight = /^(auto|inherit|initial|unset|revert|revert-layer|min-content|max-content|fit-content|stretch|contain)$/i.test(height ?? "");
+		if (height && style.height && !isUnsupportedHeight) {
+			if (current !== height) this.style.setProperty(property, height);
+		} else {
+			if (current) this.style.removeProperty(property);
+			if (height && reportInvalidHeight) this.log("Invalid range slider height", { height: this.height });
 		}
 	}
+	/** Returns usable Celsius values; missing context or invalid data cannot drive a slider. */
 	get values() {
 		const { min, max, from, to } = this;
-		if (min === void 0 || max === void 0 || from === void 0 || to === void 0) return void 0;
+		if (min === void 0 || max === void 0 || from === void 0 || to === void 0) return;
 		if (![
 			min,
 			max,
 			from,
 			to,
 			max - min
-		].every(Number.isFinite) || min > max || from < min || to > max || from > to) return void 0;
+		].every(Number.isFinite) || !(min <= from && from <= to && to <= max)) return;
 		return {
 			min,
 			max,
@@ -11387,31 +11569,39 @@ var RegistryRangeSlider = class extends AbstractRegistryConsumer {
 			to
 		};
 	}
+	/** Maps a Celsius temperature to its track position; a constant interval starts at 0%. */
 	percent(value, values) {
 		return values.max === values.min ? 0 : (value - values.min) / (values.max - values.min) * 100;
 	}
+	/** Clamps one Celsius endpoint to the registry bound and the opposite handle. */
 	constrain(handle, value, values, range) {
-		return handle === "from" ? {
+		if (handle === "from") return {
 			from: Math.max(values.min, Math.min(range.to, value)),
 			to: range.to
-		} : {
+		};
+		return {
 			from: range.from,
 			to: Math.min(values.max, Math.max(range.from, value))
 		};
 	}
+	/**
+	* Commits a Celsius range; context subscriptions receive the validated core values.
+	* Never copy the controller's public display-unit endpoints back into local state:
+	* rounding during that conversion can move an exact endpoint outside its bound.
+	*/
 	commit(range) {
 		this.cancelDrag();
 		if (range.from === this.from && range.to === this.to) return;
 		this.registryController.setRange(range.from, range.to);
-		this.from = this.registryController.from;
-		this.to = this.registryController.to;
 	}
+	/** Clears the session before releasing capture, which can fire `lostpointercapture`. */
 	cancelDrag() {
 		const drag = this.drag;
 		this.drag = void 0;
 		this.draft = void 0;
-		if (drag?.element.hasPointerCapture(drag.pointerId)) drag.element.releasePointerCapture(drag.pointerId);
+		if (drag?.track.hasPointerCapture(drag.pointerId)) drag.track.releasePointerCapture(drag.pointerId);
 	}
+	/** Selects a handle, preserves the grab offset and starts a captured local preview. */
 	pointerDown(event) {
 		const values = this.values;
 		if (!values || this.loading || values.min === values.max || this.drag || event.button !== 0) return;
@@ -11423,11 +11613,15 @@ var RegistryRangeSlider = class extends AbstractRegistryConsumer {
 		const pointerPercent = (event.clientX - rect.left) / rect.width * 100;
 		const clickedHandle = target.closest("[data-handle]")?.dataset.handle;
 		let handle;
-		if (clickedHandle === "from" || clickedHandle === "to") handle = clickedHandle;
-		else {
+		let offsetPixels = 0;
+		if (clickedHandle === "from" || clickedHandle === "to") {
+			handle = clickedHandle;
+			offsetPixels = event.clientX - rect.left - this.percent(values[handle], values) / 100 * rect.width;
+		} else {
 			const fromDistance = Math.abs(pointerPercent - this.percent(values.from, values));
 			const toDistance = Math.abs(pointerPercent - this.percent(values.to, values));
-			handle = fromDistance === toDistance ? this.activeHandle : fromDistance < toDistance ? "from" : "to";
+			if (fromDistance === toDistance) handle = this.activeHandle;
+			else handle = fromDistance < toDistance ? "from" : "to";
 		}
 		event.preventDefault();
 		this.activeHandle = handle;
@@ -11436,32 +11630,41 @@ var RegistryRangeSlider = class extends AbstractRegistryConsumer {
 			from: values.from,
 			to: values.to
 		};
-		const offset = clickedHandle ? event.clientX - rect.left - this.percent(values[handle], values) / 100 * rect.width : 0;
 		this.drag = {
 			pointerId: event.pointerId,
 			handle,
-			offset,
-			element: track,
-			values,
+			offsetPixels,
+			track,
+			initialValues: values,
 			controller: this.registryController
 		};
 		track.setPointerCapture(event.pointerId);
 		this.pointerMove(event);
 	}
+	/** Updates only the Celsius draft, or cancels it if the captured registry state changed. */
 	pointerMove(event) {
 		const drag = this.drag;
 		const values = this.values;
 		if (!drag || event.pointerId !== drag.pointerId) return;
-		if (!values || !this.draft || this.loading || this.registryController !== drag.controller || values.min !== drag.values.min || values.max !== drag.values.max || values.from !== drag.values.from || values.to !== drag.values.to) {
+		if (!values || !this.draft || this.loading) {
 			this.cancelDrag();
 			return;
 		}
-		const rect = drag.element.getBoundingClientRect();
+		if (this.registryController !== drag.controller || values.min !== drag.initialValues.min || values.max !== drag.initialValues.max || values.from !== drag.initialValues.from || values.to !== drag.initialValues.to) {
+			this.cancelDrag();
+			return;
+		}
+		const rect = drag.track.getBoundingClientRect();
 		if (rect.width === 0) return;
-		const fraction = Math.max(0, Math.min(1, (event.clientX - rect.left - drag.offset) / rect.width));
-		const value = fraction === 0 ? values.min : fraction === 1 ? values.max : values.min + fraction * (values.max - values.min);
+		const pointerFraction = (event.clientX - rect.left - drag.offsetPixels) / rect.width;
+		const fraction = Math.max(0, Math.min(1, pointerFraction));
+		let value;
+		if (fraction === 0) value = values.min;
+		else if (fraction === 1) value = values.max;
+		else value = values.min + fraction * (values.max - values.min);
 		this.draft = this.constrain(drag.handle, value, values, this.draft);
 	}
+	/** Includes the release position before committing the final, clamped Celsius draft. */
 	pointerUp(event) {
 		if (this.drag?.pointerId !== event.pointerId) return;
 		this.pointerMove(event);
@@ -11469,19 +11672,22 @@ var RegistryRangeSlider = class extends AbstractRegistryConsumer {
 		if (range) this.commit(range);
 		else this.cancelDrag();
 	}
+	/** Pointer cancellation or lost capture must never commit a preview. */
 	pointerCancel(event) {
 		if (this.drag?.pointerId === event.pointerId) this.cancelDrag();
 	}
+	/** Moves by 1% of the Celsius interval, or selects an exact bound with Home/End. */
 	keyDown(event, handle) {
 		const values = this.values;
 		if (!values || this.loading || values.min === values.max) return;
+		const step = (values.max - values.min) / 100;
 		let value;
 		switch (event.key) {
 			case "ArrowLeft":
-				value = Number((values[handle] - (values.max - values.min) / 100).toPrecision(15));
+				value = Number((values[handle] - step).toPrecision(15));
 				break;
 			case "ArrowRight":
-				value = Number((values[handle] + (values.max - values.min) / 100).toPrecision(15));
+				value = Number((values[handle] + step).toPrecision(15));
 				break;
 			case "ArrowUp":
 			case "Home":
@@ -11498,88 +11704,174 @@ var RegistryRangeSlider = class extends AbstractRegistryConsumer {
 		this.activeHandle = handle;
 		this.commit(this.constrain(handle, value, values, values));
 	}
+	/** Commits a 1% Celsius step per wheel direction; active drags take precedence. */
 	wheel(event, handle) {
 		const values = this.values;
 		if (!values || this.loading || values.min === values.max || event.deltaY === 0 || this.drag) return;
 		event.preventDefault();
 		event.stopPropagation();
 		this.activeHandle = handle;
-		const value = Number((values[handle] + Math.sign(event.deltaY) * (values.max - values.min) / 100).toPrecision(15));
+		const step = Math.sign(event.deltaY) * (values.max - values.min) / 100;
+		const value = Number((values[handle] + step).toPrecision(15));
 		this.commit(this.constrain(handle, value, values, values));
 	}
+	/** Converts Celsius to the display unit only for ARIA values and the visible tooltip. */
 	renderHandle(handle, values, range) {
 		const disabled = values.min === values.max;
+		const valueInCurrentUnit = this.managerController.toCurrentUnit(range[handle]);
+		const minimumInCurrentUnit = this.managerController.toCurrentUnit(handle === "from" ? values.min : range.from);
+		const maximumInCurrentUnit = this.managerController.toCurrentUnit(handle === "from" ? range.to : values.max);
+		const label = this.managerController.formatSingle(valueInCurrentUnit);
+		const background = handle === "from" ? this.palette?.data.pixels[0] : this.palette?.data.pixels[this.palette.data.pixels.length - 1];
 		return lit.html`
             <div class="handle-position ${this.activeHandle === handle ? "active" : ""}"
                 style=${(0, lit_directives_style_map_js.styleMap)({ left: `${this.percent(range[handle], values)}%` })}>
                 <button type="button" class="handle" data-handle=${handle} role="slider"
                     aria-label=${this.t(handle === "from" ? "minimaltemperature" : "maximaltemperature")}
                     aria-orientation="horizontal"
-                    aria-valuemin=${handle === "from" ? values.min : range.from}
-                    aria-valuemax=${handle === "from" ? range.to : values.max}
-                    aria-valuenow=${range[handle]}
-                    aria-valuetext=${`${range[handle].toFixed(2)} \u00b0C`}
+                    aria-valuemin=${minimumInCurrentUnit}
+                    aria-valuemax=${maximumInCurrentUnit}
+                    aria-valuenow=${valueInCurrentUnit}
+                    aria-valuetext=${label}
                     ?disabled=${disabled}
-                    style=${(0, lit_directives_style_map_js.styleMap)({ background: handle === "from" ? this.palette?.data.pixels[0] : this.palette?.data.pixels[this.palette.data.pixels.length - 1] })}
+                    style=${(0, lit_directives_style_map_js.styleMap)({ background })}
                     @focus=${() => {
 			this.activeHandle = handle;
 		}}
                     @keydown=${(event) => this.keyDown(event, handle)}
                     @wheel=${(event) => this.wheel(event, handle)}>
                 </button>
-                <span class="tooltip" aria-hidden="true">${range[handle].toFixed(2)}</span>
+                <span class="tooltip" aria-hidden="true">${label}</span>
             </div>`;
 	}
 	static {
 		this.styles = lit.css`
         :host {
-            display: block; box-sizing: content-box;
+            display: block;
+            box-sizing: content-box;
             --_range-slider-attribute-height: initial;
             height: var(--_range-slider-attribute-height, var(--thermal-range-slider-height, 15px));
             padding-bottom: max(0px, calc(var(--thermal-gap) - 15px));
             margin-bottom: -6px;
         }
+
         .container {
             height: 100%;
             padding: 0 calc(var(--thermal-gap) * .5);
             color: var(--thermal-slate-dark);
             font-size: 12px;
         }
-        .slider-row { display: flex; align-items: center; height: 100%; }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
         .track {
-            position: relative; flex: 1; min-width: 0; height: 100%;
-            background: var(--thermal-slate); cursor: pointer; touch-action: none;
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            background: var(--thermal-slate);
+            cursor: pointer;
+            touch-action: none;
         }
-        .fill { position: absolute; height: 100%; pointer-events: none; }
-        .handle-position { position: absolute; top: 0; height: 100%; z-index: 20; }
-        .handle-position.active { z-index: 21; }
+
+        .fill {
+            position: absolute;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .handle-position {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            z-index: 20;
+        }
+
+        .handle-position.active {
+            z-index: 21;
+        }
+
         .handle {
-            position: absolute; top: 50%; transform: translate(-50%, -50%);
-            box-sizing: border-box; width: 14px; height: calc(100% + 5px); padding: 0; border-radius: 0;
-            border: 2px solid var(--thermal-primary); background: var(--thermal-background);
-            box-shadow: 0 0 5px var(--thermal-primary); cursor: grab; touch-action: none;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            box-sizing: border-box;
+            width: 14px;
+            height: calc(100% + 5px);
+            padding: 0;
+            border-radius: 0;
+            border: 2px solid var(--thermal-primary);
+            background: var(--thermal-background);
+            box-shadow: 0 0 5px var(--thermal-primary);
+            cursor: grab;
+            touch-action: none;
         }
-        .handle:hover, .handle:focus-visible { box-shadow: 0 0 10px var(--thermal-primary); }
-        .handle:focus-visible { outline: 2px solid var(--thermal-primary); outline-offset: 2px; }
-        .handle:active { cursor: grabbing; }
-        .handle:disabled { cursor: default; }
+
+        .handle:hover,
+        .handle:focus-visible {
+            box-shadow: 0 0 10px var(--thermal-primary);
+        }
+
+        .handle:focus-visible {
+            outline: 2px solid var(--thermal-primary);
+            outline-offset: 2px;
+        }
+
+        .handle:active {
+            cursor: grabbing;
+        }
+
+        .handle:disabled {
+            cursor: default;
+        }
+
         .tooltip {
-            position: absolute; transform: translate(-50%, -50%); white-space: nowrap; pointer-events: none;
-            top: calc(100% + 16.5px); min-width: 40px; height: 20px; line-height: 20px; text-align: center;
-            padding: 0 3px; background: var(--thermal-slate-dark); color: var(--thermal-background);
-            border: 1px solid var(--thermal-slate-dark); border-radius: 3px;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            pointer-events: none;
+            top: calc(100% + 16.5px);
+            min-width: 40px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            padding: 0 3px;
+            background: var(--thermal-slate-dark);
+            color: var(--thermal-background);
+            border: 1px solid var(--thermal-slate-dark);
+            border-radius: 3px;
         }
+
         .tooltip::before {
-            content: ""; position: absolute; top: -4px; left: calc(50% - 4px);
-            width: 7px; height: 7px; transform: rotate(45deg);
+            content: "";
+            position: absolute;
+            top: -4px;
+            left: calc(50% - 4px);
+            width: 7px;
+            height: 7px;
+            transform: rotate(45deg);
             background: var(--thermal-slate-dark);
         }
-        .skeleton { height: 100%; background: var(--thermal-slate); }
+
+        .skeleton {
+            height: 100%;
+            background: var(--thermal-slate);
+        }
     `;
 	}
+	/** Renders the Celsius geometry with current-unit labels, or a loading placeholder. */
 	render() {
 		const values = this.values;
-		if (this.loading || !values) return lit.html`<div class="container loading" aria-busy=${this.loading}><div class="skeleton"></div></div><slot></slot>`;
+		if (this.loading || !values) return lit.html`
+                <div class="container loading" aria-busy=${this.loading}>
+                    <div class="skeleton"></div>
+                </div>
+                <slot></slot>
+            `;
 		const range = this.draft ?? values;
 		const left = this.percent(range.from, values);
 		const right = this.percent(range.to, values);
@@ -11662,6 +11954,14 @@ __decorate([
 	(0, lit_decorators_js.state)(),
 	__decorateMetadata("design:type", Object)
 ], RegistryRangeSlider.prototype, "loading", void 0);
+__decorate([
+	(0, lit_decorators_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Object)
+], RegistryRangeSlider.prototype, "unit", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeSlider.prototype, "draft", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeSlider.prototype, "activeHandle", void 0);
 //#endregion
@@ -11885,14 +12185,13 @@ var RegistryRangeFullButton = class extends AbstractRegistryConsumer {
 		super(..._args);
 		this.buttonRef = (0, lit_directives_ref_js.createRef)();
 	}
-	connectedCallback() {
-		super.connectedCallback();
-		this.registryObject.minmax.addListener(this.UUID, () => this.setValue());
-	}
-	setValue() {
-		const value = this.registryController.registryObject.minmax.value;
-		if (value) this.value = `${value.min.toFixed(2)} — ${value.max.toFixed(2)} °C`;
-		else this.value = void 0;
+	/** Format Celsius bounds only when displaying them; interactions use the core bounds. */
+	get value() {
+		const bounds = this.registryController?.registryObject.minmax.value;
+		const min = this.min ?? bounds?.min;
+		const max = this.max ?? bounds?.max;
+		if (min === void 0 || max === void 0) return void 0;
+		return this.managerController.formatRange(this.managerController.toCurrentUnit(min), this.managerController.toCurrentUnit(max));
 	}
 	doAction() {
 		this.registryObject.range.applyMinmax();
@@ -11918,18 +12217,63 @@ var RegistryRangeFullButton = class extends AbstractRegistryConsumer {
 >${t$1("fullrange")}</thermal-btn>`;
 	}
 };
-__decorate([(0, lit_decorators_state_js.state)(), __decorateMetadata("design:type", String)], RegistryRangeFullButton.prototype, "value", void 0);
+__decorate([
+	(0, lit_decorators_state_js.state)(),
+	(0, _lit_context.consume)({
+		context: registryMinContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Number)
+], RegistryRangeFullButton.prototype, "min", void 0);
+__decorate([
+	(0, lit_decorators_state_js.state)(),
+	(0, _lit_context.consume)({
+		context: registryMaxContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Number)
+], RegistryRangeFullButton.prototype, "max", void 0);
+__decorate([
+	(0, lit_decorators_state_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Object)
+], RegistryRangeFullButton.prototype, "unit", void 0);
 //#endregion
 //#region src/controls/registry/RegistryRangeAutoButton.ts
 var RegistryRangeAutoButton = class extends AbstractRegistryConsumer {
 	connectedCallback() {
 		super.connectedCallback();
-		this.registryObject.histogram.addListener(this.UUID, () => this.setValue());
+		this.bindRegistry();
 	}
-	setValue() {
-		const value = this.registryController.registryObject.range.autoValue;
-		if (value) this.value = `${value.from.toFixed(2)} — ${value.to.toFixed(2)} °C`;
-		else this.value = void 0;
+	disconnectedCallback() {
+		this.unbindRegistry();
+		super.disconnectedCallback();
+	}
+	willUpdate(changedProperties) {
+		super.willUpdate(changedProperties);
+		this.bindRegistry();
+	}
+	/** Follow the auto range itself and remove the listener from the original registry. */
+	bindRegistry() {
+		const registry = this.registryController?.registryObject;
+		if (!this.isConnected || registry === this.boundRegistry) return;
+		this.unbindRegistry();
+		this.boundRegistry = registry;
+		this.autoRange = registry?.range.autoValue;
+		registry?.range.onAutoValueChanged.set(this.UUID, (value) => {
+			this.autoRange = value;
+		});
+	}
+	unbindRegistry() {
+		this.boundRegistry?.range.onAutoValueChanged.delete(this.UUID);
+		this.boundRegistry = void 0;
+	}
+	get value() {
+		if (!this.autoRange) return void 0;
+		return this.managerController.formatRange(this.managerController.toCurrentUnit(this.autoRange.from), this.managerController.toCurrentUnit(this.autoRange.to));
 	}
 	doAction() {
 		this.registryObject.range.applyAuto();
@@ -11945,13 +12289,21 @@ var RegistryRangeAutoButton = class extends AbstractRegistryConsumer {
             @click=${this.doAction}
             @mouseenter=${this.onHighlight}
             @mouseleave=${this.onOut}
-            @onfocus=${this.onHighlight}
-            @onblur=${this.onOut}
+            @focus=${this.onHighlight}
+            @blur=${this.onOut}
             tooltip="${(0, lit_directives_if_defined_js.ifDefined)(this.value)}"
         >${t$1("automaticrange")}</thermal-btn>`;
 	}
 };
-__decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], RegistryRangeAutoButton.prototype, "value", void 0);
+__decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeAutoButton.prototype, "autoRange", void 0);
+__decorate([
+	(0, lit_decorators_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Object)
+], RegistryRangeAutoButton.prototype, "unit", void 0);
 //#endregion
 //#region src/controls/registry/RegistryRangeDisplay.ts
 var RegistryRangeDisplay = class extends AbstractRegistryConsumer {
@@ -11962,11 +12314,14 @@ var RegistryRangeDisplay = class extends AbstractRegistryConsumer {
 	}
 	render() {
 		if (this.from === void 0 || this.to === void 0) return lit.nothing;
+		const from = this.managerController.toCurrentUnit(this.from);
+		const to = this.managerController.toCurrentUnit(this.to);
+		const symbol = this.managerController.currentUnit.symbol;
 		return lit.html`
             <div>
-                <span>${this.from?.toFixed(this.fixed)} °C</span>
+                <span>${from.toFixed(this.fixed)} ${symbol}</span>
                 <span>${this.separator}</span>
-                <span>${this.to?.toFixed(this.fixed)} °C</span>
+                <span>${to.toFixed(this.fixed)} ${symbol}</span>
             </div>
         `;
 	}
@@ -11979,6 +12334,14 @@ __decorate([(0, _lit_context.consume)({
 	context: registryRangeToContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Number)], RegistryRangeDisplay.prototype, "to", void 0);
+__decorate([
+	(0, lit_decorators_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Object)
+], RegistryRangeDisplay.prototype, "unit", void 0);
 __decorate([(0, lit_decorators_js.property)({
 	type: String,
 	reflect: true,
@@ -12088,23 +12451,47 @@ var GroupChartElement = class extends AbstractGroupConsumer {
 		super(..._args);
 		this.instances = [];
 		this.on = false;
+		this.receiveGraph = (value) => {
+			this.data = value?.data;
+			this.colors = value?.colors;
+			this.on = value !== void 0;
+		};
 	}
-	firstUpdated(_changedProperties) {
-		super.firstUpdated(_changedProperties);
-		this.groupObject.files.addListener(this.UUID, () => {
-			this.groupObject.analysisGraph.turnOn();
-		});
-		this.groupObject.analysisGraph.addListener(this.UUID, (value) => {
-			if (value !== void 0) {
-				this.data = value.data;
-				this.colors = value.colors;
-				this.on = true;
-			} else {
-				this.data = void 0;
-				this.colors = void 0;
-				this.on = false;
-			}
-		});
+	connectedCallback() {
+		super.connectedCallback();
+		this.bindGroup();
+	}
+	disconnectedCallback() {
+		this.unbindGroup();
+		super.disconnectedCallback();
+	}
+	willUpdate(changedProperties) {
+		super.willUpdate(changedProperties);
+		this.bindGroup();
+	}
+	/** Subscribe to the actual group and hydrate graphs that already exist. */
+	bindGroup() {
+		const group = this.groupController?.groupObject;
+		if (!this.isConnected || group === this.boundGroup) return;
+		this.unbindGroup();
+		this.boundGroup = group;
+		this.receiveGraph(group?.analysisGraph.value);
+		if (!group) return;
+		group.files.addListener(this.UUID, () => group.analysisGraph.turnOn());
+		group.analysisGraph.addListener(this.UUID, this.receiveGraph);
+		group.analysisGraph.turnOn();
+	}
+	unbindGroup() {
+		this.boundGroup?.files.removeListener(this.UUID);
+		this.boundGroup?.analysisGraph.removeListener(this.UUID);
+		this.boundGroup = void 0;
+	}
+	/** Copy the graph data and convert only temperatures, leaving core data in Celsius. */
+	getChartData() {
+		if (!this.data) return void 0;
+		const [header, ...rows] = this.data;
+		const converted = rows.map(([time, ...values]) => [time, ...values.map((value) => Number.isFinite(value) ? this.managerController.toCurrentUnit(value) : value)]);
+		return [[...header], ...converted];
 	}
 	static {
 		this.styles = lit.css`
@@ -12127,7 +12514,7 @@ var GroupChartElement = class extends AbstractGroupConsumer {
     `;
 	}
 	download() {
-		const svg = this.shadowRoot?.querySelectorAll("google-chart");
+		const svg = this.shadowRoot?.querySelectorAll("thermal-chart");
 		console.log(svg);
 	}
 	render() {
@@ -12135,19 +12522,19 @@ var GroupChartElement = class extends AbstractGroupConsumer {
             <div class="wrapper ${this.on ? "on" : "off"}">
 
                 ${this.on === true ? lit.html`
-                    <google-chart 
-                        .data=${this.data} 
-                        .options=${{
+                    <thermal-chart
+                        .data=${(0, lit_directives_guard_js.guard)([this.data, this.unit], () => this.getChartData())}
+                        .options=${(0, lit_directives_guard_js.guard)([this.colors, this.unit], () => ({
 			colors: this.colors,
 			legend: { position: "bottom" },
 			hAxis: { title: "Time" },
-			vAxis: { title: "Temperature °C" },
+			vAxis: { title: `Temperature ${this.managerController.currentUnit.symbol}` },
 			chartArea: { width: "90%" }
-		}}
+		}))}
                         type="line"
                         width="100%"
                         style="width: 100%;height: 300px"
-                    ></google-chart>
+                    ></thermal-chart>
                 ` : lit.nothing}
                 
             </div>
@@ -12159,6 +12546,14 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", ty
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], GroupChartElement.prototype, "data", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Array)], GroupChartElement.prototype, "colors", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], GroupChartElement.prototype, "on", void 0);
+__decorate([
+	(0, lit_decorators_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Object)
+], GroupChartElement.prototype, "unit", void 0);
 //#endregion
 //#region src/controls/group/GroupAnalysisSyncButton.ts
 var GroupAnalysisSyncButton = class extends AbstractGroupConsumer {
@@ -12892,12 +13287,34 @@ var GroupRangePropagatorElement = class extends AbstractGroupConsumer {
 				to: this.groupObject.minmax.value.max
 			});
 		};
-		this.groupObject.minmax.addListener(this.UUID, () => this.setValue());
+		this.bindGroup();
 	}
-	setValue() {
-		const value = this.groupObject.minmax.value;
-		if (value) this.value = `${value.min.toFixed(2)} — ${value.max.toFixed(2)} °C`;
-		else this.value = void 0;
+	disconnectedCallback() {
+		this.unbindGroup();
+		super.disconnectedCallback();
+	}
+	willUpdate(changedProperties) {
+		super.willUpdate(changedProperties);
+		this.bindGroup();
+	}
+	/** Hydrate and subscribe to the group currently providing the Celsius bounds. */
+	bindGroup() {
+		const group = this.groupController?.groupObject;
+		if (!this.isConnected || group === this.boundGroup) return;
+		this.unbindGroup();
+		this.boundGroup = group;
+		this.minmax = group?.minmax.value;
+		group?.minmax.addListener(this.UUID, (value) => {
+			this.minmax = value;
+		});
+	}
+	unbindGroup() {
+		this.boundGroup?.minmax.removeListener(this.UUID);
+		this.boundGroup = void 0;
+	}
+	get value() {
+		if (!this.minmax) return void 0;
+		return this.managerController.formatRange(this.managerController.toCurrentUnit(this.minmax.min), this.managerController.toCurrentUnit(this.minmax.max));
 	}
 	render() {
 		return lit.html`
@@ -12912,7 +13329,15 @@ var GroupRangePropagatorElement = class extends AbstractGroupConsumer {
         `;
 	}
 };
-__decorate([(0, lit_decorators_state_js.state)(), __decorateMetadata("design:type", String)], GroupRangePropagatorElement.prototype, "value", void 0);
+__decorate([(0, lit_decorators_state_js.state)(), __decorateMetadata("design:type", Object)], GroupRangePropagatorElement.prototype, "minmax", void 0);
+__decorate([
+	(0, lit_decorators_state_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Object)
+], GroupRangePropagatorElement.prototype, "unit", void 0);
 //#endregion
 //#region src/utils/timelineTicks.ts
 /**
@@ -13514,7 +13939,7 @@ var FileVideoExportButton = class extends AbstractFileConsumer {
 		return lit.html`<thermal-dialog
             ${(0, lit_directives_ref_js.ref)(this.dialogRef)}
             label="${this.t("export")}"
-            is-fullscreen="true"
+            ?is-fullscreen=${true}
             .onCloseEveryTime=${() => {
 			this.isOpen = false;
 			return true;
@@ -13564,7 +13989,6 @@ var FileVideoExportButton = class extends AbstractFileConsumer {
 		}}
             variant=${this.variant || "default"}
             size=${this.size || "md"}
-            plain="${this.plain || false}"
             icon=${(0, lit_directives_if_defined_js.ifDefined)(this.icon)}
             iconStyle=${(0, lit_directives_if_defined_js.ifDefined)(this.iconStyle)}
             tooltip=${(0, lit_directives_if_defined_js.ifDefined)(this.tooltip)}
@@ -14030,17 +14454,37 @@ __decorate([
 var FileRangePropagator = class extends AbstractFileButton {
 	constructor(..._args) {
 		super(..._args);
-		this.tooltip = t$1("range");
 		this.hideLabel = false;
 	}
-	onInstanceCreated(file) {
-		this.tooltip = [
-			file.min.toFixed(2),
-			"—",
-			file.max.toFixed(2),
-			"°C"
-		].join(" ");
+	connectedCallback() {
+		super.connectedCallback();
+		this.bindFile();
 	}
+	disconnectedCallback() {
+		this.unbindFile();
+		super.disconnectedCallback();
+	}
+	willUpdate(changedProperties) {
+		super.willUpdate(changedProperties);
+		this.bindFile();
+	}
+	/** Metadata can change after filtering without replacing the file instance. */
+	bindFile() {
+		if (!this.isConnected || this.file === this.boundFile) return;
+		this.unbindFile();
+		this.boundFile = this.file;
+		this.boundFile?.meta.onChange.set(this.UUID, () => this.requestUpdate());
+	}
+	unbindFile() {
+		this.boundFile?.meta.onChange.delete(this.UUID);
+		this.boundFile = void 0;
+	}
+	/** The file bounds and all range interactions remain in Celsius. */
+	get tooltip() {
+		if (!this.file) return t$1("range");
+		return this.managerController.formatRange(this.managerController.toCurrentUnit(this.file.min), this.managerController.toCurrentUnit(this.file.max));
+	}
+	onInstanceCreated() {}
 	enter() {
 		if (this.registryController && this.file) this.registryController.setHighlight({
 			from: this.file.min,
@@ -14061,6 +14505,14 @@ var FileRangePropagator = class extends AbstractFileButton {
 		return t$1("range").toLowerCase();
 	}
 };
+__decorate([
+	(0, lit_decorators_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Object)
+], FileRangePropagator.prototype, "unit", void 0);
 __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
 	reflect: true,
@@ -14391,6 +14843,10 @@ var FileAnalysisDisplayElement = class extends AbstractFileConsumer {
 		super(..._args);
 		this.container = (0, lit_directives_ref_js.createRef)();
 		this.analysis = [];
+		this.boundAnalyses = /* @__PURE__ */ new Set();
+		this.analysisValuesChanged = () => {
+			this.requestUpdate();
+		};
 	}
 	onFailure() {}
 	onInstanceCreated() {
@@ -14400,6 +14856,7 @@ var FileAnalysisDisplayElement = class extends AbstractFileConsumer {
 		super.connectedCallback();
 		if (this.file) this.analysis = this.file.analysis.value;
 		this.bindFile();
+		this.bindAnalysisValues();
 	}
 	disconnectedCallback() {
 		this.unbindFile();
@@ -14411,7 +14868,10 @@ var FileAnalysisDisplayElement = class extends AbstractFileConsumer {
 	}
 	updated(changedProperties) {
 		super.updated(changedProperties);
-		if (changedProperties.has("file")) this.bindFile();
+		if (changedProperties.has("file")) {
+			this.bindFile();
+			this.bindAnalysisValues();
+		}
 	}
 	/**
 	* Observes analysis-list and frame changes on the current file while connected.
@@ -14425,6 +14885,8 @@ var FileAnalysisDisplayElement = class extends AbstractFileConsumer {
 		if (!file) return;
 		file.analysis.addListener(this.UUID, (analysis) => {
 			this.analysis = analysis;
+			this.bindAnalysisValues();
+			this.requestUpdate();
 		});
 		file.timeline.onFrame.add(this.UUID, () => {
 			this.requestUpdate();
@@ -14435,6 +14897,22 @@ var FileAnalysisDisplayElement = class extends AbstractFileConsumer {
 		this.boundFile?.analysis.removeListener(this.UUID);
 		this.boundFile?.timeline.onFrame.delete(this.UUID);
 		this.boundFile = void 0;
+		this.unbindAnalysisValues();
+	}
+	/**
+	* Keeps value-change subscriptions aligned with the analyses in the current table.
+	* The same listener ID is safe because each analysis owns its own callbacks manager.
+	*/
+	bindAnalysisValues() {
+		const nextAnalyses = new Set(this.analysis);
+		for (const analysis of this.boundAnalyses) if (!nextAnalyses.has(analysis)) analysis.onValues.delete(this.UUID);
+		for (const analysis of nextAnalyses) if (!this.boundAnalyses.has(analysis)) analysis.onValues.set(this.UUID, this.analysisValuesChanged);
+		this.boundAnalyses = nextAnalyses;
+	}
+	/** Removes value listeners from the exact analysis instances previously subscribed. */
+	unbindAnalysisValues() {
+		for (const analysis of this.boundAnalyses) analysis.onValues.delete(this.UUID);
+		this.boundAnalyses.clear();
 	}
 	static {
 		this.styles = lit.css`
@@ -14601,7 +15079,7 @@ var FileAnalysisDisplayElement = class extends AbstractFileConsumer {
 			style.padding = "2px 6px";
 		}
 		let valueDisplay = "-";
-		if (value !== void 0) valueDisplay = value.toFixed(2) + " °C";
+		if (value !== void 0) valueDisplay = this.managerController.formatSingle(this.managerController.toCurrentUnit(value));
 		return lit.html`
             <td>
                 <span style=${(0, lit_directives_style_map_js.styleMap)(style)} data-video-dynamic>
@@ -14612,6 +15090,14 @@ var FileAnalysisDisplayElement = class extends AbstractFileConsumer {
 	}
 };
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Array)], FileAnalysisDisplayElement.prototype, "analysis", void 0);
+__decorate([
+	(0, lit_decorators_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Object)
+], FileAnalysisDisplayElement.prototype, "unit", void 0);
 //#endregion
 //#region src/controls/file/analysis/FileAnalysisEdit.ts
 /** Trigger the edit dialog for an analysis */
@@ -14741,7 +15227,7 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 		};
 		this.handleGraphClick = (relativeTimeMs) => {
 			const file = this.file;
-			if (file?.timeline.isSequence) file.timeline.setRelativeTime(relativeTimeMs);
+			if (file?.timeline.isSequence) file.timeline.setRelativeTime(this.nearestFrameTime(file.timeline.relativeSteps, relativeTimeMs));
 		};
 		this.handleGraphHover = (percentage) => {
 			this.fileController.setTimeCursorPercentage(percentage);
@@ -14817,9 +15303,11 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 		this.observedContainer = void 0;
 	}
 	getChartData() {
-		if (this.chartDataSource === this.graphs && this.chartDataCache) return this.chartDataCache;
+		if (this.chartDataSource === this.graphs && this.chartDataUnit === this.unit && this.chartDataCache) return this.chartDataCache;
 		const [headers, ...rows] = this.graphs.values;
+		const unit = this.managerObject?.unit;
 		this.chartDataSource = this.graphs;
+		this.chartDataUnit = this.unit;
 		this.chartDataCache = [[{
 			label: headers[0],
 			type: "number"
@@ -14832,14 +15320,19 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 			p: { html: true }
 		}])], ...rows.map((row) => {
 			const relativeTime = row[0].getTime();
-			return [relativeTime, ...row.slice(1).flatMap((value, index) => [value, `<div style="padding: 6px 8px"><div>${this.escapeHtml(t$1("time"))}: <strong>${_labirthermal_core.TimeFormat.duration(relativeTime)}</strong></div><div>${this.escapeHtml(headers[index + 1])}: <strong>${this.escapeHtml(String(value))} °C</strong></div></div>`])];
+			return [relativeTime, ...row.slice(1).flatMap((value, index) => {
+				const isNumber = typeof value === "number" && Number.isFinite(value);
+				const converted = isNumber && unit ? unit.celsiusToCurrent(value) : value;
+				const formatted = !isNumber ? String(value) : unit ? unit.formatSingle(converted) : `${value} °C`;
+				return [converted, `<div style="padding: 6px 8px"><div>${this.escapeHtml(t$1("time"))}: <strong>${_labirthermal_core.TimeFormat.duration(relativeTime)}</strong></div><div>${this.escapeHtml(headers[index + 1])}: <strong>${this.escapeHtml(formatted)}</strong></div></div>`];
+			})];
 		})];
 		return this.chartDataCache;
 	}
 	getChartOptions() {
 		const duration = this.file?.duration ?? 0;
 		const timeLabel = t$1("time");
-		const temperatureLabel = `${t$1("temperature")} °C`;
+		const temperatureLabel = `${t$1("temperature")} ${this.managerObject?.unit.current.symbol ?? "°C"}`;
 		const key = JSON.stringify([
 			this.graphs.colors,
 			this.graphSmooth,
@@ -14898,6 +15391,10 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 			"\"": "&quot;",
 			"'": "&#39;"
 		})[character] ?? character);
+	}
+	/** The click position is continuous, while the timeline selects the previous frame. Snap to the nearest frame instead. */
+	nearestFrameTime(steps, relativeTimeMs) {
+		return steps.reduce((nearest, step) => Math.abs(step - relativeTimeMs) < Math.abs(nearest - relativeTimeMs) ? step : nearest, steps[0] ?? relativeTimeMs);
 	}
 	static {
 		this.styles = lit.css`
@@ -14966,7 +15463,7 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
                         ${(0, lit_directives_ref_js.ref)(this.graphRef)}
                         data-video-svg
                         type="line" 
-                        .data=${(0, lit_directives_guard_js.guard)([this.graphs], () => this.getChartData())}
+                        .data=${(0, lit_directives_guard_js.guard)([this.graphs, this.unit], () => this.getChartData())}
                         .onGraphClick=${this.handleGraphClick}
                         .onGraphHover=${this.handleGraphHover}
                         @google-chart-ready=${this.syncChartArea}
@@ -14977,7 +15474,8 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 			this.graphHeight,
 			this.file?.duration,
 			t$1("time"),
-			t$1("temperature")
+			t$1("temperature"),
+			this.unit
 		], () => this.getChartOptions())}
                         ></thermal-chart>` : lit.nothing}
             </div>
@@ -15063,6 +15561,10 @@ __decorate([(0, _lit_context.consume)({
 	context: managerGraphFunctionContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Boolean)], FileAnalysisGraphElement.prototype, "graphSmooth", void 0);
+__decorate([(0, _lit_context.consume)({
+	context: managerUnitContext,
+	subscribe: true
+}), __decorateMetadata("design:type", Object)], FileAnalysisGraphElement.prototype, "unit", void 0);
 //#endregion
 //#region src/controls/file/analysis/FileAnalysisRow.ts
 var FileAnalysisRowElement = class extends AbstractThermalElement {
@@ -15316,7 +15818,8 @@ var FileAnalysisRowElement = class extends AbstractThermalElement {
 		const analysis = this.analysis;
 		if (!analysis) return lit.nothing;
 		const value = analysis[statistic];
-		const text = value === void 0 ? "-" : `${value.toFixed(2)} \u00b0C`;
+		const unit = this.registryController.registryObject.manager.unit;
+		const text = value === void 0 ? "-" : unit.formatSingle(unit.celsiusToCurrent(value));
 		const active = analysis.graph.state[statistic === "avg" ? "AVG" : statistic === "min" ? "MIN" : "MAX"];
 		const canActivate = !this.graphActivationDisabled && analysis.file.timeline.isSequence && (statistic === "avg" || analysis instanceof _labirthermal_core.AbstractAreaAnalysis);
 		const background = active ? analysis.initialColor : "transparent";
@@ -15384,6 +15887,14 @@ __decorate([(0, _lit_context.consume)({
 	context: registryControllerContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Object)], FileAnalysisRowElement.prototype, "registryController", void 0);
+__decorate([
+	(0, lit_decorators_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", Object)
+], FileAnalysisRowElement.prototype, "unit", void 0);
 //#endregion
 //#region src/controls/file/analysis/FileAnalysisTable.ts
 /**
@@ -16222,6 +16733,8 @@ var ThermalChartElement = class extends lit.LitElement {
 		this._data = void 0;
 		this.chartWrapper = null;
 		this.redrawTimeoutId = void 0;
+		this.dataVersion = 0;
+		this.dataPending = false;
 		this.chartRef = (0, lit_directives_ref_js.createRef)();
 		this.handleGraphPointerMove = (event) => {
 			const container = this.chartRef.value;
@@ -16383,6 +16896,12 @@ var ThermalChartElement = class extends lit.LitElement {
 			chart.setSelection(this.selection);
 		}
 	}
+	cancelScheduledRedraw() {
+		if (this.redrawTimeoutId !== void 0) {
+			clearTimeout(this.redrawTimeoutId);
+			this.redrawTimeoutId = void 0;
+		}
+	}
 	/**
 	* Redraws the chart.
 	*
@@ -16390,12 +16909,13 @@ var ThermalChartElement = class extends lit.LitElement {
 	* Call manually to handle view updates, page resizes, etc.
 	*/
 	redraw() {
-		if (this.chartWrapper == null || this._data == null) return;
+		if (this.dataPending || this.chartWrapper == null || this._data == null) return;
 		this.chartWrapper.setDataTable(this._data);
 		this.chartWrapper.setOptions(this.options || {});
 		this.drawn = false;
-		if (this.redrawTimeoutId !== void 0) clearTimeout(this.redrawTimeoutId);
+		this.cancelScheduledRedraw();
 		this.redrawTimeoutId = window.setTimeout(() => {
+			this.redrawTimeoutId = void 0;
 			this.chartWrapper.draw();
 			const dimensions = this.chartWrapper.visualization.ha.O;
 			this.left = dimensions.left;
@@ -16435,20 +16955,35 @@ var ThermalChartElement = class extends lit.LitElement {
 	* Handles changes to the `data` attribute.
 	*/
 	dataChanged() {
-		let data = this.data;
-		let dataPromise;
+		const version = ++this.dataVersion;
+		const data = this.data;
+		this.dataPending = !!data;
+		if (this.dataPending) this.cancelScheduledRedraw();
 		if (!data) return;
-		let isString = false;
-		try {
-			data = JSON.parse(data);
-		} catch (e) {
-			console.error(e);
-			isString = typeof data === "string" || data instanceof String;
-		}
-		if (isString) dataPromise = fetch(data).then((response) => response.json());
-		else dataPromise = Promise.resolve(data);
-		dataPromise.then(dataTable).then((data) => {
-			this._data = data;
+		let dataPromise;
+		if (typeof data === "string" || data instanceof String) {
+			const dataString = String(data);
+			try {
+				dataPromise = Promise.resolve(JSON.parse(dataString));
+			} catch {
+				dataPromise = fetch(dataString).then((response) => response.json());
+			}
+		} else dataPromise = Promise.resolve(data);
+		dataPromise.then(dataTable).then((converted) => {
+			if (version === this.dataVersion && this.data === data) {
+				this.dataPending = false;
+				const unchanged = this._data === converted;
+				this._data = converted;
+				if (unchanged) this.redraw();
+			}
+		}).catch((reason) => {
+			console.error("Failed to prepare chart data:", reason);
+			if (version === this.dataVersion && this.data === data) {
+				this.dataPending = false;
+				this._data = void 0;
+				const chart = this.shadowRoot?.getElementById("chartdiv");
+				if (chart) chart.textContent = String(reason);
+			}
 		});
 	}
 	/**
@@ -17034,6 +17569,7 @@ var DropinAppElement = class extends AbstractApp {
 		if (this.displayMode !== "input") elements.push(lit.html`
             <manager-tool-bar slot="pre-bar"></manager-tool-bar>
             <manager-palette-dropdown slot="pre-bar"></manager-palette-dropdown>
+            <manager-unit-switch slot="pre-bar" active-variant="background"></manager-unit-switch>
             <registry-range-form slot="pre-bar"></registry-range-form>
             
             `);
@@ -17243,8 +17779,9 @@ var ThermalFileAppElement = class extends AbstractSingleFileAppElement {
             <file-info-button slot="bar-pre"></file-info-button>
 
             <manager-palette-dropdown slot="bar-pre"></manager-palette-dropdown>
+            <manager-unit-switch slot="bar-pre" default-variant="default" active-variant="background"></manager-unit-switch>
             <registry-range-form slot="bar-pre"></registry-range-form>
-            <registry-opacity-slider slot="bar-pre"></registry-opacity-slider>
+            ${this.file && this.file.visibleUrl ? lit.html`<registry-opacity-slider slot="bar-pre"></registry-opacity-slider>` : lit.nothing}
 
             <registry-histogram slot="pre" ?expandable=${true}></registry-histogram>
             <registry-range-slider slot="pre"></registry-range-slider>
@@ -17572,9 +18109,9 @@ var FileInfoButton = class extends AbstractFileConsumer {
 
                         ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t$1("bytesize"), this.file.bytesize, 0))}
                         
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t$1("minimaltemperature"), this.file.min, 10, "°C"))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t$1("minimaltemperature"), this.managerController.toCurrentUnit(this.file.min), 2, this.managerController.currentUnit.symbol))}
 
-                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t$1("maximaltemperature"), this.file.max, 10, "°C"))}
+                        ${(0, lit_directives_unsafe_html_js.unsafeHTML)(this.renderNumericalRow(t$1("maximaltemperature"), this.managerController.toCurrentUnit(this.file.max), 2, this.managerController.currentUnit.symbol))}
 
                         
 
@@ -17599,6 +18136,14 @@ var FileInfoButton = class extends AbstractFileConsumer {
         `;
 	}
 };
+__decorate([
+	(0, lit_decorators_js.state)(),
+	(0, _lit_context.consume)({
+		context: managerUnitContext,
+		subscribe: true
+	}),
+	__decorateMetadata("design:type", typeof _labirthermal_core.ThermalUnit === "undefined" ? Object : _labirthermal_core.ThermalUnit)
+], FileInfoButton.prototype, "unit", void 0);
 //#endregion
 //#region src/controls/file/fileLabel.ts
 var FileLabelElement = class extends AbstractFileConsumer {
@@ -19012,7 +19557,11 @@ var SingleVideoExportConfigDirective = class extends lit_directive_js.Directive 
 		const isSequence = element.innerFile?.timeline.isSequence;
 		const hasAnalyses = element.parentHasAnalyses;
 		const slots = [];
-		const thermalScale = [lit.html`<manager-palette-dropdown ></manager-palette-dropdown>`, lit.html`<registry-range-form></registry-range-form>`];
+		const thermalScale = [
+			lit.html`<manager-palette-dropdown ></manager-palette-dropdown>`,
+			lit.html`<manager-unit-switch active-variant="background"></manager-unit-switch>`,
+			lit.html`<registry-range-form></registry-range-form>`
+		];
 		slots.push(slotOrNothing("thermalscale", thermalScale));
 		const components = [this.renderRadio(element.t("histogram"), element.renderProps.hasHistogram, element.setHasHistogram.bind(element)), this.renderRadio(element.t("thermalscale"), element.renderProps.hasThermalScale, element.setHasThermalScale.bind(element))];
 		if (hasAnalyses) components.push(this.renderRadio(element.t("analysis"), element.renderProps.hasAnalysis, element.setHasAnalysis.bind(element)));
@@ -19623,8 +20172,6 @@ var FileVideoExportPanel = class extends AbstractSingleVideoExport {
                 max-height: 100%;
             }
 
-            .controls {
-            }
 
             .preview {
                 overflow: hidden;
@@ -19637,10 +20184,6 @@ var FileVideoExportPanel = class extends AbstractSingleVideoExport {
                 background: var( --thermal-slate );
 
                 border-radius: var( --thermal-radius );
-
-                & > * {
-                
-                }
 
 
                 .preview-size {
@@ -19680,9 +20223,6 @@ var FileVideoExportPanel = class extends AbstractSingleVideoExport {
                         }
                     }
 
-                    .preview-size--preview {
-                    }
-
                     .preview-size--export {
                         thermal-radio {
                             display: inline-block;
@@ -19691,13 +20231,6 @@ var FileVideoExportPanel = class extends AbstractSingleVideoExport {
 
                 }
 
-
-
-
-
-            }
-
-            .footer {
             }
 
             .progress-overlay {
@@ -19843,6 +20376,46 @@ __decorate([(0, _lit_context.consume)({
 	context: managerAdvancedPalettesContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Boolean)], ManagerAdvancedPaletteSwitch.prototype, "advancedPalettes", void 0);
+//#endregion
+//#region src/controls/manager/ManagerUnitSwitch.ts
+var ManagerUnitSwitch = class extends AbstractManagerConsumer {
+	constructor(..._args) {
+		super(..._args);
+		this.activeVariant = "foreground";
+		this.defaultVariant = "default";
+	}
+	getUnit() {
+		return this.managerObject.unit;
+	}
+	renderUnit(definition) {
+		const active = definition.key === this.getUnit().value;
+		const variant = active ? this.activeVariant : this.defaultVariant;
+		return lit.html`<thermal-btn
+            variant=${variant}
+            ?non-interactive=${active}
+            tooltip=${definition.name}
+            @click=${() => this.getUnit().set(definition.key)}
+        >${definition.symbol}</thermal-btn>`;
+	}
+	render() {
+		const units = Object.values(this.getUnit().getUnits()).map((unit) => this.renderUnit(unit));
+		return lit.html`<thermal-btn-group>${units}</thermal-btn-group>`;
+	}
+};
+__decorate([(0, lit_decorators_property_js.property)({
+	type: String,
+	reflect: true,
+	attribute: "active-variant"
+}), __decorateMetadata("design:type", Object)], ManagerUnitSwitch.prototype, "activeVariant", void 0);
+__decorate([(0, lit_decorators_property_js.property)({
+	type: String,
+	reflect: true,
+	attribute: "default-variant"
+}), __decorateMetadata("design:type", Object)], ManagerUnitSwitch.prototype, "defaultVariant", void 0);
+__decorate([(0, _lit_context.consume)({
+	context: managerUnitContext,
+	subscribe: true
+}), __decorateMetadata("design:type", typeof _labirthermal_core.ThermalUnit === "undefined" ? Object : _labirthermal_core.ThermalUnit)], ManagerUnitSwitch.prototype, "unit", void 0);
 //#endregion
 //#region src/renderers/FileDetail.ts
 var FileDetailElement = class extends AbstractFileConsumer {
@@ -20092,6 +20665,7 @@ const elementsManagerControls = {
 	"manager-palette-dropdown": ManagerPaletteDropdown,
 	"manager-palette-buttons": ManagerPaletteButtons,
 	"manager-tool-bar": ManagerToolBar,
+	"manager-unit-switch": ManagerUnitSwitch,
 	/** @deprecated This sort of export should never be used. Please, do export thermal images only through the LIT components instead of the `@labirthermal/core` export. */
 	"manager-export-panel": ManagerExportPanel
 };
@@ -20302,7 +20876,9 @@ exports.managerPaletteContext = managerPaletteContext;
 exports.managerSmoothContext = managerSmoothContext;
 exports.managerToolContext = managerToolContext;
 exports.numberRangeConverter = numberRangeConverter;
+exports.optionalNumberConverter = optionalNumberConverter;
 exports.paletteConverter = paletteConverter;
+exports.parseThermalUnit = parseThermalUnit;
 exports.registryControllerContext = registryControllerContext;
 exports.registryHighlightContext = registryHighlightContext;
 exports.registryLoadingContext = registryLoadingContext;
@@ -20314,5 +20890,6 @@ exports.registryRangeFromContext = registryRangeFromContext;
 exports.registryRangeToContext = registryRangeToContext;
 exports.stringOrUndefinedConverter = stringOrUndefinedConverter;
 exports.t = t;
+exports.unitConverter = unitConverter;
 
 //# sourceMappingURL=index.export.cjs.map

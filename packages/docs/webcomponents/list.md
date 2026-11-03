@@ -22,11 +22,11 @@ The following components can be used anywhere. See the guide on [UI components](
     </thead>
     <tbody>
         <tr>
-            <td><code>thermal-btn</code></td>
+            <td><a :href="withBase('/webcomponents/ui/thermal-btn')"><code>thermal-btn</code></a></td>
             <td><thermal-btn>A button</thermal-btn></td>
         </tr>
         <tr>
-            <td><code text-wrap="nowrap">thermal-btn-group</code></td>
+            <td><a :href="withBase('/webcomponents/ui/thermal-btn-group')"><code text-wrap="nowrap">thermal-btn-group</code></a></td>
             <td>
                 <thermal-btn-group>
                     <thermal-btn>A button</thermal-btn>
@@ -44,7 +44,7 @@ The following components can be used anywhere. See the guide on [UI components](
             </td>
         </tr>
         <tr>
-            <td><code>thermal-dialog</code></td>
+            <td><a :href="withBase('/webcomponents/ui/thermal-dialog')"><code text-wrap="nowrap">thermal-dialog</code></a></td>
             <td>
                 <thermal-dialog label="The dialog label">
                     <thermal-btn slot="invoker" tooltip="Click me to open a dialogue">A dialog trigger</thermal-btn>
@@ -76,8 +76,8 @@ The following components need to be used in the given hierarchy. See [context pr
 
 
 <Hierarchy>
-    <HierarchyManager watch="palette,advanced-palettes,smooth-thermograms,smooth-graph,tool">
-        <WebcomponentTable components="manager-palette-dropdown, manager-palette-buttons, manager-advanced-palette-switch, manager-image-smooth-switch, manager-graph-smooth-switch, manager-tool-bar" />
+    <HierarchyManager watch="palette,advanced-palettes,smooth-thermograms,smooth-graph,tool, unit">
+        <WebcomponentTable components="manager-palette-dropdown, manager-palette-buttons, manager-advanced-palette-switch, manager-unit-switch, manager-image-smooth-switch, manager-graph-smooth-switch, manager-tool-bar" />
         <HierarchyRegistry watch="opacity,from,to">
             <WebcomponentTable components="registry-opacity-slider,registry-histogram,registry-range-slider,registry-ticks-bar,registry-range-full-button,registry-range-auto-button" />
             <HierarchyGroup>

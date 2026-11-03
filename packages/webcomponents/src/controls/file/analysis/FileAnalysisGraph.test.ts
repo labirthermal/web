@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
 import type { AnalysisDataStateValue } from "@labirthermal/core";
+import { thermalUnits, ThermalUnit } from "@labirthermal/core";
+import { ContextProvider } from "@lit/context";
 import i18next from "i18next";
+import { html, LitElement } from "lit";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { managerUnitContext } from "../../../controllers/ManagerController";
 import { FileAnalysisGraphElement } from "./FileAnalysisGraph";
 
 vi.mock("../../../hierarchy/consumers/AbstractFileConsumer", async () => {
@@ -21,6 +25,18 @@ class TestGraph extends FileAnalysisGraphElement {
 }
 
 customElements.define("test-standalone-analysis-graph", TestGraph);
+
+class TestUnitHost extends LitElement {
+    public readonly unit = new ContextProvider(this, {
+        context: managerUnitContext, initialValue: ThermalUnit.C,
+    });
+
+    protected render() {
+        return html`<slot></slot>`;
+    }
+}
+
+customElements.define("test-analysis-graph-unit-host", TestUnitHost);
 
 class TestResizeObserver implements ResizeObserver {
     static instances: TestResizeObserver[] = [];
@@ -189,5 +205,44 @@ describe("Standalone analysis graph", () => {
         expect(component.graphWidth).toBe(500);
         expect(component.graphHeight).toBe(250);
         expect(TestResizeObserver.instances).toHaveLength(0);
+    });
+
+    it("redraws file data, tooltip and axis when only the unit context changes", async () => {
+        const host = new TestUnitHost();
+        const component = new TestGraph();
+        const source = fixture(true);
+        const unit = {
+            get current() {
+                return thermalUnits[host.unit.value ?? ThermalUnit.C];
+            },
+            celsiusToCurrent(value: number) {
+                return this.current.fromCelsius(value);
+            },
+            formatSingle(value: number) {
+                return `${value.toFixed(2)} ${this.current.symbol}`;
+            },
+        };
+        Object.assign(component, { file: source.file, managerObject: { unit } });
+        host.append(component);
+        document.body.append(host);
+        await component.updateComplete;
+
+        const chart = component.graphRef.value;
+        if (!chart) throw new Error("Missing file analysis chart");
+        expect((chart.data as unknown[][])[1][1]).toBe(25);
+        expect((chart.data as unknown[][])[1][2]).toContain("25.00 °C");
+
+        host.unit.setValue(ThermalUnit.F);
+        await component.updateComplete;
+        expect((chart.data as unknown[][])[1][1]).toBe(77);
+        expect((chart.data as unknown[][])[1][2]).toContain("77.00 °F");
+        expect(chart.options).toMatchObject({ vAxis: { title: expect.stringContaining("°F") } });
+
+        host.unit.setValue(ThermalUnit.K);
+        await component.updateComplete;
+        expect((chart.data as unknown[][])[1][1]).toBeCloseTo(298.15);
+        expect((chart.data as unknown[][])[1][2]).toContain("298.15 K");
+        expect(chart.options).toMatchObject({ vAxis: { title: expect.stringContaining("K") } });
+        expect(source.file.analysisData.value.values[1][1]).toBe(25);
     });
 });

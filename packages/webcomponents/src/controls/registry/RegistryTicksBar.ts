@@ -31,7 +31,7 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
     private observedTicks?: HTMLDivElement;
 
     @state()
-    private ticksWidth: number = 0;
+    public ticksWidth: number = 0;
 
     @consume({context: registryHighlightContext, subscribe: true})
     protected highlight?: ThermalRangeOrUndefined;
@@ -46,7 +46,7 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
 
     /** Registry minimum and maximum in Celsius. */
     @state()
-    protected minmax: ThermalMinmaxOrUndefined = undefined;
+    public minmax: ThermalMinmaxOrUndefined = undefined;
 
     @state()
     protected ticks: TickType[] = [];
@@ -67,7 +67,7 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
         super.disconnectedCallback();
     }
 
-    willUpdate(changedProperties: PropertyValues): void {
+    willUpdate(changedProperties: PropertyValues<RegistryTicksBar>): void {
         super.willUpdate(changedProperties);
 
         // Side effect of the provided registry changing - synchronize its range and subscriptions before rendering.
@@ -82,7 +82,7 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
         }
     }
 
-    updated(changedProperties: PropertyValues): void {
+    updated(changedProperties: PropertyValues<RegistryTicksBar>): void {
         super.updated(changedProperties);
         this.observeTicks();
     }

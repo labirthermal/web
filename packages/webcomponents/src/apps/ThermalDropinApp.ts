@@ -298,6 +298,7 @@ export class DropinAppElement
             elements.push(html`
             <manager-tool-bar slot="pre-bar"></manager-tool-bar>
             <manager-palette-dropdown slot="pre-bar"></manager-palette-dropdown>
+            <manager-unit-switch slot="pre-bar" active-variant="background"></manager-unit-switch>
             <registry-range-form slot="pre-bar"></registry-range-form>
             
             ` );

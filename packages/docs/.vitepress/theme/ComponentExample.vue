@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { authoredAttributes, mountHierarchyLabels, type HierarchyTracking } from './hierarchy'
+import { authoredAttributes, mountHierarchyLabels, withBaseAssets, type HierarchyTracking } from './hierarchy'
 
 const props = defineProps<{
     title?: string
@@ -19,12 +19,13 @@ onMounted(async () => {
     if (!code) {
         throw new Error('ComponentExample requires an HTML code block.')
     }
-    html.value = code.textContent ?? ''
+    const authoredHtml = code.textContent ?? ''
+    html.value = withBaseAssets(authoredHtml)
 
     // Lit reflects internal state into attributes right after rendering, so the authored
     // attributes are read from an inert copy of the source instead of the live preview.
     const template = document.createElement('template')
-    template.innerHTML = html.value
+    template.innerHTML = authoredHtml
     const authored = [...template.content.querySelectorAll('.hierarchy')].map(authoredAttributes)
 
     await nextTick()

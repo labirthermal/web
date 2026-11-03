@@ -1,5 +1,7 @@
+import { AbstractAnalysis } from "../../properties/analysis/analysis/internals/AbstractAnalysis";
 import { AbstractAreaAnalysis } from "../../properties/analysis/analysis/internals/area/AbstractAreaAnalysis";
 import { PointAnalysis } from "../../properties/analysis/analysis/internals/point/PointAnalysis";
+import { AnalysisSlot } from "../../properties/analysis/slots/AnalysisSlot";
 import { AbstractExportProps, AbstractExportTypeMandatory, AbstractPngExport } from "../../utils/AbstractPngExport";
 import { TimeFormat } from "../../utils/time/formatting";
 import { ThermalFileInstance } from "../ThermalFileInstance";
@@ -178,72 +180,81 @@ export class FilePngExport extends AbstractPngExport<FileExportPngParams, FileEx
                 this.container.appendChild(table);
 
 
+                // Create the local copies of the analyses first. Their values are computed
+                // asynchronously from the graph data, so wait for the data before reading them.
+                const localAnalyses: { slot: AnalysisSlot, localAnalysis: AbstractAnalysis }[] = [];
 
                 this.file.slots.forEveryExistingSlot((slot, number) => {
 
                     const localAnalysis = this.localInstance?.slots.createAnalysisFromSerialized(slot.serialized, number);
 
                     if (localAnalysis) {
+                        localAnalyses.push({ slot, localAnalysis });
+                    }
 
-                        // Create a record into a table
+                });
 
-                        const row = document.createElement("tr");
+                await Promise.all(localAnalyses.map(({ localAnalysis }) => localAnalysis.graph.whenData()));
 
-                        const name = this.createElementWithText(
+                localAnalyses.forEach(({ slot, localAnalysis }) => {
+
+                    // Create a record into a table
+
+                    const row = document.createElement("tr");
+
+                    const name = this.createElementWithText(
+                        "td",
+                        slot.analysis.name,
+                        fontSize,
+                        undefined,
+                        slot.analysis.initialColor
+                    );
+
+                    name.style.borderBottom = `1px solid ${FilePngExport.COLOR_LIGHT}`;
+                    name.style.padding = `${params.fontSize / 3}px 0px ${params.fontSize / 3} 0px`;
+
+                    row.appendChild(name);
+
+                    const createAndAppendValue = (
+                        color: string,
+                        value?: number,
+                    ) => {
+
+                        const td = this.createElementWithText(
                             "td",
-                            slot.analysis.name,
+                            value ? value.toFixed(3) + " °C" : "",
                             fontSize,
                             undefined,
-                            slot.analysis.initialColor
+
                         );
 
-                        name.style.borderBottom = `1px solid ${FilePngExport.COLOR_LIGHT}`;
-                        name.style.padding = `${params.fontSize / 3}px 0px ${params.fontSize / 3} 0px`;
+                        td.style.borderBottom = `1px solid ${FilePngExport.COLOR_LIGHT}`;
 
-                        row.appendChild(name);
+                        td.style.paddingTop = `${params.fontSize / 3}px`;
+                        td.style.paddingBottom = `${params.fontSize / 3}px`;
 
-                        const createAndAppendValue = (
-                            color: string,
-                            value?: number,
-                        ) => {
+                        row.appendChild(td);
+                    }
 
-                            const td = this.createElementWithText(
-                                "td",
-                                value ? value.toFixed(3) + " °C" : "",
-                                fontSize,
-                                undefined,
+                    if (slot.analysis instanceof AbstractAreaAnalysis) {
 
-                            );
+                        createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
 
-                            td.style.borderBottom = `1px solid ${FilePngExport.COLOR_LIGHT}`;
+                        createAndAppendValue(slot.analysis.initialColor, localAnalysis.min);
 
-                            td.style.paddingTop = `${params.fontSize / 3}px`;
-                            td.style.paddingBottom = `${params.fontSize / 3}px`;
+                        createAndAppendValue(slot.analysis.initialColor, localAnalysis.max);
 
-                            row.appendChild(td);
-                        }
+                    } else if (slot.analysis instanceof PointAnalysis) {
 
-                        if (slot.analysis instanceof AbstractAreaAnalysis) {
+                        createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
 
-                            createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
+                        createAndAppendValue(slot.analysis.initialColor);
 
-                            createAndAppendValue(slot.analysis.initialColor, localAnalysis.min);
-
-                            createAndAppendValue(slot.analysis.initialColor, localAnalysis.max);
-
-                        } else if (slot.analysis instanceof PointAnalysis) {
-
-                            createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
-
-                            createAndAppendValue(slot.analysis.initialColor);
-
-                            createAndAppendValue(slot.analysis.initialColor);
-
-                        }
-
-                        table.appendChild(row);
+                        createAndAppendValue(slot.analysis.initialColor);
 
                     }
+
+                    table.appendChild(row);
 
                 });
 

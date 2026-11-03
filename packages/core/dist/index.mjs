@@ -111,6 +111,10 @@ var AbstractProperty = class {
 };
 //#endregion
 //#region src/properties/scale/units.ts
+/** 
+* Available keys of thermal units. Used by {@link thermalUnits} and by {@link UnitDrive}. 
+* @module `@labirthermal/core`
+*/
 let ThermalUnit = /* @__PURE__ */ function(ThermalUnit) {
 	ThermalUnit["C"] = "C";
 	ThermalUnit["F"] = "F";
@@ -124,6 +128,9 @@ const fahrenheitToKelvin = (fahrenheit) => (fahrenheit - 32) * 5 / 9 + 273.15;
 const kelvinToCelsius = (kelvin) => kelvin - 273.15;
 const kelvinToFahrenheit = (kelvin) => (kelvin - 273.15) * 9 / 5 + 32;
 const noConversion = (value) => value;
+/** Registry of all available thermal units along with their conversion functions. Celsius is still used internally in all states. The conversion will happen only on the output - in the GUI and when doing exports. 
+* @module `@labirthermal/core`
+*/
 const thermalUnits = {
 	["C"]: {
 		name: "Celsius",
@@ -155,10 +162,18 @@ const thermalUnits = {
 };
 //#endregion
 //#region src/properties/scale/UnitDrive.ts
+/** 
+* Controls the thermal unit selection and conversion for the entire `ThermalManager` context. Internal states such as minmax and range are still kept in Celsius. But the GUI and exports will convert their values to the currently selected thermal unit. For this purpose, this class has all the necessary conversion methods.
+* @module `@labirthermal/core`
+*/
 var UnitDrive = class UnitDrive extends AbstractProperty {
+	/** Available thermal unit keys. */
 	static KEYS = ThermalUnit;
+	/** Available thermal units by keys. This object can also be accessed using the `getUnits` method. */
 	static UNITS = Object.freeze(thermalUnits);
+	/** Internal storage of currently used thermal unit definition. */
 	_current;
+	/** The currently active thermal unit definition. Actual value of this driver is the unit key, but this is the whole object representing the unit. Set internally whenever the value changes. */
 	get current() {
 		return this._current;
 	}
@@ -167,40 +182,72 @@ var UnitDrive = class UnitDrive extends AbstractProperty {
 		this._current = this.getUnitDefinition(initial);
 	}
 	validate(value) {
+		if (!(value in thermalUnits)) return "C";
 		return value;
 	}
 	afterSetEffect(value) {
 		this._current = this.getUnitDefinition(value);
 	}
 	getUnitDefinition(key) {
-		return thermalUnits[key];
+		return UnitDrive.UNITS[key];
 	}
+	/** Set the current thermal unit by its key. Triggers internal updates and event listeners. */
 	set(key) {
 		this.value = key;
 	}
+	/** Set the current thermal unit to Celsius. Internal states are always in Celsius. */
 	setCelsius() {
 		this.set("C");
 	}
+	/** Set the current thermal unit to Fahrenheit. Internal states are always in Celsius. In `@labirthermal/core`, the current unit is only applied in the GUI and in exports.
+	*/
 	setFahrenheit() {
 		this.set("F");
 	}
+	/** Set the current thermal unit to Kelvin. Internal states are always in Celsius. In `@labirthermal/core`, the current unit is only applied in the GUI and in exports.
+	*/
 	setKelvin() {
 		this.set("K");
 	}
-	/** Celsius is the internal unit - all conversions are based on it. */
-	celsiusToCurrent(value) {
-		return this.current.fromCelsius(value);
+	/** 
+	* Convert a value in Celsius to the current unit. 
+	* 
+	* Internal states in `@labirthermal/core` are in Celsius. The GUI and exports are in the current unit.
+	*/
+	celsiusToCurrent(valueInCelsius) {
+		return this.current.fromCelsius(valueInCelsius);
 	}
-	/** Celsius is the internal unit - all conversions are based on it. */
-	currentToCelsius(value) {
-		return this.current.toCelsius(value);
+	/** 
+	* Convert a value in the current unit to Celsius. 
+	* 
+	* Internal states in `@labirthermal/core` are in Celsius. The GUI and exports are in the current unit.
+	*/
+	currentToCelsius(valueInCurrentUnit) {
+		return this.current.toCelsius(valueInCurrentUnit);
 	}
-	formatSingle(value) {
-		return `${value.toFixed(2)} ${this.current.symbol}`;
+	/** 
+	* Format a single temperature value into the string ending with the current unit symbol. 
+	* 
+	* Internal states in `@labirthermal/core` are in Celsius. The GUI and exports are in the current unit.
+	*/
+	formatSingle(valueInCurrentUnit) {
+		return `${valueInCurrentUnit.toFixed(2)} ${this.current.symbol}`;
 	}
-	formatRange(from, to) {
-		return `${from.toFixed(2)} — ${to.toFixed(2)} ${this.current.symbol}`;
+	/** 
+	* Format a range of temperatures into the string ending with the current unit symbol. 
+	* 
+	* Internal states in `@labirthermal/core` are in Celsius. The GUI and exports are in the current unit.
+	*/
+	formatRange(fromInCurrentUnit, toInCurrentUnit) {
+		return `${fromInCurrentUnit.toFixed(2)} — ${toInCurrentUnit.toFixed(2)} ${this.current.symbol}`;
 	}
+	/** 
+	* Get the list of available unit definitions. 
+	* 
+	* @see {@link ThermalUnitDefinition} - this is the structure of an unit definition
+	* @see {@link thermalUnits} - this is the actual list of definitions
+	* @see {@link ThermalUnits} - these are available keys that are used as values of this driver.
+	*/
 	getUnits() {
 		return UnitDrive.UNITS;
 	}
@@ -2048,17 +2095,6 @@ var AbstractAnalysis = class AbstractAnalysis {
 			avg: finite(entry.avg)
 		};
 	}
-	/**
-	* @deprecated Use with caution! This method forcefully sets the analysis values. The calculation mechanisms should happen elsewhere. Now they happen in the canvas layer wich calculates them upon rendering. That is not good at all!
-	* @internal
-	* @todo Remove this method, move the calculation of values elsewhere from the canvas layer!
-	*/
-	dangerouslySetValues(avg, min = void 0, max = void 0) {
-		this._avg = avg;
-		this._min = min;
-		this._max = max;
-		this.onValues.call(this.min, this.max, this.avg);
-	}
 };
 //#endregion
 //#region src/properties/analysis/analysis/internals/AbstractPoint.ts
@@ -2419,15 +2455,6 @@ var PointAnalysis = class PointAnalysis extends AbstractAnalysis {
 	isWithin(x, y) {
 		return this.center.isWithin(y, x);
 	}
-	/** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
-	getValues() {
-		const value = this.file.getTemperatureAtPoint(this.center.x, this.center.y);
-		return {
-			min: value,
-			max: value,
-			avg: value
-		};
-	}
 	async getAnalysisData() {
 		return await this.file.reader.pointAnalysisData(this.center.x, this.center.y);
 	}
@@ -2529,11 +2556,29 @@ var AnalysisGraph = class {
 	}
 	/** Identifier of the latest data request. Older responses are discarded so that they never overwrite newer data. */
 	_dataRequest = 0;
+	/** The currently pending (or last finished) data request. */
+	_fetchPromise;
 	/** Fetch the analysis data and store them only if no newer request was made meanwhile. */
-	async fetchGraphData() {
-		const request = ++this._dataRequest;
-		const data = await this.getGraphData();
-		if (request === this._dataRequest) this.value = data;
+	fetchGraphData() {
+		const promise = (async () => {
+			const request = ++this._dataRequest;
+			const data = await this.getGraphData();
+			if (request === this._dataRequest) this.value = data;
+		})();
+		this._fetchPromise = promise;
+		return promise;
+	}
+	/**
+	* Resolve once the graph data are available.
+	*
+	* The graph data are fetched asynchronously from the parser jobs whenever the analysis
+	* is created, moved or resized. Consumers reading `analysis.min/max/avg` or `graph.value`
+	* right after creating an analysis (e.g. exports working on a copied file) must await
+	* this method first - otherwise they read the values before the jobs resolve.
+	*/
+	async whenData() {
+		await (this._fetchPromise ?? this.fetchGraphData());
+		return this.value;
 	}
 	setMinActivation(active) {
 		if (this._min !== active) {
@@ -3109,32 +3154,6 @@ var EllipsisAnalysis = class EllipsisAnalysis extends AbstractAreaAnalysis {
 		if (width !== void 0 && height !== void 0) return new EllipsisArea(this, x, y, x + width, y + height);
 		return new EllipsisArea(this, x, y, x, y);
 	}
-	/** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
-	getValues() {
-		const fromX = this.left;
-		const toX = this.left + this.width;
-		const fromY = this.top;
-		const toY = this.top + this.height;
-		let min = Infinity;
-		let max = -Infinity;
-		let count = 0;
-		let sum = 0;
-		for (let y = fromY; y < toY; y++) {
-			const rowOffset = this.file.width * y;
-			for (let x = fromX; x <= toX; x++) if (this.isWithin(x, y)) {
-				const point = this.file.pixels[rowOffset + x];
-				if (point < min) min = point;
-				if (point > max) max = point;
-				sum += point;
-				count++;
-			}
-		}
-		return {
-			min,
-			max,
-			avg: sum / count
-		};
-	}
 	isWithin(x, y) {
 		const centerX = this.left + this.width / 2;
 		const centerY = this.top + this.height / 2;
@@ -3179,32 +3198,6 @@ var RectangleAnalysis = class RectangleAnalysis extends AbstractAreaAnalysis {
 	buildArea(x, y, width, height) {
 		if (width !== void 0 && height !== void 0) return new RectangleArea(this, x, y, x + width, y + height);
 		return new RectangleArea(this, x, y, x, y);
-	}
-	/** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
-	getValues() {
-		const fromX = this.left;
-		const toX = this.left + this.width;
-		const fromY = this.top;
-		const toY = this.top + this.height;
-		let min = Infinity;
-		let max = -Infinity;
-		let count = 0;
-		let sum = 0;
-		for (let y = fromY; y < toY; y++) {
-			const rowOffset = this.file.width * y;
-			for (let x = fromX; x <= toX; x++) {
-				const point = this.file.pixels[rowOffset + x];
-				if (point < min) min = point;
-				if (point > max) max = point;
-				sum += point;
-				count++;
-			}
-		}
-		return {
-			min,
-			max,
-			avg: sum / count
-		};
 	}
 	async getAnalysisData() {
 		return await this.file.reader.rectAnalysisData(this.left, this.top, this.width, this.height);
@@ -3585,10 +3578,8 @@ var AnalysisGraphsStorage = class {
 		this.output = output;
 		return output;
 	}
-	hasGraph() {
-		return Object.values(this.graphs).find((graph) => graph.hasDataToPrint()).length > 0;
-	}
 	generateExportData() {
+		const unit = this.drive.parent.group.registry.manager.unit;
 		const dataBuffer = {};
 		const header = [
 			{
@@ -3612,7 +3603,7 @@ var AnalysisGraphsStorage = class {
 			const labels = graph.getGraphLabels();
 			for (const label of labels) header.push({
 				key: label,
-				displayLabel: `${label} (${graph.analysis.initialColor}, ${graph.analysis.width} x ${graph.analysis.height} px)`
+				displayLabel: `${label} (${graph.analysis.initialColor}, ${graph.analysis.width} x ${graph.analysis.height} px) [${unit.current.symbol}]`
 			});
 			if (graph.value) Object.keys(graph.value).forEach((key) => {
 				if (!Object.keys(dataBuffer).includes(key)) {
@@ -3627,7 +3618,7 @@ var AnalysisGraphsStorage = class {
 				}
 				const values = graph.getDtaAtTime(parseInt(key));
 				labels.forEach((label, index) => {
-					dataBuffer[key][label] = values[index];
+					dataBuffer[key][label] = unit.celsiusToCurrent(values[index]);
 				});
 			});
 		}
@@ -3669,9 +3660,6 @@ var AnalysisDataState = class extends AbstractProperty {
 		return value;
 	}
 	afterSetEffect() {}
-	dangerouslyUpdateValue(value) {
-		this.value = value;
-	}
 	/** Assamble the current analysis data and download them as CSV directly. */
 	downloadData() {
 		const { data, header } = this.listeners.generateExportData();
@@ -3686,102 +3674,6 @@ var AnalysisDataState = class extends AbstractProperty {
 	/** Refresh the values of all analyses for the current frame from their graph data. No calculation is performed. */
 	refreshAllAnalysesValues() {
 		this.parent.analysis.value.forEach((analysis) => analysis.recalculateValues());
-	}
-	/**
-	* @deprecated The analysis values are read from the graph data computed by the parser jobs, use `refreshAllAnalysesValues`. This worker calculation does not follow the parser contract boundaries (rectangle excludes its last row and column, ellipsis uses the image dimensions) and is not used anymore.
-	*/
-	async updateAllAnalysesValues() {
-		const instance = this.parent;
-		try {
-			const analysis = instance.analysis.value.map((a) => {
-				if (a instanceof PointAnalysis) return [
-					a.getType(),
-					a.key,
-					a.top,
-					a.left,
-					1,
-					1
-				];
-				return [
-					a.getType(),
-					a.key,
-					a.top,
-					a.left,
-					a.width,
-					a.height
-				];
-			});
-			(await instance.pool.exec(async (width, height, pixels, analysis) => {
-				const buffer = analysis.map((a) => {
-					return {
-						id: a[1],
-						type: a[0],
-						min: { value: Infinity },
-						max: { value: -Infinity },
-						avg: {
-							value: 0,
-							sum: 0,
-							count: 0
-						}
-					};
-				});
-				for (let x = 0; x < width; x++) for (let y = 0; y < height; y++) {
-					const rawTemperature = pixels[x + y * width];
-					const isWithin = (x, y, la, ta, wa, ha) => {
-						const centerX = la + wa / 2;
-						const centerY = ta + ha / 2;
-						const normalizedX = (x - centerX) / (wa / 2);
-						const normalizedY = (y - centerY) / (ha / 2);
-						return normalizedX * normalizedX + normalizedY * normalizedY <= 1;
-					};
-					/**
-					* Process the analysis
-					*/
-					analysis.forEach((a, index) => {
-						const bufferValue = buffer[index];
-						const type = a[0];
-						const top = a[2];
-						const left = a[3];
-						const w = a[4];
-						const h = a[5];
-						if (type === "point") {
-							if (x === left && y === top) bufferValue.avg.value = rawTemperature;
-						} else if (type === "rectangle") {
-							if (x >= left && x < left + w && y >= top && y < top + h) {
-								if (rawTemperature < bufferValue.min.value) bufferValue.min.value = rawTemperature;
-								if (rawTemperature > bufferValue.max.value) bufferValue.max.value = rawTemperature;
-								bufferValue.avg.count = bufferValue.avg.count + 1;
-								bufferValue.avg.sum = bufferValue.avg.sum + rawTemperature;
-							}
-						} else if (type === "ellipsis") {
-							if (isWithin(x, y, left, top, width, height)) {
-								if (rawTemperature < bufferValue.min.value) bufferValue.min.value = rawTemperature;
-								if (rawTemperature > bufferValue.max.value) bufferValue.max.value = rawTemperature;
-								bufferValue.avg.count = bufferValue.avg.count + 1;
-								bufferValue.avg.sum = bufferValue.avg.sum + rawTemperature;
-							}
-						}
-					});
-				}
-				return { stats: buffer.map((a) => {
-					return {
-						id: a.id,
-						min: a.min.value !== Infinity ? a.min.value : void 0,
-						max: a.max.value !== -Infinity ? a.max.value : void 0,
-						avg: a.type === "point" ? a.avg.value : a.avg.sum / a.avg.count
-					};
-				}) };
-			}, [
-				instance.width,
-				instance.height,
-				instance.pixels,
-				analysis
-			], {})).stats.forEach((a) => {
-				instance.analysis.layers.get(a.id)?.dangerouslySetValues(a.avg, a.min, a.max);
-			});
-		} catch (error) {
-			if (error instanceof Error) console.error(error);
-		}
 	}
 };
 //#endregion
@@ -5999,32 +5891,38 @@ var FilePngExport = class FilePngExport extends AbstractPngExport {
 				});
 				table.appendChild(header);
 				this.container.appendChild(table);
+				const localAnalyses = [];
 				this.file.slots.forEveryExistingSlot((slot, number) => {
 					const localAnalysis = this.localInstance?.slots.createAnalysisFromSerialized(slot.serialized, number);
-					if (localAnalysis) {
-						const row = document.createElement("tr");
-						const name = this.createElementWithText("td", slot.analysis.name, fontSize, void 0, slot.analysis.initialColor);
-						name.style.borderBottom = `1px solid ${FilePngExport.COLOR_LIGHT}`;
-						name.style.padding = `${params.fontSize / 3}px 0px ${params.fontSize / 3} 0px`;
-						row.appendChild(name);
-						const createAndAppendValue = (color, value) => {
-							const td = this.createElementWithText("td", value ? value.toFixed(3) + " °C" : "", fontSize, void 0);
-							td.style.borderBottom = `1px solid ${FilePngExport.COLOR_LIGHT}`;
-							td.style.paddingTop = `${params.fontSize / 3}px`;
-							td.style.paddingBottom = `${params.fontSize / 3}px`;
-							row.appendChild(td);
-						};
-						if (slot.analysis instanceof AbstractAreaAnalysis) {
-							createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
-							createAndAppendValue(slot.analysis.initialColor, localAnalysis.min);
-							createAndAppendValue(slot.analysis.initialColor, localAnalysis.max);
-						} else if (slot.analysis instanceof PointAnalysis) {
-							createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
-							createAndAppendValue(slot.analysis.initialColor);
-							createAndAppendValue(slot.analysis.initialColor);
-						}
-						table.appendChild(row);
+					if (localAnalysis) localAnalyses.push({
+						slot,
+						localAnalysis
+					});
+				});
+				await Promise.all(localAnalyses.map(({ localAnalysis }) => localAnalysis.graph.whenData()));
+				localAnalyses.forEach(({ slot, localAnalysis }) => {
+					const row = document.createElement("tr");
+					const name = this.createElementWithText("td", slot.analysis.name, fontSize, void 0, slot.analysis.initialColor);
+					name.style.borderBottom = `1px solid ${FilePngExport.COLOR_LIGHT}`;
+					name.style.padding = `${params.fontSize / 3}px 0px ${params.fontSize / 3} 0px`;
+					row.appendChild(name);
+					const createAndAppendValue = (color, value) => {
+						const td = this.createElementWithText("td", value ? value.toFixed(3) + " °C" : "", fontSize, void 0);
+						td.style.borderBottom = `1px solid ${FilePngExport.COLOR_LIGHT}`;
+						td.style.paddingTop = `${params.fontSize / 3}px`;
+						td.style.paddingBottom = `${params.fontSize / 3}px`;
+						row.appendChild(td);
+					};
+					if (slot.analysis instanceof AbstractAreaAnalysis) {
+						createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
+						createAndAppendValue(slot.analysis.initialColor, localAnalysis.min);
+						createAndAppendValue(slot.analysis.initialColor, localAnalysis.max);
+					} else if (slot.analysis instanceof PointAnalysis) {
+						createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
+						createAndAppendValue(slot.analysis.initialColor);
+						createAndAppendValue(slot.analysis.initialColor);
 					}
+					table.appendChild(row);
 				});
 			}
 			if (params.author || params.license) {
@@ -6251,7 +6149,7 @@ var ThermalFileReader = class extends AbstractFileResult {
 	/** 
 	* Before requesting a frame, create a dedicated `ArrayBuffer` containing only the frame's data 
 	* 
-	* **THIS IS SYNCHRONOUSE AND MIGHT BE EXPENSIVE**
+	* @remark THIS IS SYNCHRONOUS AND MIGHT BE EXPENSIVE**
 	*/
 	getFrameSubset(frameIndex) {
 		return this.parser.getFrameSubset(this.buffer, frameIndex);
@@ -6261,16 +6159,32 @@ var ThermalFileReader = class extends AbstractFileResult {
 	*/
 	async frameData(index) {
 		const data = this.getFrameSubset(index);
-		return await this.parser.frameData(data.array, data.dataType);
+		return await this.pool.exec(this.parser.frameData, [data.array, data.dataType]);
 	}
 	async pointAnalysisData(x, y) {
-		return await this.parser.pointAnalysisData(this.buffer, x, y);
+		return await this.pool.exec(this.parser.pointAnalysisData, [
+			this.buffer,
+			x,
+			y
+		]);
 	}
 	async rectAnalysisData(x, y, width, height) {
-		return await this.parser.rectAnalysisData(this.buffer, x, y, width, height);
+		return await this.pool.exec(this.parser.rectAnalysisData, [
+			this.buffer,
+			x,
+			y,
+			width,
+			height
+		]);
 	}
 	async ellipsisAnalysisData(x, y, width, height) {
-		return await this.parser.ellipsisAnalysisData(this.buffer, x, y, width, height);
+		return await this.pool.exec(this.parser.ellipsisAnalysisData, [
+			this.buffer,
+			x,
+			y,
+			width,
+			height
+		]);
 	}
 	/** 
 	* Recalculates the core array buffer using all available filters. 
@@ -7491,10 +7405,15 @@ var GroupExportCSV = class {
 	constructor(drive) {
 		this.drive = drive;
 	}
+	/** The unit drive of the manager context. Used to convert exported values to the current thermal unit. */
+	get unit() {
+		return this.drive.parent.registry.manager.unit;
+	}
 	formatAnalysisDisplayName(analysis, scope) {
-		const nameBase = `${analysis.name} (${analysis.getType()}, ${analysis.initialColor}})`;
-		if (analysis instanceof AbstractAreaAnalysis && scope) return nameBase + " " + scope.toUpperCase();
-		return nameBase;
+		const nameBase = `${analysis.name} (${analysis.getType()}, ${analysis.initialColor})`;
+		const unitSuffix = ` [${this.unit.current.symbol}]`;
+		if (analysis instanceof AbstractAreaAnalysis && scope) return nameBase + " " + scope.toUpperCase() + unitSuffix;
+		return nameBase + unitSuffix;
 	}
 	formatAnalysisKey(analysis, scope) {
 		const keyBase = analysis.key;
@@ -7508,12 +7427,12 @@ var GroupExportCSV = class {
 			if (scope === "max") value = slot.analysis.max;
 			return {
 				key: this.formatAnalysisKey(slot.analysis, scope),
-				value: value.toString()
+				value: this.unit.celsiusToCurrent(value).toString()
 			};
 		}
 		return {
 			key: this.formatAnalysisKey(slot.analysis),
-			value: slot.analysis.avg.toString()
+			value: this.unit.celsiusToCurrent(slot.analysis.avg).toString()
 		};
 	}
 	/** Assamble the export header and data */
@@ -8103,7 +8022,7 @@ var FilesState = class extends AbstractProperty {
 //#endregion
 //#region src/properties/scale/abstractMinmaxProperty.ts
 /** 
-* A common basis for all Minmax properties 
+* A common basis for all Minmax properties. The value is always in Celsius.
 */
 var AbstractMinmaxProperty = class extends AbstractProperty {
 	/** Get the current distance between min and max */
@@ -8114,6 +8033,7 @@ var AbstractMinmaxProperty = class extends AbstractProperty {
 };
 //#endregion
 //#region src/properties/scale/MinmaxGroupProperty.ts
+/** The min and max values of the current group. The value is always in Celsius. */
 var MinmaxGroupProperty = class extends AbstractMinmaxProperty {
 	validate(value) {
 		return value;
@@ -8417,6 +8337,7 @@ var GroupsState = class extends AbstractProperty {
 };
 //#endregion
 //#region src/properties/scale/MinmaxRegistryState.ts
+/** The current minmax values aggregated from all groups. The value is always in Celsius. */
 var MinmaxRegistryProperty = class extends AbstractMinmaxProperty {
 	validate(value) {
 		return value;
@@ -8474,6 +8395,7 @@ var RangeDriver = class extends AbstractProperty {
 	/** 
 	* Imposes a range to itself and below
 	* - needs to be called before the minmax is calculated!
+	* - The value used here needs always to be in Celsius.
 	*/
 	imposeRange(valueInCelsius) {
 		if (valueInCelsius === void 0 && this.value === void 0) {} else if (valueInCelsius === void 0 && this.value !== void 0) this.value = valueInCelsius;
@@ -8483,7 +8405,7 @@ var RangeDriver = class extends AbstractProperty {
 		}
 		return this.value;
 	}
-	/** Sets the range to the current minmax values */
+	/** Sets the range to the current minmax values. The internal value here is always in Celsius. */
 	applyMinmax() {
 		if (this.parent.minmax.value) {
 			const newRange = {
@@ -8493,13 +8415,15 @@ var RangeDriver = class extends AbstractProperty {
 			this.imposeRange(newRange);
 		}
 	}
-	/** Sets the range automatically based on the current histogram */
+	/** Sets the range automatically based on the current histogram. The internal value here is always in Celsius. */
 	applyAuto() {
 		this.imposeRange(this._autoValue);
 	}
+	/** The automatically calculated range based on the current histogram. This value is always in Celsius. */
 	get autoValue() {
 		return this._autoValue;
 	}
+	/** Recalculate the internal automatic value based on the current histogram. The internal value is always in Celsius. */
 	recalculateAutoValue() {
 		const previousValue = this._autoValue;
 		if (this.parent.histogram.value) {
@@ -8972,6 +8896,7 @@ var ThermalManager = class extends BaseStructureObject {
 		this.id = Math.random();
 		if (options) {
 			if (options.palette) this.palette.setPalette(options.palette);
+			if (options.unit) this.unit.set(options.unit);
 		}
 	}
 	filters = new FilterContainer(this);
@@ -9044,6 +8969,6 @@ var TimeRound = class TimeRound extends TimeUtilsBase {
 //#region src/index.ts
 console.info("@labirthermal/core", version);
 //#endregion
-export { AbstractAddTool, AbstractAnalysis, AbstractAreaAnalysis, AbstractFileResult, AbstractTool, AddEllipsisTool, AddRectangleTool, AnalysisGraph, Batch, CallbacksManager, DropinElementListener, EditTool, EllipsisAnalysis, InspectTool, PointAnalysis, RectangleAnalysis, ThermalFileFailure, ThermalFileInstance, ThermalFileReader, ThermalGroup, ThermalManager, ThermalPalettes, ThermalRegistry, ThermalUnit, TimeFormat, TimePeriod, TimeRound, UnitDrive, availableAnalysisColors, getPool, playbackSpeed, supportedFileTypes, supportedFileTypesInputProperty, thermalUnits };
+export { AbstractAddTool, AbstractAnalysis, AbstractAreaAnalysis, AbstractFileResult, AbstractTool, AddEllipsisTool, AddRectangleTool, AnalysisGraph, Batch, CallbacksManager, DropinElementListener, EditTool, EllipsisAnalysis, InspectTool, PointAnalysis, RectangleAnalysis, ThermalFileFailure, ThermalFileInstance, ThermalFileReader, ThermalGroup, ThermalManager, ThermalPalettes, ThermalRegistry, ThermalUnit, TimeFormat, TimePeriod, TimeRound, UnitDrive, availableAnalysisColors, celsiusToFahrenheit, celsiusToKelvin, fahrenheitToCelsius, fahrenheitToKelvin, getPool, kelvinToCelsius, kelvinToFahrenheit, playbackSpeed, supportedFileTypes, supportedFileTypesInputProperty, thermalUnits };
 
 //# sourceMappingURL=index.mjs.map

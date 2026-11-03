@@ -4,6 +4,8 @@ export { booleanConverter } from "./utils/converters/booleanConverter";
 export { paletteConverter } from "./utils/converters/paletteConverter";
 export { stringOrUndefinedConverter } from "./utils/converters/stringOrUndefinedConverter";
 export { durationConverter } from "./utils/converters/durationConverter";
+export { unitConverter, parseThermalUnit } from "./utils/converters/unitConverter";
+export { optionalNumberConverter } from "./utils/converters/optionalNumberConverter";
 
 // Utlility class and service for retrieving contrast colors
 export { getContrastColor } from "./utils/getContrastColor";

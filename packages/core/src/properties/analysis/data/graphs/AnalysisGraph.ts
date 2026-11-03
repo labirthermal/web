@@ -43,16 +43,43 @@ export class AnalysisGraph {
     /** Identifier of the latest data request. Older responses are discarded so that they never overwrite newer data. */
     protected _dataRequest: number = 0;
 
+    /** The currently pending (or last finished) data request. */
+    protected _fetchPromise?: Promise<void>;
+
     /** Fetch the analysis data and store them only if no newer request was made meanwhile. */
-    protected async fetchGraphData(): Promise<void> {
+    protected fetchGraphData(): Promise<void> {
 
-        const request = ++this._dataRequest;
+        const promise = (async () => {
 
-        const data = await this.getGraphData();
+            const request = ++this._dataRequest;
 
-        if ( request === this._dataRequest ) {
-            this.value = data;
-        }
+            const data = await this.getGraphData();
+
+            if ( request === this._dataRequest ) {
+                this.value = data;
+            }
+
+        })();
+
+        this._fetchPromise = promise;
+
+        return promise;
+
+    }
+
+    /**
+     * Resolve once the graph data are available.
+     *
+     * The graph data are fetched asynchronously from the parser jobs whenever the analysis
+     * is created, moved or resized. Consumers reading `analysis.min/max/avg` or `graph.value`
+     * right after creating an analysis (e.g. exports working on a copied file) must await
+     * this method first - otherwise they read the values before the jobs resolve.
+     */
+    public async whenData(): Promise<GraphDataTypes|undefined> {
+
+        await ( this._fetchPromise ?? this.fetchGraphData() );
+
+        return this.value;
 
     }
 

@@ -657,7 +657,7 @@ interface ThermalMinmaxType {
 }
 type ThermalMinmaxOrUndefined = ThermalMinmaxType | undefined;
 /**
- * A common basis for all Minmax properties
+ * A common basis for all Minmax properties. The value is always in Celsius.
  */
 declare abstract class AbstractMinmaxProperty<Target extends ThermalRegistry | ThermalGroup> extends AbstractProperty<ThermalMinmaxOrUndefined, Target> {
   /** Get the current distance between min and max */
@@ -665,6 +665,7 @@ declare abstract class AbstractMinmaxProperty<Target extends ThermalRegistry | T
 }
 //#endregion
 //#region src/properties/scale/MinmaxRegistryState.d.ts
+/** The current minmax values aggregated from all groups. The value is always in Celsius. */
 declare class MinmaxRegistryProperty extends AbstractMinmaxProperty<ThermalRegistry> {
   protected validate(value: ThermalMinmaxOrUndefined): ThermalMinmaxOrUndefined;
   protected afterSetEffect(): void;
@@ -673,12 +674,12 @@ declare class MinmaxRegistryProperty extends AbstractMinmaxProperty<ThermalRegis
 }
 //#endregion
 //#region src/properties/scale/RangeDriver.d.ts
-/** The range should allways contain both properties. */
+/** The range should allways contain both properties. The internal value is always in Celsius. */
 type ThermalRangeType = {
   from: number;
   to: number;
 };
-/** The range or undefined */
+/** The range or undefined. The value is always in Celsius. */
 type ThermalRangeOrUndefined = ThermalRangeType | undefined;
 /** Handles the thermal range display. Internal value is always stored in Celsius. */
 declare class RangeDriver extends AbstractProperty<ThermalRangeOrUndefined, ThermalRegistry> {
@@ -698,13 +699,16 @@ declare class RangeDriver extends AbstractProperty<ThermalRangeOrUndefined, Ther
   /**
    * Imposes a range to itself and below
    * - needs to be called before the minmax is calculated!
+   * - The value used here needs always to be in Celsius.
    */
   imposeRange(valueInCelsius: ThermalRangeOrUndefined): ThermalRangeOrUndefined;
-  /** Sets the range to the current minmax values */
+  /** Sets the range to the current minmax values. The internal value here is always in Celsius. */
   applyMinmax(): void;
-  /** Sets the range automatically based on the current histogram */
+  /** Sets the range automatically based on the current histogram. The internal value here is always in Celsius. */
   applyAuto(): void;
+  /** The automatically calculated range based on the current histogram. This value is always in Celsius. */
   get autoValue(): ThermalRangeOrUndefined;
+  /** Recalculate the internal automatic value based on the current histogram. The internal value is always in Celsius. */
   recalculateAutoValue(): ThermalRangeOrUndefined;
 }
 //#endregion
@@ -748,7 +752,7 @@ export declare class ThermalFileReader extends AbstractFileResult {
   /**
    * Before requesting a frame, create a dedicated `ArrayBuffer` containing only the frame's data
    *
-   * **THIS IS SYNCHRONOUSE AND MIGHT BE EXPENSIVE**
+   * @remark THIS IS SYNCHRONOUS AND MIGHT BE EXPENSIVE**
    */
   protected getFrameSubset(frameIndex: number): ReturnType<IParserObject["getFrameSubset"]>;
   /** Read a given frame
@@ -1304,8 +1308,19 @@ export declare class AnalysisGraph {
   protected set value(value: GraphDataTypes | undefined);
   /** Identifier of the latest data request. Older responses are discarded so that they never overwrite newer data. */
   protected _dataRequest: number;
+  /** The currently pending (or last finished) data request. */
+  protected _fetchPromise?: Promise<void>;
   /** Fetch the analysis data and store them only if no newer request was made meanwhile. */
   protected fetchGraphData(): Promise<void>;
+  /**
+   * Resolve once the graph data are available.
+   *
+   * The graph data are fetched asynchronously from the parser jobs whenever the analysis
+   * is created, moved or resized. Consumers reading `analysis.min/max/avg` or `graph.value`
+   * right after creating an analysis (e.g. exports working on a copied file) must await
+   * this method first - otherwise they read the values before the jobs resolve.
+   */
+  whenData(): Promise<GraphDataTypes | undefined>;
   setMinActivation(active: boolean): void;
   setMaxActivation(active: boolean): void;
   setAvgActivation(active: boolean): void;
@@ -1424,12 +1439,6 @@ export declare class EllipsisAnalysis extends AbstractAreaAnalysis {
   static startAddingAtPoint(key: string, color: string, file: ThermalFileInstance, top: number, left: number): EllipsisAnalysis;
   static build(key: string, color: string, file: ThermalFileInstance, _top: number, _left: number, _right: number, _bottom: number): EllipsisAnalysis;
   protected buildArea(x: number, y: number, width?: number, height?: number): AbstractArea;
-  /** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
-  protected getValues(): {
-    min?: number;
-    max?: number;
-    avg?: number;
-  };
   isWithin(x: number, y: number): boolean;
   getAnalysisData(): Promise<AreaAnalysisData>;
 }
@@ -1477,12 +1486,6 @@ export declare class PointAnalysis extends AbstractAnalysis {
   protected constructor(key: string, color: string, file: ThermalFileInstance, top: number, left: number);
   setColorCallback(value: string): void;
   isWithin(x: number, y: number): boolean;
-  /** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
-  protected getValues(): {
-    min?: number;
-    max?: number;
-    avg?: number;
-  };
   getAnalysisData(): Promise<PointAnalysisData>;
   protected validateWidth(): number;
   protected validateHeight(): number;
@@ -1510,12 +1513,6 @@ export declare class RectangleAnalysis extends AbstractAreaAnalysis {
   static startAddingAtPoint(key: string, color: string, file: ThermalFileInstance, top: number, left: number): RectangleAnalysis;
   static build(key: string, color: string, file: ThermalFileInstance, _top: number, _left: number, _right: number, _bottom: number): RectangleAnalysis;
   protected buildArea(x: number, y: number, width?: number, height?: number): AbstractArea;
-  /** @deprecated Values are read from the graph data, see `AbstractAnalysis.recalculateValues`. */
-  protected getValues(): {
-    min?: number;
-    max?: number;
-    avg?: number;
-  };
   getAnalysisData(): Promise<AreaAnalysisData>;
 }
 //#endregion
@@ -1783,23 +1780,8 @@ export declare abstract class AbstractAnalysis {
     max?: number;
     avg?: number;
   };
-  /**
-   * Obtain the current values of the analysis using current position and dimensions
-   * @deprecated Values are read from the graph data computed by the parser jobs, see `recalculateValues`. This synchronous calculation does not follow the parser contract boundaries and is not used anymore.
-   */
-  protected abstract getValues(): {
-    min?: number;
-    max?: number;
-    avg?: number;
-  };
   /** Override this method to get proper analysis data. */
   abstract getAnalysisData(): Promise<PointAnalysisData | AreaAnalysisData>;
-  /**
-   * @deprecated Use with caution! This method forcefully sets the analysis values. The calculation mechanisms should happen elsewhere. Now they happen in the canvas layer wich calculates them upon rendering. That is not good at all!
-   * @internal
-   * @todo Remove this method, move the calculation of values elsewhere from the canvas layer!
-   */
-  dangerouslySetValues(avg: number, min?: number | undefined, max?: number | undefined): void;
 }
 //#endregion
 //#region src/properties/analysis/slots/AnalysisSlot.d.ts
@@ -1845,6 +1827,8 @@ type ExportHeaderType = ExportHeaderEntryType[];
 declare class GroupExportCSV {
   readonly drive: AnalysisSyncDrive;
   constructor(drive: AnalysisSyncDrive);
+  /** The unit drive of the manager context. Used to convert exported values to the current thermal unit. */
+  protected get unit(): UnitDrive;
   protected formatAnalysisDisplayName(analysis: AbstractAnalysis, scope?: string): string;
   protected formatAnalysisKey(analysis: AbstractAnalysis, scope?: string): string;
   protected formatFrameSlotValue(slot: AnalysisSlot, scope?: "min" | "max" | "avg"): {
@@ -2100,6 +2084,7 @@ declare class FilesState extends AbstractProperty<ThermalFileInstance[], Thermal
 }
 //#endregion
 //#region src/properties/scale/MinmaxGroupProperty.d.ts
+/** The min and max values of the current group. The value is always in Celsius. */
 declare class MinmaxGroupProperty extends AbstractMinmaxProperty<ThermalGroup> {
   protected validate(value: ThermalMinmaxOrUndefined): ThermalMinmaxOrUndefined;
   protected afterSetEffect(): void;
@@ -2689,7 +2674,6 @@ declare class AnalysisGraphsStorage {
   onRemoveGraph: CallbacksManager<(graph: string) => void>;
   constructor(drive: AnalysisDataState);
   refreshOutput(): AnalysisDataStateValue;
-  hasGraph(): boolean;
   generateExportData(): {
     header: {
       key: string;
@@ -2718,15 +2702,10 @@ declare class AnalysisDataState extends AbstractProperty<AnalysisDataStateValue,
   constructor(parent: ThermalFileInstance);
   protected validate(value: AnalysisDataStateValue): AnalysisDataStateValue;
   protected afterSetEffect(): void;
-  dangerouslyUpdateValue(value: AnalysisDataStateValue): void;
   /** Assamble the current analysis data and download them as CSV directly. */
   downloadData(): void;
   /** Refresh the values of all analyses for the current frame from their graph data. No calculation is performed. */
   refreshAllAnalysesValues(): void;
-  /**
-   * @deprecated The analysis values are read from the graph data computed by the parser jobs, use `refreshAllAnalysesValues`. This worker calculation does not follow the parser contract boundaries (rectangle excludes its last row and column, ellipsis uses the image dimensions) and is not used anymore.
-   */
-  updateAllAnalysesValues(): Promise<void>;
 }
 //#endregion
 //#region src/file/utils/FilePngExport.d.ts
@@ -2782,24 +2761,40 @@ export declare class ThermalFileInstance extends AbstractThermalFile {
 }
 //#endregion
 //#region src/properties/scale/units.d.ts
+/**
+ * Available keys of thermal units. Used by {@link thermalUnits} and by {@link UnitDrive}.
+ * @module `@labirthermal/core`
+ */
 export declare enum ThermalUnit {
   C = "C",
   F = "F",
   K = "K"
 }
+export declare const celsiusToFahrenheit: (celsius: number) => number;
+export declare const celsiusToKelvin: (celsius: number) => number;
+export declare const fahrenheitToCelsius: (fahrenheit: number) => number;
+export declare const fahrenheitToKelvin: (fahrenheit: number) => number;
+export declare const kelvinToCelsius: (kelvin: number) => number;
+export declare const kelvinToFahrenheit: (kelvin: number) => number;
 type ThermalUnitDefinition = {
+  /** Name of the thermal unit */
   name: string;
+  /** Symbol of the thermal unit WITHOUT the whitespace. */
   symbol: string;
+  /** Key of the thermal unit. */
   key: ThermalUnit;
-  /** Convert a value to Celsius */
+  /** Convert a value to Celsius. Celsius is used internally in all states. */
   toCelsius: (value: number) => number;
-  /** Convert a value from Celsius to this unit */
+  /** Convert a value from Celsius to this unit. Celsius is used internally in all states. */
   fromCelsius: (value: number) => number;
   /** Convert a value to Fahrenheit */
   toFahrenheit: (value: number) => number;
   /** Convert a value to Kelvin */
   toKelvin: (value: number) => number;
 };
+/** Registry of all available thermal units along with their conversion functions. Celsius is still used internally in all states. The conversion will happen only on the output - in the GUI and when doing exports.
+ * @module `@labirthermal/core`
+ */
 export declare const thermalUnits: Record<ThermalUnit, ThermalUnitDefinition>;
 //#endregion
 //#region src/properties/abstractProperty.d.ts
@@ -2863,25 +2858,64 @@ declare abstract class AbstractProperty<ValueType extends PropertyListenersTypes
 }
 //#endregion
 //#region src/properties/scale/UnitDrive.d.ts
+/**
+ * Controls the thermal unit selection and conversion for the entire `ThermalManager` context. Internal states such as minmax and range are still kept in Celsius. But the GUI and exports will convert their values to the currently selected thermal unit. For this purpose, this class has all the necessary conversion methods.
+ * @module `@labirthermal/core`
+ */
 export declare class UnitDrive extends AbstractProperty<ThermalUnit, ThermalManager> {
+  /** Available thermal unit keys. */
   static readonly KEYS: typeof ThermalUnit;
+  /** Available thermal units by keys. This object can also be accessed using the `getUnits` method. */
   static readonly UNITS: Readonly<Record<ThermalUnit, ThermalUnitDefinition>>;
+  /** Internal storage of currently used thermal unit definition. */
   private _current;
+  /** The currently active thermal unit definition. Actual value of this driver is the unit key, but this is the whole object representing the unit. Set internally whenever the value changes. */
   get current(): ThermalUnitDefinition;
   constructor(parent: ThermalManager, initial: ThermalUnit);
   protected validate(value: ThermalUnit): ThermalUnit;
   protected afterSetEffect(value: ThermalUnit): void;
-  getUnitDefinition(key: ThermalUnit): ThermalUnitDefinition;
+  private getUnitDefinition;
+  /** Set the current thermal unit by its key. Triggers internal updates and event listeners. */
   set(key: ThermalUnit): void;
+  /** Set the current thermal unit to Celsius. Internal states are always in Celsius. */
   setCelsius(): void;
+  /** Set the current thermal unit to Fahrenheit. Internal states are always in Celsius. In `@labirthermal/core`, the current unit is only applied in the GUI and in exports.
+   */
   setFahrenheit(): void;
+  /** Set the current thermal unit to Kelvin. Internal states are always in Celsius. In `@labirthermal/core`, the current unit is only applied in the GUI and in exports.
+   */
   setKelvin(): void;
-  /** Celsius is the internal unit - all conversions are based on it. */
-  celsiusToCurrent(value: number): number;
-  /** Celsius is the internal unit - all conversions are based on it. */
-  currentToCelsius(value: number): number;
-  formatSingle(value: number): string;
-  formatRange(from: number, to: number): string;
+  /**
+   * Convert a value in Celsius to the current unit.
+   *
+   * Internal states in `@labirthermal/core` are in Celsius. The GUI and exports are in the current unit.
+   */
+  celsiusToCurrent(valueInCelsius: number): number;
+  /**
+   * Convert a value in the current unit to Celsius.
+   *
+   * Internal states in `@labirthermal/core` are in Celsius. The GUI and exports are in the current unit.
+   */
+  currentToCelsius(valueInCurrentUnit: number): number;
+  /**
+   * Format a single temperature value into the string ending with the current unit symbol.
+   *
+   * Internal states in `@labirthermal/core` are in Celsius. The GUI and exports are in the current unit.
+   */
+  formatSingle(valueInCurrentUnit: number): string;
+  /**
+   * Format a range of temperatures into the string ending with the current unit symbol.
+   *
+   * Internal states in `@labirthermal/core` are in Celsius. The GUI and exports are in the current unit.
+   */
+  formatRange(fromInCurrentUnit: number, toInCurrentUnit: number): string;
+  /**
+   * Get the list of available unit definitions.
+   *
+   * @see {@link ThermalUnitDefinition} - this is the structure of an unit definition
+   * @see {@link thermalUnits} - this is the actual list of definitions
+   * @see {@link ThermalUnits} - these are available keys that are used as values of this driver.
+   */
   getUnits(): Readonly<Record<ThermalUnit, ThermalUnitDefinition>>;
 }
 //#endregion
@@ -2916,7 +2950,10 @@ declare class RegistriesState extends AbstractProperty<ThermalRegistry[], Therma
 //#endregion
 //#region src/hierarchy/ThermalManager.d.ts
 type ThermalManagerOptions = {
+  /** Optionaly set the initial palette value */
   palette?: AvailableThermalPalette;
+  /** Optionally set the initial thermal unit value */
+  unit?: ThermalUnit;
 };
 export declare class ThermalManager extends BaseStructureObject {
   readonly id: number;

@@ -4,9 +4,11 @@
 import { withBase } from 'vitepress'
 </script>
 
-The <code>ThermalGroup</code> is a container of thermal files (<code>ThermalFileInstance</code>) within a <code>ThermalRegistry</code>. It represents a logical grouping of thermograms, such as a time series, a set of related camera captures, or an inspection batch.
+The <code>ThermalGroup</code> is a container of thermal files ([ThermalFileInstance](./thermal-file-instance)) within a <code>ThermalRegistry</code>. It represents a logical grouping of thermograms, such as a time series, a set of related camera captures, or an inspection batch.
 
 Each group belongs to exactly one <code>ThermalRegistry</code>, from which it inherits the shared thermal palette, display range, and worker pool.
+
+For the reactivity mechanisms used below (`addListener` and the `CallbacksManager` events), see [CallbacksManager](./callbacks-manager).
 
 ## Creating and managing groups
 
@@ -46,8 +48,12 @@ console.log( group.registry.manager === manager ); // true
 registry.groups.removeGroup( "morning-series" );
 ```
 
+### Example
+
+The example below shows an implementation of <code>ThermalGroup</code> using the <code>@labirthermal/webcomponents</code> package. A [group-provider](../webcomponents/providers/group-provider) creates or retrieves one group identified by its `group-slug` attribute; the nested [file-provider](../webcomponents/providers/file-provider) elements load files into it – see the [context providers guide](../webcomponents/guide/hierarchy).
+
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider manager-slug="group-creation-demo">
     <registry-provider registry-slug="demo-registry">
         <group-provider group-slug="morning-series">
@@ -81,14 +87,20 @@ registry.groups.removeGroup( "morning-series" );
 ```
 :::
 
-## Files state (`group.files`)
+## <code>files</code>
 
-The <code>group.files</code> property (`FilesState`) manages all thermal file instances belonging to this group.
+<PropertyInfo
+    handler="FilesState"
+    type="ThermalFileInstance[]"
+    source="packages/core/src/properties/lists/filesState.ts"
+/>
+
+The <code>group.files</code> property manages all thermal file instances belonging to this group.
 
 ### Managing group files
 
 - **Ordered by timestamp**: the instances are automatically sorted chronologically (`group.files.sortedFiles`).
-- **Loading files**: files should be loaded via the registry's batch loader with this group as target: `registry.batch.request(thermalUrl, visibleUrl, group, callback)`.
+- **Loading files**: files should be loaded via the registry's batch loader with this group as target: `registry.batch.request(thermalUrl, visibleUrl, group, callback)` – see [FilesService & batches](./files-service).
 - **Direct operations**:
   - `group.files.value` or `group.getInstances()` returns an array of `ThermalFileInstance`.
   - `group.files.removeFile(urlOrInstance)` unmounts and removes a file.
@@ -96,7 +108,17 @@ The <code>group.files</code> property (`FilesState`) manages all thermal file in
   - `group.files.downloadAllFiles()` packages all original files in this group into a `.zip` archive and triggers browser download.
   - `group.files.forEveryInstance(fn)` iterates through every instance; `group.forEveryInstance(fn)` provides the same traversal.
 
-Treat `group.files.value` as read-only and use the collection's methods to modify it. Subscribe to membership changes with `group.files.addListener(id, files => { ... })` and unsubscribe with `group.files.removeListener(id)`.
+Treat `group.files.value` as read-only and use the collection's methods to modify it.
+
+### Setter methods
+
+- `group.files.addFile( instance )` – register an existing [ThermalFileInstance](./thermal-file-instance) (called automatically by the loading pipeline).
+- `group.files.removeFile( urlOrInstance )` – unmount and remove a file.
+- `group.files.removeAllInstances()` – destroy all instances in the group.
+
+### Events
+
+- `group.files.addListener( id, files => ... )` – listener on the membership changes.
 
 ```ts
 import {
@@ -135,8 +157,12 @@ group.files.forEveryInstance( instance => {
 group.files.removeFile( "/files/klokan.lrc" );
 ```
 
+### Example
+
+The example below shows an implementation of <code>FilesState</code> using the <code>@labirthermal/webcomponents</code> package. The files are loaded into the group by [file-provider](../webcomponents/providers/file-provider) elements and the `group-download-dropdown` control downloads the original files, PNGs or analysis CSV of the whole group.
+
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider manager-slug="group-files-demo">
     <registry-provider registry-slug="demo-registry">
         <group-provider group-slug="demo-group">
@@ -159,7 +185,6 @@ group.files.removeFile( "/files/klokan.lrc" );
 <manager-provider manager-slug="group-files-demo">
     <registry-provider registry-slug="demo-registry">
         <group-provider group-slug="demo-group">
-            <!-- Dropdown to download original files (ZIP), PNGs, or analysis CSV -->
             <group-download-dropdown></group-download-dropdown>
             <file-provider thermal="/files/klokan.lrc">
                 <file-canvas></file-canvas>
@@ -173,9 +198,15 @@ group.files.removeFile( "/files/klokan.lrc" );
 ```
 :::
 
-## Group minmax (`group.minmax`)
+## <code>minmax</code>
 
-The <code>group.minmax</code> property (`MinmaxGroupProperty`) computes temperature limits specifically for files in this group.
+<PropertyInfo
+    handler="MinmaxGroupProperty"
+    type="ThermalMinmaxOrUndefined"
+    source="packages/core/src/properties/scale/MinmaxGroupProperty.ts"
+/>
+
+The <code>group.minmax</code> property computes temperature limits specifically for files in this group.
 
 ### How group minmax works
 
@@ -209,8 +240,22 @@ group.minmax.addListener( "group-minmax-listener", value => {
 } );
 ```
 
+### Setter methods
+
+The property is read-only in normal use; it recalculates itself during the batch post-processing.
+
+- `group.minmax.recalculateFromInstances()` – recalculate the bounds from the group's instances (called automatically by `registry.postLoadedProcessing()`).
+
+### Events
+
+- `group.minmax.addListener( id, value => ... )` – listener on the bounds changes.
+
+### Example
+
+The example below shows an implementation of <code>MinmaxGroupProperty</code> using the <code>@labirthermal/webcomponents</code> package. Each group contains a `group-range-propagator` control: hovering it highlights the group's temperature window on the registry scale and clicking it imposes the group's min/max as the registry range – see the [thermal range guide](../webcomponents/guide/thermal-range-and-units#thermal-range).
+
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider manager-slug="group-minmax-demo">
     <registry-provider registry-slug="demo-registry">
         <registry-range-slider></registry-range-slider>
@@ -244,14 +289,12 @@ group.minmax.addListener( "group-minmax-listener", value => {
         <registry-range-slider></registry-range-slider>
         <registry-range-display></registry-range-display>
         <group-provider group-slug="group-a">
-            <!-- Propagates Group A's min/max range to the registry when clicked -->
             <group-range-propagator></group-range-propagator>
             <file-provider thermal="/files/klokan.lrc">
                 <file-canvas></file-canvas>
             </file-provider>
         </group-provider>
         <group-provider group-slug="group-b">
-            <!-- Propagates Group B's min/max range to the registry when clicked -->
             <group-range-propagator></group-range-propagator>
             <file-provider thermal="/files/soustruh.lrc">
                 <file-canvas></file-canvas>
@@ -262,9 +305,15 @@ group.minmax.addListener( "group-minmax-listener", value => {
 ```
 :::
 
-## Analysis synchronization (`group.analysisSync`)
+## <code>analysisSync</code>
 
-The <code>group.analysisSync</code> property (`AnalysisSyncDrive`) allows points, rectangles, and ellipses created for one image to be automatically mirrored across all images within the group.
+<PropertyInfo
+    handler="AnalysisSyncDrive"
+    type="boolean"
+    source="packages/core/src/properties/analysis/sync/analysisSync.ts"
+/>
+
+The <code>group.analysisSync</code> property allows points, rectangles, and ellipses created for one image to be automatically mirrored across all images within the group.
 
 ### How analysis sync works
 
@@ -298,8 +347,24 @@ group.analysisSync.addListener( "sync-listener", ( isSynced: boolean ) => {
 } );
 ```
 
+### Setter methods
+
+- `group.analysisSync.turnOn( sourceInstance )` – enable synchronization using the given instance as the source.
+- `group.analysisSync.turnOff()` – disable synchronization.
+- `group.analysisSync.copyOneSlotToAllInstances( instance, slot )` – copy one analysis slot from an instance to all other instances.
+- `group.analysisSync.copyAllSlotsToAllInstances( instance )` – copy all analysis slots from an instance to all other instances.
+
+### Events
+
+- `group.analysisSync.addListener( id, isSynced => ... )` – listener on the sync status changes.
+- `group.analysisSync.onSlotSync` – [CallbacksManager](./callbacks-manager) called with the serialised analysis and the slot number whenever a slot synchronizes.
+
+### Example
+
+The example below shows an implementation of <code>AnalysisSyncDrive</code> using the <code>@labirthermal/webcomponents</code> package. The `group-analysis-sync-button` control toggles the synchronization; the tools for drawing analyses are selected with the `manager-tool-bar` control.
+
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider advanced-palettes="true" palette="lava" manager-slug="group-analysis-sync-demo">
     <div style="margin-bottom: 8px; display: flex; gap: 12px; align-items: center;">
         <manager-tool-bar horizontal="true"></manager-tool-bar>
@@ -324,11 +389,9 @@ group.analysisSync.addListener( "sync-listener", ( isSynced: boolean ) => {
 == HTML source
 ```html
 <manager-provider advanced-palettes="true" palette="lava" manager-slug="group-analysis-sync-demo">
-    <!-- Tool bar allows selecting points or rectangles -->
     <manager-tool-bar horizontal="true"></manager-tool-bar>
     <registry-provider registry-slug="demo-registry">
         <group-provider group-slug="sync-group">
-            <!-- Toggle button for analysis synchronization -->
             <group-analysis-sync-button on="true"></group-analysis-sync-button>
             <file-provider thermal="/files/nosorozec_01.lrc">
                 <file-canvas></file-canvas>
@@ -342,9 +405,15 @@ group.analysisSync.addListener( "sync-listener", ( isSynced: boolean ) => {
 ```
 :::
 
-## Cursor position synchronization (`group.cursorPosition`)
+## <code>cursorPosition</code>
 
-The <code>group.cursorPosition</code> property (`CursorPositionDrive`) mirrors hover coordinates across all images in the group. When hovering over one image, the cursor position `[x, y]` is broadcast to the other instances, highlighting the exact same spatial pixel across every image.
+<PropertyInfo
+    handler="CursorPositionDrive"
+    type="ThermalCursorPositionOrUndefined"
+    source="packages/core/src/properties/cursor/CursorPositionDrive.ts"
+/>
+
+The <code>group.cursorPosition</code> property mirrors hover coordinates across all images in the group. When hovering over one image, the cursor position `[x, y]` is broadcast to the other instances, highlighting the exact same spatial pixel across every image. Every instance then calculates its own temperature under the cursor – see [instance.cursorValue](./thermal-file-instance#cursorvalue).
 
 ```ts
 import { ThermalManager } from "@labirthermal/core";
@@ -370,9 +439,23 @@ group.cursorPosition.addListener( "cursor-listener", position => {
 } );
 ```
 
-## Group playback (`group.playback`)
+### Setter methods
 
-The <code>group.playback</code> property (`GroupPlayback`) coordinates synchronized timeline playback when images within the group are video sequences (such as recorded radiometric `.lrc` sequences).
+- `group.cursorPosition.recieveCursorPosition( position )` – broadcast a cursor position (`{ x, y }` or `undefined`) to all instances of the group.
+
+### Events
+
+- `group.cursorPosition.addListener( id, position => ... )` – listener on the cursor position changes.
+
+## <code>playback</code>
+
+<PropertyInfo
+    handler="GroupPlayback"
+    type="number"
+    source="packages/core/src/properties/time/group/GroupPlayback.ts"
+/>
+
+The <code>group.playback</code> property coordinates synchronized timeline playback when images within the group are video sequences (such as recorded radiometric `.lrc` sequences). The value is the current relative playback time in milliseconds.
 
 - **Sequence detection**: `group.playback.hasAnyPlayback` indicates if any instance contains multiple frames.
 - **Playback state**: `group.playback.playing` indicates whether the sequence is currently playing.
@@ -397,8 +480,28 @@ group.playback.onPlayingStatusChange.set( "playback-listener", isPlaying => {
 } );
 ```
 
+### Setter methods
+
+- `group.playback.play()` – start the synchronized playback of all sequences in the group.
+- `group.playback.stop()` – stop the playback.
+- `group.playback.setValueByPercent( percent )` – jump to a position given in percent of the duration.
+- `group.playback.setValueByRelativeMs( ms )` – jump to a relative time in milliseconds.
+- `group.playback.setLoopInterval( ms )` – change the interval of the playback loop timer.
+
+### Events
+
+- `group.playback.addListener( id, ms => ... )` – listener on the playback time changes.
+- `group.playback.onPlayingStatusChange` – [CallbacksManager](./callbacks-manager) called when the playback starts or stops.
+- `group.playback.onHasAnyCallback` – [CallbacksManager](./callbacks-manager) called when the presence of sequences in the group changes.
+- `group.playback.onDurationChanged` – [CallbacksManager](./callbacks-manager) called when the overall duration changes.
+- `group.playback.onLoopIntervalChanged` – [CallbacksManager](./callbacks-manager) called when the loop interval changes.
+
+### Example
+
+The example below shows an implementation of <code>GroupPlayback</code> using the <code>@labirthermal/webcomponents</code> package. The `group-timeline` control drives the synchronized playback of all sequences within its [group-provider](../webcomponents/providers/group-provider).
+
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider manager-slug="group-playback-demo">
     <registry-provider registry-slug="demo-registry">
         <group-provider group-slug="sequence-group">
@@ -414,7 +517,6 @@ group.playback.onPlayingStatusChange.set( "playback-listener", isPlaying => {
 <manager-provider manager-slug="group-playback-demo">
     <registry-provider registry-slug="demo-registry">
         <group-provider group-slug="sequence-group">
-            <!-- Timeline control for coordinated playback -->
             <group-timeline></group-timeline>
             <file-provider thermal="/files/sequence.lrc">
                 <file-canvas></file-canvas>
@@ -424,6 +526,25 @@ group.playback.onPlayingStatusChange.set( "playback-listener", isPlaying => {
 </manager-provider>
 ```
 :::
+
+## <code>analysisGraph</code>
+
+<PropertyInfo
+    handler="AnalysisGroupGraph"
+    type="ThermalGraphGroupDataOrUndefined"
+    source="packages/core/src/properties/analysis/group/AnalysisGroupGraph.ts"
+/>
+
+Aggregated graph data of the analyses across all sequences in the group, used by the <code>group-chart</code> component. When turned on, the property collects the time series of every analysis of every instance into one dataset.
+
+### Setter methods
+
+- `group.analysisGraph.turnOn()` – start collecting the graph data.
+- `group.analysisGraph.turnOff()` – stop collecting and clear the data.
+
+### Events
+
+- `group.analysisGraph.addListener( id, data => ... )` – listener on the aggregated graph data changes.
 
 ## Summary of group controls
 

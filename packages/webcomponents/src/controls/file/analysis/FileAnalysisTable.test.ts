@@ -12,6 +12,7 @@ import { ThermalBtnElement } from "../../../ui/Btn";
 import { FileAnalysisTableElement } from "./FileAnalysisTable";
 import { FileAnalysisRowElement } from "./FileAnalysisRow";
 import { FileAnalysisComplexElement } from "./FileAnalysisComplex";
+import { FileAnalysisDisplayElement } from "./FileAnalysisDisplay";
 import { FileCanvasElement } from "../FileCanvas";
 import { ContextProvider } from "@lit/context";
 import { managerInteractiveAnalysesContext } from "../../../controllers/ManagerController";
@@ -39,6 +40,7 @@ customElements.define("test-analysis-file", TestFileProvider);
 customElements.define("file-analysis-table", FileAnalysisTableElement);
 customElements.define("file-analysis-table-row", FileAnalysisRowElement);
 customElements.define("file-analysis-complex", FileAnalysisComplexElement);
+customElements.define("test-export-analysis-display", FileAnalysisDisplayElement);
 customElements.define("thermal-btn", ThermalBtnElement);
 customElements.define("test-loading-canvas", FileCanvasElement);
 
@@ -247,6 +249,46 @@ describe("FileAnalysisTable", () => {
         expect(area.min).toBe(11);
         expect(area.max).toBe(26);
         expect(rows()[0].shadowRoot?.querySelectorAll("td")[1].textContent).toContain("18.50");
+    });
+
+    it("renders export analysis values in the current unit and keeps core values in Celsius", async () => {
+        const display = new FileAnalysisDisplayElement();
+        provider.append(display);
+        await display.updateComplete;
+
+        const temperatures = () => Array.from(
+            display.shadowRoot?.querySelectorAll<HTMLElement>("[data-video-dynamic]") ?? []
+        ).map(value => value.textContent?.trim());
+        const rowTemperatures = () => Array.from(
+            rows()[0].shadowRoot?.querySelectorAll("td") ?? []
+        ).slice(1, 4).map(value => value.textContent?.trim());
+
+        expect(temperatures()).toEqual(["17.50 °C", "10.00 °C", "25.00 °C"]);
+        expect(rowTemperatures()).toEqual(temperatures());
+
+        manager.setAttribute("unit", "F");
+        await settle();
+        await display.updateComplete;
+        expect(temperatures()).toEqual(["63.50 °F", "50.00 °F", "77.00 °F"]);
+        expect(rowTemperatures()).toEqual(temperatures());
+        expect({ avg: area.avg, min: area.min, max: area.max }).toEqual({ avg: 17.5, min: 10, max: 25 });
+
+        manager.setAttribute("unit", "K");
+        await settle();
+        await display.updateComplete;
+        expect(temperatures()).toEqual(["290.65 K", "283.15 K", "298.15 K"]);
+        expect(rowTemperatures()).toEqual(temperatures());
+
+        await instance.timeline.setRelativeTime(100);
+        await settle();
+        await display.updateComplete;
+        expect(temperatures()).toEqual(["291.65 K", "284.15 K", "299.15 K"]);
+        expect({ avg: area.avg, min: area.min, max: area.max }).toEqual({ avg: 18.5, min: 11, max: 26 });
+
+        vi.spyOn(area, "min", "get").mockReturnValue(undefined);
+        area.onValues.call(undefined, area.max, area.avg);
+        await display.updateComplete;
+        expect(temperatures()).toEqual(["291.65 K", "-", "299.15 K"]);
     });
 
     it("updates names, colors, dimensions and values without replacing keyed rows", async () => {

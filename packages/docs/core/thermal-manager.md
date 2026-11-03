@@ -6,9 +6,17 @@ import { withBase } from 'vitepress'
 
 The <code>ThermalManager</code> is the top-level context of an application. It owns shared services and settings, including the thermal palette, image smoothing and tools.
 
-## Nested registries
+For the reactivity mechanisms used below (`addListener` and the `CallbacksManager` events), see [CallbacksManager](./callbacks-manager).
 
-There can be multiple <code>ThermalRegistry</code> objects within one <code>ThermalManager</code>. The observable <code>manager.registries</code> property (`RegistriesState`) manages this collection. Each registry is identified by a unique ID within its manager. To create or retrieve a registry, use <code>manager.registries.addOrGetRegistry</code>:
+## <code>registries</code>
+
+<PropertyInfo
+    handler="RegistriesState"
+    type="ThermalRegistry[]"
+    source="packages/core/src/properties/lists/RegistriesState.ts"
+/>
+
+There can be multiple <code>ThermalRegistry</code> objects within one <code>ThermalManager</code>. The observable <code>manager.registries</code> property manages this collection. Each registry is identified by a unique ID within its manager. To create or retrieve a registry, use <code>manager.registries.addOrGetRegistry</code>:
 
 ```ts
 import { ThermalManager } from "@labirthermal/core";
@@ -87,11 +95,25 @@ console.log( manager.registries.value.length ); // 0
 
 `manager.removeAllChildren()` also destroys and removes all registries, but removes them individually. `manager.reset()` resets the manager's shared settings and does not remove its registries. Use `manager.destroySelfAndBelow()` to remove all registries and reset the shared settings together.
 
-## Thermal palette property
+### Setter methods
 
-Palette is a property of <code>ThermalManager</code> and is shared across all registries, groups and instances within one manager.
+- `manager.registries.addOrGetRegistry( id, options? )` – create or retrieve a registry.
+- `manager.registries.removeRegistry( id )` – destroy and remove a registry.
+- `manager.registries.reset()` – destroy and remove all registries.
 
-The manager's <code>PaletteDrive</code> exposes the current key and palette definition:
+### Events
+
+- `manager.registries.addListener( id, registries => ... )` – listener on the collection changes (add, remove, reset).
+
+## <code>palette</code>
+
+<PropertyInfo
+    handler="PaletteDrive"
+    type="AvailableThermalPalette"
+    source="packages/core/src/properties/scale/PaletteDrive.ts"
+/>
+
+The thermal palette used to colour the IR images. The palette is shared across all registries, groups and instances within one manager. The value is the string key of the current palette; the full palette definition is available through <code>manager.palette.currentPalette</code>.
 
 ```ts
 // Object containing all available pallettes and their data
@@ -131,10 +153,20 @@ Available thermal palette keys:
 - <code>rainbow</code>
 - <code>rainbow_hc</code>
 
-Webcomponents example below shows how <code>@labirthermal/webcomponents</code> implements the functionality related to.
+### Setter methods
+
+- `manager.palette.setPalette( key )` – set the palette and redraw all files of this manager.
+
+### Events
+
+- `manager.palette.addListener( id, key => ... )` – listener on the palette key changes.
+
+### Example
+
+The example below shows an implementation of <code>PaletteDrive</code> using the <code>@labirthermal/webcomponents</code> package. The default palette is set through the `palette` attribute of [manager-provider](../webcomponents/providers/manager-provider) and the user switches palettes with the `manager-palette-buttons` control. See also the [thermal palette guide](../webcomponents/guide/thermal-palette).
 
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider advanced-palettes="true" palette="lava" manager-slug="thermal-palette-demo">
     <manager-palette-buttons></manager-palette-buttons>
     <registry-provider>
@@ -147,9 +179,7 @@ Webcomponents example below shows how <code>@labirthermal/webcomponents</code> i
 </manager-provider>
 == HTML source
 ```html
-<!-- See how the default palette is set in manager provider -->
 <manager-provider advanced-palettes="true" palette="lava">
-    <!-- Display the buttons -->
     <manager-palette-buttons></manager-palette-buttons>
     <registry-provider>
         <group-provider>
@@ -162,9 +192,15 @@ Webcomponents example below shows how <code>@labirthermal/webcomponents</code> i
 ```
 :::
 
-## IR image smoothing property
+## <code>smooth</code>
 
-The <code>smooth</code> property controls whether IR images are rendered smoothly or with pixelated edges.
+<PropertyInfo
+    handler="SmoothDrive"
+    type="boolean"
+    source="packages/core/src/properties/display/SmoothDrive.ts"
+/>
+
+Controls whether IR images are rendered smoothly or with pixelated edges.
 
 ```ts
 import { ThermalManager } from "@labirthermal/core";
@@ -188,12 +224,21 @@ manager.smooth.addListener(
 
 ```
 
-Webcomponents example below shows how <code>@labirthermal/webcomponents</code> implements the related functionality.
+### Setter methods
+
+- `manager.smooth.setSmooth( value )` – turn the image smoothing on or off.
+
+### Events
+
+- `manager.smooth.addListener( id, value => ... )` – listener on the smoothing changes.
+
+### Example
+
+The example below shows an implementation of <code>SmoothDrive</code> using the <code>@labirthermal/webcomponents</code> package. The `manager-image-smooth-switch` control toggles the manager's `smooth` property; the initial value can be set through the `smooth-thermograms` attribute of [manager-provider](../webcomponents/providers/manager-provider).
 
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider advanced-palettes="true" palette="lava" manager-slug="manager-demo">
-    <!-- Display the buttons -->
     <manager-image-smooth-switch></manager-image-smooth-switch>
     <span>Use the buttons to change image smoothing</span>
     <registry-provider>
@@ -206,9 +251,7 @@ Webcomponents example below shows how <code>@labirthermal/webcomponents</code> i
 </manager-provider>
 == HTML source
 ```html
-<!-- See how the default palette is set in manager provider -->
 <manager-provider advanced-palettes="true" palette="lava">
-    <!-- Display the buttons -->
     <manager-image-smooth-switch></manager-image-smooth-switch>
     <span>Use the buttons to change image smoothing</span>
     <registry-provider> 
@@ -223,9 +266,33 @@ Webcomponents example below shows how <code>@labirthermal/webcomponents</code> i
 :::
 
 
-## Tool property
+## <code>graphSmooth</code>
 
-To work with thermal images, we need tools. The current tool setting is shared across the entire context.
+<PropertyInfo
+    handler="GraphSmoothDrive"
+    type="boolean"
+    source="packages/core/src/properties/display/GraphSmoothDrive.ts"
+/>
+
+Controls whether analysis graphs are drawn with smooth curves or with straight line segments.
+
+### Setter methods
+
+- `manager.graphSmooth.setGraphSmooth( value )` – turn the graph smoothing on or off.
+
+### Events
+
+- `manager.graphSmooth.addListener( id, value => ... )` – listener on the graph smoothing changes.
+
+## <code>tool</code>
+
+<PropertyInfo
+    handler="ToolDrive"
+    type="ThermalTool"
+    source="packages/core/src/properties/analysis/tool/ToolDrive.ts"
+/>
+
+To work with thermal images, we need tools. The current tool setting is shared across the entire context. The value is the current tool object; tools are selected by their key (`inspect`, `edit`, `add-point`, `add-rect`, `add-ellipsis`).
 
 ```ts
 import { ThermalManager } from "@labirthermal/core";
@@ -248,11 +315,21 @@ manager.tool.addListener(
 
 ```
 
+### Setter methods
+
+- `manager.tool.selectTool( keyOrTool )` – select the active tool.
+
+### Events
+
+- `manager.tool.addListener( id, tool => ... )` – listener on the active tool changes.
+
+### Example
+
+The example below shows an implementation of <code>ToolDrive</code> using the <code>@labirthermal/webcomponents</code> package. The `manager-tool-bar` control selects the manager's active tool; the initial tool can be set through the `tool` attribute of [manager-provider](../webcomponents/providers/manager-provider).
+
 :::tabs
-== Interactive demo
-<!-- See how the default palette is set in manager provider -->
+== @labirthermal/webcomponents implementation
 <manager-provider advanced-palettes="true" palette="lava" manager-slug="tool-demo">
-    <!-- Display the buttons -->
     <manager-tool-bar horizontal="true"></manager-tool-bar>
     <span>Use the buttons to change the tool and interact with the image.</span>
     <registry-provider> 
@@ -266,9 +343,7 @@ manager.tool.addListener(
 </manager-provider>
 == HTML source
 ```html
-<!-- See how the default palette is set in manager provider -->
 <manager-provider advanced-palettes="true" palette="lava">
-    <!-- Display the buttons -->
     <manager-tool-bar horizontal="true"></manager-tool-bar>
     <span>Use the buttons to change the tool and interact with the image.</span>
     <registry-provider> 
@@ -283,47 +358,51 @@ manager.tool.addListener(
 ```
 :::
 
+## <code>unit</code>
+
+<PropertyInfo
+    handler="UnitDrive"
+    type="ThermalUnit"
+    source="packages/core/src/properties/scale/UnitDrive.ts"
+/>
+
+The temperature unit used for display and formatting. Internally, all temperatures are stored in degrees Celsius; the unit drive converts values for display.
+
+```ts
+import { ThermalManager, ThermalUnit } from "@labirthermal/core";
+
+const manager = new ThermalManager();
+
+// Access the current unit
+const currentUnit: ThermalUnit = manager.unit.value;
+
+// Format a value (stored in °C) in the current unit
+const formatted = manager.unit.formatSingle( 36.6 );
+
+// Convert between Celsius and the current unit
+const inCurrentUnit = manager.unit.celsiusToCurrent( 36.6 );
+const backInCelsius = manager.unit.currentToCelsius( inCurrentUnit );
+```
+
+### Setter methods
+
+- `manager.unit.set( key )` – set the unit by its key.
+- `manager.unit.setCelsius()` / `manager.unit.setFahrenheit()` / `manager.unit.setKelvin()` – set a concrete unit.
+
+### Events
+
+- `manager.unit.addListener( id, unit => ... )` – listener on the unit changes.
+
 ## Internal objects
 
-### pool
+### <code>pool</code>
 
-The worker pool used for asynchronous file processing.
+The worker pool used for asynchronous file processing. All parsing jobs of the manager's files run through this pool.
 
-### registries
+### <code>service</code>
 
-The observable registry collection (`RegistriesState`). Read its current array through `manager.registries.value`; use its creation, removal, iteration and listener methods as described in [Nested registries](#nested-registries).
+The [FilesService](./files-service) used to load, parse and cache files. One instance per manager; the cache of loaded files is shared by all registries and groups of this manager.
 
-### service
+### <code>filters</code>
 
-The service used to load and cache files.
-
-<table>
-    <thead>
-        <tr>
-            <th>Property</th>
-            <th>Core scope</th>
-            <th>Sets via provider atribute</th>
-            <th>Control elements</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Thermal palette</td>
-            <td><code>ThermalManager</code></td>
-            <td><code>manager-provider palette="iron"</code></td>
-            <td><code>manager-palette-dropdown</code> or <code>manager-palette-buttons</code></td>
-        </tr>
-        <tr>
-            <td>IR image smoothing</td>
-            <td><code>ThermalManager</code></td>
-            <td><code>manager-provider smooth-thermograms="true"</code></td>
-            <td><code>manager-image-smooth-switch</code></td>
-        </tr>
-        <tr>
-            <td>Active tool</td>
-            <td><code>ThermalManager</code></td>
-            <td><code>manager-provider tool="inspect"</code></td>
-            <td><code>manager-tool-bar</code></td>
-        </tr>
-    </tbody>
-</table>
+The manager-level `FilterContainer` of the experimental filter system.

@@ -7,6 +7,7 @@ import './style.css'
 
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
 import ComponentInfo from './ComponentInfo.vue'
+import PropertyInfo from './PropertyInfo.vue'
 import ComponentAttribute from './ComponentAttribute.vue'
 import ComponentExample from './ComponentExample.vue'
 import Hierarchy from './Hierarchy.vue'
@@ -26,6 +27,7 @@ export default {
     enhanceAppWithTabs(app)
 
     app.component("ComponentInfo", ComponentInfo);
+    app.component("PropertyInfo", PropertyInfo);
     app.component("ComponentAttribute", ComponentAttribute);
     app.component("ComponentExample", ComponentExample);
     app.component("Hierarchy", Hierarchy);

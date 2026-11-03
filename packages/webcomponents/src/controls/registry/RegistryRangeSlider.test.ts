@@ -397,4 +397,115 @@ describe("RegistryRangeSlider", () => {
         expect(handle("from").parentElement?.style.left).toBe("25%");
         expect(slider.shadowRoot?.activeElement).toBe(focused);
     });
+
+    it("keeps range calculations in Celsius and displays the current unit", async () => {
+        manager.setAttribute("unit", "F");
+        await settle();
+        await range(0, 200, 50, 150);
+
+        expect(provider.registryObject.range.value).toEqual({ from: 50, to: 150 });
+        expect(slider.from).toBe(50);
+        expect(slider.to).toBe(150);
+        expect(handle("from").getAttribute("aria-valuemin")).toBe("32");
+        expect(handle("from").getAttribute("aria-valuemax")).toBe("302");
+        expect(handle("from").getAttribute("aria-valuenow")).toBe("122");
+        expect(handle("from").getAttribute("aria-valuetext")).toBe("122.00 °F");
+        expect(handle("from").parentElement?.querySelector(".tooltip")?.textContent).toBe("122.00 °F");
+
+        key("from", "ArrowRight");
+        await settle();
+
+        expect(provider.registryObject.range.value).toEqual({ from: 52, to: 150 });
+        expect(provider.from).toBe(125.6);
+        expect(slider.from).toBe(52);
+        expect(handle("from").getAttribute("aria-valuenow")).toBe("125.6");
+        expect(handle("from").getAttribute("aria-valuetext")).toBe("125.60 °F");
+    });
+
+    it.each([
+        ["C", "from"], ["C", "to"],
+        ["F", "from"], ["F", "to"],
+        ["K", "from"], ["K", "to"],
+    ] as const)("keeps exact Celsius limits when dragging outside the track in %s (%s)", async (unit, which) => {
+        manager.setAttribute("unit", unit);
+        await settle();
+        const min = 0.1;
+        const max = 126.84;
+        await range(min, max, 20, 100);
+        const element = setupPointer();
+        const outside = which === "from" ? -200 : 400;
+        const expected = which === "from" ? { from: min, to: 100 } : { from: 20, to: max };
+        const log = vi.spyOn(slider, "log");
+
+        pointer(handle(which), "pointerdown", which === "from" ? 50 : 150);
+        pointer(element, "pointermove", outside);
+        await settle();
+
+        expect(provider.registryObject.range.value).toEqual({ from: 20, to: 100 });
+        expect(handle(which).parentElement?.style.left).toBe(which === "from" ? "0%" : "100%");
+
+        pointer(element, "pointerup", outside);
+        await settle();
+
+        expect(slider.shadowRoot?.querySelector(".track")).not.toBeNull();
+        expect(provider.registryObject.range.value).toEqual(expected);
+        expect(slider.from).toBe(expected.from);
+        expect(slider.to).toBe(expected.to);
+        expect(handle(which).parentElement?.style.left).toBe(which === "from" ? "0%" : "100%");
+        expect(log).not.toHaveBeenCalled();
+
+        key(which, which === "from" ? "ArrowRight" : "ArrowLeft");
+        await settle();
+        const moved = provider.registryObject.range.value;
+        expect(moved?.[which]).toBeCloseTo(expected[which] + (which === "from" ? 1 : -1) * (max - min) / 100, 12);
+        expect(slider.shadowRoot?.querySelector(".track")).not.toBeNull();
+    });
+
+    it.each(["F", "K"])("keeps keyboard and wheel limits exact in %s", async unit => {
+        manager.setAttribute("unit", unit);
+        await settle();
+        const min = 0.1;
+        const max = 126.84;
+        await range(min, max, 20, 100);
+
+        key("from", "Home");
+        key("to", "End");
+        await settle();
+
+        expect(provider.registryObject.range.value).toEqual({ from: min, to: max });
+        expect(slider.from).toBe(min);
+        expect(slider.to).toBe(max);
+        const commit = vi.spyOn(provider.registryObject.range, "imposeRange");
+
+        handle("from").dispatchEvent(new WheelEvent("wheel", { deltaY: -1, bubbles: true, cancelable: true }));
+        handle("to").dispatchEvent(new WheelEvent("wheel", { deltaY: 1, bubbles: true, cancelable: true }));
+        await settle();
+
+        expect(commit).not.toHaveBeenCalled();
+        expect(provider.registryObject.range.value).toEqual({ from: min, to: max });
+        expect(slider.shadowRoot?.querySelector(".track")).not.toBeNull();
+    });
+
+    it("keeps a Celsius drag preview when the display unit changes", async () => {
+        await range(0.1, 126.84, 20, 100);
+        const element = setupPointer();
+        pointer(handle("from"), "pointerdown", 50);
+        pointer(element, "pointermove", 80);
+        await settle();
+        const previewPosition = handle("from").parentElement?.style.left;
+
+        manager.setAttribute("unit", "K");
+        await settle();
+
+        expect(handle("from").parentElement?.style.left).toBe(previewPosition);
+        expect(handle("from").getAttribute("aria-valuetext")).toMatch(/ K$/);
+        expect(provider.registryObject.range.value).toEqual({ from: 20, to: 100 });
+
+        pointer(element, "pointerup", -200);
+        await settle();
+
+        expect(provider.registryObject.range.value).toEqual({ from: 0.1, to: 100 });
+        expect(slider.from).toBe(0.1);
+        expect(handle("from").parentElement?.style.left).toBe("0%");
+    });
 });

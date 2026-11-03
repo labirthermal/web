@@ -127,14 +127,23 @@ Shows the fullscreen toggle in the application bar. Only `"true"` shows the butt
 
 </ComponentAttribute>
 
-<ComponentAttribute name="palette + advanced-palettes">
+<ComponentAttribute name="palette" type="'iron' | 'jet' | 'white_hot' | 'black_hot' | 'lava' | 'arctic' | 'rainbow' | 'rainbow_hc'" default="jet">
 
-These two attributes configure the initial palette of all files and which palette choices are offered in the palette dropdown:
+Sets the initial palette of all files. Empty or invalid values fall back to `jet`. See [Thermal palette](../guide/thermal-palette.md) for the available choices.
 
-- `palette` (`'iron' | 'jet' | 'white_hot' | 'black_hot' | 'lava' | 'arctic' | 'rainbow' | 'rainbow_hc'`, default `jet`) sets the initial palette. Empty or invalid values convert to `iron`.
-- `advanced-palettes` (`'true' | 'false'`, default `false`) enables the extended palette choices. Only the exact string `"true"` is true.
+```html
+<thermal-group-app
+    label="Animals"
+    group-files="thermal~/files/makak.lrc"
+    palette="lava"
+></thermal-group-app>
+```
 
-See [Thermal palette](../guide/thermal-palette.md) for the available choices.
+</ComponentAttribute>
+
+<ComponentAttribute name="advanced-palettes" type="boolean" default="false" tag="thermal-group-app">
+
+When `advanced-palettes` is present, the palette dropdown offers the extended palette choices. Set it when `palette` is one of the advanced choices.
 
 ```html
 <thermal-group-app
@@ -153,6 +162,32 @@ See [Thermal palette](../guide/thermal-palette.md) for the available choices.
         :group-files="rhinos"
         palette="lava"
         advanced-palettes="true"
+    ></thermal-group-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="unit" type="'C' | 'F' | 'K'" default="C">
+
+Selects the temperature unit used for displayed values and user-entered temperatures. Values are case-insensitive. On initial connection, an unrecognized value is treated like an omitted attribute: a new manager starts in Celsius, while a reused manager keeps its current unit. Internal temperatures remain in Celsius.
+
+When applications share a manager through `manager-slug`, an explicit valid `unit` sets the shared unit. If `unit` is omitted, the application uses the manager's current unit; a new manager starts in Celsius. The application bar also includes a unit switch.
+
+```html
+<thermal-group-app
+    label="Animals"
+    style="width: 100%"
+    group-files="thermal~/files/makak.lrc|label~Macaque;thermal~/files/klokan.lrc|label~Kangaroo"
+    unit="F"
+></thermal-group-app>
+```
+
+<div class="thermal-group-example">
+    <thermal-group-app
+        label="Animals"
+        style="width: 100%"
+        :group-files="animals"
+        unit="F"
     ></thermal-group-app>
 </div>
 
@@ -206,16 +241,41 @@ Opacity of all thermograms, from `0` (fully transparent) to `1` (fully opaque). 
 
 </ComponentAttribute>
 
-<ComponentAttribute name="from + to">
+<ComponentAttribute name="from" type="number">
 
-Thermal range in °C shared by all files:
-
-- `from` (`number`) – lower bound of the range.
-- `to` (`number`) – upper bound of the range.
+Sets the lower endpoint of the initial thermal range in the current unit selected by [`unit`](#unit). The internal range remains in Celsius.
 
 ::: warning Limitation
-After the files from [`group-files`](#group-files) are loaded, the application sets the range to the full range of all loaded files. An initial `from` and `to` is therefore overwritten. Use the range form, slider, histogram or the range button on a card to change the range afterwards. See [Thermal range](../guide/thermal-range.md).
+After the files from [`group-files`](#group-files) are loaded, the application sets the range to the full range of all loaded files. An initial `from` and `to` is therefore overwritten. Use the range form, slider, histogram or the range button on a card to change the range afterwards. See [Thermal range](../guide/thermal-range-and-units.md#thermal-range).
 :::
+
+```html
+<thermal-group-app
+    group-files="thermal~/files/makak.lrc"
+    unit="F"
+    from="68"
+    to="86"
+></thermal-group-app>
+```
+
+</ComponentAttribute>
+
+<ComponentAttribute name="to" type="number">
+
+Sets the upper endpoint of the initial thermal range in the current unit selected by [`unit`](#unit). The internal range remains in Celsius.
+
+::: warning Limitation
+After the files from [`group-files`](#group-files) are loaded, the application sets the range to the full range of all loaded files. An initial `from` and `to` is therefore overwritten. Use the range form, slider, histogram or the range button on a card to change the range afterwards. See [Thermal range](../guide/thermal-range-and-units.md#thermal-range).
+:::
+
+```html
+<thermal-group-app
+    group-files="thermal~/files/makak.lrc"
+    unit="F"
+    from="68"
+    to="86"
+></thermal-group-app>
+```
 
 </ComponentAttribute>
 
@@ -290,7 +350,7 @@ After returning to the list, the attributes keep the last values of the detail, 
 
 Identifiers of the internal manager, registry and group. If omitted, the generic `slug` attribute is used; without either of them, a unique identifier is generated, so every application is independent by default.
 
-Two applications with the same `manager-slug` share the palette, tool and smoothing settings. Applications sharing a manager **and** the same `registry-slug` also share the thermal range and opacity. See [Context providers and consumers](../guide/hierarchy.md).
+Two applications with the same `manager-slug` share the palette, temperature unit, tool and smoothing settings. Applications sharing a manager **and** the same `registry-slug` also share the thermal range and opacity. See [Context providers and consumers](../guide/hierarchy.md).
 
 Because `slug` is used as a fallback by all three identifiers, setting only `slug` on two applications makes them share everything, including the group – and both would then load their `group-files` into the same group.
 

@@ -20,7 +20,7 @@ For a visual list of all elements, see the [Overview of webcomponents](./list).
 
 - [Context providers and consumers](./guide/hierarchy) – the hierarchy of elements needed to build your own interface.
 - [Thermal palette](./guide/thermal-palette) – choose and share colour palettes.
-- [Thermal range](./guide/thermal-range) – set and share the displayed temperature range.
+- [Thermal range](./guide/thermal-range-and-units#thermal-range) – set and share the displayed temperature range.
 - [Styling and CSS variables](./guide/styling) – adapt the look of the components.
 
 ### App components

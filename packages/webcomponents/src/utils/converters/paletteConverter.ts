@@ -11,9 +11,11 @@ import { ThermalPalettes } from "@labirthermal/core";
  *          reflect: true,
  *          converter: paletteConverter,
  *      })
- *      public palette: AvailableThermalPalette = "iron"; // IRON is used as default
+ *      public palette: AvailableThermalPalette = "jet";
  * }
  * ```
+ *
+ * Empty or invalid values fall back to `jet`, the default palette of the core manager.
  */
 export const paletteConverter = {
     fromAttribute: (value: unknown): AvailableThermalPalette => {
@@ -24,7 +26,7 @@ export const paletteConverter = {
             || value === ""
             || !(value in ThermalPalettes)
         ) {
-            return "iron";
+            return "jet";
         }
         return value as AvailableThermalPalette
     },
