@@ -66,10 +66,10 @@ The group holds both files. Group-level consumers, such as the timeline and anal
                 <group-timeline></group-timeline>
                 <group-analysis-sync-button></group-analysis-sync-button>
                 <div class="stack">
-                    <file-provider thermal="/labir/files/makak.lrc">
+                    <file-provider thermal="/files/makak.lrc">
                         <file-canvas></file-canvas>
                     </file-provider>
-                    <file-provider thermal="/labir/files/klokan.lrc">
+                    <file-provider thermal="/files/klokan.lrc">
                         <file-canvas></file-canvas>
                     </file-provider>
                 </div>
@@ -93,17 +93,17 @@ Two groups with the same `group-slug` under the same registry reuse one group. F
         <registry-provider>
             <group-provider group-slug="shared-files">
                 <group-timeline></group-timeline>
-                <file-provider thermal="/labir/files/makak.lrc">
+                <file-provider thermal="/files/makak.lrc">
                     <file-canvas></file-canvas>
                 </file-provider>
             </group-provider>
             <group-provider group-slug="shared-files">
                 <group-analysis-sync-button></group-analysis-sync-button>
                 <div class="stack">
-                    <file-provider thermal="/labir/files/klokan.lrc">
+                    <file-provider thermal="/files/klokan.lrc">
                         <file-canvas></file-canvas>
                     </file-provider>
-                    <file-provider thermal="/labir/files/husy.lrc">
+                    <file-provider thermal="/files/husy.lrc">
                         <file-canvas></file-canvas>
                     </file-provider>
                 </div>

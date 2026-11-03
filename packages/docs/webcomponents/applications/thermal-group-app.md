@@ -81,9 +81,7 @@ Because `;`, `|` and `~` are separators, they cannot appear in URLs or labels.
 
 <ComponentAttribute name="label" type="string" default="LabIR Web Analyser">
 
-Title displayed in the application bar. When omitted, `LabIR Web Analyser` is displayed.
-
-The `author` and `license` attributes inherited from the common application class are accepted but are not displayed by this application.
+Title displayed in the application bar. When omitted, `LabIR Web Analyser` is displayed. See also [`author`](#author) and [`license`](#license).
 
 ```html
 <thermal-group-app
@@ -103,16 +101,66 @@ The `author` and `license` attributes inherited from the common application clas
 
 </ComponentAttribute>
 
-<ComponentAttribute name="show-fullscreen" type="'true' | 'false'" default="false">
+<ComponentAttribute name="author" type="string">
 
-Shows the fullscreen toggle in the application bar. Only `"true"` shows the button; omitted, empty, `"false"` and other values keep it hidden.
+Author credit displayed in the application bar next to the [`label`](#label). Optional; omitted text is not displayed.
+
+```html
+<thermal-group-app
+    label="Rhinoceros"
+    author="LabIR Team"
+    style="width: 100%"
+    group-files="thermal~/files/nosorozec_01.lrc;thermal~/files/nosorozec_02.lrc"
+></thermal-group-app>
+```
+
+<div class="thermal-group-example">
+    <thermal-group-app
+        label="Rhinoceros"
+        author="LabIR Team"
+        style="width: 100%"
+        :group-files="rhinos"
+    ></thermal-group-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="license" type="string">
+
+License credit displayed in the application bar next to the [`label`](#label) and [`author`](#author). Optional; omitted text is not displayed.
+
+```html
+<thermal-group-app
+    label="Rhinoceros"
+    author="LabIR Team"
+    license="CC BY 4.0"
+    style="width: 100%"
+    group-files="thermal~/files/nosorozec_01.lrc;thermal~/files/nosorozec_02.lrc"
+></thermal-group-app>
+```
+
+<div class="thermal-group-example">
+    <thermal-group-app
+        label="Rhinoceros"
+        author="LabIR Team"
+        license="CC BY 4.0"
+        style="width: 100%"
+        :group-files="rhinos"
+    ></thermal-group-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="show-fullscreen" type="boolean" default="false" tag="thermal-group-app">
+
+When `show-fullscreen` is present, the fullscreen toggle is shown in the application bar.
 
 ```html
 <thermal-group-app
     label="Rhinoceros"
     style="width: 100%"
     group-files="thermal~/files/nosorozec_01.lrc;thermal~/files/nosorozec_02.lrc"
-    show-fullscreen="true"
+    show-fullscreen
 ></thermal-group-app>
 ```
 
@@ -121,20 +169,29 @@ Shows the fullscreen toggle in the application bar. Only `"true"` shows the butt
         label="Rhinoceros"
         style="width: 100%"
         :group-files="rhinos"
-        show-fullscreen="true"
+        show-fullscreen
     ></thermal-group-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="palette + advanced-palettes">
+<ComponentAttribute name="palette" type="'iron' | 'jet' | 'white_hot' | 'black_hot' | 'lava' | 'arctic' | 'rainbow' | 'rainbow_hc'" default="jet">
 
-These two attributes configure the initial palette of all files and which palette choices are offered in the palette dropdown:
+Sets the initial palette of all files. Empty or invalid values fall back to `jet`. See [Thermal palette](../guide/thermal-palette.md) for the available choices.
 
-- `palette` (`'iron' | 'jet' | 'white_hot' | 'black_hot' | 'lava' | 'arctic' | 'rainbow' | 'rainbow_hc'`, default `jet`) sets the initial palette. Empty or invalid values convert to `iron`.
-- `advanced-palettes` (`'true' | 'false'`, default `false`) enables the extended palette choices. Only the exact string `"true"` is true.
+```html
+<thermal-group-app
+    label="Animals"
+    group-files="thermal~/files/makak.lrc"
+    palette="lava"
+></thermal-group-app>
+```
 
-See [Thermal palette](../guide/thermal-palette.md) for the available choices.
+</ComponentAttribute>
+
+<ComponentAttribute name="advanced-palettes" type="boolean" default="false" tag="thermal-group-app">
+
+When `advanced-palettes` is present, the palette dropdown offers the extended palette choices. Set it when `palette` is one of the advanced choices.
 
 ```html
 <thermal-group-app
@@ -153,6 +210,32 @@ See [Thermal palette](../guide/thermal-palette.md) for the available choices.
         :group-files="rhinos"
         palette="lava"
         advanced-palettes="true"
+    ></thermal-group-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="unit" type="'C' | 'F' | 'K'" default="C">
+
+Selects the temperature unit used for displayed values and user-entered temperatures. Values are case-insensitive. On initial connection, an unrecognized value is treated like an omitted attribute: a new manager starts in Celsius, while a reused manager keeps its current unit. Internal temperatures remain in Celsius.
+
+When applications share a manager through `manager-slug`, an explicit valid `unit` sets the shared unit. If `unit` is omitted, the application uses the manager's current unit; a new manager starts in Celsius. The application bar also includes a unit switch.
+
+```html
+<thermal-group-app
+    label="Animals"
+    style="width: 100%"
+    group-files="thermal~/files/makak.lrc|label~Macaque;thermal~/files/klokan.lrc|label~Kangaroo"
+    unit="F"
+></thermal-group-app>
+```
+
+<div class="thermal-group-example">
+    <thermal-group-app
+        label="Animals"
+        style="width: 100%"
+        :group-files="animals"
+        unit="F"
     ></thermal-group-app>
 </div>
 
@@ -206,34 +289,54 @@ Opacity of all thermograms, from `0` (fully transparent) to `1` (fully opaque). 
 
 </ComponentAttribute>
 
-<ComponentAttribute name="from + to">
+<ComponentAttribute name="from" type="number">
 
-Thermal range in °C shared by all files:
-
-- `from` (`number`) – lower bound of the range.
-- `to` (`number`) – upper bound of the range.
+Sets the lower endpoint of the initial thermal range in the current unit selected by [`unit`](#unit). The internal range remains in Celsius.
 
 ::: warning Limitation
-After the files from [`group-files`](#group-files) are loaded, the application sets the range to the full range of all loaded files. An initial `from` and `to` is therefore overwritten. Use the range form, slider, histogram or the range button on a card to change the range afterwards. See [Thermal range](../guide/thermal-range.md).
+After the files from [`group-files`](#group-files) are loaded, the application sets the range to the full range of all loaded files. An initial `from` and `to` is therefore overwritten. Use the range form, slider, histogram or the range button on a card to change the range afterwards. See [Thermal range](../guide/thermal-range-and-units.md#thermal-range).
 :::
 
+```html
+<thermal-group-app
+    group-files="thermal~/files/makak.lrc"
+    unit="F"
+    from="68"
+    to="86"
+></thermal-group-app>
+```
+
 </ComponentAttribute>
 
-<ComponentAttribute name="smooth-thermograms + smooth-graph">
+<ComponentAttribute name="to" type="number">
 
-Initial smoothing settings:
+Sets the upper endpoint of the initial thermal range in the current unit selected by [`unit`](#unit). The internal range remains in Celsius.
 
-- `smooth-thermograms` (`'true' | 'false'`, default `false`) smooths the rendering of the thermal images.
-- `smooth-graph` (`'true' | 'false'`, default `false`) smooths the lines of the analysis graphs.
+::: warning Limitation
+After the files from [`group-files`](#group-files) are loaded, the application sets the range to the full range of all loaded files. An initial `from` and `to` is therefore overwritten. Use the range form, slider, histogram or the range button on a card to change the range afterwards. See [Thermal range](../guide/thermal-range-and-units.md#thermal-range).
+:::
 
-Only `"true"` is true; omitted, empty, `"false"` and other values are false.
+```html
+<thermal-group-app
+    group-files="thermal~/files/makak.lrc"
+    unit="F"
+    from="68"
+    to="86"
+></thermal-group-app>
+```
+
+</ComponentAttribute>
+
+<ComponentAttribute name="smooth-thermograms" type="boolean" default="false" tag="thermal-group-app">
+
+When `smooth-thermograms` is present, the thermal images start in the smoothed rendering mode. See also [`smooth-graph`](#smooth-graph).
 
 ```html
 <thermal-group-app
     label="Rhinoceros"
     style="width: 100%"
     group-files="thermal~/files/nosorozec_01.lrc;thermal~/files/nosorozec_02.lrc"
-    smooth-thermograms="true"
+    smooth-thermograms
 ></thermal-group-app>
 ```
 
@@ -242,24 +345,22 @@ Only `"true"` is true; omitted, empty, `"false"` and other values are false.
         label="Rhinoceros"
         style="width: 100%"
         :group-files="rhinos"
-        smooth-thermograms="true"
+        smooth-thermograms
     ></thermal-group-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="locale" type="'en' | 'cs' | 'de' | 'fr' | 'cy'">
+<ComponentAttribute name="smooth-graph" type="boolean" default="false" tag="thermal-group-app">
 
-Language of the user interface. Regional variants such as `en_GB`, `cs_CZ` or `de_AT` are accepted as well; an unknown value falls back to `en`. When omitted, the current language of the page is kept. The language is shared by all webcomponents on the page, so changing it in one application also changes it in the others.
-
-Some texts of the file list and the detail header (for example the file count, *Back* and the empty-group message) are currently in Czech regardless of the language.
+When `smooth-graph` is present, the lines of the analysis graphs start in the smoothed rendering mode. See also [`smooth-thermograms`](#smooth-thermograms).
 
 ```html
 <thermal-group-app
     label="Rhinoceros"
     style="width: 100%"
     group-files="thermal~/files/nosorozec_01.lrc;thermal~/files/nosorozec_02.lrc"
-    locale="de"
+    smooth-graph
 ></thermal-group-app>
 ```
 
@@ -268,21 +369,29 @@ Some texts of the file list and the detail header (for example the file count, *
         label="Rhinoceros"
         style="width: 100%"
         :group-files="rhinos"
-        locale="de"
+        smooth-graph
     ></thermal-group-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="analysis1 … analysis7 + ms + speed">
+<ComponentAttribute name="analysis1 … analysis7" type="string">
 
-State of the file opened in the detail. These attributes are **not** initial settings for the group: opening a detail overwrites them with the analyses, the current time and the playback speed of the opened file.
-
-- `analysis1` … `analysis7` (`string`) – serialized analyses of the opened file, in the same format as in [`thermal-file-app`](./thermal-file-app.md#analysis1-analysis7). While a detail is open, they are synchronised in both directions: editing an analysis updates the attribute and setting an attribute updates the analysis of the opened file.
-- `ms` (`number`) – current position in the opened sequence in milliseconds.
-- `speed` (`0.5 | 1 | 2 | 3 | 5 | 10`) – playback speed of the opened sequence.
+Serialized analyses of the file opened in the detail, in the same format as in [`thermal-file-app`](./thermal-file-app.md#analysis1-analysis7). These attributes are **not** initial settings for the group: opening a detail overwrites them with the analyses of the opened file. While a detail is open, they are synchronised in both directions: editing an analysis updates the attribute and setting an attribute updates the analysis of the opened file.
 
 After returning to the list, the attributes keep the last values of the detail, and the analyses stay on the file.
+
+</ComponentAttribute>
+
+<ComponentAttribute name="ms" type="number">
+
+Current position of the sequence opened in the detail, in milliseconds. Like [`analysis1 … analysis7`](#analysis1-analysis7), this is **not** an initial setting for the group: opening a detail overwrites the attribute with the current time of the opened file. See also [`speed`](#speed).
+
+</ComponentAttribute>
+
+<ComponentAttribute name="speed" type="0.5 | 1 | 2 | 3 | 5 | 10">
+
+Playback speed of the sequence opened in the detail. Like [`ms`](#ms), this is **not** an initial setting for the group: opening a detail overwrites the attribute with the playback speed of the opened file.
 
 </ComponentAttribute>
 
@@ -290,7 +399,7 @@ After returning to the list, the attributes keep the last values of the detail, 
 
 Identifiers of the internal manager, registry and group. If omitted, the generic `slug` attribute is used; without either of them, a unique identifier is generated, so every application is independent by default.
 
-Two applications with the same `manager-slug` share the palette, tool and smoothing settings. Applications sharing a manager **and** the same `registry-slug` also share the thermal range and opacity. See [Context providers and consumers](../guide/hierarchy.md).
+Two applications with the same `manager-slug` share the palette, temperature unit, tool and smoothing settings. Applications sharing a manager **and** the same `registry-slug` also share the thermal range and opacity. See [Context providers and consumers](../guide/hierarchy.md).
 
 Because `slug` is used as a fallback by all three identifiers, setting only `slug` on two applications makes them share everything, including the group – and both would then load their `group-files` into the same group.
 
@@ -326,15 +435,8 @@ Because `slug` is used as a fallback by all three identifiers, setting only `slu
 
 </ComponentAttribute>
 
-<ComponentAttribute name="autoclear-group" type="'true' | 'false'" default="true">
-
-Removes the internal group (and its files) when the application is removed from the page. Set `autoclear-group="false"` only when the group is shared with other elements by [`group-slug`](#manager-slug-registry-slug-group-slug) and should survive the removal of this application.
-
-</ComponentAttribute>
-
 ### Other attributes
 
-- `author` and `license` are accepted but not displayed (see [`label`](#label)).
 - `autohighlight` is inherited from the file context but has no effect in this application. Hovering a card always highlights the file's range on the histogram and range slider.
 - The order of the files cannot be set from HTML; files are always ordered by the time of acquisition, oldest first.
 

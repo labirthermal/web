@@ -24,9 +24,17 @@ Step-by-step examples, each shown both in TypeScript and with the equivalent web
 
 Reference of the classes forming the [hierarchy](#key-concepts):
 
+- [CallbacksManager](./callbacks-manager) – the reactivity primitive used across the whole library.
 - [ThermalManager](./thermal-manager)
 - [ThermalRegistry](./thermal-registry)
 - [ThermalGroup](./thermal-group)
+
+Reference of the classes handling file loading:
+
+- [FilesService & batches](./files-service) – how files are fetched, parsed, cached and batched.
+- [ThermalFileReader](./thermal-file-reader) – the result of a successful file load.
+- [ThermalFileInstance](./thermal-file-instance) – one displayed IR image.
+- [ThermalFileFailure](./thermal-file-failure) – the result of a failed file load.
 
 ### Supported files
 
@@ -66,3 +74,4 @@ Explore the core hierarchy:
 - [ThermalManager](./thermal-manager) provides the application-level context and shared settings.
 - [ThermalRegistry](./thermal-registry) groups related display state and contains groups.
 - [ThermalGroup](./thermal-group) organizes thermal file instances.
+- [ThermalFileInstance](./thermal-file-instance) displays one IR image and handles its playback and analyses.

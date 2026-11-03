@@ -39,19 +39,30 @@ export class BatchLoader {
         public readonly registry: ThermalRegistry
     ) {}
 
+    /**
+     * Get an open batch by its ID, creating it if necessary.
+     *
+     * A batch that already started loading is sealed - a new batch
+     * with the same ID is created instead of reusing it.
+     */
     public getBatchById(
         id: string
     ) {
-        const found = Array.from( this.set ).find( batch => batch.id === id );
+        const found = Array.from( this.set ).find( batch => batch.id === id && batch.loading === false );
         if ( found ) {
             return found;
         }
         return this.createBatch( id );
     }
 
+    /** Create a new batch and mark the registry as loading. */
     public createBatch( id?: string ): Batch {
         const item = Batch.init( this, id );
         this.set.add( item );
+
+        // Any new batch means the registry has something to load
+        this.registry.loading.markAsLoading();
+
         return item;
     }
 
@@ -74,19 +85,11 @@ export class BatchLoader {
         id?: string
     ): Batch {
 
-        let openBatch = id 
+        // Reuse the open batch (by ID or the anonymous one) or create a new one
+        const openBatch = ( id 
             ? this.getBatchById( id ) 
-            : this.currentOpenBatch;
-
-        if ( openBatch === undefined ) {
-
-            openBatch = Batch.init( this );
-            this.set.add( openBatch );
-
-            /** Mark the registry as loading - in any case */
-            this.registry.loading.markAsLoading();
-
-        }
+            : this.currentOpenBatch
+        ) ?? this.createBatch();
 
         openBatch.request( 
             thermalUrl, 

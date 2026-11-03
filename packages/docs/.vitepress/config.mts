@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
+import { version } from '../../../lerna.json'
 
 // Keep in sync with the registrations in packages/embed/src/iifeCatalog.ts.
 const customElements = new Set([
@@ -29,6 +30,7 @@ const customElements = new Set([
   'manager-palette-dropdown',
   'manager-palette-buttons',
   'manager-tool-bar',
+  'manager-unit-switch',
   'manager-export-panel',
   'registry-histogram',
   'registry-opacity-slider',
@@ -112,6 +114,7 @@ export default defineConfig({
 
       },
       { text: 'Webcomponents', link: '/webcomponents/list' },
+      { text: `v${version}`, link: 'https://github.com/labirthermal/web/releases' },
     ],
 
     sidebar: [
@@ -132,9 +135,14 @@ export default defineConfig({
             text: "Core classes",
             collapsed: true,
             items: [
+              { text: 'CallbacksManager', link: '/core/callbacks-manager' },
               { text: 'ThermalManager', link: '/core/thermal-manager' },
               { text: 'ThermalRegistry', link: '/core/thermal-registry' },
-              { text: 'ThermalGroup', link: '/core/thermal-group' }
+              { text: 'ThermalGroup', link: '/core/thermal-group' },
+              { text: 'FilesService & batches', link: '/core/files-service' },
+              { text: 'ThermalFileReader', link: '/core/thermal-file-reader' },
+              { text: 'ThermalFileInstance', link: '/core/thermal-file-instance' },
+              { text: 'ThermalFileFailure', link: '/core/thermal-file-failure' }
             ]
           },
           {
@@ -160,7 +168,7 @@ export default defineConfig({
             items: [
               { text: 'Context providers and consumers', link: '/webcomponents/guide/hierarchy' },
               { text: "Thermal palette", link: '/webcomponents/guide/thermal-palette' },
-              { text: "Thermal range", link: '/webcomponents/guide/thermal-range' },
+              { text: "Thermal range and units", link: '/webcomponents/guide/thermal-range-and-units' },
               { text: 'Styling and CSS variables', link: '/webcomponents/guide/styling' },
               { text: "Boolean attributes", link: '/webcomponents/guide/boolean-attributes' }
             ]

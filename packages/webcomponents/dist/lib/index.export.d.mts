@@ -1,4 +1,4 @@
-import { AbstractAnalysis, AbstractAreaAnalysis, AbstractFileResult, AnalysisDataStateValue, AvailableThermalPalette, CallbacksManager, DropinElementListener, PlaybackSpeeds, PointAnalysis, ThermalFileFailure, ThermalFileInstance, ThermalFileReader, ThermalGroup, ThermalManager, ThermalMinmaxOrUndefined, ThermalPaletteType, ThermalRangeOrUndefined, ThermalRegistry, ThermalTool } from "@labirthermal/core";
+import { AbstractAnalysis, AbstractAreaAnalysis, AbstractFileResult, AnalysisDataStateValue, AvailableThermalPalette, CallbacksManager, DropinElementListener, PlaybackSpeeds, PointAnalysis, ThermalFileFailure, ThermalFileInstance, ThermalFileReader, ThermalGroup, ThermalManager, ThermalMinmaxOrUndefined, ThermalPaletteType, ThermalRangeOrUndefined, ThermalRegistry, ThermalTool, ThermalUnit, ThermalUnitDefinition } from "@labirthermal/core";
 import { CSSResultGroup, LitElement, PropertyDeclaration, PropertyValueMap, PropertyValues, ReactiveController, html, nothing } from "lit";
 import { ContextProvider } from "@lit/context";
 import { Ref } from "lit/directives/ref.js";
@@ -1588,9 +1588,11 @@ export declare const booleanConverter: (emptyValue: boolean) => {
  *          reflect: true,
  *          converter: paletteConverter,
  *      })
- *      public palette: AvailableThermalPalette = "iron"; // IRON is used as default
+ *      public palette: AvailableThermalPalette = "jet";
  * }
  * ```
+ *
+ * Empty or invalid values fall back to `jet`, the default palette of the core manager.
  */
 export declare const paletteConverter: {
   fromAttribute: (value: unknown) => AvailableThermalPalette;
@@ -1608,6 +1610,52 @@ export declare const stringOrUndefinedConverter: {
 export declare const durationConverter: {
   fromAttribute: (value: string | null) => number | undefined;
   toAttribute: (value: number | undefined) => string | undefined;
+};
+//#endregion
+//#region src/utils/converters/unitConverter.d.ts
+/**
+ * Normalize any value to a `ThermalUnit` key. The comparison is case-insensitive
+ * and surrounding whitespace is ignored, so `"f"` and `" F "` both give `ThermalUnit.F`.
+ *
+ * @returns The unit key, or `undefined` when the value is missing or not a known unit.
+ */
+export declare const parseThermalUnit: (value: unknown) => ThermalUnit | undefined;
+/**
+ * A unified converter for the `unit` attribute.
+ *
+ * A missing or invalid attribute gives `undefined` (not a default unit), so that
+ * the consumer can distinguish "not set" from an explicit value and pick the
+ * default itself, for example by taking over the unit of an existing manager.
+ *
+ * @example
+ * ```ts
+ * @property({ type: String, reflect: true, converter: unitConverter })
+ * public unit?: ThermalUnit;
+ * ```
+ */
+export declare const unitConverter: {
+  fromAttribute: (value: string | null) => ThermalUnit | undefined;
+  toAttribute: (value: ThermalUnit | undefined) => string | undefined;
+};
+//#endregion
+//#region src/utils/converters/optionalNumberConverter.d.ts
+/**
+ * Converter for optional numeric attributes.
+ *
+ * Unlike Lit's built-in `type: Number`, which turns a removed attribute into
+ * `null`, an empty attribute into `0` and an invalid one into `NaN`, this
+ * converter gives `undefined` for all of them. A property value that is not a
+ * finite number removes the reflected attribute.
+ *
+ * @example
+ * ```ts
+ * @property({ reflect: true, converter: optionalNumberConverter })
+ * public from?: number;
+ * ```
+ */
+export declare const optionalNumberConverter: {
+  fromAttribute(value: string | null): number | undefined;
+  toAttribute(value: number | undefined): string | undefined;
 };
 //#endregion
 //#region src/utils/getContrastColor.d.ts
@@ -2217,9 +2265,9 @@ export declare abstract class AbstractThermalElement extends LitElement {
    * Returns a translated string
    * @see {@link T}
    */
-  protected t(key: keyof typeof T): string;
-  willUpdate(changedProperties: PropertyValues): void;
-  updated(changedProperties: PropertyValues): void;
+  t(key: keyof typeof T): string;
+  willUpdate(changedProperties: PropertyValues<AbstractThermalElement>): void;
+  updated(changedProperties: PropertyValues<AbstractThermalElement>): void;
 }
 //#endregion
 //#region src/controllers/ManagerController.d.ts
@@ -2240,6 +2288,13 @@ interface IHostProperties$7 {
   smoothGraph: boolean;
   /** Tool property accessed from the host element. Exposed in the toolContext. Recommended property name: tool */
   tool: keyof ThermalManager["tool"]["tools"];
+  /**
+   * Thermal unit used for displaying values and reading user inputs in the webcomponents. Exposed in managerUnitContext. Recommended property name: unit
+   *
+   * `undefined` means the host did not set it: a shared manager then keeps its current unit, a new one uses Celsius.
+   * All internal values (core, contexts) stay in Celsius regardless of this unit.
+   */
+  unit: ThermalUnit | undefined;
 }
 interface IElementWithManagerController extends AbstractThermalElement, IHostProperties$7 {}
 type ManagerPaletteContextType = {
@@ -2295,6 +2350,7 @@ export declare class ManagerController extends AbstractHierarchyController<IElem
   /** Graph smoothing flag accessed from the host element */
   get smoothGraph(): boolean;
   private readonly smoothGraphContextProvider;
+  private readonly unitContextProvider;
   /** Callbacks called upon the internal registry object creation */
   readonly onInternalObject: CallbacksManager<(manager: ThermalManager) => void>;
   constructor(host: IElementWithManagerController);
@@ -2330,11 +2386,28 @@ export declare class ManagerController extends AbstractHierarchyController<IElem
    * This is the recommended way to set the smooth graph option - updates the value and the context provider. All updates are performed only when the new value differs from the current one.
    */
   setSmoothGraph(value: boolean): void;
+  /**
+   * This is the recommended way to set the unit - updates the value in the core manager object, the context provider, and the host element. All updates are performed only when the new value differs from the current one.
+   *
+   * The value is normalized case-insensitively; a missing or invalid value falls back to Celsius.
+   * The unit affects only the display and the user inputs. All internal values stay in Celsius.
+   */
+  setUnit(value: ThermalUnit | string | undefined): void;
+  /** Format a single value in current unit and output it along with its unit symbol. */
+  formatSingle(valueInCurrentUnit: number): string;
+  /** Format a range of values in the current unit and output it along with its unit symbol. */
+  formatRange(fromInCurrentUnit: number, toInCurrentUnit: number): string;
+  /** Convert a value in Celsius unit to the current unit and return the number. */
+  toCurrentUnit(valueInCelsius: number): number;
+  /** Convert a value in the current unit to Celsius. */
+  fromCurrentUnit(valueInCurrentUnit: number): number;
+  get currentUnit(): ThermalUnitDefinition;
 }
 //#endregion
 //#region src/controllers/RegistryController.d.ts
 type IHostProperties$6 = {
-  /** This object is obligatory and it comes either from:
+  /**
+   * This object is obligatory and it comes either from:
    * - directly from the host's `ManagerController` instance - in case this `RegistryController` is on the same element as the `ManagerController`
    * - from the `managerControllerContext` - for elements that are nested lower in the hierarchy, under an element with `ManagerController`
    */
@@ -2342,12 +2415,19 @@ type IHostProperties$6 = {
   registrySlug: string;
   registryObject: ThermalRegistry;
   registryController: RegistryController;
+  /** Aspect of IR / visible images. */
   opacity: number;
+  /** Current minimum temperature in Celsius. This value is set internally by `@labirthermal/core`. */
   min?: number;
+  /** Current maximum temperature in Celsius. This value is set internally by `@labirthermal/core`. */
   max?: number;
+  /** Current range lower endpoint in the current unit.  */
   from?: number;
+  /** Current range upper endpoint in the current unit. */
   to?: number;
+  /** Current highlighted range in Celsius */
   highlight?: ThermalRangeOrUndefined;
+  /** Whether the registry is currently loading. Controlled internally by `@labirthermal/core`. */
   loading: boolean;
 };
 interface IElementWithRegistryController extends AbstractThermalElement, IHostProperties$6 {}
@@ -2363,11 +2443,11 @@ export declare const registryObjectContext: {
 export declare const registryOpacityContext: {
   __context__: number;
 };
-/** Exposes the current range from value from the `RegistryController`. */
+/** Exposes the current range from value in Celsius from the `RegistryController`. */
 export declare const registryRangeFromContext: {
   __context__: number | undefined;
 };
-/** Exposes the current range to value from the `RegistryController`. */
+/** Exposes the current range to value in Celsius from the `RegistryController`. */
 export declare const registryRangeToContext: {
   __context__: number | undefined;
 };
@@ -2375,11 +2455,11 @@ export declare const registryRangeToContext: {
 export declare const registryLoadingContext: {
   __context__: boolean;
 };
-/** Exposes the current registry min context from the `RegistryController` */
+/** Exposes the current registry minimum in Celsius from the `RegistryController`. */
 export declare const registryMinContext: {
   __context__: number | undefined;
 };
-/** Exposes the current registry max value from the `RegistryController` */
+/** Exposes the current registry maximum in Celsius from the `RegistryController`. */
 export declare const registryMaxContext: {
   __context__: number | undefined;
 };
@@ -2396,6 +2476,9 @@ export declare const registryHighlightContext: {
 };
 export declare class RegistryController extends AbstractHierarchyController<IElementWithRegistryController> {
   private _UUID;
+  private _syncedFrom;
+  private _syncedTo;
+  private _hasSyncedRange;
   get UUID(): string;
   static readonly HOST_PROPERTIES: HostReactiveProperties<IHostProperties$6>;
   get registryObject(): ThermalRegistry;
@@ -2431,12 +2514,21 @@ export declare class RegistryController extends AbstractHierarchyController<IEle
    * - update the context provider
    */
   setOpacity(value: number): void;
-  setRange(from: number, to: number): void;
+  /**
+   * Set the range of the registry in Celsius. The range needs to be within the registry's minimum and maximum bounds which are controlled internally by `@labirthermal/core`.
+   * The internal value of all contexts is in Celsius with an exception of the public attribute which is in the current unit.
+   */
+  setRange(fromCelsius: number, toCelsius: number): void;
+  /** Sets the range to the full span of the registry's bounds, if both minimum and maximum are defined. Internal units are Celsius. */
   setRangeFull(): void;
   private _rangeListener;
+  private _unitListener;
+  private _isRangeSynced;
+  private _publishRange;
   private _clearRange;
   private _loadingListener;
-  setHighlight(value: ThermalRangeOrUndefined): void;
+  /** Set the highlight range for the registry. Internal units are Celsius. */
+  setHighlight(valueInCelsius: ThermalRangeOrUndefined): void;
 }
 //#endregion
 //#region src/controllers/GroupController.d.ts
@@ -3657,6 +3749,7 @@ export declare abstract class AbstractManagerProvider extends AbstractThermalEle
     smoothThermograms: import("lit").PropertyDeclaration<unknown, unknown>;
     smoothGraph: import("lit").PropertyDeclaration<unknown, unknown>;
     tool: import("lit").PropertyDeclaration<unknown, unknown>;
+    unit: import("lit").PropertyDeclaration<unknown, unknown>;
   };
   managerSlug: string;
   managerObject: ThermalManager;
@@ -3667,6 +3760,7 @@ export declare abstract class AbstractManagerProvider extends AbstractThermalEle
   smoothGraph: boolean;
   tool: keyof ThermalManager["tool"]["tools"];
   autoclear: boolean;
+  unit: ThermalUnit;
   disconnectedCallback(): void;
   protected render(): unknown;
 }
@@ -3690,7 +3784,9 @@ export declare abstract class AbstractRegistryProvider extends AbstractManagerCo
   registryObject: ThermalRegistry;
   registryController: RegistryController;
   opacity: number;
+  /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
   min?: number;
+  /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
   max?: number;
   from?: number;
   to?: number;
@@ -3858,6 +3954,7 @@ export declare class FileCopyElement extends AbstractThermalElement implements I
     smoothThermograms: import("lit").PropertyDeclaration<unknown, unknown>;
     smoothGraph: import("lit").PropertyDeclaration<unknown, unknown>;
     tool: import("lit").PropertyDeclaration<unknown, unknown>;
+    unit: import("lit").PropertyDeclaration<unknown, unknown>;
   };
   originalFile: ThermalFileInstance;
   /** Mirror the analyses of the original file to the copy. Changing the value at runtime copies or clears the analyses. */
@@ -3870,11 +3967,14 @@ export declare class FileCopyElement extends AbstractThermalElement implements I
   smoothThermograms: boolean;
   smoothGraph: boolean;
   tool: string;
+  unit: ThermalUnit;
   registrySlug: string;
   registryObject: ThermalRegistry;
   registryController: RegistryController;
   opacity: number;
+  /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
   min?: number | undefined;
+  /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
   max?: number | undefined;
   from?: number | undefined;
   to?: number | undefined;
@@ -4082,6 +4182,7 @@ declare global {
  */
 export declare class ManagerToolBar extends AbstractManagerConsumer {
   protected value: ThermalTool;
+  tooltipPlacement?: Placement;
   /** Handle user input events */
   protected onSelect(tool: ThermalTool): void;
   static styles: import("lit").CSSResult;
@@ -4100,6 +4201,10 @@ declare global {
  * inputs synchronized with registry range data and provides range presets,
  * bounded stepping, and rounding.
  *
+ * All values, steps and rounding of the form are in the manager's current
+ * unit. The registry always stays in degrees Celsius: incoming values are
+ * converted for display and edited values are converted back to Celsius.
+ *
  * @see AbstractRegistryConsumer
  * @see RegistryController
  */
@@ -4111,9 +4216,17 @@ export declare class RegistryRangeForm extends AbstractRegistryConsumer {
    * `stacked` attribute; defaults to `false`.
    */
   stacked: boolean;
-  /** The registry minimum, or `undefined` until bounds are available. */
+  /** The manager's current unit; Celsius is used until it is provided. */
+  protected unit?: ThermalUnit;
+  /** Definition of the displayed unit. */
+  protected get unitDefinition(): import("@labirthermal/core").ThermalUnitDefinition;
+  /** Convert a registry value in Celsius to the displayed unit. */
+  protected toDisplayed(celsius: number): number;
+  /** Convert a displayed value back to Celsius for the registry. */
+  protected toCelsius(displayed: number): number;
+  /** The registry minimum in the displayed unit (not Celsius), or `undefined` until bounds are available. */
   protected min: number | undefined;
-  /** The registry maximum, or `undefined` until bounds are available. */
+  /** The registry maximum in the displayed unit (not Celsius), or `undefined` until bounds are available. */
   protected max: number | undefined;
   /** The active range's lower endpoint, or `undefined` before synchronization. */
   protected from: number | undefined;
@@ -4189,14 +4302,14 @@ export declare class RegistryRangeForm extends AbstractRegistryConsumer {
    * Updates the lower endpoint and imposes the resulting range on the registry
    * when both endpoints are available.
    *
-   * @param value The new lower endpoint.
+   * @param value The new lower endpoint in the displayed unit.
    */
   private updateFrom;
   /**
    * Updates the upper endpoint and imposes the resulting range on the registry
    * when both endpoints are available.
    *
-   * @param value The new upper endpoint.
+   * @param value The new upper endpoint in the displayed unit.
    */
   private updateTo;
   /**
@@ -4347,16 +4460,19 @@ export declare class RegistryTicksBar extends AbstractRegistryConsumer {
   private boundRegistry?;
   /** Actual observed DOM node, retained for cleanup and observer restoration after reconnecting. */
   private observedTicks?;
-  private ticksWidth;
+  ticksWidth: number;
   protected highlight?: ThermalRangeOrUndefined;
+  /** The manager's current unit; Celsius is used until it is provided. */
+  protected unit?: ThermalUnit;
   placement: string;
-  protected minmax: ThermalMinmaxOrUndefined;
+  /** Registry minimum and maximum in Celsius. */
+  minmax: ThermalMinmaxOrUndefined;
   protected ticks: TickType[];
   protected containerRef: Ref<HTMLElement>;
   connectedCallback(): void;
   disconnectedCallback(): void;
-  willUpdate(changedProperties: PropertyValues): void;
-  updated(changedProperties: PropertyValues): void;
+  willUpdate(changedProperties: PropertyValues<RegistryTicksBar>): void;
+  updated(changedProperties: PropertyValues<RegistryTicksBar>): void;
   /** Subscribes once to the current registry while connected, replacing the previous range listener. */
   private bindRegistry;
   /** Removes the listener from the actual subscribed registry rather than the current context value. */
@@ -4379,34 +4495,82 @@ declare global {
 }
 //#endregion
 //#region src/controls/registry/RegistryRangeSlider.d.ts
+/**
+ * Two-handle slider for the enclosing registry's temperature range.
+ *
+ * Bounds, committed endpoints, drag previews and all interaction calculations stay
+ * in Celsius. Only tooltips and ARIA values use the manager's current display unit.
+ *
+ * Pointer movement previews a range locally; releasing the pointer commits it once.
+ * Keyboard and wheel changes commit immediately. Left/right arrows and the wheel
+ * step by 1% of the full interval; Home/End and up/down select the exact bounds.
+ * Handles stop at the registry bounds and cannot cross each other.
+ */
 export declare class RegistryRangeSlider extends AbstractRegistryConsumer {
+  /** Optional CSS height, overriding `--thermal-range-slider-height` (15px by default). */
   height: string | null;
-  private heightStyle;
+  /**
+   * Tracks whole-style replacements so they do not erase the height override.
+   * @internal
+   */
+  heightStyle: string | null;
+  /** Registry minimum in Celsius. */
   min?: number;
+  /** Registry maximum in Celsius. */
   max?: number;
+  /** Committed lower endpoint in Celsius, received from the registry context. */
   from?: number;
+  /** Committed upper endpoint in Celsius, received from the registry context. */
   to?: number;
+  /** Palette used for the selected interval and handle colors. */
   protected palette?: ManagerPaletteContextType;
+  /** Loading replaces the controls with a skeleton and cancels any drag preview. */
   protected loading: boolean;
+  /** Rerenders display values when the unit changes; Celsius state is unaffected. */
+  protected unit?: ThermalUnit;
+  /** Uncommitted pointer preview in Celsius. */
   private draft?;
+  /** Last selected handle, also used for track-wheel events and equidistant clicks. */
   private activeHandle;
+  /** Active pointer capture and the Celsius values at the beginning of the drag. */
   private drag?;
   protected getClassName(): string;
+  /** Discards previews and releases pointer capture before leaving the document. */
   disconnectedCallback(): void;
-  willUpdate(changed: PropertyValues): void;
+  /** Reapplies the height override and invalidates drags after registry changes. */
+  willUpdate(changed: PropertyValues<this>): void;
+  /** Validates CSS height; style-only changes must not repeat invalid-height logs. */
+  private updateHeightOverride;
+  /** Returns usable Celsius values; missing context or invalid data cannot drive a slider. */
   private get values();
+  /** Maps a Celsius temperature to its track position; a constant interval starts at 0%. */
   private percent;
+  /** Clamps one Celsius endpoint to the registry bound and the opposite handle. */
   private constrain;
+  /**
+   * Commits a Celsius range; context subscriptions receive the validated core values.
+   * Never copy the controller's public display-unit endpoints back into local state:
+   * rounding during that conversion can move an exact endpoint outside its bound.
+   */
   private commit;
+  /** Clears the session before releasing capture, which can fire `lostpointercapture`. */
   private cancelDrag;
+  /** Selects a handle, preserves the grab offset and starts a captured local preview. */
   private pointerDown;
+  /** Updates only the Celsius draft, or cancels it if the captured registry state changed. */
   private pointerMove;
+  /** Includes the release position before committing the final, clamped Celsius draft. */
   private pointerUp;
+  /** Pointer cancellation or lost capture must never commit a preview. */
   private pointerCancel;
+  /** Moves by 1% of the Celsius interval, or selects an exact bound with Home/End. */
   private keyDown;
+  /** Commits a 1% Celsius step per wheel direction; active drags take precedence. */
   private wheel;
+  /** Converts Celsius to the display unit only for ARIA values and the visible tooltip. */
   private renderHandle;
   static styles: import("lit").CSSResult;
+  /** Renders the Celsius geometry with current-unit labels, or a loading placeholder. */
   protected render(): unknown;
 }
 declare global {
@@ -4440,9 +4604,11 @@ declare global {
 //#region src/controls/registry/RegistryRangeFullButton.d.ts
 export declare class RegistryRangeFullButton extends AbstractRegistryConsumer {
   protected buttonRef: Ref<HTMLElement>;
-  private value?;
-  connectedCallback(): void;
-  private setValue;
+  private min?;
+  private max?;
+  private unit?;
+  /** Format Celsius bounds only when displaying them; interactions use the core bounds. */
+  private get value();
   doAction(): void;
   mouseenter(): void;
   mouseleave(): void;
@@ -4456,9 +4622,17 @@ declare global {
 //#endregion
 //#region src/controls/registry/RegistryRangeAutoButton.d.ts
 export declare class RegistryRangeAutoButton extends AbstractRegistryConsumer {
-  private value?;
+  /** The auto range remains in Celsius until it is formatted for the tooltip. */
+  private autoRange;
+  private unit?;
+  private boundRegistry?;
   connectedCallback(): void;
-  private setValue;
+  disconnectedCallback(): void;
+  willUpdate(changedProperties: PropertyValues<this>): void;
+  /** Follow the auto range itself and remove the listener from the original registry. */
+  private bindRegistry;
+  private unbindRegistry;
+  private get value();
   doAction(): void;
   private onHighlight;
   private onOut;
@@ -4474,6 +4648,8 @@ declare global {
 export declare class RegistryRangeDisplay extends AbstractRegistryConsumer {
   protected from?: number;
   protected to?: number;
+  /** Rerenders the labels when the manager's display unit changes. */
+  protected unit?: ThermalUnit;
   fixed: number;
   separator: string;
   protected render(): unknown;
@@ -4510,7 +4686,17 @@ export declare class GroupChartElement extends AbstractGroupConsumer {
   protected data: [string[], ...[Date, ...number[]][]] | undefined;
   protected colors?: string[];
   protected on: boolean;
-  protected firstUpdated(_changedProperties: PropertyValues): void;
+  protected unit?: ThermalUnit;
+  private boundGroup?;
+  connectedCallback(): void;
+  disconnectedCallback(): void;
+  willUpdate(changedProperties: PropertyValues<this>): void;
+  /** Subscribe to the actual group and hydrate graphs that already exist. */
+  private bindGroup;
+  private unbindGroup;
+  private readonly receiveGraph;
+  /** Copy the graph data and convert only temperatures, leaving core data in Celsius. */
+  private getChartData;
   static styles?: CSSResultGroup | undefined;
   download(): void;
   protected render(): unknown;
@@ -4613,9 +4799,17 @@ declare global {
 //#region src/controls/group/GroupRangePropagator.d.ts
 export declare class GroupRangePropagatorElement extends AbstractGroupConsumer {
   static styles: import("lit").CSSResultGroup | undefined;
-  private value?;
+  /** Group bounds are kept in Celsius and formatted only when rendered. */
+  private minmax;
+  private unit?;
+  private boundGroup?;
   connectedCallback(): void;
-  private setValue;
+  disconnectedCallback(): void;
+  willUpdate(changedProperties: PropertyValues<this>): void;
+  /** Hydrate and subscribe to the group currently providing the Celsius bounds. */
+  private bindGroup;
+  private unbindGroup;
+  private get value();
   protected render(): unknown;
 }
 declare global {
@@ -4866,9 +5060,19 @@ declare global {
 //#endregion
 //#region src/controls/file/buttons/FileRangePropagator.d.ts
 export declare class FileRangePropagator extends AbstractFileButton {
-  protected tooltip: string;
+  private unit?;
   hideLabel: boolean;
-  onInstanceCreated(file: ThermalFileInstance): void;
+  private boundFile?;
+  connectedCallback(): void;
+  disconnectedCallback(): void;
+  willUpdate(changedProperties: PropertyValues<this>): void;
+  /** Metadata can change after filtering without replacing the file instance. */
+  private bindFile;
+  private unbindFile;
+  /** The file bounds and all range interactions remain in Celsius. */
+  protected get tooltip(): string;
+  /** The file context and metadata listener provide the tooltip values. */
+  onInstanceCreated(): void;
   enter(): void;
   leave(): void;
   action(): void;
@@ -4941,12 +5145,15 @@ export declare class FileAnalysisDisplayElement extends AbstractFileConsumer {
   protected container: Ref<HTMLDivElement>;
   protected analysis: AbstractAnalysis[];
   private boundFile?;
+  private boundAnalyses;
+  private readonly analysisValuesChanged;
+  private unit;
   onFailure(): void;
   onInstanceCreated(): void;
   connectedCallback(): void;
   disconnectedCallback(): void;
-  willUpdate(changedProperties: PropertyValues): void;
-  updated(changedProperties: PropertyValues): void;
+  willUpdate(changedProperties: PropertyValues<this>): void;
+  updated(changedProperties: PropertyValues<this>): void;
   /**
    * Observes analysis-list and frame changes on the current file while connected.
    * Removes previous subscriptions and avoids registering twice for the same file.
@@ -4954,6 +5161,13 @@ export declare class FileAnalysisDisplayElement extends AbstractFileConsumer {
   private bindFile;
   /** Removes both listeners from the actual subscribed file when replacing it or disconnecting. */
   private unbindFile;
+  /**
+   * Keeps value-change subscriptions aligned with the analyses in the current table.
+   * The same listener ID is safe because each analysis owns its own callbacks manager.
+   */
+  private bindAnalysisValues;
+  /** Removes value listeners from the exact analysis instances previously subscribed. */
+  private unbindAnalysisValues;
   static styles: import("lit").CSSResult;
   protected render(): unknown;
   private renderAnalysisRow;
@@ -5231,6 +5445,10 @@ export declare class ThermalChartElement extends LitElement {
    */
   chartWrapper: google.visualization.ChartWrapper | null;
   private redrawTimeoutId;
+  /** Identifies the newest asynchronous conversion of the data property. */
+  private dataVersion;
+  /** Prevents old data from being drawn with options for a newer data set. */
+  private dataPending;
   protected chartRef: Ref<HTMLDivElement>;
   protected render(): import("lit").TemplateResult<1>;
   private getGraphLayout;
@@ -5255,6 +5473,7 @@ export declare class ThermalChartElement extends LitElement {
   private propagateEvents;
   /** Sets the selectiton on the chart. */
   private selectionChanged;
+  private cancelScheduledRedraw;
   /**
    * Redraws the chart.
    *
@@ -5300,6 +5519,7 @@ export declare class FileAnalysisGraphElement extends AbstractFileConsumer {
   graphRef: Ref<ThermalChartElement>;
   protected graphs: AnalysisDataStateValue;
   private chartDataSource?;
+  private chartDataUnit?;
   private chartDataCache?;
   private chartOptionsCache?;
   private chartOptionsCacheKey?;
@@ -5314,6 +5534,8 @@ export declare class FileAnalysisGraphElement extends AbstractFileConsumer {
   protected shadowWidth: number;
   protected shadowHeight: number;
   protected graphSmooth: boolean;
+  /** Current display unit. Graph data stay in Celsius and are converted only for the chart. */
+  protected unit?: ThermalUnit;
   onInstanceCreated(instance: ThermalFileInstance): void;
   connectedCallback(): void;
   disconnectedCallback(): void;
@@ -5332,6 +5554,8 @@ export declare class FileAnalysisGraphElement extends AbstractFileConsumer {
   private getDurationAxisTicks;
   private escapeHtml;
   private handleGraphClick;
+  /** The click position is continuous, while the timeline selects the previous frame. Snap to the nearest frame instead. */
+  private nearestFrameTime;
   private handleGraphHover;
   static styles: import("lit").CSSResult;
   protected render(): unknown;
@@ -5357,6 +5581,7 @@ export declare class FileAnalysisRowElement extends AbstractThermalElement {
   showRangePropagator: boolean;
   protected selected: boolean;
   private registryController;
+  private unit;
   /** Actual subscription target, retained so old listeners can be removed after analysis changes. Not reactive. */
   private boundAnalysis?;
   /** Tracks pointer presence to preserve highlighting while focus moves within the row. Not reactive. */
@@ -5635,6 +5860,7 @@ declare class DropinAppElement extends AbstractApp implements IWithlocale, IElem
     smoothThermograms: import("lit").PropertyDeclaration<unknown, unknown>;
     smoothGraph: import("lit").PropertyDeclaration<unknown, unknown>;
     tool: import("lit").PropertyDeclaration<unknown, unknown>;
+    unit: import("lit").PropertyDeclaration<unknown, unknown>;
   };
   managerSlug: string;
   managerObject: ThermalManager;
@@ -5643,11 +5869,14 @@ declare class DropinAppElement extends AbstractApp implements IWithlocale, IElem
   smoothThermograms: boolean;
   smoothGraph: boolean;
   tool: string;
+  unit: ThermalUnit;
   managerController: ManagerController;
   registrySlug: string;
   registryObject: ThermalRegistry;
   opacity: number;
+  /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
   min?: number | undefined;
+  /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
   max?: number | undefined;
   from?: number | undefined;
   to?: number | undefined;
@@ -5741,6 +5970,7 @@ declare abstract class AbstractSingleFileAppElement extends AbstractApp implemen
     smoothThermograms: import("lit").PropertyDeclaration<unknown, unknown>;
     smoothGraph: import("lit").PropertyDeclaration<unknown, unknown>;
     tool: import("lit").PropertyDeclaration<unknown, unknown>;
+    unit: import("lit").PropertyDeclaration<unknown, unknown>;
   };
   /** Enables selecting, editing and removing the analyses in the tables. Provided to all descendants. */
   interactiveAnalysis: boolean;
@@ -5752,11 +5982,14 @@ declare abstract class AbstractSingleFileAppElement extends AbstractApp implemen
   smoothThermograms: boolean;
   smoothGraph: boolean;
   tool: string;
+  unit: ThermalUnit;
   registrySlug: string;
   registryObject: ThermalRegistry;
   registryController: RegistryController;
   opacity: number;
+  /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
   min?: number | undefined;
+  /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
   max?: number | undefined;
   from?: number | undefined;
   to?: number | undefined;
@@ -5836,6 +6069,7 @@ declare class ThermalGroupAppElement extends AbstractApp implements IElementWith
     smoothThermograms: import("lit").PropertyDeclaration<unknown, unknown>;
     smoothGraph: import("lit").PropertyDeclaration<unknown, unknown>;
     tool: import("lit").PropertyDeclaration<unknown, unknown>;
+    unit: import("lit").PropertyDeclaration<unknown, unknown>;
   };
   managerSlug: string;
   managerObject: ThermalManager;
@@ -5845,11 +6079,14 @@ declare class ThermalGroupAppElement extends AbstractApp implements IElementWith
   smoothThermograms: boolean;
   smoothGraph: boolean;
   tool: string;
+  unit: ThermalUnit;
   registrySlug: string;
   registryObject: ThermalRegistry;
   registryController: RegistryController;
   opacity: number;
+  /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
   min?: number | undefined;
+  /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
   max?: number | undefined;
   from?: number | undefined;
   to?: number | undefined;
@@ -5901,6 +6138,8 @@ declare class FileInfoButton extends AbstractFileConsumer {
   protected onFileLoaded(): void;
   onInstanceCreated(): void;
   onFailure(): void;
+  /** Consume the current unit, because we need this component to rerender whenever the unit changes. */
+  private unit;
   static styles: import("lit").CSSResult;
   protected renderRow(label: string, value: string): string;
   protected renderNumericalRow(label: string, value: number, fixed?: number, unit?: string): string;
@@ -6121,6 +6360,16 @@ declare global {
   }
 }
 //#endregion
+//#region src/controls/manager/ManagerUnitSwitch.d.ts
+declare class ManagerUnitSwitch extends AbstractManagerConsumer {
+  activeVariant: BtnVariants;
+  defaultVariant: BtnVariants;
+  protected unit: ThermalUnit;
+  private getUnit;
+  private renderUnit;
+  render(): import("lit").TemplateResult<1>;
+}
+//#endregion
 //#region src/renderers/FileDetail.d.ts
 declare class FileDetailElement extends AbstractFileConsumer {
   onback?: () => void;
@@ -6224,6 +6473,7 @@ export declare const elementsAll: {
   readonly "manager-palette-dropdown": typeof ManagerPaletteDropdown;
   readonly "manager-palette-buttons": typeof ManagerPaletteButtons;
   readonly "manager-tool-bar": typeof ManagerToolBar;
+  readonly "manager-unit-switch": typeof ManagerUnitSwitch;
   /** @deprecated This sort of export should never be used. Please, do export thermal images only through the LIT components instead of the `@labirthermal/core` export. */
   readonly "manager-export-panel": typeof ManagerExportPanel;
   readonly "thermal-app": typeof ThermalAppElement;

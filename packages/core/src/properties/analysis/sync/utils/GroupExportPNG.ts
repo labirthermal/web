@@ -3,8 +3,10 @@ import { ThermalGroup } from "../../../../hierarchy/ThermalGroup";
 import { Batch } from "../../../../loading/batch/Batch";
 import { AbstractExportProps, AbstractExportTypeMandatory, AbstractPngExport } from "../../../../utils/AbstractPngExport";
 import { TimeFormat } from "../../../../utils/time/formatting";
+import { AbstractAnalysis } from "../../analysis/internals/AbstractAnalysis";
 import { AbstractAreaAnalysis } from "../../analysis/internals/area/AbstractAreaAnalysis";
 import { PointAnalysis } from "../../analysis/internals/point/PointAnalysis";
+import { AnalysisSlot } from "../../slots/AnalysisSlot";
 import { AnalysisSyncDrive } from "../analysisSync";
 
 export type GroupExportPNGParams = AbstractExportProps & {
@@ -80,7 +82,7 @@ export class GroupExportPNG extends AbstractPngExport<GroupExportPNGParams, Grou
     }
 
 
-    protected buildInstance(
+    protected async buildInstance(
         instance: ThermalFileInstance,
         width: number,
         showAnalysis: boolean,
@@ -193,75 +195,81 @@ export class GroupExportPNG extends AbstractPngExport<GroupExportPNGParams, Grou
                     table.appendChild(header);
                     wrapper.appendChild(table);
 
+                    // Transpose the analyses to the temporary instance first. Their values are
+                    // computed asynchronously from the graph data, so wait for the data before reading them.
+                    const localAnalyses: { slot: AnalysisSlot, localAnalysis: AbstractAnalysis }[] = [];
+
                     referenceInstance.slots.forEveryExistingSlot((slot, number) => {
 
-                        // Transpose the analysis to temporary instance
                         const localAnalysis = instance.slots.createAnalysisFromSerialized(slot.serialized, number);
 
                         if (localAnalysis) {
+                            localAnalyses.push({ slot, localAnalysis });
+                        }
 
+                    });
 
-                            // Create a record into a table
+                    await Promise.all(localAnalyses.map(({ localAnalysis }) => localAnalysis.graph.whenData()));
 
-                            const row = document.createElement("tr");
+                    localAnalyses.forEach(({ slot, localAnalysis }) => {
 
-                            const name = this.createElementWithText(
+                        // Create a record into a table
+
+                        const row = document.createElement("tr");
+
+                        const name = this.createElementWithText(
+                            "td",
+                            slot.analysis.name,
+                            fontSize,
+                            undefined,
+                            slot.analysis.initialColor
+                        );
+
+                        name.style.borderTop = `1px solid ${GroupExportPNG.COLOR_LIGHT}`;
+                        name.style.padding = `${GroupExportPNG.GAP_SMALL}px 0px ${GroupExportPNG.GAP_SMALL} 0px`;
+
+                        row.appendChild(name);
+
+                        const createAndAppendValue = (
+                            color: string,
+                            value?: number,
+                        ) => {
+
+                            const td = this.createElementWithText(
                                 "td",
-                                slot.analysis.name,
+                                value ? value.toFixed(3) + " °C" : "",
                                 fontSize,
                                 undefined,
-                                slot.analysis.initialColor
+
                             );
 
-                            name.style.borderTop = `1px solid ${GroupExportPNG.COLOR_LIGHT}`;
-                            name.style.padding = `${GroupExportPNG.GAP_SMALL}px 0px ${GroupExportPNG.GAP_SMALL} 0px`;
+                            td.style.borderTop = `1px solid ${GroupExportPNG.COLOR_LIGHT}`;
 
-                            row.appendChild(name);
+                            td.style.paddingTop = `${GroupExportPNG.GAP_SMALL}px`;
+                            td.style.paddingBottom = `${GroupExportPNG.GAP_SMALL}px`;
 
-                            const createAndAppendValue = (
-                                color: string,
-                                value?: number,
-                            ) => {
+                            row.appendChild(td);
+                        }
 
-                                const td = this.createElementWithText(
-                                    "td",
-                                    value ? value.toFixed(3) + " °C" : "",
-                                    fontSize,
-                                    undefined,
+                        if (slot.analysis instanceof AbstractAreaAnalysis) {
 
-                                );
+                            createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
 
-                                td.style.borderTop = `1px solid ${GroupExportPNG.COLOR_LIGHT}`;
+                            createAndAppendValue(slot.analysis.initialColor, localAnalysis.min);
 
-                                td.style.paddingTop = `${GroupExportPNG.GAP_SMALL}px`;
-                                td.style.paddingBottom = `${GroupExportPNG.GAP_SMALL}px`;
+                            createAndAppendValue(slot.analysis.initialColor, localAnalysis.max);
 
-                                row.appendChild(td);
-                            }
+                        } else if (slot.analysis instanceof PointAnalysis) {
 
-                            if (slot.analysis instanceof AbstractAreaAnalysis) {
+                            createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
 
-                                createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
+                            createAndAppendValue(slot.analysis.initialColor);
 
-                                createAndAppendValue(slot.analysis.initialColor, localAnalysis.min);
-
-                                createAndAppendValue(slot.analysis.initialColor, localAnalysis.max);
-
-                            } else if (slot.analysis instanceof PointAnalysis) {
-
-                                createAndAppendValue(slot.analysis.initialColor, localAnalysis.avg);
-
-                                createAndAppendValue(slot.analysis.initialColor);
-
-                                createAndAppendValue(slot.analysis.initialColor);
-
-                            }
-
-                            table.appendChild(row);
+                            createAndAppendValue(slot.analysis.initialColor);
 
                         }
 
-
+                        table.appendChild(row);
 
                     });
 
@@ -364,14 +372,14 @@ export class GroupExportPNG extends AbstractPngExport<GroupExportPNGParams, Grou
         });
 
         // Set listener on the batch resolve event
-        batch!.onResolve.set("temporary export listener", results => {
+        batch!.onResolve.set("temporary export listener", async results => {
 
             const width = 100 / params.columns!;
 
-            // Build all recieved instances
-            results.forEach(result => {
+            // Build all recieved instances and wait for their analysis data
+            await Promise.all(results.map(result => {
                 if (result instanceof ThermalFileInstance) {
-                    this.buildInstance(
+                    return this.buildInstance(
                         result, 
                         width, 
                         params.showAnalysis, 
@@ -380,7 +388,8 @@ export class GroupExportPNG extends AbstractPngExport<GroupExportPNGParams, Grou
                         params.fontSize.toString() + "px"
                     );
                 }
-            });
+                return undefined;
+            }));
 
             // Wait for some time (instances need to render) and then export and cleanup
             setTimeout(() => {

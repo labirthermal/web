@@ -110,16 +110,16 @@ export abstract class AbstractThermalElement extends LitElement {
      * Returns a translated string 
      * @see {@link T}
      */
-    protected t(key: keyof typeof T): string {
+    public t(key: keyof typeof T): string {
         return t(T[key]);
     }
 
-    willUpdate(changedProperties: PropertyValues): void {
+    willUpdate(changedProperties: PropertyValues<AbstractThermalElement>): void {
         super.willUpdate?.(changedProperties);
         this._hierarchy?.willUpdate(changedProperties);
     }
 
-    updated(changedProperties: PropertyValues): void {
+    updated(changedProperties: PropertyValues<AbstractThermalElement>): void {
         super.updated?.(changedProperties);
         this._hierarchy?.updated(changedProperties);
     }

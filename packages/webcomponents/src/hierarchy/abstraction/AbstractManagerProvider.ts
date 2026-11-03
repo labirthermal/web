@@ -1,9 +1,8 @@
-import type { AvailableThermalPalette, ThermalManager } from "@labirthermal/core";
+import type { AvailableThermalPalette, ThermalManager, ThermalUnit } from "@labirthermal/core";
 import { html } from "lit";
-import { property } from "lit/decorators.js";
-import { AbstractThermalElement } from "../AbstractThermalElement";
 import type { IElementWithManagerController } from "../../controllers/ManagerController";
 import { ManagerController } from "../../controllers/ManagerController";
+import { AbstractThermalElement } from "../AbstractThermalElement";
 import { removeManager } from "../providers/getters";
 
 export abstract class AbstractManagerProvider extends AbstractThermalElement implements IElementWithManagerController {
@@ -16,33 +15,19 @@ export abstract class AbstractManagerProvider extends AbstractThermalElement imp
     public managerObject!: ThermalManager;
     public managerController: ManagerController = new ManagerController(this);
 
-    @property({
-        type: String,
-        reflect: true
-    })
     public palette: AvailableThermalPalette = "jet";
 
-    @property({
-        type: Boolean,
-        reflect: true
-    })
     public advancedPalettes: boolean = false;
 
-    @property({
-        type: String,
-        reflect: true
-    })
     public smoothThermograms: boolean = false;
 
-    @property({
-        type: String,
-        reflect: true
-    })
     public smoothGraph: boolean = false;
 
     public tool!: keyof ThermalManager["tool"]["tools"];
 
     public autoclear: boolean = false;
+
+    public unit!: ThermalUnit;
 
 
     disconnectedCallback(): void {

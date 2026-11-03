@@ -1,8 +1,10 @@
 import { html } from "lit";
 import { AbstractManagerConsumer } from "../../hierarchy/consumers/AbstractManagerConsumer";
-import { ThermalUnit, ThermalUnitDefinition } from "@labirthermal/core";
+import type { ThermalUnit, ThermalUnitDefinition } from "@labirthermal/core";
 import { property } from "lit/decorators/property.js";
-import { BtnVariants } from "../../index.export";
+import { consume } from "@lit/context";
+import { managerUnitContext } from "../../controllers/ManagerController";
+import type { BtnVariants } from "../../ui/Btn";
 
 export class ManagerUnitSwitch extends AbstractManagerConsumer {
 
@@ -11,6 +13,9 @@ export class ManagerUnitSwitch extends AbstractManagerConsumer {
 
     @property({ type: String, reflect: true, attribute: "default-variant" })
     defaultVariant: BtnVariants = "default";
+
+    @consume({ context: managerUnitContext, subscribe: true })
+    protected unit!: ThermalUnit;
 
 
     private getUnit() {

@@ -15,7 +15,10 @@ import { InspectTool } from "../properties/analysis/tool/internals/InspectTool";
 import { RegistriesState } from "../properties/lists/RegistriesState";
 
 export type ThermalManagerOptions = {
-    palette?: AvailableThermalPalette
+    /** Optionaly set the initial palette value */
+    palette?: AvailableThermalPalette,
+    /** Optionally set the initial thermal unit value */
+    unit?: ThermalUnit
 }
 
 const isChromium = "chrome" in window;
@@ -69,6 +72,9 @@ export class ThermalManager extends BaseStructureObject {
         if (options) {
             if (options.palette) {
                 this.palette.setPalette(options.palette);
+            }
+            if (options.unit) {
+                this.unit.set(options.unit);
             }
         }
     }

@@ -60,7 +60,9 @@ implements
         registryObject!: ThermalRegistry;
         registryController: RegistryController = new RegistryController(this);
         opacity: number = 1;
+        /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
         min?: number | undefined;
+        /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
         max?: number | undefined;
         from?: number | undefined;
         to?: number | undefined;

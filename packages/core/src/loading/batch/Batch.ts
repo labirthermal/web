@@ -2,6 +2,7 @@ import { ThermalFileInstance } from "../../file/ThermalFileInstance";
 import { ThermalGroup } from "../../hierarchy/ThermalGroup";
 import { BatchLoadingCallback } from "../../hierarchy/ThermalRegistry";
 import { CallbacksManager } from "../../properties/callbacksManager";
+import { FileErrors } from "../workers/errors";
 import { ThermalFileFailure } from "../workers/ThermalFileFailure";
 import { ThermalFileReader } from "../workers/ThermalFileReader";
 import { BatchLoader } from "./BatchLoader";
@@ -71,10 +72,15 @@ export class Batch {
 
 
     /**
-     * Request a thermal file
-     * 
-     * Requesting adds new record to the queue and creates a new
-     * timeout closure.
+     * Request a thermal file.
+     *
+     * Every request re-arms a zero timeout, so the batch executes automatically
+     * one tick after the last registered request. Calling `close()` skips the
+     * waiting and executes the batch immediately.
+     *
+     * A request arriving after the batch started loading is delegated back to
+     * the loader: it joins (or opens) another batch instead of being lost or
+     * re-executing this one.
      */
     request(
         thermalUrl: string,
@@ -83,6 +89,12 @@ export class Batch {
         callback: BatchLoadingCallback,
     ) {
 
+        // A loading batch is sealed - route the late request through the loader
+        if ( this._loading ) {
+            this.loader.request( thermalUrl, visibleUrl, group, callback );
+            return;
+        }
+
         this.queue.push({
             thermalUrl,
             visibleUrl,
@@ -90,63 +102,102 @@ export class Batch {
             callback,
         });
 
-        // From here, no function arguments shall ever be used!
-        // in the timeout, I need to call the inner properties of already
-        // registered request. Using fn parameters below caused plenty of
-        // bugs. BEWARE OF THAT.
-
-
+        // Re-arm the timer so that the batch executes one tick after the last request
         if (this.timeout !== undefined) {
             clearTimeout(this.timeout);
         }
 
-        this.timeout = setTimeout(async () => {
+        this.timeout = setTimeout(() => this.execute(), 0);
 
-            this._loading = true;
+    }
 
-            const loadedReaders = await Promise.all(this.queue.map(async item => {
-                return {
-                    result: await this.loader.registry.service.loadFile(item.thermalUrl, item.visibleUrl),
-                    callback: item.callback,
-                    group: item.group,
-                };
+    /** Seal the batch and execute it immediately instead of waiting for the next tick. */
+    close() {
+        this.execute();
+    }
+
+    /**
+     * Load all queued files, create their instances and resolve the batch.
+     *
+     * - Every file runs its whole pipeline (fetch → parse → instance) independently,
+     *   so a slow download of one file does not delay the processing of the others.
+     * - The registry post-processing and the request callbacks run only after
+     *   all the files of the batch settle.
+     * - The batch always finishes and removes itself from the loader - even when
+     *   a file or a callback throws. Otherwise the registry would stay in the
+     *   loading state forever.
+     */
+    private async execute(): Promise<void> {
+
+        // Guard against a double run (e.g. `close()` followed by the pending timer)
+        if ( this._loading ) {
+            return;
+        }
+
+        this._loading = true;
+
+        // The pending timer is consumed by this execution
+        if ( this.timeout !== undefined ) {
+            clearTimeout( this.timeout );
+            this.timeout = undefined;
+        }
+
+        const results: (ThermalFileInstance|ThermalFileFailure)[] = [];
+
+        try {
+
+            // Load the files and create their instances in parallel
+            const settled = await Promise.all(this.queue.map(async item => {
+
+                try {
+
+                    const result = await this.loader.registry.service.loadFile( item.thermalUrl, item.visibleUrl );
+
+                    // Known loading errors come back as `ThermalFileFailure` and are passed through
+                    const instanceOrFailure = result instanceof ThermalFileReader
+                        ? await result.createInstance( item.group )
+                        : result as ThermalFileFailure;
+
+                    return { result: instanceOrFailure, callback: item.callback };
+
+                } catch ( error ) {
+
+                    // Unexpected errors (malformed buffer, ...) must not kill the entire batch
+                    return {
+                        result: new ThermalFileFailure( item.thermalUrl, FileErrors.NOT_SPECIFIED, ( error as Error ).message ),
+                        callback: item.callback
+                    };
+
+                }
+
             }));
 
-            // Create the instances eventually
-            const createdInstances = await Promise.all(loadedReaders
-                .map(async result => {
-
-                    const item = result.result instanceof ThermalFileReader
-                        ? await result.result.createInstance( result.group )
-                        : await result.result as ThermalFileFailure
-
-                    return {
-                        result: item,
-                        callback: result.callback
-                    }
-
-                }));
-
+            // The post-processing (min/max, ranges, histogram) runs once for the entire batch
             this.loader.registry.postLoadedProcessing();
 
-            const results = await Promise.all(createdInstances.map(async result => {
-                await result.callback(result.result);
-                return result.result;
+            // The callbacks run after the post-processing. A throwing callback
+            // must not block the remaining callbacks nor the batch completion.
+            await Promise.all(settled.map(async item => {
+                try {
+                    await item.callback( item.result );
+                } catch ( error ) {
+                    console.error( `A batch request callback of '${item.result.thermalUrl}' failed:`, error );
+                }
             }));
+
+            results.push( ...settled.map( item => item.result ) );
 
             this.loader.onBatchComplete.call( results );
 
-            // Mark this queue as loaded
+        } finally {
+
+            // Mark this batch as loaded and remove it from the loader in any case
             this.loader.batchFinished(this);
 
             this.onResolve.call( results );
 
-        }, 0);
+        }
 
-    }
-
-    close() {
-        this._loading = true;
     }
 
 }

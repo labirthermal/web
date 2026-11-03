@@ -18,8 +18,11 @@
 import type { CSSResultGroup, PropertyValues } from 'lit';
 import { css, html, nothing } from 'lit';
 import { state } from 'lit/decorators.js';
+import { guard } from 'lit/directives/guard.js';
 
-import type { ThermalFileInstance } from '@labirthermal/core';
+import type { ThermalFileInstance, ThermalGroup, ThermalUnit } from '@labirthermal/core';
+import { consume } from '@lit/context';
+import { managerUnitContext } from '../../controllers/ManagerController';
 import { AbstractGroupConsumer } from '../../hierarchy/consumers/AbstractGroupConsumer';
 
 
@@ -43,27 +46,66 @@ export class GroupChartElement extends AbstractGroupConsumer {
     @state()
     protected on: boolean = false;
 
-    protected firstUpdated(_changedProperties: PropertyValues): void {
-        super.firstUpdated(_changedProperties);
+    @state()
+    @consume({ context: managerUnitContext, subscribe: true })
+    protected unit?: ThermalUnit;
 
-        this.groupObject.files.addListener(this.UUID, () => {
-            this.groupObject.analysisGraph.turnOn();
-        });
+    private boundGroup?: ThermalGroup;
 
-        this.groupObject.analysisGraph.addListener(this.UUID, value => {
+    connectedCallback(): void {
+        super.connectedCallback();
+        this.bindGroup();
+    }
 
-            if (value !== undefined) {
-                this.data = value.data;
-                this.colors = value.colors;
-                this.on = true;
-            } else {
-                this.data = undefined;
-                this.colors = undefined;
-                this.on = false;
-            }
+    disconnectedCallback(): void {
+        this.unbindGroup();
+        super.disconnectedCallback();
+    }
 
-        });
+    willUpdate(changedProperties: PropertyValues<this>): void {
+        super.willUpdate(changedProperties);
+        this.bindGroup();
+    }
 
+    /** Subscribe to the actual group and hydrate graphs that already exist. */
+    private bindGroup(): void {
+        const group = this.groupController?.groupObject;
+        if (!this.isConnected || group === this.boundGroup) return;
+
+        this.unbindGroup();
+        this.boundGroup = group;
+        this.receiveGraph(group?.analysisGraph.value);
+        if (!group) return;
+
+        group.files.addListener(this.UUID, () => group.analysisGraph.turnOn());
+        group.analysisGraph.addListener(this.UUID, this.receiveGraph);
+        group.analysisGraph.turnOn();
+    }
+
+    private unbindGroup(): void {
+        this.boundGroup?.files.removeListener(this.UUID);
+        this.boundGroup?.analysisGraph.removeListener(this.UUID);
+        this.boundGroup = undefined;
+    }
+
+    private readonly receiveGraph = (value: ThermalGroup["analysisGraph"]["value"]): void => {
+        this.data = value?.data;
+        this.colors = value?.colors;
+        this.on = value !== undefined;
+    };
+
+    /** Copy the graph data and convert only temperatures, leaving core data in Celsius. */
+    private getChartData(): typeof this.data {
+        if (!this.data) return undefined;
+
+        const [header, ...rows] = this.data;
+        const converted: [Date, ...number[]][] = rows.map(([time, ...values]) => [
+            time,
+            ...values.map(value => Number.isFinite(value)
+                ? this.managerController.toCurrentUnit(value)
+                : value),
+        ]);
+        return [[...header], ...converted];
     }
 
     static styles?: CSSResultGroup | undefined = css`
@@ -87,7 +129,7 @@ export class GroupChartElement extends AbstractGroupConsumer {
 
     download() {
 
-        const svg = this.shadowRoot?.querySelectorAll("google-chart");
+        const svg = this.shadowRoot?.querySelectorAll("thermal-chart");
 
         console.log(svg);
 
@@ -101,21 +143,21 @@ export class GroupChartElement extends AbstractGroupConsumer {
             <div class="wrapper ${this.on ? "on" : "off"}">
 
                 ${this.on === true ? html`
-                    <google-chart 
-                        .data=${this.data} 
-                        .options=${{
-                    colors: this.colors,
-                    legend: { position: 'bottom' },
-                    hAxis: { title: 'Time' },
-                    vAxis: { title: 'Temperature °C' },
-                    chartArea: {
-                        width: '90%',
-                    },
-                }}
+                    <thermal-chart
+                        .data=${guard([this.data, this.unit], () => this.getChartData())}
+                        .options=${guard([this.colors, this.unit], () => ({
+                            colors: this.colors,
+                            legend: { position: 'bottom' },
+                            hAxis: { title: 'Time' },
+                            vAxis: { title: `Temperature ${this.managerController.currentUnit.symbol}` },
+                            chartArea: {
+                                width: '90%',
+                            },
+                        }))}
                         type="line"
                         width="100%"
                         style="width: 100%;height: 300px"
-                    ></google-chart>
+                    ></thermal-chart>
                 ` : nothing}
                 
             </div>

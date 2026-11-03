@@ -6,7 +6,7 @@ import { withBase } from 'vitepress'
 
 <ComponentInfo tag="registry-provider" category="Provider" :requires="['manager-provider']">
 
-Provides a registry scope for its descendants. A `registry-provider` must be inside a `manager-provider`; the registry is scoped to that parent manager. See the [hierarchy overview](../guide/hierarchy.md) and [thermal range guide](../guide/thermal-range.md).
+Provides a registry scope for its descendants. A `registry-provider` must be inside a `manager-provider`; the registry is scoped to that parent manager. See the [hierarchy overview](../guide/hierarchy.md) and [thermal range guide](../guide/thermal-range-and-units.md#thermal-range).
 
 </ComponentInfo>
 
@@ -42,13 +42,53 @@ Identifies the registry within its parent manager. If omitted, a UUID is generat
 
 <ComponentAttribute name="from" type="number">
 
-Sets the lower bound of the thermal range. Apply a range only when both `from` and `to` are set; if either is unset, the range is cleared.
+Sets the lower endpoint of the thermal range in the current unit selected by the enclosing `manager-provider`'s [`unit`](./manager-provider.md#unit). The range is applied only when both `from` and [`to`](#to) are set; if either is unset, the range is cleared. When the unit changes, the attribute is updated to the equivalent value in the new unit. Core values and range contexts remain in Celsius.
 
 </ComponentAttribute>
 
 <ComponentAttribute name="to" type="number">
 
-Sets the upper bound of the thermal range. Apply a range only when both `from` and `to` are set; if either is unset, the range is cleared.
+Sets the upper endpoint of the thermal range in the current unit selected by the enclosing `manager-provider`'s [`unit`](./manager-provider.md#unit). The range is applied only when both [`from`](#from) and `to` are set; if either is unset, the range is cleared. When the unit changes, the attribute is updated to the equivalent value in the new unit. Core values and range contexts remain in Celsius.
+
+</ComponentAttribute>
+
+<ComponentAttribute name="opacity" type="number" default="1">
+
+Blending between the thermal and visible images of all files in the registry. `0` shows only the visible images, `1` shows only the thermograms. Values are clamped to the `0`–`1` range; an invalid value falls back to `1`. Later changes, for example from `registry-opacity-slider`, are reflected back to the attribute. A visible image must be supplied by each `file-provider`'s [`visible`](./file-provider.md#visible) attribute, otherwise the thermogram is displayed regardless of the opacity.
+
+<ComponentExample>
+
+```html
+<div class="hierarchy">
+    <manager-provider>
+        <registry-provider opacity="0.5">
+            <registry-opacity-slider></registry-opacity-slider>
+            <group-provider>
+                <file-provider
+                    thermal="/files/makak.lrc"
+                    visible="/files/kitten.jpg"
+                >
+                    <file-canvas></file-canvas>
+                </file-provider>
+            </group-provider>
+        </registry-provider>
+    </manager-provider>
+</div>
+```
+
+</ComponentExample>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="is-loading" type="boolean" default="false">
+
+Read-only output. The component sets `is-loading` while the registry is loading its files and removes it when loading finishes. Writing the attribute from outside has no effect — the component overwrites it with the internal loading state. Because it is reflected, it can be used as a CSS hook:
+
+```css
+registry-provider[is-loading] {
+    opacity: 0.5;
+}
+```
 
 </ComponentAttribute>
 
@@ -71,10 +111,10 @@ The range controls below are consumers of the surrounding registry context. Both
             <registry-ticks-bar></registry-ticks-bar>
             <group-provider>
                 <div class="stack">
-                    <file-provider thermal="/labir/files/makak.lrc">
+                    <file-provider thermal="/files/makak.lrc">
                         <file-canvas></file-canvas>
                     </file-provider>
-                    <file-provider thermal="/labir/files/klokan.lrc">
+                    <file-provider thermal="/files/klokan.lrc">
                         <file-canvas></file-canvas>
                     </file-provider>
                 </div>
@@ -98,10 +138,10 @@ Two `registry-provider` elements with the same `registry-slug` under one manager
         <registry-provider registry-slug="shared-range-example">
             <group-provider>
                 <div class="stack">
-                    <file-provider thermal="/labir/files/makak.lrc">
+                    <file-provider thermal="/files/makak.lrc">
                         <file-canvas></file-canvas>
                     </file-provider>
-                    <file-provider thermal="/labir/files/klokan.lrc">
+                    <file-provider thermal="/files/klokan.lrc">
                         <file-canvas></file-canvas>
                     </file-provider>
                 </div>

@@ -108,15 +108,55 @@ Initial opacity of the thermogram, from `0` (fully transparent) to `1` (fully op
 
 </ComponentAttribute>
 
-<ComponentAttribute name="label + author + license">
+<ComponentAttribute name="label" type="string">
 
-Texts displayed in the application bar:
+Title of the application displayed in the application bar. When omitted, no title is displayed. See also [`author`](#author) and [`license`](#license).
 
-- `label` (`string`) – title of the application.
-- `author` (`string`) – author credit.
-- `license` (`string`) – license credit.
+```html
+<thermal-file-app
+    style="width: 100%"
+    thermal="/files/klokan.lrc"
+    label="Kangaroo"
+></thermal-file-app>
+```
 
-Each attribute is optional; omitted texts are not displayed.
+<div class="thermal-file-example">
+    <thermal-file-app
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        label="Kangaroo"
+    ></thermal-file-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="author" type="string">
+
+Author credit displayed in the application bar next to the [`label`](#label). Optional; omitted text is not displayed.
+
+```html
+<thermal-file-app
+    style="width: 100%"
+    thermal="/files/klokan.lrc"
+    label="Kangaroo"
+    author="LabIR Team"
+></thermal-file-app>
+```
+
+<div class="thermal-file-example">
+    <thermal-file-app
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        label="Kangaroo"
+        author="LabIR Team"
+    ></thermal-file-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="license" type="string">
+
+License credit displayed in the application bar next to the [`label`](#label) and [`author`](#author). Optional; omitted text is not displayed.
 
 ```html
 <thermal-file-app
@@ -140,38 +180,19 @@ Each attribute is optional; omitted texts are not displayed.
 
 </ComponentAttribute>
 
-<ComponentAttribute name="show-fullscreen" type="'true' | 'false'" default="false">
+<ComponentAttribute name="palette" type="'iron' | 'jet' | 'white_hot' | 'black_hot' | 'lava' | 'arctic' | 'rainbow' | 'rainbow_hc'" default="jet">
 
-Shows the fullscreen toggle in the application bar. Only `"true"` shows the button; omitted, empty, `"false"` and other values keep it hidden.
+Sets the initial palette. Empty or invalid values fall back to `jet`. See [Thermal palette](../guide/thermal-palette.md) for the available choices.
 
 ```html
-<thermal-file-app
-    style="width: 100%"
-    thermal="/files/husy.lrc"
-    label="Geese"
-    show-fullscreen="true"
-></thermal-file-app>
+<thermal-file-app thermal="/files/makak.lrc" palette="lava"></thermal-file-app>
 ```
-
-<div class="thermal-file-example">
-    <thermal-file-app
-        style="width: 100%"
-        :thermal="withBase('/files/husy.lrc')"
-        label="Geese"
-        show-fullscreen="true"
-    ></thermal-file-app>
-</div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="palette + advanced-palettes">
+<ComponentAttribute name="advanced-palettes" type="boolean" default="false" tag="thermal-file-app">
 
-These two attributes configure the initial palette and which palette choices are offered in the palette dropdown:
-
-- `palette` (`'iron' | 'jet' | 'white_hot' | 'black_hot' | 'lava' | 'arctic' | 'rainbow' | 'rainbow_hc'`, default `jet`) sets the initial palette. Empty or invalid values convert to `iron`.
-- `advanced-palettes` (`'true' | 'false'`, default `false`) enables the extended palette choices. Only the exact string `"true"` is true.
-
-See [Thermal palette](../guide/thermal-palette.md) for the available choices.
+When `advanced-palettes` is present, the palette dropdown offers the extended palette choices. Set it when `palette` is one of the advanced choices.
 
 ```html
 <thermal-file-app
@@ -179,7 +200,7 @@ See [Thermal palette](../guide/thermal-palette.md) for the available choices.
     style="width: 100%"
     thermal="/files/makak.lrc"
     palette="lava"
-    advanced-palettes="true"
+    advanced-palettes
 ></thermal-file-app>
 ```
 
@@ -189,28 +210,50 @@ See [Thermal palette](../guide/thermal-palette.md) for the available choices.
         style="width: 100%"
         :thermal="withBase('/files/makak.lrc')"
         palette="lava"
-        advanced-palettes="true"
+        advanced-palettes
     ></thermal-file-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="from + to">
+<ComponentAttribute name="unit" type="'C' | 'F' | 'K'" default="C">
 
-Initial thermal range in °C:
+Selects the temperature unit used for displayed values and user-entered temperatures. Values are case-insensitive. On initial connection, an unrecognized value is treated like an omitted attribute: a new manager starts in Celsius, while a reused manager keeps its current unit. Internal temperatures remain in Celsius.
 
-- `from` (`number`) – lower bound of the range.
-- `to` (`number`) – upper bound of the range.
+When applications share a manager through `manager-slug`, an explicit valid `unit` sets the shared unit. If `unit` is omitted, the application uses the manager's current unit; a new manager starts in Celsius. The application bar also includes a unit switch.
 
-The range is applied only when both attributes are set; if either is missing, the full range of the file is used. The user can change the range later with the range form, slider or histogram. See [Thermal range](../guide/thermal-range.md).
+```html
+<thermal-file-app
+    label="Example"
+    style="width: 100%"
+    thermal="/files/makak.lrc"
+    unit="F"
+></thermal-file-app>
+```
+
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/makak.lrc')"
+        unit="F"
+    ></thermal-file-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="from" type="number">
+
+Sets the lower endpoint of the initial thermal range in the current unit selected by [`unit`](#unit). The range is applied only when both `from` and [`to`](#to) are set; if either is missing, the full range of the file is used. The internal range remains in Celsius. The user can change the range later with the range form, slider or histogram. See [Thermal range](../guide/thermal-range-and-units.md#thermal-range).
 
 ```html
 <thermal-file-app
     label="Example"
     style="width: 100%"
     thermal="/files/klokan.lrc"
-    from="20"
-    to="30"
+    unit="F"
+    from="68"
+    to="86"
 ></thermal-file-app>
 ```
 
@@ -219,8 +262,37 @@ The range is applied only when both attributes are set; if either is missing, th
         label="Example"
         style="width: 100%"
         :thermal="withBase('/files/klokan.lrc')"
-        from="20"
-        to="30"
+        unit="F"
+        from="68"
+        to="86"
+    ></thermal-file-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="to" type="number">
+
+Sets the upper endpoint of the initial thermal range in the current unit selected by [`unit`](#unit). The range is applied only when both [`from`](#from) and `to` are set; if either is missing, the full range of the file is used. The internal range remains in Celsius. The user can change the range later with the range form, slider or histogram. See [Thermal range](../guide/thermal-range-and-units.md#thermal-range).
+
+```html
+<thermal-file-app
+    label="Example"
+    style="width: 100%"
+    thermal="/files/klokan.lrc"
+    unit="F"
+    from="68"
+    to="86"
+></thermal-file-app>
+```
+
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/klokan.lrc')"
+        unit="F"
+        from="68"
+        to="86"
     ></thermal-file-app>
 </div>
 
@@ -285,38 +357,34 @@ The attributes are synchronised in both directions: editing, adding or removing 
 
 </ComponentAttribute>
 
-<ComponentAttribute name="interactiveanalysis" type="'true' | 'false'" default="true">
+<ComponentAttribute name="interactive-analysis" type="boolean" default="true">
 
-Enables selecting, editing and removing analyses in the analysis table. With `interactiveanalysis="false"`, the table only displays the analyses. An omitted or empty attribute means `true`; only the exact string `"true"` is true otherwise.
+Enables selecting, editing and removing analyses in the analysis table. The default is `true`, so the table is interactive out of the box.
+
+::: warning Non-standard boolean
+This attribute does not follow the [boolean attribute standard](../guide/boolean-attributes.md) yet. Its default is `true` and any present value — including `interactive-analysis="false"` — also means `true`, so **it cannot be turned off from HTML**. To display the analyses read-only, set the JavaScript property `interactiveAnalysis` to `false`:
+:::
 
 ```html
 <thermal-file-app
+    id="read-only-example"
     label="Example"
     style="width: 100%"
     thermal="/files/klokan.lrc"
-    interactiveanalysis="false"
     analysis1="Body;rectangle;color:Blue;top:153;left:200;width:431;height:179;avg"
 ></thermal-file-app>
+<script>
+    customElements.whenDefined('thermal-file-app').then(() => {
+        document.getElementById('read-only-example').interactiveAnalysis = false;
+    });
+</script>
 ```
-
-<div class="thermal-file-example">
-    <thermal-file-app
-        label="Example"
-        style="width: 100%"
-        :thermal="withBase('/files/klokan.lrc')"
-        interactiveanalysis="false"
-        analysis1="Body;rectangle;color:Blue;top:153;left:200;width:431;height:179;avg"
-    ></thermal-file-app>
-</div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="ms + speed">
+<ComponentAttribute name="ms" type="number" default="0">
 
-Playback settings of sequences (files with more frames). They have no effect on single-frame images.
-
-- `ms` (`number`, default `0`) – initial position in the sequence in milliseconds. The value is clamped to the duration of the sequence and is updated while the sequence plays.
-- `speed` (`0.5 | 1 | 2 | 3 | 5 | 10`, default `1`) – initial playback speed multiplier.
+Initial position in a sequence (a file with more frames) in milliseconds. The value is clamped to the duration of the sequence and is updated while the sequence plays. It has no effect on single-frame images. See also [`speed`](#speed).
 
 ```html
 <thermal-file-app
@@ -324,7 +392,6 @@ Playback settings of sequences (files with more frames). They have no effect on 
     style="width: 100%"
     thermal="/files/sequence.lrc"
     ms="2000"
-    speed="2"
 ></thermal-file-app>
 ```
 
@@ -334,27 +401,45 @@ Playback settings of sequences (files with more frames). They have no effect on 
         style="width: 100%"
         :thermal="withBase('/files/sequence.lrc')"
         ms="2000"
+    ></thermal-file-app>
+</div>
+
+</ComponentAttribute>
+
+<ComponentAttribute name="speed" type="0.5 | 1 | 2 | 3 | 5 | 10" default="1">
+
+Initial playback speed multiplier of a sequence. It has no effect on single-frame images. See also [`ms`](#ms).
+
+```html
+<thermal-file-app
+    label="Example"
+    style="width: 100%"
+    thermal="/files/sequence.lrc"
+    speed="2"
+></thermal-file-app>
+```
+
+<div class="thermal-file-example">
+    <thermal-file-app
+        label="Example"
+        style="width: 100%"
+        :thermal="withBase('/files/sequence.lrc')"
         speed="2"
     ></thermal-file-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="smooth-thermograms + smooth-graph">
+<ComponentAttribute name="smooth-thermograms" type="boolean" default="false" tag="thermal-file-app">
 
-Initial smoothing settings:
-
-- `smooth-thermograms` (`'true' | 'false'`, default `false`) smooths the rendering of the thermal image.
-- `smooth-graph` (`'true' | 'false'`, default `false`) smooths the lines of the analysis graph.
-
-Only `"true"` is true; omitted, empty, `"false"` and other values are false.
+When `smooth-thermograms` is present, the thermal image starts in the smoothed rendering mode. See also [`smooth-graph`](#smooth-graph).
 
 ```html
 <thermal-file-app
     label="Example"
     style="width: 100%"
     thermal="/files/husy.lrc"
-    smooth-thermograms="true"
+    smooth-thermograms
 ></thermal-file-app>
 ```
 
@@ -363,22 +448,23 @@ Only `"true"` is true; omitted, empty, `"false"` and other values are false.
         label="Example"
         style="width: 100%"
         :thermal="withBase('/files/husy.lrc')"
-        smooth-thermograms="true"
+        smooth-thermograms
     ></thermal-file-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="locale" type="'en' | 'cs' | 'de' | 'fr' | 'cy'">
+<ComponentAttribute name="smooth-graph" type="boolean" default="false" tag="thermal-file-app">
 
-Language of the user interface. Regional variants such as `en_GB`, `cs_CZ` or `de_AT` are accepted as well; an unknown value falls back to `en`. When omitted, the current language of the page is kept. The language is shared by all webcomponents on the page, so changing it in one application also changes it in the others.
+When `smooth-graph` is present, the lines of the analysis graph start in the smoothed rendering mode. See also [`smooth-thermograms`](#smooth-thermograms).
 
 ```html
 <thermal-file-app
     label="Example"
     style="width: 100%"
     thermal="/files/husy.lrc"
-    locale="cs"
+    smooth-graph
+    analysis1="Body;rectangle;color:Blue;top:54;left:64;width:64;height:47;avg"
 ></thermal-file-app>
 ```
 
@@ -387,15 +473,16 @@ Language of the user interface. Regional variants such as `en_GB`, `cs_CZ` or `d
         label="Example"
         style="width: 100%"
         :thermal="withBase('/files/husy.lrc')"
-        locale="cs"
+        smooth-graph
+        analysis1="Body;rectangle;color:Blue;top:54;left:64;width:64;height:47;avg"
     ></thermal-file-app>
 </div>
 
 </ComponentAttribute>
 
-<ComponentAttribute name="autohighlight" type="boolean" default="false">
+<ComponentAttribute name="autohighlight" type="boolean" default="false" tag="thermal-file-app">
 
-When present, the temperature range of the loaded file is highlighted on the histogram and range slider. Use the attribute without a value; note that `autohighlight="false"` is also treated as present.
+When `autohighlight` is present, the temperature range of the loaded file is highlighted on the histogram and range slider.
 
 ```html
 <thermal-file-app
@@ -421,7 +508,7 @@ When present, the temperature range of the loaded file is highlighted on the his
 
 Identifiers of the internal manager, registry and group. If omitted, the generic `slug` attribute is used; without either of them, a unique identifier is generated, so every application is independent by default.
 
-Two applications with the same `manager-slug` share the palette, tool and smoothing settings. Applications sharing a manager **and** the same `registry-slug` also share the thermal range and opacity. See [Context providers and consumers](../guide/hierarchy.md).
+Two applications with the same `manager-slug` share the palette, temperature unit, tool and smoothing settings. Applications sharing a manager **and** the same `registry-slug` also share the thermal range and opacity. See [Context providers and consumers](../guide/hierarchy.md).
 
 Because `slug` is used as a fallback by all three identifiers, setting only `slug` on two applications makes them share everything, including the group.
 
@@ -454,12 +541,6 @@ Because `slug` is used as a fallback by all three identifiers, setting only `slu
         manager-slug="shared-file-apps"
     ></thermal-file-app>
 </div>
-
-</ComponentAttribute>
-
-<ComponentAttribute name="autoclear-group" type="'true' | 'false'" default="true">
-
-Removes the internal group (and its file) when the application is removed from the page. Set `autoclear-group="false"` only when the group is shared with other elements by [`group-slug`](#manager-slug-registry-slug-group-slug) and should survive the removal of this application.
 
 </ComponentAttribute>
 

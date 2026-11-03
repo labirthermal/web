@@ -5,8 +5,10 @@ import type { PropertyValues } from "lit";
 import type { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
 import { createOrGetManager } from "../hierarchy/providers/getters";
 import { paletteConverter } from "../utils/converters/paletteConverter";
+import { parseThermalUnit, unitConverter } from "../utils/converters/unitConverter";
 import type { HostReactiveProperties } from "./AbstractHierarchyController";
 import { AbstractHierarchyController, INTERNAL_STATE_DECLARATION } from "./AbstractHierarchyController";
+import type { ThermalUnitDefinition } from "@labirthermal/core";
 
 interface IHostProperties {
 
@@ -34,8 +36,13 @@ interface IHostProperties {
     /** Tool property accessed from the host element. Exposed in the toolContext. Recommended property name: tool */
     tool: keyof ThermalManager["tool"]["tools"];
 
-    /** Indication of the thermal unit used in the webcomponents */
-    unit: ThermalUnit
+    /** 
+     * Thermal unit used for displaying values and reading user inputs in the webcomponents. Exposed in managerUnitContext. Recommended property name: unit
+     * 
+     * `undefined` means the host did not set it: a shared manager then keeps its current unit, a new one uses Celsius.
+     * All internal values (core, contexts) stay in Celsius regardless of this unit.
+     */
+    unit: ThermalUnit | undefined
 
 }
 
@@ -75,7 +82,7 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
         smoothThermograms: { reflect: true, attribute: "smooth-thermograms", type: Boolean},
         smoothGraph: { reflect: true, attribute: "smooth-graph", type: Boolean },
         tool: { type: String, reflect: true, attribute: "tool"},
-        unit: { type: String, reflect: true, attribute: "unit" }
+        unit: { type: String, reflect: true, attribute: "unit", converter: unitConverter }
     }
 
 
@@ -193,27 +200,37 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
         const slug = this._getDefaultSlugFromHost("manager-slug");
         this.host.managerSlug = slug;
 
-        // Create or get the manager object and set it in the context provider
-        this.host.managerObject = createOrGetManager(slug);
+        // Values requested by the host; `undefined` unit means "not set by the host"
+        const requestedUnit = parseThermalUnit(this.host.unit);
+        const requestedPalette = paletteConverter.fromAttribute(this.host.palette);
+
+        // A manager with the same slug may already exist (shared by more providers)
+        const managerExisted = window.Thermal.managers.has(slug);
+
+        // Create or get the manager object and set it in the context provider.
+        // A new manager is created directly with the host's values, so it never exists with defaults.
+        this.host.managerObject = createOrGetManager(slug, {
+            unit: requestedUnit ?? ThermalUnit.C,
+            palette: requestedPalette
+        });
         this.managerObjectContextPtovider.setValue(this.host.managerObject);
 
         this.onInternalObject.call(this.host.managerObject);
 
 
         // Unit
-        // Make sure an unit exists
-        if (this.host.unit === undefined) {
-            this.host.unit = ThermalUnit.C;
-        } 
-        // Make sure the unit is valid
-        else if ( ! ( this.host.unit.toUpperCase() in ThermalUnit ) ) {
-            this.host.unit = ThermalUnit.C;
-        }
 
-        // Impose the unit everywhere
-        this.setUnit( this.host.unit );
+        // Pick the initial unit:
+        // - the unit requested by the host always wins
+        // - without it, a shared manager keeps its current unit (another provider may have set it)
+        // - otherwise Celsius is the default
+        const initialUnit = requestedUnit
+            ?? (managerExisted ? this.managerObject.unit.value : ThermalUnit.C);
 
-        // Add the internal listener
+        // Impose the unit to the host, the context and the core manager
+        this.setUnit(initialUnit);
+
+        // Follow the unit changes made in the core manager (e.g. by another provider of the same manager)
         this.managerObject.unit.addListener(this.UUID, this.setUnit.bind(this));
 
 
@@ -222,8 +239,7 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
         // Palette
 
         // Set the initial palette value
-        const initialPaletteValue = paletteConverter.fromAttribute(this.host.palette);
-        this.setPalette(initialPaletteValue);
+        this.setPalette(requestedPalette);
 
         // Add the palette listeners
         this.managerObject.palette.addListener(this.UUID, this.setPalette.bind(this));
@@ -272,6 +288,7 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
         this.managerObject.smooth.removeListener(this.UUID);
         this.managerObject.graphSmooth.removeListener(this.UUID);
         this.managerObject.tool.removeListener(this.UUID);
+        this.managerObject.unit.removeListener(this.UUID);
 
     }
 
@@ -493,26 +510,65 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
 
     }
 
+    /** 
+     * This is the recommended way to set the unit - updates the value in the core manager object, the context provider, and the host element. All updates are performed only when the new value differs from the current one.
+     * 
+     * The value is normalized case-insensitively; a missing or invalid value falls back to Celsius.
+     * The unit affects only the display and the user inputs. All internal values stay in Celsius.
+     */
     public setUnit(
-        value: ThermalUnit
+        value: ThermalUnit | string | undefined
     ): void {
 
-        value = value in ThermalUnit ? value : ThermalUnit.C;
+        const unit = parseThermalUnit(value) ?? ThermalUnit.C;
 
         // If the value differs, set it to the property
-        if (this.host.unit !== value) {
-            this.host.unit = value;
+        if (this.host.unit !== unit) {
+            this.host.unit = unit;
         }
 
         // If the context differs, set it in context provider
-        if (this.unitContextProvider.value !== value) {
-            this.unitContextProvider.setValue(value);
+        if (this.unitContextProvider.value !== unit) {
+            this.unitContextProvider.setValue(unit);
         }
 
         // Impose the value internally
-        if (this.managerObject.unit.value !== value) {
-            this.managerObject.unit.set(value);
+        if (this.managerObject.unit.value !== unit) {
+            this.managerObject.unit.set(unit);
         }
+    }
+
+    /** Format a single value in current unit and output it along with its unit symbol. */
+    public formatSingle(
+        valueInCurrentUnit: number
+    ): string {
+        return this.managerObject.unit.formatSingle(valueInCurrentUnit);
+    }
+
+    /** Format a range of values in the current unit and output it along with its unit symbol. */
+    public formatRange(
+        fromInCurrentUnit: number,
+        toInCurrentUnit: number
+    ): string {
+        return this.managerObject.unit.formatRange(fromInCurrentUnit, toInCurrentUnit);
+    }
+
+    /** Convert a value in Celsius unit to the current unit and return the number. */
+    public toCurrentUnit(
+        valueInCelsius: number
+    ): number {
+        return this.managerObject.unit.celsiusToCurrent(valueInCelsius);
+    }
+
+    /** Convert a value in the current unit to Celsius. */
+    public fromCurrentUnit(
+        valueInCurrentUnit: number
+    ): number {
+        return this.managerObject.unit.currentToCelsius(valueInCurrentUnit);
+    }
+
+    public get currentUnit(): ThermalUnitDefinition {
+        return this.managerObject.unit.current;
     }
 
 }

@@ -1,4 +1,4 @@
-import type { AbstractAnalysis, ThermalFileInstance } from "@labirthermal/core";
+import type { AbstractAnalysis, ThermalFileInstance, ThermalUnit } from "@labirthermal/core";
 import { t } from "i18next";
 import type { PropertyValues } from "lit";
 import { css, html, nothing } from "lit";
@@ -9,6 +9,8 @@ import type { StyleInfo } from "lit/directives/style-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { AbstractFileConsumer } from "../../../hierarchy/consumers/AbstractFileConsumer";
 import { T } from "../../../translations/Languages";
+import { managerUnitContext } from "../../../controllers/ManagerController";
+import { consume } from "@lit/context";
 
 /** Display the analysis state for the purpose of exporting. */
 export class FileAnalysisDisplayElement extends AbstractFileConsumer {
@@ -19,6 +21,15 @@ export class FileAnalysisDisplayElement extends AbstractFileConsumer {
     protected analysis: AbstractAnalysis[] = [];
 
     private boundFile?: ThermalFileInstance;
+    private boundAnalyses = new Set<AbstractAnalysis>();
+
+    private readonly analysisValuesChanged = (): void => {
+        this.requestUpdate();
+    };
+
+    @state()
+    @consume({context: managerUnitContext, subscribe: true })
+    private unit!: ThermalUnit;
 
     public onFailure(): void {}
 
@@ -34,6 +45,7 @@ export class FileAnalysisDisplayElement extends AbstractFileConsumer {
         }
 
         this.bindFile();
+        this.bindAnalysisValues();
     }
 
     disconnectedCallback(): void {
@@ -41,7 +53,7 @@ export class FileAnalysisDisplayElement extends AbstractFileConsumer {
         super.disconnectedCallback();
     }
 
-    willUpdate(changedProperties: PropertyValues): void {
+    willUpdate(changedProperties: PropertyValues<this>): void {
         super.willUpdate(changedProperties);
 
         // Side effect of file changing - mirror the analysis list before rendering, or clear it if no file is available.
@@ -50,12 +62,13 @@ export class FileAnalysisDisplayElement extends AbstractFileConsumer {
         }
     }
 
-    updated(changedProperties: PropertyValues): void {
+    updated(changedProperties: PropertyValues<this>): void {
         super.updated(changedProperties);
 
         // Rebind external listeners after rendering without changing reactive state in this hook.
         if (changedProperties.has("file")) {
             this.bindFile();
+            this.bindAnalysisValues();
         }
     }
 
@@ -75,6 +88,8 @@ export class FileAnalysisDisplayElement extends AbstractFileConsumer {
         }
         file.analysis.addListener(this.UUID, analysis => {
             this.analysis = analysis;
+            this.bindAnalysisValues();
+            this.requestUpdate();
         });
         file.timeline.onFrame.add(this.UUID, () => {
             this.requestUpdate();
@@ -86,6 +101,37 @@ export class FileAnalysisDisplayElement extends AbstractFileConsumer {
         this.boundFile?.analysis.removeListener(this.UUID);
         this.boundFile?.timeline.onFrame.delete(this.UUID);
         this.boundFile = undefined;
+        this.unbindAnalysisValues();
+    }
+
+    /**
+     * Keeps value-change subscriptions aligned with the analyses in the current table.
+     * The same listener ID is safe because each analysis owns its own callbacks manager.
+     */
+    private bindAnalysisValues(): void {
+        const nextAnalyses = new Set(this.analysis);
+
+        for (const analysis of this.boundAnalyses) {
+            if (!nextAnalyses.has(analysis)) {
+                analysis.onValues.delete(this.UUID);
+            }
+        }
+
+        for (const analysis of nextAnalyses) {
+            if (!this.boundAnalyses.has(analysis)) {
+                analysis.onValues.set(this.UUID, this.analysisValuesChanged);
+            }
+        }
+
+        this.boundAnalyses = nextAnalyses;
+    }
+
+    /** Removes value listeners from the exact analysis instances previously subscribed. */
+    private unbindAnalysisValues(): void {
+        for (const analysis of this.boundAnalyses) {
+            analysis.onValues.delete(this.UUID);
+        }
+        this.boundAnalyses.clear();
     }
 
     public static styles = css`
@@ -280,7 +326,9 @@ export class FileAnalysisDisplayElement extends AbstractFileConsumer {
         let valueDisplay: string = "-";
 
         if (value !== undefined) {
-            valueDisplay = value.toFixed(2) + " °C";
+            valueDisplay = this.managerController.formatSingle(
+                this.managerController.toCurrentUnit(value)
+            );
         }
 
         return html`

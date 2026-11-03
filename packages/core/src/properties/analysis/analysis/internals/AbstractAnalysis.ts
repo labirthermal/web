@@ -680,33 +680,7 @@ export abstract class AbstractAnalysis {
 
     }
 
-    /**
-     * Obtain the current values of the analysis using current position and dimensions
-     * @deprecated Values are read from the graph data computed by the parser jobs, see `recalculateValues`. This synchronous calculation does not follow the parser contract boundaries and is not used anymore.
-     */
-    protected abstract getValues(): { min?: number, max?: number, avg?: number }
-
     /** Override this method to get proper analysis data. */
     public abstract getAnalysisData(): Promise<PointAnalysisData | AreaAnalysisData>;
-
-    /**
-     * @deprecated Use with caution! This method forcefully sets the analysis values. The calculation mechanisms should happen elsewhere. Now they happen in the canvas layer wich calculates them upon rendering. That is not good at all!
-     * @internal
-     * @todo Remove this method, move the calculation of values elsewhere from the canvas layer!
-     */
-    public dangerouslySetValues(
-        avg: number,
-        min: number | undefined = undefined,
-        max: number | undefined = undefined,
-    ) {
-        this._avg = avg;
-        this._min = min;
-        this._max = max;
-
-        this.onValues.call(this.min, this.max, this.avg);
-    }
-
-
-    
 
 }

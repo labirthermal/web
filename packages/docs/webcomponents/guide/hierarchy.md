@@ -28,7 +28,7 @@ The following schema explains their roles:
     <HierarchyManager>
         <p>The <code>manager-provider</code> handles the global cache and also some display properties such as the <a href="./thermal-palette">palette property</a>.</p>
         <HierarchyRegistry>
-            <p>The <code>registry-provider</code> handles file loading, <a href="./thermal-range">thermal range</a> and histogram.</p>
+            <p>The <code>registry-provider</code> handles file loading, <a href="./thermal-range-and-units#thermal-range">thermal range</a> and histogram.</p>
             <HierarchyGroup>
                 <p>The <code>group-provider</code> synchronises the cursor position between the nested files.</p>
                 <div class="stack">
@@ -420,8 +420,8 @@ The essential HTML difference is:
     <registry-provider from="-10" to="5" opacity="0.6">
         <group-provider>
             <file-provider
-                visible="/labir/files/les_visual.png"
-                thermal="/labir/files/les_thermal.lrc"
+                visible="/files/les_visual.png"
+                thermal="/files/les_thermal.lrc"
             >
                 <file-canvas></file-canvas>
             </file-provider>
@@ -436,8 +436,8 @@ The essential HTML difference is:
     from="-10"
     to="5"
     opacity="0.6"
-    visible="/labir/files/les_visual.png"
-    thermal="/labir/files/les_thermal.lrc"
+    visible="/files/les_visual.png"
+    thermal="/files/les_thermal.lrc"
 ></thermal-file-app>
 ```
 

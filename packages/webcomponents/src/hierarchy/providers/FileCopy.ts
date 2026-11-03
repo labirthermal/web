@@ -1,4 +1,4 @@
-import type { AvailableThermalPalette, ThermalFileInstance, PlaybackSpeeds, ThermalFileFailure, ThermalGroup, ThermalManager, ThermalRangeOrUndefined, ThermalRegistry } from "@labirthermal/core";
+import type { AvailableThermalPalette, ThermalFileInstance, PlaybackSpeeds, ThermalFileFailure, ThermalGroup, ThermalManager, ThermalRangeOrUndefined, ThermalRegistry, ThermalUnit } from "@labirthermal/core";
 import type { CSSResultGroup, PropertyValues } from "lit";
 import { css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
@@ -76,12 +76,15 @@ implements
     smoothThermograms: boolean = false;
     smoothGraph: boolean = false;
     tool: string = "edit";
+    unit!: ThermalUnit;
 
     registrySlug!: string;
     registryObject!: ThermalRegistry;
     registryController: RegistryController = new RegistryController(this);
     opacity: number = 1;
+    /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
     min?: number | undefined;
+    /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
     max?: number | undefined;
     from?: number | undefined;
     to?: number | undefined;
@@ -134,6 +137,7 @@ implements
         // Sync manager properties
         this.palette = this.originalFile.group.registry.manager.palette.value;
         this.opacity = this.originalFile.group.registry.opacity.value;
+        this.unit = this.originalFile.group.registry.manager.unit.value;
 
         // Sync registry and group properties
 

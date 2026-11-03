@@ -31,19 +31,22 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
     private observedTicks?: HTMLDivElement;
 
     @state()
-    private ticksWidth: number = 0;
+    public ticksWidth: number = 0;
 
     @consume({context: registryHighlightContext, subscribe: true})
     protected highlight?: ThermalRangeOrUndefined;
 
+     /** The manager's current unit; Celsius is used until it is provided. */
+    @state()
     @consume({ context: managerUnitContext, subscribe: true })
     protected unit?: ThermalUnit;
 
     @property({ type: String, reflect: true })
     public placement: string = "top";
 
+    /** Registry minimum and maximum in Celsius. */
     @state()
-    protected minmax: ThermalMinmaxOrUndefined = undefined;
+    public minmax: ThermalMinmaxOrUndefined = undefined;
 
     @state()
     protected ticks: TickType[] = [];
@@ -64,7 +67,7 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
         super.disconnectedCallback();
     }
 
-    willUpdate(changedProperties: PropertyValues): void {
+    willUpdate(changedProperties: PropertyValues<RegistryTicksBar>): void {
         super.willUpdate(changedProperties);
 
         // Side effect of the provided registry changing - synchronize its range and subscriptions before rendering.
@@ -79,7 +82,7 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
         }
     }
 
-    updated(changedProperties: PropertyValues): void {
+    updated(changedProperties: PropertyValues<RegistryTicksBar>): void {
         super.updated(changedProperties);
         this.observeTicks();
     }
@@ -290,7 +293,7 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
                     <div class="tick" >
                         <div class="tick-marker"></div>
                         <div class="tick-value">
-                            ${this.toCurrentUnit( tick.value ).toFixed(RegistryTicksBar.TICK_FIXED)}
+                            ${this.managerController.toCurrentUnit( tick.value ).toFixed(RegistryTicksBar.TICK_FIXED)}
                         </div>
                     </div>
                         `;

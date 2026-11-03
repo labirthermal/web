@@ -11,7 +11,7 @@ The *drop-in* webcomponent enables the user to analyze his own LRC files. It is 
 ```html
 <thermal-dropin-app
   palette="iron"
-  advanced-palettes="true"
+  advanced-palettes
   tool="edit"
 ></thermal-dropin-app>
 ```
@@ -19,6 +19,14 @@ The *drop-in* webcomponent enables the user to analyze his own LRC files. It is 
 
 ## palette and advanced-palettes
 
-The `palette` and `advanced-palettes` attributes can be to specify the default values. See [Thermal palette](../guide/thermal-palette.md) for details.
+The `palette` and `advanced-palettes` attributes specify the initial palette and the palette choices offered in the dropdown. Empty or invalid palette values fall back to `jet`. See [Thermal palette](../guide/thermal-palette.md) for details.
+
+## unit
+
+The `unit` attribute selects the temperature unit used for displayed values and user-entered temperatures: `C`, `F` or `K` (case-insensitive). On initial connection, an unrecognized value is treated like an omitted attribute: a new manager starts in `C`, while a shared manager keeps its current unit. An explicit valid value sets the shared unit. Internal temperatures remain in Celsius. The application also provides a unit switch.
+
+```html
+<thermal-dropin-app unit="F"></thermal-dropin-app>
+```
 
 ## tool

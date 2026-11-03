@@ -20,18 +20,25 @@ export class GroupExportCSV {
 
     }
 
+    /** The unit drive of the manager context. Used to convert exported values to the current thermal unit. */
+    protected get unit() {
+        return this.drive.parent.registry.manager.unit;
+    }
+
     protected formatAnalysisDisplayName(
         analysis: AbstractAnalysis,
         scope?: string
     ): string {
 
-        const nameBase = `${analysis.name} (${analysis.getType()}, ${analysis.initialColor}})`;
+        const nameBase = `${analysis.name} (${analysis.getType()}, ${analysis.initialColor})`;
+
+        const unitSuffix = ` [${this.unit.current.symbol}]`;
 
         if ( analysis instanceof AbstractAreaAnalysis && scope ) {
-            return nameBase + " " + scope.toUpperCase();
+            return nameBase + " " + scope.toUpperCase() + unitSuffix;
         }
 
-        return nameBase;
+        return nameBase + unitSuffix;
     }
 
     protected formatAnalysisKey(
@@ -66,14 +73,14 @@ export class GroupExportCSV {
 
             return {
                 key: this.formatAnalysisKey( slot.analysis, scope ),
-                value: value.toString()
+                value: this.unit.celsiusToCurrent( value ).toString()
             }
 
         }
 
         return {
             key: this.formatAnalysisKey( slot.analysis ),
-            value: slot.analysis.avg!.toString()
+            value: this.unit.celsiusToCurrent( slot.analysis.avg! ).toString()
         }
 
     }

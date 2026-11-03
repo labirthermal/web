@@ -13,7 +13,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/labirthermal/webcomponents"
+    "url": "https://github.com/labirthermal/web",
+    "directory": "packages/webcomponents"
   },
   "scripts": {
     "dev": "vite --config vite.config.dev.ts",

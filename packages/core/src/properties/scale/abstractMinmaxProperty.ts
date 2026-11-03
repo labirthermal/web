@@ -9,7 +9,7 @@ export interface ThermalMinmaxType {
 export type ThermalMinmaxOrUndefined = ThermalMinmaxType | undefined;
 
 /** 
- * A common basis for all Minmax properties 
+ * A common basis for all Minmax properties. The value is always in Celsius.
  */
 export abstract class AbstractMinmaxProperty<Target extends ThermalRegistry|ThermalGroup> extends AbstractProperty<ThermalMinmaxOrUndefined, Target> {
 

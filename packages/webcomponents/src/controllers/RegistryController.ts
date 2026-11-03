@@ -6,10 +6,12 @@ import type { AbstractThermalElement } from "../hierarchy/AbstractThermalElement
 import type { HostReactiveProperties } from "./AbstractHierarchyController";
 import { AbstractHierarchyController, INTERNAL_STATE_DECLARATION } from "./AbstractHierarchyController";
 import type { ManagerController } from "./ManagerController";
+import { optionalNumberConverter } from "../utils/converters/optionalNumberConverter";
 
 type IHostProperties = {
 
-    /** This object is obligatory and it comes either from:
+    /** 
+     * This object is obligatory and it comes either from:
      * - directly from the host's `ManagerController` instance - in case this `RegistryController` is on the same element as the `ManagerController`
      * - from the `managerControllerContext` - for elements that are nested lower in the hierarchy, under an element with `ManagerController`
      */
@@ -21,16 +23,25 @@ type IHostProperties = {
 
     registryController: RegistryController;
 
+    /** Aspect of IR / visible images. */
     opacity: number;
 
+    /** Current minimum temperature in Celsius. This value is set internally by `@labirthermal/core`. */
     min?: number;
+
+    /** Current maximum temperature in Celsius. This value is set internally by `@labirthermal/core`. */
     max?: number;
 
+    /** Current range lower endpoint in the current unit.  */
     from?: number;
+
+    /** Current range upper endpoint in the current unit. */
     to?: number;
 
+    /** Current highlighted range in Celsius */
     highlight?: ThermalRangeOrUndefined;
 
+    /** Whether the registry is currently loading. Controlled internally by `@labirthermal/core`. */
     loading: boolean;
 
 }
@@ -46,19 +57,19 @@ export const registryObjectContext = createContext<ThermalRegistry>("registry-ob
 /** Exposes the current opacity value context from the `RegistryController`. */
 export const registryOpacityContext = createContext<number>("registry-opacity");
 
-/** Exposes the current range from value from the `RegistryController`. */
+/** Exposes the current range from value in Celsius from the `RegistryController`. */
 export const registryRangeFromContext = createContext<undefined | number>("registry-range-from");
 
-/** Exposes the current range to value from the `RegistryController`. */
+/** Exposes the current range to value in Celsius from the `RegistryController`. */
 export const registryRangeToContext = createContext<undefined | number>("registry-range-to");
 
 /** Exposes the current registry loading value from the `RegistryController`. */
 export const registryLoadingContext = createContext<boolean>("registry-loading");
 
-/** Exposes the current registry min context from the `RegistryController` */
+/** Exposes the current registry minimum in Celsius from the `RegistryController`. */
 export const registryMinContext = createContext<number | undefined>("registry-min");
 
-/** Exposes the current registry max value from the `RegistryController` */
+/** Exposes the current registry maximum in Celsius from the `RegistryController`. */
 export const registryMaxContext = createContext<number | undefined>("registry-max");
 
 /**
@@ -76,6 +87,9 @@ export const registryHighlightContext = createContext<ThermalRangeOrUndefined>("
 export class RegistryController extends AbstractHierarchyController<IElementWithRegistryController> {
 
     private _UUID: string;
+    private _syncedFrom: number | undefined;
+    private _syncedTo: number | undefined;
+    private _hasSyncedRange = false;
 
     public get UUID(): string {
         return this._UUID;
@@ -89,8 +103,8 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
         opacity: { type: Number, reflect: true, attribute: "opacity" },
         min: { type: Number, reflect: false, state: true },
         max: { type: Number, reflect: false, state: true },
-        from: { type: Number, reflect: true, attribute: "from" },
-        to: { type: Number, reflect: true, attribute: "to" },
+        from: { type: Number, reflect: true, attribute: "from", converter: optionalNumberConverter },
+        to: { type: Number, reflect: true, attribute: "to", converter: optionalNumberConverter },
         loading: { type: Boolean, attribute: "is-loading", reflect: true },
         highlight: { type: Object, reflect: false, state: true },
     }
@@ -261,6 +275,12 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
             this._rangeListener.bind(this)
         );
 
+        // Keep the public range attributes in sync when the manager unit changes.
+        this.host.managerController.managerObject.unit.addListener(
+            this.UUID,
+            this._unitListener.bind(this)
+        );
+
 
         // Loading
         this.registryObject.loading.addListener(this.UUID, this._loadingListener.bind(this));
@@ -273,6 +293,7 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
         this.registryObject.opacity.removeListener(this.UUID);
         this.registryObject.minmax.removeListener(this.UUID);
         this.registryObject.range.removeListener(this.UUID);
+        this.host.managerController.managerObject.unit.removeListener(this.UUID);
         this.registryObject.loading.removeListener(this.UUID);
 
     }
@@ -285,7 +306,7 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
             this.setOpacity(this.host.opacity ?? 1);
         }
 
-        if (value.has("from") || value.has("to")) {
+        if ((value.has("from") || value.has("to")) && !this._isRangeSynced()) {
 
             if (
                 this.host.from === undefined
@@ -293,7 +314,10 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
             ) {
                 this._clearRange();
             } else {
-                this.setRange(this.host.from, this.host.to);
+                this.setRange(
+                    this.host.managerController.fromCurrentUnit(this.host.from),
+                    this.host.managerController.fromCurrentUnit(this.host.to)
+                );
             }
 
         }
@@ -346,35 +370,30 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
 
     }
 
+    /** 
+     * Set the range of the registry in Celsius. The range needs to be within the registry's minimum and maximum bounds which are controlled internally by `@labirthermal/core`.
+     * The internal value of all contexts is in Celsius with an exception of the public attribute which is in the current unit.
+     */
     setRange(
-        from: number,
-        to: number
+        fromCelsius: number,
+        toCelsius: number
     ): void {
 
         // Set the range to the registry object if it has changed
         if (
             this.registryObject.range.value === undefined
-            || this.registryObject.range.value.from !== from
-            || this.registryObject.range.value.to !== to
+            || this.registryObject.range.value.from !== fromCelsius
+            || this.registryObject.range.value.to !== toCelsius
         ) {
-            this.registryObject.range.imposeRange({ from, to });
+            this.registryObject.range.imposeRange({ from: fromCelsius, to: toCelsius });
         }
 
-        // Now the value should be changed, so impose its current internal value to attribute
-
-        const currentInternalRange = this.registryObject.range.value;
-
-        if (currentInternalRange === undefined) {
-            this._clearRange();
-        } else {
-            this.host.from = currentInternalRange.from;
-            this.host.to = currentInternalRange.to;
-            this.fromContextProvider.setValue(currentInternalRange.from);
-            this.toContextProvider.setValue(currentInternalRange.to);
-        }
+        // Publish current-unit values to the attributes and Celsius values to contexts.
+        this._publishRange(this.registryObject.range.value);
 
     }
 
+    /** Sets the range to the full span of the registry's bounds, if both minimum and maximum are defined. Internal units are Celsius. */
     setRangeFull() {
         if (this.host.min !== undefined && this.host.max !== undefined) {
             this.setRange(this.host.min, this.host.max);
@@ -384,18 +403,64 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
     private _rangeListener(
         value: ThermalRangeOrUndefined
     ) {
-        if (value !== undefined) {
-            this.setRange(value.from, value.to);
-        } else {
+        this._publishRange(value);
+    }
+
+    private _unitListener(): void {
+        // Preserve attributes that were explicitly changed but have not reached the core yet.
+        if (this._isRangeSynced()) {
+            this._publishRange(this.registryObject.range.value);
+        }
+    }
+
+    private _isRangeSynced(): boolean {
+        return this._hasSyncedRange
+            && this.host.from === this._syncedFrom
+            && this.host.to === this._syncedTo;
+    }
+
+    private _publishRange(value: ThermalRangeOrUndefined): void {
+        if (value === undefined) {
             this._clearRange();
+            return;
+        }
+
+        const from = this.host.managerController.toCurrentUnit(value.from);
+        const to = this.host.managerController.toCurrentUnit(value.to);
+
+        this._syncedFrom = from;
+        this._syncedTo = to;
+        this._hasSyncedRange = true;
+
+        if (this.host.from !== from) {
+            this.host.from = from;
+        }
+        if (this.host.to !== to) {
+            this.host.to = to;
+        }
+
+        if (this.fromContextProvider.value !== value.from) {
+            this.fromContextProvider.setValue(value.from);
+        }
+        if (this.toContextProvider.value !== value.to) {
+            this.toContextProvider.setValue(value.to);
         }
     }
 
     private _clearRange() {
+        this._syncedFrom = undefined;
+        this._syncedTo = undefined;
+        this._hasSyncedRange = true;
+
         this.host.from = undefined;
         this.host.to = undefined;
-        this.fromContextProvider.setValue(undefined);
-        this.toContextProvider.setValue(undefined);
+
+        if (this.fromContextProvider.value !== undefined) {
+            this.fromContextProvider.setValue(undefined);
+        }
+        if (this.toContextProvider.value !== undefined) {
+            this.toContextProvider.setValue(undefined);
+        }
     }
 
     private _loadingListener(
@@ -412,15 +477,13 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
 
     }
 
-    public setHighlight(value: ThermalRangeOrUndefined): void {
-        if (this.highlightContextProvider.value !== value) {
-            this.highlightContextProvider.setValue(value);
+    /** Set the highlight range for the registry. Internal units are Celsius. */
+    public setHighlight(valueInCelsius: ThermalRangeOrUndefined): void {
+        if (this.highlightContextProvider.value !== valueInCelsius) {
+            this.highlightContextProvider.setValue(valueInCelsius);
         }
     }
 
 
 
 }
-
-
-

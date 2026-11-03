@@ -8,6 +8,8 @@ The <code>ThermalRegistry</code> is a display context within a <code>ThermalMana
 
 All registries within a single <code>ThermalManager</code> share the manager's thermal palette and services, but each registry maintains its own independent display range, opacity, and group hierarchy.
 
+For the reactivity mechanisms used below (`addListener` and the `CallbacksManager` events), see [CallbacksManager](./callbacks-manager).
+
 ## Creating and managing registries
 
 A registry is identified by a unique ID string within its parent <code>ThermalManager</code>. To create or obtain an existing registry, use <code>manager.registries.addOrGetRegistry</code>:
@@ -35,7 +37,7 @@ const customRegistry = manager.registries.addOrGetRegistry( "custom-set", {
 manager.registries.removeRegistry( "display-set-a" );
 ```
 
-The manager's observable registry collection is available through `manager.registries.value`. Its listeners and hierarchy iterators are described in [ThermalManager](./thermal-manager#nested-registries). Options passed to `addOrGetRegistry` configure a new registry only; retrieving an existing ID does not change its settings.
+The manager's observable registry collection is available through `manager.registries.value`. Its listeners and hierarchy iterators are described in [ThermalManager](./thermal-manager#registries). Options passed to `addOrGetRegistry` configure a new registry only; retrieving an existing ID does not change its settings.
 
 ### Resetting or removing a registry
 
@@ -46,9 +48,15 @@ The manager's observable registry collection is available through `manager.regis
 
 Use `manager.registries.reset()` to destroy and remove all registries in that manager.
 
-## Managing groups (`registry.groups`)
+## <code>groups</code>
 
-Within a registry, thermal files are organized into groups represented by <code>ThermalGroup</code>. Groups are stored in the observable <code>registry.groups</code> property (`GroupsState`).
+<PropertyInfo
+    handler="GroupsState"
+    type="ThermalGroup[]"
+    source="packages/core/src/properties/lists/GroupsState.ts"
+/>
+
+Within a registry, thermal files are organized into groups represented by <code>ThermalGroup</code>. Groups are stored in the observable <code>registry.groups</code> property.
 
 To create a new group or retrieve an existing one by ID:
 
@@ -88,10 +96,25 @@ registry.groups.addListener( "groups-listener", groups => {
 registry.groups.removeListener( "groups-listener" );
 ```
 
-Treat `registry.groups.value` as read-only and use the collection's methods to modify it. `registry.groups.removeAllGroups()` destroys and removes every group and its instances. The registry also exposes `forEveryGroup` and `forEveryInstance` for the same hierarchy traversal.
+Treat `registry.groups.value` as read-only and use the collection's methods to modify it. The registry also exposes `forEveryGroup` and `forEveryInstance` for the same hierarchy traversal.
+
+### Setter methods
+
+- `registry.groups.addOrGetGroup( id, name?, description? )` – create or retrieve a group.
+- `registry.groups.addExistingGroup( group )` – add a directly instantiated `ThermalGroup`.
+- `registry.groups.removeGroup( id )` – destroy a group and its instances and remove it.
+- `registry.groups.removeAllGroups()` – destroy and remove every group and its instances.
+
+### Events
+
+- `registry.groups.addListener( id, groups => ... )` – listener on the group collection changes.
+
+### Example
+
+The example below shows an implementation of <code>GroupsState</code> using the <code>@labirthermal/webcomponents</code> package. Each [group-provider](../webcomponents/providers/group-provider) placed inside a [registry-provider](../webcomponents/providers/registry-provider) creates or retrieves one group of the registry – see the [context providers guide](../webcomponents/guide/hierarchy).
 
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider manager-slug="registry-groups-demo">
     <registry-provider registry-slug="demo-registry">
         <registry-range-display></registry-range-display>
@@ -133,9 +156,15 @@ Treat `registry.groups.value` as read-only and use the collection's methods to m
 ```
 :::
 
-## Minmax property (`registry.minmax`)
+## <code>minmax</code>
 
-The <code>registry.minmax</code> property (`MinmaxRegistryProperty`) represents the absolute minimum and maximum temperature bounds across all images in the entire registry.
+<PropertyInfo
+    handler="MinmaxRegistryProperty"
+    type="ThermalMinmaxOrUndefined"
+    source="packages/core/src/properties/scale/MinmaxRegistryState.ts"
+/>
+
+The <code>registry.minmax</code> property represents the absolute minimum and maximum temperature bounds across all images in the entire registry.
 
 ### How minmax is calculated
 
@@ -165,8 +194,22 @@ registry.minmax.addListener( "minmax-listener", value => {
 } );
 ```
 
+### Setter methods
+
+The property is read-only in normal use; it recalculates itself during the batch post-processing.
+
+- `registry.minmax.recalculateFromGroups()` – recalculate the bounds from the current groups (called automatically by `postLoadedProcessing()`).
+
+### Events
+
+- `registry.minmax.addListener( id, value => ... )` – listener on the bounds changes.
+
+### Example
+
+The example below shows an implementation of <code>MinmaxRegistryProperty</code> using the <code>@labirthermal/webcomponents</code> package. The `registry-ticks-bar` and `registry-range-display` controls visualize the registry's min/max bounds, and `registry-range-full-button` resets the active range to them – see the [thermal range guide](../webcomponents/guide/thermal-range-and-units#thermal-range).
+
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider manager-slug="registry-minmax-demo">
     <registry-provider registry-slug="demo-registry">
         <registry-ticks-bar placement="top"></registry-ticks-bar>
@@ -183,11 +226,8 @@ registry.minmax.addListener( "minmax-listener", value => {
 ```html
 <manager-provider manager-slug="registry-minmax-demo">
     <registry-provider registry-slug="demo-registry">
-        <!-- Renders ticks bar showing min-max temperature intervals -->
         <registry-ticks-bar placement="top"></registry-ticks-bar>
-        <!-- Displays current min/max and active range -->
         <registry-range-display></registry-range-display>
-        <!-- Button that resets the active range to full minmax -->
         <registry-range-full-button></registry-range-full-button>
         <group-provider group-slug="demo-group">
             <file-provider thermal="/files/klokan.lrc">
@@ -199,9 +239,15 @@ registry.minmax.addListener( "minmax-listener", value => {
 ```
 :::
 
-## Range property (`registry.range`)
+## <code>range</code>
 
-The <code>registry.range</code> property (`RangeDriver`) controls the active temperature window (`{ from: number, to: number }`) used to colorize thermograms in the registry. Pixels at or below `from` are mapped to the coldest color of the palette, while pixels at or above `to` are mapped to the hottest color.
+<PropertyInfo
+    handler="RangeDriver"
+    type="ThermalRangeOrUndefined"
+    source="packages/core/src/properties/scale/RangeDriver.ts"
+/>
+
+The <code>registry.range</code> property controls the active temperature window (`{ from: number, to: number }`) used to colorize thermograms in the registry. Pixels at or below `from` are mapped to the coldest color of the palette, while pixels at or above `to` are mapped to the hottest color.
 
 ### How range works
 
@@ -238,8 +284,23 @@ registry.range.addListener( "range-listener", range => {
 } );
 ```
 
+### Setter methods
+
+- `registry.range.imposeRange( { from, to } )` – set an explicit range (clamped to the minmax bounds).
+- `registry.range.applyMinmax()` – set the range to the full min/max limits.
+- `registry.range.applyAuto()` – set the histogram-based automatic range.
+
+### Events
+
+- `registry.range.addListener( id, range => ... )` – listener on the active range changes.
+- `registry.range.onAutoValueChanged` – [CallbacksManager](./callbacks-manager) called when the calculated automatic range changes.
+
+### Example
+
+The example below shows an implementation of <code>RangeDriver</code> using the <code>@labirthermal/webcomponents</code> package. The `registry-range-slider` manipulates the registry's range interactively, while `registry-range-auto-button` and `registry-range-full-button` call `applyAuto()` and `applyMinmax()`. The initial range can be set through the `from` and `to` attributes of [registry-provider](../webcomponents/providers/registry-provider) – see the [thermal range guide](../webcomponents/guide/thermal-range-and-units#thermal-range).
+
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider manager-slug="registry-range-demo">
     <registry-provider registry-slug="demo-registry">
         <registry-range-slider></registry-range-slider>
@@ -259,9 +320,7 @@ registry.range.addListener( "range-listener", range => {
 ```html
 <manager-provider manager-slug="registry-range-demo">
     <registry-provider registry-slug="demo-registry">
-        <!-- Interactive range slider -->
         <registry-range-slider></registry-range-slider>
-        <!-- Range indicators and quick buttons -->
         <registry-range-display></registry-range-display>
         <registry-range-auto-button></registry-range-auto-button>
         <registry-range-full-button></registry-range-full-button>
@@ -275,9 +334,15 @@ registry.range.addListener( "range-listener", range => {
 ```
 :::
 
-## Histogram property (`registry.histogram`)
+## <code>histogram</code>
 
-The <code>registry.histogram</code> property (`HistogramState`) contains the statistical distribution of temperatures across **all files and all groups** in the registry.
+<PropertyInfo
+    handler="HistogramState"
+    type="ThermalStatistics[]"
+    source="packages/core/src/properties/states/HistogramState.ts"
+/>
+
+The <code>registry.histogram</code> property contains the statistical distribution of temperatures across **all files and all groups** in the registry.
 
 ### How the histogram is calculated
 
@@ -311,8 +376,23 @@ registry.histogram.addListener( "hist-listener", data => {
 } );
 ```
 
+### Setter methods
+
+- `registry.histogram.setResolution( value )` – change the number of histogram bins and recalculate.
+- `registry.histogram.recalculateHistogramBufferInWorker()` – recalculate the histogram in a Web Worker (called automatically by `postLoadedProcessing()`).
+
+### Events
+
+- `registry.histogram.addListener( id, bins => ... )` – listener on the histogram data changes.
+- `registry.histogram.onCalculationStart` – [CallbacksManager](./callbacks-manager) called when a recalculation starts.
+- `registry.histogram.onCalculationEnd` – [CallbacksManager](./callbacks-manager) called with a success flag when a recalculation finishes.
+
+### Example
+
+The example below shows an implementation of <code>HistogramState</code> using the <code>@labirthermal/webcomponents</code> package. The `registry-histogram` control renders the registry's histogram bins and lets the user expand them into a detailed view.
+
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider manager-slug="registry-histogram-demo">
     <registry-provider registry-slug="demo-registry">
         <registry-histogram height="80px" expandable="true"></registry-histogram>
@@ -327,7 +407,6 @@ registry.histogram.addListener( "hist-listener", data => {
 ```html
 <manager-provider manager-slug="registry-histogram-demo">
     <registry-provider registry-slug="demo-registry">
-        <!-- Visual histogram component -->
         <registry-histogram height="80px" expandable="true"></registry-histogram>
         <group-provider group-slug="demo-group">
             <file-provider thermal="/files/klokan.lrc">
@@ -339,9 +418,15 @@ registry.histogram.addListener( "hist-listener", data => {
 ```
 :::
 
-## Opacity property (`registry.opacity`)
+## <code>opacity</code>
 
-The <code>registry.opacity</code> property (`OpacityDrive`) controls the opacity of thermal canvas layers for all instances in this registry. This is especially useful for dual-spectrum cameras where an IR thermogram is overlaid onto a visible-spectrum photograph.
+<PropertyInfo
+    handler="OpacityDrive"
+    type="number"
+    source="packages/core/src/properties/display/OpacityDrive.ts"
+/>
+
+The <code>registry.opacity</code> property controls the opacity of thermal canvas layers for all instances in this registry. This is especially useful for dual-spectrum cameras where an IR thermogram is overlaid onto a visible-spectrum photograph.
 
 The opacity value is constrained between `0` (completely transparent IR image) and `1` (completely opaque IR image).
 
@@ -363,8 +448,20 @@ registry.opacity.addListener( "opacity-listener", ( value: number ) => {
 } );
 ```
 
+### Setter methods
+
+- `registry.opacity.imposeOpacity( value )` – set the opacity (0–1) and propagate it to all instances.
+
+### Events
+
+- `registry.opacity.addListener( id, value => ... )` – listener on the opacity changes.
+
+### Example
+
+The example below shows an implementation of <code>OpacityDrive</code> using the <code>@labirthermal/webcomponents</code> package. The initial opacity is set through the `opacity` attribute of [registry-provider](../webcomponents/providers/registry-provider) and the user changes it with the `registry-opacity-slider` control.
+
 :::tabs
-== Interactive demo
+== @labirthermal/webcomponents implementation
 <manager-provider manager-slug="registry-opacity-demo">
     <registry-provider registry-slug="demo-registry" opacity="0.7">
         <registry-opacity-slider></registry-opacity-slider>
@@ -377,10 +474,8 @@ registry.opacity.addListener( "opacity-listener", ( value: number ) => {
 </manager-provider>
 == HTML source
 ```html
-<!-- Set initial opacity on provider -->
 <manager-provider manager-slug="registry-opacity-demo">
     <registry-provider registry-slug="demo-registry" opacity="0.7">
-        <!-- Opacity slider control -->
         <registry-opacity-slider></registry-opacity-slider>
         <group-provider group-slug="demo-group">
             <file-provider thermal="/files/soustruh.lrc">
@@ -392,9 +487,14 @@ registry.opacity.addListener( "opacity-listener", ( value: number ) => {
 ```
 :::
 
-## Batch file loading (`registry.batch`)
+## <code>batch</code>
 
-Files should be loaded through the registry's <code>batch</code> loader (`BatchLoader`), which groups file requests and automatically executes `postLoadedProcessing()` when requests finish.
+<PropertyInfo
+    handler="BatchLoader"
+    source="packages/core/src/loading/batch/BatchLoader.ts"
+/>
+
+Files should be loaded through the registry's <code>batch</code> loader, which groups file requests registered within one tick and automatically executes `postLoadedProcessing()` when requests finish. The whole loading pipeline – batching, caching and parser determination – is described in [FilesService & batches](./files-service).
 
 ```ts
 import {
@@ -429,6 +529,35 @@ registry.batch.request(
 Assign an optional human-readable label to a loaded instance with `result.setLabel("Measurement A")` in a successful batch callback. Read it through `result.label`; it does not change the file name or the source URL.
 
 The deprecated full-load methods, `loadFullOneFile` and `loadFullMultipleFiles`, also accept an optional `label` in each file request and apply it to the created instance. Labels belong to individual instances, so the same source file can have different labels in different groups. For new loading code, prefer the batch loader shown above.
+
+### Setter methods
+
+- `registry.batch.request( thermalUrl, visibleUrl, group, callback, id? )` – register a file request in the current (or a new) batch.
+- `registry.batch.closeBatch()` – close the currently open batch.
+
+### Events
+
+- `registry.batch.onBatchComplete` – [CallbacksManager](./callbacks-manager) called with all results whenever a batch finishes.
+- `batch.onResolve` – [CallbacksManager](./callbacks-manager) on the `Batch` object returned by `request()`, called with the batch's results.
+- `registry.onProcessingStart` / `registry.onProcessingEnd` – [CallbacksManager](./callbacks-manager)s fired around `postLoadedProcessing()`.
+
+## <code>loading</code>
+
+<PropertyInfo
+    handler="LoadingState"
+    type="boolean"
+    source="packages/core/src/properties/states/LoadingState.ts"
+/>
+
+Indicates whether the registry is currently loading files. The value is `true` from the first batch request until the last batch finishes.
+
+### Setter methods
+
+- `registry.loading.markAsLoading()` / `registry.loading.markAsLoaded()` – managed automatically by the batch loader; call them only when implementing a custom loading flow.
+
+### Events
+
+- `registry.loading.addListener( id, isLoading => ... )` – listener on the loading state changes.
 
 ## Summary of registry controls
 

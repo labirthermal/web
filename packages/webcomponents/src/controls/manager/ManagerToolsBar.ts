@@ -2,12 +2,14 @@ import type { ThermalTool } from "@labirthermal/core";
 import { consume } from "@lit/context";
 import { t } from "i18next";
 import { css, html, nothing } from "lit";
-import { state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { AbstractManagerConsumer } from "../../hierarchy/consumers/AbstractManagerConsumer";
 import { managerToolContext } from "../../controllers/ManagerController";
 import { T } from "../../translations/Languages";
+import type { Placement } from "@floating-ui/dom";
+import { ifDefined } from "lit/directives/if-defined.js";
 
 
 /**
@@ -18,6 +20,9 @@ export class ManagerToolBar extends AbstractManagerConsumer {
     @consume({ context: managerToolContext, subscribe: true })
     @state()
     protected value!: ThermalTool;
+
+    @property({type: String, reflect: true, attribute: "tooltip-placement"})
+    public tooltipPlacement?: Placement;
 
     /** Handle user input events */
     protected onSelect(tool: ThermalTool) {
@@ -60,7 +65,7 @@ thermal-btn {
         };
         return html`<thermal-btn 
     tooltip=${t(T[tool.name as keyof typeof T])}
-    tooltip-placement="right"
+    tooltip-placement="${ifDefined( this.tooltipPlacement )}"
     class=${classMap(classes)} 
     @click=${() => { this.managerObject.tool.selectTool(tool) }}
     variant=${tool.key === this.value.key ? "background" : "default"}

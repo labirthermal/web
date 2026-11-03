@@ -223,7 +223,12 @@ export class ThermalRegistry extends BaseStructureObject {
         // Reuse a cached histogram when the same source readers were already processed.
         this.histogram.recalculateHistogramBufferInWorker();
 
-        this.loading.markAsLoaded();
+        // Each batch runs this method upon its own completion while other batches
+        // may still be loading. In that case the loading state is kept - the
+        // BatchLoader marks the registry as loaded once its last batch finishes.
+        if ( this._batch === undefined || this._batch.hasLoadingBatches === false ) {
+            this.loading.markAsLoaded();
+        }
 
         this.onProcessingEnd.call();
 

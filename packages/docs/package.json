@@ -1,8 +1,10 @@
 {
   "name": "@labirthermal/docs",
   "version": "2.0.1",
-  "description": "Vitepress documentation for the @labirthermal project",
+  "author": "Jan Jáchim <jachim@ntc.zcu.cz>",
+  "description": "Vitepress documentation for the @labirthermal/web repository",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",

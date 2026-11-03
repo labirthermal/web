@@ -1,4 +1,4 @@
-import type { AbstractFileResult, AvailableThermalPalette, PlaybackSpeeds, ThermalFileFailure, ThermalFileInstance, ThermalGroup, ThermalManager, ThermalRangeOrUndefined, ThermalRegistry } from "@labirthermal/core";
+import type { AbstractFileResult, AvailableThermalPalette, PlaybackSpeeds, ThermalFileFailure, ThermalFileInstance, ThermalGroup, ThermalManager, ThermalRangeOrUndefined, ThermalRegistry, ThermalUnit } from "@labirthermal/core";
 import { ThermalFileReader } from "@labirthermal/core";
 import { provide } from "@lit/context";
 import { t } from "i18next";
@@ -55,12 +55,15 @@ export class DropinAppElement
     smoothThermograms: boolean = false;
     smoothGraph: boolean = false;
     tool: string = "inspect";
+    unit!: ThermalUnit;
     managerController: ManagerController = new ManagerController(this);
 
     registrySlug!: string;
     registryObject!: ThermalRegistry;
     opacity: number = 1;
+    /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
     min?: number | undefined;
+    /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
     max?: number | undefined;
     from?: number | undefined;
     to?: number | undefined;
@@ -295,6 +298,7 @@ export class DropinAppElement
             elements.push(html`
             <manager-tool-bar slot="pre-bar"></manager-tool-bar>
             <manager-palette-dropdown slot="pre-bar"></manager-palette-dropdown>
+            <manager-unit-switch slot="pre-bar" active-variant="background"></manager-unit-switch>
             <registry-range-form slot="pre-bar"></registry-range-form>
             
             ` );

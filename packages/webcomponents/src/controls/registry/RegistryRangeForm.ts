@@ -1,8 +1,11 @@
 import type { ThermalMinmaxOrUndefined, ThermalRangeOrUndefined, ThermalRegistry } from "@labirthermal/core";
+import { ThermalUnit, thermalUnits } from "@labirthermal/core";
+import { consume } from "@lit/context";
 import { t } from "i18next";
 import { css, html } from "lit";
 import type { CSSResultGroup, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
+import { managerUnitContext } from "../../controllers/ManagerController";
 import { AbstractRegistryConsumer } from "../../hierarchy/consumers/AbstractRegistryConsumer";
 import { T } from "../../translations/Languages";
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -12,6 +15,10 @@ import { ifDefined } from "lit/directives/if-defined.js";
  * Form control for editing a thermal registry's active range. It keeps its
  * inputs synchronized with registry range data and provides range presets,
  * bounded stepping, and rounding.
+ *
+ * All values, steps and rounding of the form are in the manager's current
+ * unit. The registry always stays in degrees Celsius: incoming values are
+ * converted for display and edited values are converted back to Celsius.
  *
  * @see AbstractRegistryConsumer
  * @see RegistryController
@@ -27,11 +34,33 @@ export class RegistryRangeForm extends AbstractRegistryConsumer {
     @property({ type: Boolean, reflect: true })
     public stacked: boolean = false;
 
-    /** The registry minimum, or `undefined` until bounds are available. */
+    /** The manager's current unit; Celsius is used until it is provided. */
+    @state()
+    @consume({ context: managerUnitContext, subscribe: true })
+    protected unit?: ThermalUnit;
+
+    /** Definition of the displayed unit. */
+    protected get unitDefinition() {
+        return thermalUnits[this.unit ?? ThermalUnit.C] ?? thermalUnits[ThermalUnit.C];
+    }
+
+    /** Convert a registry value in Celsius to the displayed unit. */
+    protected toDisplayed(celsius: number): number {
+        return this.unitDefinition.fromCelsius(celsius);
+    }
+
+    /** Convert a displayed value back to Celsius for the registry. */
+    protected toCelsius(displayed: number): number {
+        return this.unitDefinition.toCelsius(displayed);
+    }
+
+    /* The following values are in the displayed unit. */
+
+    /** The registry minimum in the displayed unit (not Celsius), or `undefined` until bounds are available. */
     @state()
     protected min: number | undefined;
 
-    /** The registry maximum, or `undefined` until bounds are available. */
+    /** The registry maximum in the displayed unit (not Celsius), or `undefined` until bounds are available. */
     @state()
     protected max: number | undefined;
 
@@ -80,6 +109,17 @@ export class RegistryRangeForm extends AbstractRegistryConsumer {
     willUpdate(changedProperties: PropertyValues<this>): void {
         super.willUpdate(changedProperties);
         this.hydrate();
+
+        // Display the registry values again in the new unit
+        if ((changedProperties as PropertyValues).has("unit") && this.subscribedRegistry) {
+            if (this.debounceTimer) {
+                // A pending edit was typed in the previous unit
+                clearTimeout(this.debounceTimer);
+                this.debounceTimer = undefined;
+            }
+            this.recieveMinmax(this.subscribedRegistry.minmax.value);
+            this.recieveRange(this.subscribedRegistry.range.value);
+        }
     }
 
     disconnectedCallback(): void {
@@ -141,8 +181,10 @@ export class RegistryRangeForm extends AbstractRegistryConsumer {
      */
     private recieveMinmax = (value: ThermalMinmaxOrUndefined): void => {
         if ( value ) {
-            if (this.min !== value.min ) this.min = value.min;
-            if (this.max !== value.max ) this.max = value.max;
+            const min = this.toDisplayed(value.min);
+            const max = this.toDisplayed(value.max);
+            if (this.min !== min ) this.min = min;
+            if (this.max !== max ) this.max = max;
         } else {
             // Clear range state when the registry no longer has known bounds.
             this.min = undefined;
@@ -163,13 +205,15 @@ export class RegistryRangeForm extends AbstractRegistryConsumer {
         this.isUpdatingFromRegistry = true;
 
         if ( value ) {
-            if (this.from !== value.from ) {
-                this.from = value.from;
-                this.inputValues = { ...this.inputValues, from: value.from?.toFixed(2) ?? "" };
+            const from = this.toDisplayed(value.from);
+            const to = this.toDisplayed(value.to);
+            if (this.from !== from ) {
+                this.from = from;
+                this.inputValues = { ...this.inputValues, from: from.toFixed(2) };
             }
-            if (this.to !== value.to ) {
-                this.to = value.to;
-                this.inputValues = { ...this.inputValues, to: value.to?.toFixed(2) ?? "" };
+            if (this.to !== to ) {
+                this.to = to;
+                this.inputValues = { ...this.inputValues, to: to.toFixed(2) };
             }
         } else {
             this.from = undefined;
@@ -231,12 +275,16 @@ export class RegistryRangeForm extends AbstractRegistryConsumer {
      * Updates the lower endpoint and imposes the resulting range on the registry
      * when both endpoints are available.
      *
-     * @param value The new lower endpoint.
+     * @param value The new lower endpoint in the displayed unit.
      */
     private updateFrom(value: number | undefined): void {
         if (this.registryObject && value !== undefined && this.to !== undefined) {
             this.from = value;
-            this.registryObject.range.imposeRange({ from: value, to: this.to });
+            // The untouched endpoint is taken from the registry so that it is not altered by the conversion
+            this.registryObject.range.imposeRange({
+                from: this.toCelsius(value),
+                to: this.registryObject.range.value?.to ?? this.toCelsius(this.to)
+            });
         }
     }
 
@@ -244,12 +292,16 @@ export class RegistryRangeForm extends AbstractRegistryConsumer {
      * Updates the upper endpoint and imposes the resulting range on the registry
      * when both endpoints are available.
      *
-     * @param value The new upper endpoint.
+     * @param value The new upper endpoint in the displayed unit.
      */
     private updateTo(value: number | undefined): void {
         if (this.registryObject && value !== undefined && this.from !== undefined) {
             this.to = value;
-            this.registryObject.range.imposeRange({ from: this.from, to: value });
+            // The untouched endpoint is taken from the registry so that it is not altered by the conversion
+            this.registryObject.range.imposeRange({
+                from: this.registryObject.range.value?.from ?? this.toCelsius(this.from),
+                to: this.toCelsius(value)
+            });
         }
     }
 
@@ -904,7 +956,7 @@ export class RegistryRangeForm extends AbstractRegistryConsumer {
                         }
                     }}
                 ></input>
-                <aside>°C</aside>
+                <aside>${this.unitDefinition.symbol}</aside>
                 <button 
                     class="right"
                     ?disabled=${!canStepUp}

@@ -25,24 +25,38 @@ let observer: MutationObserver | undefined
 let connected = false
 const bare = ref(false)
 
+type PropertyOptions = { attribute?: string | boolean, type?: unknown }
+
 /** Maps an HTML attribute to the reactive Lit property that holds its current value. */
-const propertyOf = (attribute: string): string | undefined => {
-    const properties: Map<string, { attribute?: string | boolean }> | undefined =
-        (props.element.constructor as { elementProperties?: Map<string, { attribute?: string | boolean }> }).elementProperties
+const propertyOf = (attribute: string): { name: string, options: PropertyOptions } | undefined => {
+    const properties: Map<string, PropertyOptions> | undefined =
+        (props.element.constructor as { elementProperties?: Map<string, PropertyOptions> }).elementProperties
     if (!properties) {
         return undefined
     }
     for (const [name, options] of properties) {
         const mapped = typeof options.attribute === 'string' ? options.attribute : name.toLowerCase()
         if (options.attribute !== false && mapped === attribute) {
-            return name
+            return { name, options }
         }
     }
     return undefined
 }
 
-const readValue = (attribute: string): string | undefined => {
+// Boolean attributes follow the Lit standard: present means `true`, absent means `false`.
+// A boolean fallback marks the attribute as boolean even before the element is defined.
+const isBoolean = (attribute: string, fallback: unknown): boolean =>
+    propertyOf(attribute)?.options.type === Boolean || typeof fallback === 'boolean'
+
+const readBoolean = (attribute: string): boolean => {
     const property = propertyOf(attribute)
+    return property !== undefined
+        ? Boolean((props.element as unknown as Record<string, unknown>)[property.name])
+        : props.element.hasAttribute(attribute)
+}
+
+const readValue = (attribute: string): string | undefined => {
+    const property = propertyOf(attribute)?.name
     const value = property !== undefined
         ? (props.element as unknown as Record<string, unknown>)[property]
         : props.element.getAttribute(attribute)
@@ -54,16 +68,23 @@ const readValue = (attribute: string): string | undefined => {
 
 const rows = computed(() => {
     revision.value
-    return Object.entries(props.tracked).map(([name, fallback]) => {
+    return Object.entries(props.tracked).flatMap(([name, fallback]) => {
+        // Boolean attribute: shown as a bare name when true, hidden when false
+        if (isBoolean(name, fallback)) {
+            return readBoolean(name) ? [{ name, value: '', isDefault: false, isBoolean: true }] : []
+        }
+
+        // Valued attribute: the edited text, the current value or the fallback
         if (editing.value?.name === name) {
-            return { name, value: editing.value.value, isDefault: false }
+            return [{ name, value: editing.value.value, isDefault: false, isBoolean: false }]
         }
         const value = readValue(name)
-        return {
+        return [{
             name,
             value: value ?? (fallback === null || fallback === undefined ? '' : String(fallback)),
             isDefault: value === undefined,
-        }
+            isBoolean: false,
+        }]
     })
 })
 
@@ -119,16 +140,19 @@ onBeforeUnmount(() => {
 
 <template>
     <span class="hierarchy-label__tag">{{ bare ? '' : '<' }}{{ element.localName }}</span>
-    <span v-for="row in rows" :key="row.name" class="hierarchy-label__attribute">{{ row.name }}="<span
-            class="hierarchy-label__value"
-            :class="{ 'hierarchy-label__value--default': row.isDefault }"
-            :data-name="row.name"
-            :title="row.isDefault ? 'Default value – click to edit' : 'Click to edit'"
-            contenteditable="plaintext-only"
-            spellcheck="false"
-            @focus="editing = { name: row.name, value: row.value }"
-            @keydown="onKeydown"
-            @blur="commit(row.name, $event)"
-        >{{ row.value }}</span>"</span>
+    <template v-for="row in rows" :key="row.name">
+        <span v-if="row.isBoolean" class="hierarchy-label__attribute">{{ row.name }}</span>
+        <span v-else class="hierarchy-label__attribute">{{ row.name }}="<span
+                class="hierarchy-label__value"
+                :class="{ 'hierarchy-label__value--default': row.isDefault }"
+                :data-name="row.name"
+                :title="row.isDefault ? 'Default value – click to edit' : 'Click to edit'"
+                contenteditable="plaintext-only"
+                spellcheck="false"
+                @focus="editing = { name: row.name, value: row.value }"
+                @keydown="onKeydown"
+                @blur="commit(row.name, $event)"
+            >{{ row.value }}</span>"</span>
+    </template>
     <span v-if="!bare" class="hierarchy-label__tag">></span>
 </template>
