@@ -3,12 +3,12 @@ import { AbstractProperty } from "../abstractProperty";
 import { CallbacksManager } from "../callbacksManager";
 
 
-/** The range should allways contain both properties. */
+/** The range should allways contain both properties. The internal value is always in Celsius. */
 type ThermalRangeType = {
     from: number,
     to: number
 }
-/** The range or undefined */
+/** The range or undefined. The value is always in Celsius. */
 export type ThermalRangeOrUndefined = ThermalRangeType | undefined;
 
 /** Handles the thermal range display. Internal value is always stored in Celsius. */
@@ -69,6 +69,7 @@ export class RangeDriver extends AbstractProperty<ThermalRangeOrUndefined, Therm
     /** 
      * Imposes a range to itself and below
      * - needs to be called before the minmax is calculated!
+     * - The value used here needs always to be in Celsius.
      */
     public imposeRange(valueInCelsius: ThermalRangeOrUndefined) {
 
@@ -98,7 +99,7 @@ export class RangeDriver extends AbstractProperty<ThermalRangeOrUndefined, Therm
     }
 
 
-    /** Sets the range to the current minmax values */
+    /** Sets the range to the current minmax values. The internal value here is always in Celsius. */
     public applyMinmax() {
         if (this.parent.minmax.value) {
             const newRange = { from: this.parent.minmax.value.min, to: this.parent.minmax.value.max };
@@ -106,17 +107,19 @@ export class RangeDriver extends AbstractProperty<ThermalRangeOrUndefined, Therm
         }
     }
 
-    /** Sets the range automatically based on the current histogram */
+    /** Sets the range automatically based on the current histogram. The internal value here is always in Celsius. */
     public applyAuto() {
 
         this.imposeRange(this._autoValue);
 
     }
 
+    /** The automatically calculated range based on the current histogram. This value is always in Celsius. */
     public get autoValue(): ThermalRangeOrUndefined {
         return this._autoValue;
     }
 
+    /** Recalculate the internal automatic value based on the current histogram. The internal value is always in Celsius. */
     public recalculateAutoValue(): ThermalRangeOrUndefined {
         const previousValue = this._autoValue;
 

@@ -36,12 +36,15 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
     @consume({context: registryHighlightContext, subscribe: true})
     protected highlight?: ThermalRangeOrUndefined;
 
+     /** The manager's current unit; Celsius is used until it is provided. */
+    @state()
     @consume({ context: managerUnitContext, subscribe: true })
     protected unit?: ThermalUnit;
 
     @property({ type: String, reflect: true })
     public placement: string = "top";
 
+    /** Registry minimum and maximum in Celsius. */
     @state()
     protected minmax: ThermalMinmaxOrUndefined = undefined;
 
@@ -290,7 +293,7 @@ export class RegistryTicksBar extends AbstractRegistryConsumer {
                     <div class="tick" >
                         <div class="tick-marker"></div>
                         <div class="tick-value">
-                            ${this.toCurrentUnit( tick.value ).toFixed(RegistryTicksBar.TICK_FIXED)}
+                            ${this.managerController.toCurrentUnit( tick.value ).toFixed(RegistryTicksBar.TICK_FIXED)}
                         </div>
                     </div>
                         `;

@@ -1,7 +1,7 @@
 import { ThermalGroup } from "../../hierarchy/ThermalGroup";
 import { AbstractMinmaxProperty, ThermalMinmaxOrUndefined, ThermalMinmaxType } from "./abstractMinmaxProperty";
 
-
+/** The min and max values of the current group. The value is always in Celsius. */
 export class MinmaxGroupProperty extends AbstractMinmaxProperty<ThermalGroup> {
 
     protected validate(value: ThermalMinmaxOrUndefined): ThermalMinmaxOrUndefined {

@@ -69,47 +69,4 @@ export abstract class AbstractManagerConsumer extends AbstractThermalElement {
      })
     public managerController!: ManagerController;
 
-    connectedCallback(): void {
-        super.connectedCallback();
-
-        // Register update on unit change
-        if (this.managerController) {
-            this.managerController.managerObject.unit.addListener( this.getUUID("unit"), () => {
-                this.requestUpdate();
-            });
-        }
-
-    }
-
-    disconnectedCallback(): void {
-        super.disconnectedCallback();
-
-        // Remove the callback on unit change
-        if (this.managerController) {
-            this.managerController.managerObject.unit.removeListener( this.getUUID("unit") );
-        }
-    }
-
-    /** Format a single value in Celsius to the current unit and output it along with its unit symbol. */
-    public formatSingle(
-        valueInCelsius: number
-    ): string {
-        return this.managerController.managerObject.unit.formatSingle(valueInCelsius);
-    }
-
-    /** Format a range of values in Celsius to the current unit and output it along with its unit symbol. */
-    public formatRange(
-        fromInCelsius: number,
-        toInCelsius: number
-    ): string {
-        return this.managerController.managerObject.unit.formatRange(fromInCelsius, toInCelsius);
-    }
-
-    /** Convert a value in Celsius to the current unit and return the number. */
-    public toCurrentUnit(
-        valueInCelsius: number
-    ): number {
-        return this.managerController.managerObject.unit.celsiusToCurrent(valueInCelsius);
-    }
-
 }

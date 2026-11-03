@@ -17,8 +17,10 @@ export abstract class AbstractRegistryProvider extends AbstractManagerConsumer i
 
     public opacity: number = 1;
 
+    /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
     public min?: number;
 
+    /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
     public max?: number;
 
     public from?: number;

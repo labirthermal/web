@@ -127,6 +127,7 @@ export class SingleVideoExportConfigDirective extends Directive {
 
         const thermalScale: unknown[] = [
             html`<manager-palette-dropdown ></manager-palette-dropdown>`,
+            html`<manager-unit-switch active-variant="background"></manager-unit-switch>`,
             html`<registry-range-form></registry-range-form>`
         ];
 

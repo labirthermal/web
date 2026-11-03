@@ -1,9 +1,12 @@
-import { TimeFormat } from "@labirthermal/core";
+import { ThermalUnit, TimeFormat } from "@labirthermal/core";
 import { t } from "i18next";
 import { css, html, nothing } from "lit";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { AbstractFileConsumer } from "../../hierarchy/consumers/AbstractFileConsumer";
 import { T } from "../../translations/Languages";
+import { managerUnitContext } from "../../controllers/ManagerController";
+import { consume } from "@lit/context";
+import { state } from "lit/decorators.js";
 
 export class FileInfoButton extends AbstractFileConsumer {
 
@@ -12,6 +15,11 @@ export class FileInfoButton extends AbstractFileConsumer {
     public onInstanceCreated(): void { }
 
     public onFailure(): void { }
+
+    /** Consume the current unit, because we need this component to rerender whenever the unit changes. */
+    @state()
+    @consume({ context: managerUnitContext, subscribe: true })
+    private unit!: ThermalUnit;
 
     static styles = css`
 
@@ -181,16 +189,16 @@ export class FileInfoButton extends AbstractFileConsumer {
                         
                         ${unsafeHTML(this.renderNumericalRow(
                 t(T.minimaltemperature),
-                this.file.min,
-                10,
-                "°C"
+                this.managerController.toCurrentUnit(this.file.min),
+                2,
+                this.managerController.currentUnit.symbol
             ))}
 
                         ${unsafeHTML(this.renderNumericalRow(
                 t(T.maximaltemperature),
-                this.file.max,
-                10,
-                "°C"
+                this.managerController.toCurrentUnit(this.file.max),
+                2,
+                this.managerController.currentUnit.symbol
             ))}
 
                         

@@ -9,7 +9,8 @@ import type { ManagerController } from "./ManagerController";
 
 type IHostProperties = {
 
-    /** This object is obligatory and it comes either from:
+    /** 
+     * This object is obligatory and it comes either from:
      * - directly from the host's `ManagerController` instance - in case this `RegistryController` is on the same element as the `ManagerController`
      * - from the `managerControllerContext` - for elements that are nested lower in the hierarchy, under an element with `ManagerController`
      */
@@ -21,16 +22,25 @@ type IHostProperties = {
 
     registryController: RegistryController;
 
+    /** Aspect of IR / visible images. */
     opacity: number;
 
+    /** Current minimum temperature in Celsius. This value is set internally by `@labirthermal/core`. */
     min?: number;
+
+    /** Current maximum temperature in Celsius. This value is set internally by `@labirthermal/core`. */
     max?: number;
 
+    /** Current range lower endpoint in the current unit.  */
     from?: number;
+
+    /** Current range upper endpoint in the current unit. */
     to?: number;
 
+    /** Current highlighted range in Celsius */
     highlight?: ThermalRangeOrUndefined;
 
+    /** Whether the registry is currently loading. Controlled internally by `@labirthermal/core`. */
     loading: boolean;
 
 }
@@ -55,10 +65,10 @@ export const registryRangeToContext = createContext<undefined | number>("registr
 /** Exposes the current registry loading value from the `RegistryController`. */
 export const registryLoadingContext = createContext<boolean>("registry-loading");
 
-/** Exposes the current registry min context from the `RegistryController` */
+/** Exposes the current registry minimum in Celsius from the `RegistryController`. */
 export const registryMinContext = createContext<number | undefined>("registry-min");
 
-/** Exposes the current registry max value from the `RegistryController` */
+/** Exposes the current registry maximum in Celsius from the `RegistryController`. */
 export const registryMaxContext = createContext<number | undefined>("registry-max");
 
 /**
@@ -346,18 +356,22 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
 
     }
 
+    /** 
+     * Set the range of the registry in Celsius. The range needs to be within the registry's minimum and maximum bounds which are controlled internally by `@labirthermal/core`.
+     * The internal value of all contexts is in Celsius with an exception of the public attribute which is in the current unit.
+     */
     setRange(
-        from: number,
-        to: number
+        fromCelsius: number,
+        toCelsius: number
     ): void {
 
         // Set the range to the registry object if it has changed
         if (
             this.registryObject.range.value === undefined
-            || this.registryObject.range.value.from !== from
-            || this.registryObject.range.value.to !== to
+            || this.registryObject.range.value.from !== fromCelsius
+            || this.registryObject.range.value.to !== toCelsius
         ) {
-            this.registryObject.range.imposeRange({ from, to });
+            this.registryObject.range.imposeRange({ from: fromCelsius, to: toCelsius });
         }
 
         // Now the value should be changed, so impose its current internal value to attribute
@@ -375,6 +389,7 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
 
     }
 
+    /** Sets the range to the full span of the registry's bounds, if both minimum and maximum are defined. Internal units are Celsius. */
     setRangeFull() {
         if (this.host.min !== undefined && this.host.max !== undefined) {
             this.setRange(this.host.min, this.host.max);
@@ -412,9 +427,10 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
 
     }
 
-    public setHighlight(value: ThermalRangeOrUndefined): void {
-        if (this.highlightContextProvider.value !== value) {
-            this.highlightContextProvider.setValue(value);
+    /** Set the highlight range for the registry. Internal units are Celsius. */
+    public setHighlight(valueInCelsius: ThermalRangeOrUndefined): void {
+        if (this.highlightContextProvider.value !== valueInCelsius) {
+            this.highlightContextProvider.setValue(valueInCelsius);
         }
     }
 

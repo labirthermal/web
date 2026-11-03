@@ -1,4 +1,4 @@
-import type { AbstractAnalysis, ThermalFileInstance } from "@labirthermal/core";
+import type { AbstractAnalysis, ThermalFileInstance, ThermalUnit } from "@labirthermal/core";
 import { t } from "i18next";
 import type { PropertyValues } from "lit";
 import { css, html, nothing } from "lit";
@@ -9,6 +9,8 @@ import type { StyleInfo } from "lit/directives/style-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { AbstractFileConsumer } from "../../../hierarchy/consumers/AbstractFileConsumer";
 import { T } from "../../../translations/Languages";
+import { managerUnitContext } from "../../../controllers/ManagerController";
+import { consume } from "@lit/context";
 
 /** Display the analysis state for the purpose of exporting. */
 export class FileAnalysisDisplayElement extends AbstractFileConsumer {
@@ -19,6 +21,9 @@ export class FileAnalysisDisplayElement extends AbstractFileConsumer {
     protected analysis: AbstractAnalysis[] = [];
 
     private boundFile?: ThermalFileInstance;
+
+    @consume({context: managerUnitContext, subscribe: true })
+    private unit!: ThermalUnit;
 
     public onFailure(): void {}
 

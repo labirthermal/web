@@ -61,7 +61,7 @@ export class FileVideoExportButton extends AbstractFileConsumer {
         return html`<thermal-dialog
             ${ref(this.dialogRef)}
             label="${this.t("export")}"
-            is-fullscreen="true"
+            ?is-fullscreen=${true}
             .onCloseEveryTime=${() => {
                 this.isOpen = false;
                 return true;
@@ -141,7 +141,6 @@ export class FileVideoExportButton extends AbstractFileConsumer {
             }}
             variant=${this.variant || "default"}
             size=${this.size || "md"}
-            plain="${this.plain || false}"
             icon=${ifDefined(this.icon)}
             iconStyle=${ifDefined(this.iconStyle)}
             tooltip=${ifDefined(this.tooltip)}

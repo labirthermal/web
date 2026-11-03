@@ -27,10 +27,12 @@ export class RegistryRangeSlider extends AbstractRegistryConsumer {
     @property({ type: String, attribute: "style" })
     private heightStyle: string | null = null;
 
+    /** Registry minimum in Celsius. */
     @consume({ context: registryMinContext, subscribe: true })
     @state()
     public min?: number;
 
+    /** Registry maximum in Celsius. */
     @consume({ context: registryMaxContext, subscribe: true })
     @state()
     public max?: number;
@@ -97,10 +99,10 @@ export class RegistryRangeSlider extends AbstractRegistryConsumer {
         if (![min, max, from, to, max - min].every(Number.isFinite)
             || min > max || from < min || to > max || from > to) return undefined;
         return { 
-            min: this.toCurrentUnit(min), 
-            max: this.toCurrentUnit(max), 
-            from: this.toCurrentUnit(from), 
-            to: this.toCurrentUnit(to) 
+            min: this.managerController.toCurrentUnit(min), 
+            max: this.managerController.toCurrentUnit(max), 
+            from: this.managerController.toCurrentUnit(from), 
+            to: this.managerController.toCurrentUnit(to) 
         };
     }
 

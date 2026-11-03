@@ -7,6 +7,7 @@ import { createOrGetManager } from "../hierarchy/providers/getters";
 import { paletteConverter } from "../utils/converters/paletteConverter";
 import type { HostReactiveProperties } from "./AbstractHierarchyController";
 import { AbstractHierarchyController, INTERNAL_STATE_DECLARATION } from "./AbstractHierarchyController";
+import { ThermalUnitDefinition } from "@labirthermal/core";
 
 interface IHostProperties {
 
@@ -513,6 +514,39 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
         if (this.managerObject.unit.value !== value) {
             this.managerObject.unit.set(value);
         }
+    }
+
+    /** Format a single value in current unit and output it along with its unit symbol. */
+    public formatSingle(
+        valueInCurrentUnit: number
+    ): string {
+        return this.managerObject.unit.formatSingle(valueInCurrentUnit);
+    }
+
+    /** Format a range of values in the current unit and output it along with its unit symbol. */
+    public formatRange(
+        fromInCurrentUnit: number,
+        toInCurrentUnit: number
+    ): string {
+        return this.managerObject.unit.formatRange(fromInCurrentUnit, toInCurrentUnit);
+    }
+
+    /** Convert a value in Celsius unit to the current unit and return the number. */
+    public toCurrentUnit(
+        valueInCelsius: number
+    ): number {
+        return this.managerObject.unit.celsiusToCurrent(valueInCelsius);
+    }
+
+    /** Convert a value in the current unit to Celsius. */
+    public fromCurrentUnit(
+        valueInCurrentUnit: number
+    ): number {
+        return this.managerObject.unit.currentToCelsius(valueInCurrentUnit);
+    }
+
+    public get currentUnit(): ThermalUnitDefinition {
+        return this.managerObject.unit.current;
     }
 
 }

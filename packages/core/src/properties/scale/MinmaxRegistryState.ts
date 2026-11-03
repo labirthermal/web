@@ -2,6 +2,7 @@ import { ThermalGroup } from "../../hierarchy/ThermalGroup";
 import { ThermalRegistry } from "../../hierarchy/ThermalRegistry";
 import { AbstractMinmaxProperty, ThermalMinmaxOrUndefined } from "./abstractMinmaxProperty";
 
+/** The current minmax values aggregated from all groups. The value is always in Celsius. */
 export class MinmaxRegistryProperty extends AbstractMinmaxProperty<ThermalRegistry> {
 
     protected validate(value: ThermalMinmaxOrUndefined): ThermalMinmaxOrUndefined {
