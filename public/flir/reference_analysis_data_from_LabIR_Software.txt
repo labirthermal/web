@@ -1,0 +1,46 @@
+# Tests in LabIR 1.6.2
+
+file: flir_02.jpg
+
+purpose: Analysis were set in LabIR Software and these data serve as reference for tests in @labirthermal/web package.
+
+units: Celsius
+
+## Rectangle analysis
+
+TL point
+x: 433
+y: 289
+
+BR point
+x: 740
+y: 523
+
+Min: 23.8
+Max: 32.6
+Prům: 24.9
+
+## Elipsis analysis
+
+Top: 48
+Left: 443
+Right: 780
+Bottom: 203
+
+Min: 24.1
+Max: 28.3
+Prům: 24.5
+
+## Point analysis 1
+
+x: 180
+y: 262
+
+Temperature: 24.8
+
+## Point analysis 2
+
+x: 769
+y: 495
+
+Temperature: 29.7
