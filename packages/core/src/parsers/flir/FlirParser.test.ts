@@ -126,6 +126,23 @@ describe( "FlirParser", () => {
 
     } );
 
+    test( "matches LabIR 1.6.2 analyses for flir_02.jpg", async () => {
+        const working = await getWorkingBuffer( "flir_02.jpg" );
+
+        const rectangle = ( await FlirParser.rectAnalysisData( working, 433, 289, 307, 234 ) )[ 0 ];
+        expect( rectangle.min ).toBeCloseTo( 23.8, 1 );
+        expect( rectangle.max ).toBeCloseTo( 32.6, 1 );
+        expect( rectangle.avg ).toBeCloseTo( 24.9, 1 );
+
+        const ellipse = ( await FlirParser.ellipsisAnalysisData( working, 443, 48, 337, 155 ) )[ 0 ];
+        expect( ellipse.min ).toBeCloseTo( 24.1, 1 );
+        expect( ellipse.max ).toBeCloseTo( 28.3, 1 );
+        expect( ellipse.avg ).toBeCloseTo( 24.5, 1 );
+
+        expect( ( await FlirParser.pointAnalysisData( working, 180, 262 ) )[ 0 ] ).toBeCloseTo( 24.8, 1 );
+        expect( ( await FlirParser.pointAnalysisData( working, 769, 495 ) )[ 0 ] ).toBeCloseTo( 29.7, 1 );
+    } );
+
     test( "matches flyr wherever flyr can read the file", () => {
         const compared = FLIR_FIXTURE_NAMES.filter( name => FLIR_REFERENCE[ name ].flyrMaxAbsDiff !== null );
         expect( compared ).toEqual( FLIR_FIXTURE_NAMES );
