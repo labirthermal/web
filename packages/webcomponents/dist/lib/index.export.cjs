@@ -1,5 +1,5 @@
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-//#region \0rolldown/runtime.js
+// \0rolldown/runtime.js
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -20,7 +20,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 	value: mod,
 	enumerable: true
 }) : target, mod));
-//#endregion
 let _labirthermal_core = require("@labirthermal/core");
 let lit = require("lit");
 let lit_i18n = require("lit-i18n");
@@ -37,6 +36,7 @@ let lit_directives_cache_js = require("lit/directives/cache.js");
 let lit_directives_map_js = require("lit/directives/map.js");
 let _floating_ui_dom = require("@floating-ui/dom");
 let lit_directives_class_map_js = require("lit/directives/class-map.js");
+let lit_decorators_property_js = require("lit/decorators/property.js");
 let lit_decorators_state_js = require("lit/decorators/state.js");
 let lit_directives_live_js = require("lit/directives/live.js");
 let lit_directives_guard_js = require("lit/directives/guard.js");
@@ -46,8 +46,7 @@ let lit_directives_when_js = require("lit/directives/when.js");
 let lit_directives_unsafe_html_js = require("lit/directives/unsafe-html.js");
 let mediabunny = require("mediabunny");
 let lit_directive_js = require("lit/directive.js");
-let lit_decorators_property_js = require("lit/decorators/property.js");
-//#region src/utils/converters/numberRangeConverter.ts
+// src/utils/converters/numberRangeConverter.ts
 const numberRangeConverter = (emptyValue, min, max) => {
 	const fromAttribute = (value) => {
 		if (value === void 0 || value === null || typeof value === "string" || typeof value === "number") return emptyValue;
@@ -65,8 +64,7 @@ const numberRangeConverter = (emptyValue, min, max) => {
 		toAttribute
 	};
 };
-//#endregion
-//#region src/utils/converters/booleanConverter.ts
+// src/utils/converters/booleanConverter.ts
 /**
 * 
 * @deprecated Use the recommended boolean conventions by LIT.
@@ -85,8 +83,7 @@ const booleanConverter = (emptyValue) => {
 		toAttribute
 	};
 };
-//#endregion
-//#region src/utils/converters/paletteConverter.ts
+// src/utils/converters/paletteConverter.ts
 /** A unified converter for thermal palettes. Recommended usage:
 * @example
 * ```ts
@@ -110,8 +107,7 @@ const paletteConverter = {
 	},
 	toAttribute: (value) => value
 };
-//#endregion
-//#region src/utils/converters/stringOrUndefinedConverter.ts
+// src/utils/converters/stringOrUndefinedConverter.ts
 const stringOrUndefinedConverter = {
 	fromAttribute(value) {
 		if (typeof value !== "string") return;
@@ -124,8 +120,7 @@ const stringOrUndefinedConverter = {
 		return trimmed?.length ? trimmed : void 0;
 	}
 };
-//#endregion
-//#region src/utils/converters/durationConverter.ts
+// src/utils/converters/durationConverter.ts
 /** Converts a duration property indicated as string to millis and back */
 const durationConverter = {
 	fromAttribute: (value) => {
@@ -154,8 +149,7 @@ const durationConverter = {
 		}
 	}
 };
-//#endregion
-//#region src/utils/converters/unitConverter.ts
+// src/utils/converters/unitConverter.ts
 /**
 * Normalize any value to a `ThermalUnit` key. The comparison is case-insensitive
 * and surrounding whitespace is ignored, so `"f"` and `" F "` both give `ThermalUnit.F`.
@@ -184,8 +178,7 @@ const unitConverter = {
 	fromAttribute: (value) => parseThermalUnit(value),
 	toAttribute: (value) => parseThermalUnit(value)
 };
-//#endregion
-//#region src/utils/converters/optionalNumberConverter.ts
+// src/utils/converters/optionalNumberConverter.ts
 /**
 * Converter for optional numeric attributes.
 *
@@ -212,8 +205,7 @@ const optionalNumberConverter = {
 		return typeof value === "number" && Number.isFinite(value) ? String(value) : void 0;
 	}
 };
-//#endregion
-//#region src/utils/getContrastColor.ts
+// src/utils/getContrastColor.ts
 const contrastColors = /* @__PURE__ */ new Map();
 /** Choose the higher WCAG contrast against an opaque CSS background color. */
 function getContrastColor(backgroundColor) {
@@ -241,8 +233,7 @@ function getContrastColor(backgroundColor) {
 	contrastColors.set(backgroundColor, result);
 	return result;
 }
-//#endregion
-//#region src/utils/icons.ts
+// src/utils/icons.ts
 /**
 * Definice SVG ikon s jejich variantami
 * Každá ikona může mít více variant (outline, solid, mini, micro)
@@ -543,8 +534,7 @@ const createIcons = () => {
 * Použití: icons.folder.outline("my-class", "color: red")
 */
 const icons = createIcons();
-//#endregion
-//#region ../../node_modules/.pnpm/i18next@26.4.5_typescript@5.9.3/node_modules/i18next/dist/esm/i18next.js
+// ../../node_modules/.pnpm/i18next@26.7.1_typescript@5.9.3/node_modules/i18next/dist/esm/i18next.js
 const isString = (obj) => typeof obj === "string";
 const defer = () => {
 	let res;
@@ -561,6 +551,12 @@ const makeString = (object) => {
 	if (object == null) return "";
 	return String(object);
 };
+const isSafeLanguageCode = (code) => isString(code) && /^[A-Za-z0-9_@.-]{1,128}$/.test(code) && !code.includes("..") && ![
+	"__proto__",
+	"constructor",
+	"prototype"
+].includes(code);
+const callbackApiOf = (plugin) => plugin?.callbackApi ?? plugin?.constructor?.callbackApi;
 const copy = (a, s, t) => {
 	a.forEach((m) => {
 		if (s[m]) t[m] = s[m];
@@ -695,6 +691,7 @@ const deepFind = (obj, path, keySeparator = ".") => {
 			if (j !== i) nextPath += keySeparator;
 			nextPath += tokens[j];
 			next = current[nextPath];
+			if ((typeof next === "function" || nextPath === "__proto__") && !Object.prototype.hasOwnProperty.call(current, nextPath)) next = void 0;
 			if (next !== void 0) {
 				if ([
 					"string",
@@ -734,6 +731,7 @@ var baseLogger = new class Logger {
 		this.logger = concreteLogger || consoleLogger;
 		this.options = options;
 		this.debug = options.debug;
+		this.seen = /* @__PURE__ */ new Set();
 	}
 	log(...args) {
 		return this.forward(args, "log", "", true);
@@ -746,6 +744,11 @@ var baseLogger = new class Logger {
 	}
 	deprecate(...args) {
 		return this.forward(args, "warn", "WARNING DEPRECATED: ", true);
+	}
+	once(key, lvl, ...args) {
+		if (!this.debug || this.seen.has(key) || this.seen.size >= 1e3) return null;
+		this.seen.add(key);
+		return this[lvl](...args);
 	}
 	forward(args, lvl, prefix, debugOnly) {
 		if (debugOnly && !this.debug) return null;
@@ -777,13 +780,15 @@ var EventEmitter = class {
 		});
 		return this;
 	}
-	off(event, listener) {
-		if (!this.observers[event]) return;
-		if (!listener) {
-			delete this.observers[event];
-			return;
-		}
-		this.observers[event].delete(listener);
+	off(events, listener) {
+		(typeof events === "string" ? events.split(" ") : [events]).forEach((event) => {
+			if (!this.observers[event]) return;
+			if (!listener) {
+				delete this.observers[event];
+				return;
+			}
+			this.observers[event].delete(listener);
+		});
 	}
 	once(event, listener) {
 		const wrapper = (...args) => {
@@ -811,6 +816,7 @@ var ResourceStore = class extends EventEmitter {
 		super();
 		this.data = data || {};
 		this.options = options;
+		this.logger = baseLogger.create("resourceStore");
 		if (this.options.keySeparator === void 0) this.options.keySeparator = ".";
 		if (this.options.ignoreJSONStructure === void 0) this.options.ignoreJSONStructure = true;
 	}
@@ -821,12 +827,17 @@ var ResourceStore = class extends EventEmitter {
 		const index = this.options.ns.indexOf(ns);
 		if (index > -1) this.options.ns.splice(index, 1);
 	}
+	deprecateDottedLng(method) {
+		this.logger.once(method, "deprecate", `${method}: a dotted language ('en.translation.key') that carries the namespace and key is removed in v27; pass language, namespace and key as separate arguments`);
+	}
 	getResource(lng, ns, key, options = {}) {
 		const keySeparator = options.keySeparator !== void 0 ? options.keySeparator : this.options.keySeparator;
 		const ignoreJSONStructure = options.ignoreJSONStructure !== void 0 ? options.ignoreJSONStructure : this.options.ignoreJSONStructure;
 		let path;
-		if (lng.includes(".")) path = lng.split(".");
-		else {
+		if (lng.includes(".")) {
+			this.deprecateDottedLng("getResource");
+			path = lng.split(".");
+		} else {
 			path = [lng, ns];
 			if (key) {
 				if (Array.isArray(key)) path.push(...key);
@@ -835,12 +846,12 @@ var ResourceStore = class extends EventEmitter {
 			}
 		}
 		const result = getPath(this.data, path);
-		if (!result && !ns && !key && lng.includes(".")) {
+		if (result == null && !ns && !key && lng.includes(".")) {
 			lng = path[0];
 			ns = path[1];
 			key = path.slice(2).join(".");
 		}
-		if (result || !ignoreJSONStructure || !isString(key)) return result;
+		if (result != null || !ignoreJSONStructure || !isString(key)) return result;
 		return deepFind(this.data?.[lng]?.[ns], key, keySeparator);
 	}
 	addResource(lng, ns, key, value, options = { silent: false }) {
@@ -848,6 +859,7 @@ var ResourceStore = class extends EventEmitter {
 		let path = [lng, ns];
 		if (key) path = path.concat(keySeparator ? key.split(keySeparator) : key);
 		if (lng.includes(".")) {
+			this.deprecateDottedLng("addResource");
 			path = lng.split(".");
 			value = ns;
 			ns = path[1];
@@ -866,6 +878,7 @@ var ResourceStore = class extends EventEmitter {
 	}) {
 		let path = [lng, ns];
 		if (lng.includes(".")) {
+			this.deprecateDottedLng("addResourceBundle");
 			path = lng.split(".");
 			deep = resources;
 			resources = ns;
@@ -962,7 +975,8 @@ var Translator = class Translator extends EventEmitter {
 			"interpolator",
 			"backendConnector",
 			"i18nFormat",
-			"utils"
+			"utils",
+			"ownPostProcessors"
 		], services, this);
 		this.options = options;
 		if (this.options.keySeparator === void 0) this.options.keySeparator = ".";
@@ -1071,7 +1085,10 @@ var Translator = class Translator extends EventEmitter {
 		const resType = Object.prototype.toString.apply(resForObjHndl);
 		if (handleAsObjectInI18nFormat && resForObjHndl && handleAsObject && !noObject.includes(resType) && !(isString(joinArrays) && Array.isArray(resForObjHndl))) {
 			if (!opt.returnObjects && !this.options.returnObjects) {
-				if (!this.options.returnedObjectHandler) this.logger.warn("accessing an object - but returnObjects options is not enabled!");
+				if (!this.options.returnedObjectHandler) {
+					this.logger.warn("accessing an object - but returnObjects options is not enabled!");
+					this.logger.once("returnedObject", "deprecate", "accessing an object without returnObjects returns a sentence about it today; from v27 t() returns the key, as for a missing key (returnedObjectHandler can keep today's text)");
+				}
 				const r = this.options.returnedObjectHandler ? this.options.returnedObjectHandler(resUsedKey, resForObjHndl, {
 					...opt,
 					ns: namespaces
@@ -1106,7 +1123,7 @@ var Translator = class Translator extends EventEmitter {
 			}
 		} else if (handleAsObjectInI18nFormat && isString(joinArrays) && Array.isArray(res)) {
 			res = res.join(joinArrays);
-			if (res) res = this.extendTranslation(res, keys, opt, lastKey);
+			if (res) res = this.extendTranslation(res, keys, opt, resolved, lastKey);
 		} else {
 			let usedDefault = false;
 			let usedKey = false;
@@ -1137,7 +1154,7 @@ var Translator = class Translator extends EventEmitter {
 				const send = (l, k, specificDefaultValue) => {
 					const defaultForMissing = hasDefaultValue && specificDefaultValue !== res ? specificDefaultValue : resForMissing;
 					if (this.options.missingKeyHandler) this.options.missingKeyHandler(l, namespace, k, defaultForMissing, updateMissing, opt);
-					else if (this.backendConnector?.saveMissing) this.backendConnector.saveMissing(l, namespace, k, defaultForMissing, updateMissing, opt);
+					else if (this.backendConnector?.saveMissing) this.backendConnector.saveMissing(l, namespace, k, defaultForMissing, updateMissing, opt, void 0, this.utils?.hasLoadedNamespace);
 					this.emit("missingKey", l, namespace, k, res);
 				};
 				if (this.options.saveMissing) {
@@ -1204,13 +1221,18 @@ var Translator = class Translator extends EventEmitter {
 		}
 		const postProcess = opt.postProcess || this.options.postProcess;
 		const postProcessorNames = isString(postProcess) ? [postProcess] : postProcess;
-		if (res != null && postProcessorNames?.length && opt.applyPostProcessor !== false) res = postProcessor.handle(postProcessorNames, res, key, this.options && this.options.postProcessPassResolved ? {
-			i18nResolved: {
-				...resolved,
-				usedParams: this.getUsedParamsDetails(opt)
-			},
-			...opt
-		} : opt, this);
+		if (res != null && postProcessorNames?.length && opt.applyPostProcessor !== false) {
+			postProcessorNames.forEach((name) => {
+				if (this.logger.debug && postProcessor.processors[name] && this.ownPostProcessors && !this.ownPostProcessors.has(name)) this.logger.once(name, "deprecate", `postProcess: '${name}' was registered with use() on another i18next instance; from v27 post-processors are per instance, so call use() with it on this instance too`);
+			});
+			res = postProcessor.handle(postProcessorNames, res, key, this.options && this.options.postProcessPassResolved ? {
+				i18nResolved: {
+					...resolved,
+					usedParams: this.getUsedParamsDetails(opt)
+				},
+				...opt
+			} : opt, this);
+		}
 		return res;
 	}
 	resolve(keys, opt = {}) {
@@ -1366,7 +1388,20 @@ var LanguageUtil = class {
 			if (this.options.lowerCaseLng) return code.toLowerCase();
 			return code;
 		}
-		return this.options.cleanCode || this.options.lowerCaseLng ? code.toLowerCase() : code;
+		const formatted = this.options.cleanCode || this.options.lowerCaseLng ? code.toLowerCase() : code;
+		if (this.logger.debug && isString(code)) this.deprecateBareCode(code, formatted);
+		return formatted;
+	}
+	deprecateBareCode(code, formatted) {
+		let v27;
+		try {
+			v27 = Intl.getCanonicalLocales(code)[0];
+		} catch (e) {
+			return;
+		}
+		if (this.options.lowerCaseLng) v27 = v27.toLowerCase();
+		if (v27 === formatted) return;
+		this.logger.once(code, "deprecate", `language code '${code}' is used as '${formatted}'; i18next v27 canonicalizes it to '${v27}', use '${v27}' in lng, fallbackLng, supportedLngs and the resources`);
 	}
 	isSupportedCode(code) {
 		if (this.options.load === "languageOnly" || this.options.nonExplicitSupportedLngs) code = this.getLanguagePartFromCode(code);
@@ -1390,7 +1425,6 @@ var LanguageUtil = class {
 				if (supportedLng === lngOnly) return true;
 				if (!supportedLng.includes("-") && !lngOnly.includes("-")) return false;
 				if (supportedLng.includes("-") && !lngOnly.includes("-") && supportedLng.slice(0, supportedLng.indexOf("-")) === lngOnly) return true;
-				if (supportedLng.startsWith(lngOnly) && lngOnly.length > 1) return true;
 				return false;
 			});
 		});
@@ -1445,7 +1479,8 @@ var LanguageUtil = class {
 			if (this.options.load !== "currentOnly") addCode(this.getLanguagePartFromCode(code));
 		} else if (isString(code)) addCode(this.formatLanguageCode(code));
 		fallbackCodes.forEach((fc) => {
-			if (!codes.includes(fc)) addCode(this.formatLanguageCode(fc));
+			const formattedFc = this.formatLanguageCode(fc);
+			if (!codes.includes(formattedFc)) addCode(formattedFc);
 		});
 		if (cacheKey !== null) {
 			this.resolveHierarchyCache[cacheKey] = codes;
@@ -1522,13 +1557,12 @@ var PluralResolver = class {
 };
 const deepFindWithDefaults = (data, defaultData, key, keySeparator = ".", ignoreJSONStructure = true) => {
 	let path = getPathWithDefaults(data, defaultData, key);
-	if (!path && ignoreJSONStructure && isString(key)) {
+	if (path == null && ignoreJSONStructure && isString(key)) {
 		path = deepFind(data, key, keySeparator);
 		if (path === void 0) path = deepFind(defaultData, key, keySeparator);
 	}
 	return path;
 };
-const regexSafe = (val) => val.replace(/\$/g, "$$$$");
 var Interpolator = class {
 	constructor(options = {}) {
 		this.logger = baseLogger.create("interpolator");
@@ -1539,6 +1573,15 @@ var Interpolator = class {
 	init(options = {}) {
 		if (!options.interpolation) options.interpolation = { escapeValue: true };
 		const { escape: escape$1, escapeValue, useRawValueToEscape, prefix, prefixEscaped, suffix, suffixEscaped, formatSeparator, unescapeSuffix, unescapePrefix, nestingPrefix, nestingPrefixEscaped, nestingSuffix, nestingSuffixEscaped, nestingOptionsSeparator, maxReplaces, alwaysFormat } = options.interpolation;
+		if (prefixEscaped || suffixEscaped || nestingPrefixEscaped || nestingSuffixEscaped) {
+			const names = Object.entries({
+				prefixEscaped,
+				suffixEscaped,
+				nestingPrefixEscaped,
+				nestingSuffixEscaped
+			}).filter(([, v]) => v).map(([k]) => k);
+			this.logger.once(names.join(), "deprecate", `interpolation.${names.join(", interpolation.")}: the regex-escaped delimiter options are removed in v27; pass the literal delimiters as prefix, suffix, nestingPrefix and nestingSuffix`);
+		}
 		this.escape = escape$1 !== void 0 ? escape$1 : escape;
 		this.escapeValue = escapeValue !== void 0 ? escapeValue : true;
 		this.useRawValueToEscape = useRawValueToEscape !== void 0 ? useRawValueToEscape : false;
@@ -1573,6 +1616,7 @@ var Interpolator = class {
 		let match;
 		let value;
 		let replaces;
+		const original = str;
 		const defaultData = this.options && this.options.interpolation && this.options.interpolation.defaultVariables || {};
 		const handleFormat = (key) => {
 			if (!key.includes(this.formatSeparator)) {
@@ -1596,15 +1640,28 @@ var Interpolator = class {
 		if (!this.escapeValue && typeof str === "string" && /\$t\([^)]*\{[^}]*\{\{/.test(str)) this.logger.warn("nesting options string contains interpolated variables with escapeValue: false — if any of those values are attacker-controlled they can inject additional nesting options (e.g. redirect lng/ns). Sanitise untrusted input before passing it to t(), or keep escapeValue: true.");
 		const missingInterpolationHandler = options?.missingInterpolationHandler || this.options.missingInterpolationHandler;
 		const skipOnVariables = options?.interpolation?.skipOnVariables !== void 0 ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables;
-		[{
+		const todos = [{
 			regex: this.regexpUnescape,
 			safeValue: (val) => val
 		}, {
 			regex: this.regexp,
-			safeValue: (val) => this.escapeValue ? this.escape(val) : val
-		}].forEach((todo) => {
+			safeValue: (val) => {
+				if (!this.escapeValue) return val;
+				if (this.escape === escape && this.options?.interpolation?.escapeValue !== false && isString(val) && val.includes("/")) this.logger.once("/", "deprecate", "escapeValue renders '/' in a value as '&#x2F;' today; from v27 the default escape leaves '/' as it is");
+				return this.escape(val);
+			}
+		}];
+		const unescapedValues = [];
+		let shift = 0;
+		todos.forEach((todo) => {
 			replaces = 0;
 			while (match = todo.regex.exec(str)) {
+				const at = match.index - shift;
+				const written = unescapedValues.find(([start, end]) => at >= start && at < end);
+				if (written) {
+					todo.regex.lastIndex = written[1] + shift;
+					continue;
+				}
 				const matchedVar = match[1].trim();
 				value = handleFormat(matchedVar);
 				if (value === void 0) {
@@ -1613,6 +1670,7 @@ var Interpolator = class {
 						value = isString(temp) ? temp : "";
 					} else if (options && Object.prototype.hasOwnProperty.call(options, matchedVar)) value = "";
 					else if (skipOnVariables) {
+						if (this.logger.debug) this.logger.once(`${original}\u0000${match[0]}`, "warn", `missed to pass in variable ${matchedVar} for interpolating ${original}`);
 						value = match[0];
 						continue;
 					} else {
@@ -1620,9 +1678,11 @@ var Interpolator = class {
 						value = "";
 					}
 				} else if (!isString(value) && !this.useRawValueToEscape) value = makeString(value);
-				const safeValue = todo.safeValue(value);
-				str = str.replace(match[0], regexSafe(safeValue));
+				const safeValue = makeString(todo.safeValue(value));
+				str = str.slice(0, match.index) + safeValue + str.slice(match.index + match[0].length);
 				if (skipOnVariables) {
+					if (todo.regex === this.regexpUnescape) unescapedValues.push([match.index, match.index + safeValue.length]);
+					else shift += safeValue.length - match[0].length;
 					todo.regex.lastIndex += safeValue.length;
 					todo.regex.lastIndex -= match[0].length;
 				} else todo.regex.lastIndex = 0;
@@ -1727,7 +1787,12 @@ const createCachedFormatter = (fn) => {
 			...optForCache,
 			[o.interpolationkey]: void 0
 		};
-		const key = l + JSON.stringify(optForCache);
+		let key;
+		try {
+			key = l + JSON.stringify(optForCache);
+		} catch (e) {
+			return fn(getCleanedCode(l), o)(v);
+		}
 		let frm = cache[key];
 		if (!frm) {
 			frm = fn(getCleanedCode(l), o);
@@ -1832,6 +1897,8 @@ var Connector = class extends EventEmitter {
 		this.state = {};
 		this.queue = [];
 		this.backend?.init?.(services, options.backend, options);
+		this.callbackApi = callbackApiOf(this.backend);
+		if (this.backend && this.callbackApi === void 0 && (this.backend.read || this.backend.create)) this.logger.deprecate("backend: set callbackApi to declare the calling convention (true: read(language, namespace, callback) and create(languages, namespace, key, fallbackValue, callback, options); false: both return a promise or a value); guessing it from the number of parameters is deprecated");
 	}
 	queueLoad(languages, namespaces, options, callback) {
 		const toLoad = {};
@@ -1843,7 +1910,7 @@ var Connector = class extends EventEmitter {
 			namespaces.forEach((ns) => {
 				const name = `${lng}|${ns}`;
 				if (!options.reload && this.store.hasResourceBundle(lng, ns)) this.state[name] = 2;
-				else if (this.state[name] < 0);
+				else if (!options.reload && this.state[name] < 0);
 				else if (this.state[name] === 1) {
 					if (pending[name] === void 0) pending[name] = true;
 				} else {
@@ -1928,7 +1995,7 @@ var Connector = class extends EventEmitter {
 			callback(err, data);
 		};
 		const fc = this.backend[fcName].bind(this.backend);
-		if (fc.length === 2) {
+		if (this.callbackApi === false || this.callbackApi === void 0 && fc.length === 2) {
 			try {
 				const r = fc(lng, ns);
 				if (r && typeof r.then === "function") r.then((data) => resolver(null, data)).catch(resolver);
@@ -1962,31 +2029,37 @@ var Connector = class extends EventEmitter {
 	reload(languages, namespaces, callback) {
 		this.prepareLoading(languages, namespaces, { reload: true }, callback);
 	}
+	noticeDevFallback(lng) {
+		if (lng !== "dev" || !this.devIsDefaultFallback) return;
+		this.logger.once("dev", "warn", "language 'dev' is requested because fallbackLng is not set (its default is ['dev']); i18next v27 defaults to fallbackLng: false and loads and saves missing keys in the requested language instead. Set fallbackLng to your source language, or to 'dev' to keep this behavior");
+	}
 	loadOne(name, prefix = "") {
 		const s = name.split("|");
 		const lng = s[0];
 		const ns = s[1];
+		this.noticeDevFallback(lng);
 		this.read(lng, ns, "read", void 0, void 0, (err, data) => {
 			if (err) this.logger.warn(`${prefix}loading namespace ${ns} for language ${lng} failed`, err);
 			if (!err && data) this.logger.log(`${prefix}loaded namespace ${ns} for language ${lng}`, data);
 			this.loaded(name, err, data);
 		});
 	}
-	saveMissing(languages, namespace, key, fallbackValue, isUpdate, options = {}, clb = () => {}) {
-		if (this.services?.utils?.hasLoadedNamespace && !this.services?.utils?.hasLoadedNamespace(namespace)) {
+	saveMissing(languages, namespace, key, fallbackValue, isUpdate, options = {}, clb = () => {}, hasLoadedNamespace = this.newestCloneHasLoadedNamespace || this.services?.utils?.hasLoadedNamespace) {
+		if (hasLoadedNamespace && !hasLoadedNamespace(namespace)) {
 			this.logger.warn(`did not save key "${key}" as the namespace "${namespace}" was not yet loaded`, "This means something IS WRONG in your setup. You access the t function before i18next.init / i18next.loadNamespace / i18next.changeLanguage was done. Wait for the callback or Promise to resolve before accessing it!!!");
 			return;
 		}
 		if (key === void 0 || key === null || key === "") return;
 		if (this.backend?.create) {
+			languages?.forEach?.((l) => this.noticeDevFallback(l));
 			const opts = {
 				...options,
 				isUpdate
 			};
 			const fc = this.backend.create.bind(this.backend);
-			if (fc.length < 6) try {
+			if (this.callbackApi === false || this.callbackApi === void 0 && fc.length < 6) try {
 				let r;
-				if (fc.length === 5) r = fc(languages, namespace, key, fallbackValue, opts);
+				if (this.callbackApi === false || fc.length === 5) r = fc(languages, namespace, key, fallbackValue, opts);
 				else r = fc(languages, namespace, key, fallbackValue);
 				if (r && typeof r.then === "function") r.then((data) => clb(null, data)).catch(clb);
 				else clb(null, r);
@@ -2067,6 +2140,7 @@ const transformOptions = (options) => {
 	return options;
 };
 const noop = () => {};
+let loggerOwner;
 const bindMemberFunctions = (inst) => {
 	Object.getOwnPropertyNames(Object.getPrototypeOf(inst)).forEach((mem) => {
 		if (typeof inst[mem] === "function") inst[mem] = inst[mem].bind(inst);
@@ -2076,7 +2150,7 @@ const instance = class I18n extends EventEmitter {
 	constructor(options = {}, callback) {
 		super();
 		this.options = transformOptions(options);
-		this.services = {};
+		this.services = { ownPostProcessors: /* @__PURE__ */ new Set() };
 		this.logger = baseLogger;
 		this.modules = { external: [] };
 		bindMemberFunctions(this);
@@ -2100,6 +2174,7 @@ const instance = class I18n extends EventEmitter {
 			if (isString(options.ns)) options.defaultNS = options.ns;
 			else if (!options.ns.includes("translation")) options.defaultNS = options.ns[0];
 		}
+		const fallbackLngIsDefault = options.fallbackLng === void 0 && this.options.fallbackLng === void 0;
 		const defOpts = get();
 		this.options = {
 			...defOpts,
@@ -2119,8 +2194,12 @@ const instance = class I18n extends EventEmitter {
 			return ClassOrObject;
 		};
 		if (!this.options.isClone) {
+			if (loggerOwner && loggerOwner !== this && loggerOwner.modules.logger !== this.modules.logger) baseLogger.deprecate("init: this init() replaces the logger another i18next instance set with use(), as the logger is shared in v26; from v27 each instance keeps its own logger");
+			loggerOwner = this.modules.logger ? this : void 0;
 			if (this.modules.logger) baseLogger.init(createClassOnDemand(this.modules.logger), this.options);
 			else baseLogger.init(null, this.options);
+			this.pendingWarnings?.forEach((msg) => this.logger.warn(msg));
+			this.pendingWarnings = void 0;
 			let formatter;
 			if (this.modules.formatter) formatter = this.modules.formatter;
 			else formatter = Formatter;
@@ -2137,14 +2216,19 @@ const instance = class I18n extends EventEmitter {
 				this.options.interpolation.format = s.formatter.format.bind(s.formatter);
 			}
 			s.interpolator = new Interpolator(this.options);
-			s.utils = { hasLoadedNamespace: this.hasLoadedNamespace.bind(this) };
+			s.utils = {
+				hasLoadedNamespace: this.hasLoadedNamespace.bind(this),
+				reloadResources: this.reloadResources.bind(this)
+			};
 			s.backendConnector = new Connector(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
+			s.backendConnector.devIsDefaultFallback = fallbackLngIsDefault;
 			s.backendConnector.on("*", (event, ...args) => {
 				this.emit(event, ...args);
 			});
 			if (this.modules.languageDetector) {
 				s.languageDetector = createClassOnDemand(this.modules.languageDetector);
 				if (s.languageDetector.init) s.languageDetector.init(s, this.options.detection, this.options);
+				if (s.languageDetector.async && callbackApiOf(s.languageDetector) === void 0) this.logger.deprecate("languageDetector: set callbackApi to declare how the async detect() answers (true: detect(callback); false: detect() returns a promise); guessing it from the number of parameters is deprecated");
 			}
 			if (this.modules.i18nFormat) {
 				s.i18nFormat = createClassOnDemand(this.modules.i18nFormat);
@@ -2236,7 +2320,10 @@ const instance = class I18n extends EventEmitter {
 			callback = ns;
 			ns = void 0;
 		}
-		if (!lngs) lngs = this.languages;
+		if (!lngs) {
+			const requested = Object.keys(this.services.backendConnector.state).map((name) => name.split("|")[0]);
+			lngs = [.../* @__PURE__ */ new Set([...this.languages || [], ...requested])].filter((l) => l !== "cimode");
+		}
 		if (!ns) ns = this.options.ns;
 		if (!callback) callback = noop;
 		this.services.backendConnector.reload(lngs, ns, (err) => {
@@ -2248,13 +2335,46 @@ const instance = class I18n extends EventEmitter {
 	use(module) {
 		if (!module) throw new Error("You are passing an undefined module! Please check the object you are passing to i18next.use()");
 		if (!module.type) throw new Error("You are passing a wrong module! Please check the object you are passing to i18next.use()");
-		if (module.type === "backend") this.modules.backend = module;
+		const setModule = (type) => {
+			if (this.modules[type] && this.modules[type] !== module) {
+				const msg = `use: this ${type} replaces the ${type} passed to an earlier use() call; only one ${type} is used per instance`;
+				if (this.isInitializing || this.isInitialized) this.logger.warn(msg);
+				else (this.pendingWarnings = this.pendingWarnings || []).push(msg);
+			}
+			this.modules[type] = module;
+		};
+		if (module.type === "backend") setModule("backend");
 		if (module.type === "logger" || module.log && module.warn && module.error) this.modules.logger = module;
-		if (module.type === "languageDetector") this.modules.languageDetector = module;
-		if (module.type === "i18nFormat") this.modules.i18nFormat = module;
-		if (module.type === "postProcessor") postProcessor.addPostProcessor(module);
-		if (module.type === "formatter") this.modules.formatter = module;
+		if (module.type === "languageDetector") setModule("languageDetector");
+		if (module.type === "i18nFormat") setModule("i18nFormat");
+		if (module.type === "postProcessor") {
+			postProcessor.addPostProcessor(module);
+			this.services.ownPostProcessors?.add(module.name);
+		}
+		if (module.type === "formatter") setModule("formatter");
 		if (module.type === "3rdParty") this.modules.external.push(module);
+		return this;
+	}
+	hydrate(resources, lng) {
+		if (this.options.isClone) return this;
+		if (!this.services.resourceStore) {
+			this.logger.warn("hydrate: call init() first, the instance has no resource store yet");
+			return this;
+		}
+		if (resources && !this.initializedStoreOnce) {
+			this.services.resourceStore.data = resources;
+			Object.values(resources).forEach((lngResources) => {
+				Object.keys(lngResources).forEach((ns) => {
+					if (!this.options.ns.includes(ns)) this.options.ns.push(ns);
+				});
+			});
+			this.initializedStoreOnce = true;
+			this.isInitialized = true;
+		}
+		if (lng && !this.initializedLanguageOnce) {
+			this.changeLanguage(lng);
+			this.initializedLanguageOnce = true;
+		}
 		return this;
 	}
 	setResolvedLanguage(l) {
@@ -2300,6 +2420,9 @@ const instance = class I18n extends EventEmitter {
 			if (!lng && !lngs && this.services.languageDetector) lngs = [];
 			const fl = isString(lngs) ? lngs : lngs && lngs[0];
 			const l = this.store.hasLanguageSomeTranslations(fl) ? fl : this.services.languageUtils.getBestMatchFromCodes(isString(lngs) ? [lngs] : lngs);
+			if (l && this.logger.debug && !isSafeLanguageCode(l)) {
+				if (![].concat(this.options.supportedLngs || [], this.services.languageUtils.getFallbackCodes(this.options.fallbackLng, l), this.options.preload || []).includes(l) && !Object.prototype.hasOwnProperty.call(this.store.data, l)) this.logger.once(`lng:${l}`, "deprecate", `changeLanguage: the language code '${l.slice(0, 64)}' comes from lng, changeLanguage() or the language detector and is not configured; from v27 such a code is refused unless it has only letters, digits, '-', '_', '@' and '.' (no '..'), at most 128 characters. Set supportedLngs, or check the code before passing it on`);
+			}
 			if (l) {
 				if (!this.language) setLngProps(l);
 				if (!this.translator.language) this.translator.changeLanguage(l);
@@ -2311,7 +2434,8 @@ const instance = class I18n extends EventEmitter {
 		};
 		if (!lng && this.services.languageDetector && !this.services.languageDetector.async) setLng(this.services.languageDetector.detect());
 		else if (!lng && this.services.languageDetector && this.services.languageDetector.async) {
-			if (this.services.languageDetector.detect.length === 0) this.services.languageDetector.detect().then(setLng);
+			const callbackApi = callbackApiOf(this.services.languageDetector);
+			if (callbackApi === false || callbackApi === void 0 && this.services.languageDetector.detect.length === 0) this.services.languageDetector.detect().then(setLng);
 			else this.services.languageDetector.detect(setLng);
 		} else setLng(lng);
 		return deferred;
@@ -2352,7 +2476,11 @@ const instance = class I18n extends EventEmitter {
 		return fixedT;
 	}
 	t(...args) {
-		return this.translator?.translate(...args);
+		if (!this.translator) {
+			this.logger.warn("t: called before init(); returning an empty string");
+			return "";
+		}
+		return this.translator.translate(...args);
 	}
 	exists(...args) {
 		return this.translator?.exists(...args);
@@ -2422,7 +2550,7 @@ const instance = class I18n extends EventEmitter {
 	}
 	dir(lng) {
 		if (!lng) lng = this.resolvedLanguage || (this.languages?.length > 0 ? this.languages[0] : this.language);
-		if (!lng) return "rtl";
+		if (!lng) return "ltr";
 		try {
 			const l = new Intl.Locale(lng);
 			if (l && l.getTextInfo) {
@@ -2505,9 +2633,13 @@ const instance = class I18n extends EventEmitter {
 	}
 	cloneInstance(options = {}, callback = noop) {
 		const forkResourceStore = options.forkResourceStore;
-		if (forkResourceStore) delete options.forkResourceStore;
+		if (forkResourceStore) {
+			options = { ...options };
+			delete options.forkResourceStore;
+		}
 		const mergedOptions = {
 			...this.options,
+			preload: false,
 			...options,
 			isClone: true
 		};
@@ -2521,16 +2653,20 @@ const instance = class I18n extends EventEmitter {
 			clone[m] = this[m];
 		});
 		clone.services = { ...this.services };
-		clone.services.utils = { hasLoadedNamespace: clone.hasLoadedNamespace.bind(clone) };
+		clone.services.utils = {
+			...clone.services.utils,
+			hasLoadedNamespace: clone.hasLoadedNamespace.bind(clone),
+			reloadResources: clone.reloadResources.bind(clone)
+		};
 		if (forkResourceStore) {
-			clone.store = new ResourceStore(Object.keys(this.store.data).reduce((prev, l) => {
-				prev[l] = { ...this.store.data[l] };
-				prev[l] = Object.keys(prev[l]).reduce((acc, n) => {
-					acc[n] = { ...prev[l][n] };
-					return acc;
-				}, prev[l]);
-				return prev;
-			}, {}), mergedOptions);
+			const copyData = (obj) => {
+				const copied = Array.isArray(obj) ? [...obj] : { ...obj };
+				Object.keys(copied).forEach((k) => {
+					if (copied[k] && typeof copied[k] === "object") copied[k] = copyData(copied[k]);
+				});
+				return copied;
+			};
+			clone.store = new ResourceStore(copyData(this.store.data), mergedOptions);
 			clone.services.resourceStore = clone.store;
 		}
 		if (options.interpolation) {
@@ -2551,7 +2687,7 @@ const instance = class I18n extends EventEmitter {
 		});
 		clone.init(mergedOptions, callback);
 		clone.translator.options = mergedOptions;
-		clone.translator.backendConnector.services.utils = { hasLoadedNamespace: clone.hasLoadedNamespace.bind(clone) };
+		clone.translator.backendConnector.newestCloneHasLoadedNamespace = clone.hasLoadedNamespace.bind(clone);
 		return clone;
 	}
 	toJSON() {
@@ -2578,8 +2714,7 @@ instance.setDefaultNamespace;
 instance.hasLoadedNamespace;
 instance.loadNamespaces;
 instance.loadLanguages;
-//#endregion
-//#region src/translations/i18n.ts
+// src/translations/i18n.ts
 /** initialise the I18n object */
 instance.use(lit_i18n.initLitI18n).use(i18next_browser_languagedetector.default).init({
 	fallbackLng: "en",
@@ -3749,14 +3884,12 @@ instance.use(lit_i18n.initLitI18n).use(i18next_browser_languagedetector.default)
 window.i18next = instance;
 /** i18n engine exported from the `@labirthermal/webcomponents` package */
 const i18webcomponents = instance;
-//#endregion
-//#region package.json
+// package.json
 var name = "@labirthermal/webcomponents";
-var version$1 = "2.0.1";
+var version$1 = "2.0.2";
 window.matchMedia("(prefers-color-scheme: dark)");
 const DARK_MODE_CLASS = "thermal-dark-mode";
-//#endregion
-//#region src/styles/defaultStyles.ts
+// src/styles/defaultStyles.ts
 const version = version$1.toString().replaceAll(".", "-");
 const getStylesheetId = (scope) => {
 	return `labirthermal__${scope}__${version}`;
@@ -3940,8 +4073,7 @@ const addInlineStyles = () => {
 --thermal-border-width: 3px;
 `);
 };
-//#endregion
-//#region src/translations/Languages.ts
+// src/translations/Languages.ts
 /**
 * Keys of all translation keys.
 * 
@@ -4250,8 +4382,7 @@ const languagesObject = Object.fromEntries([
 		flag: "🇫🇷"
 	}
 ].map((l) => [l.code, l]));
-//#endregion
-//#region src/translations/localeContext.ts
+// src/translations/localeContext.ts
 const localeContext = (0, _lit_context.createContext)("localeContext");
 const initLocalesInTopLevelElement = (element) => {
 	instance.on("languageChanged", (locale) => {
@@ -4309,8 +4440,7 @@ const localeConverter = {
 		return value;
 	}
 };
-//#endregion
-//#region src/utils/shortId.ts
+// src/utils/shortId.ts
 /**
 * Generation of short, collision-free identifiers used instead of full-length UUIDs.
 *
@@ -4368,8 +4498,7 @@ const generateShortId = (length = DEFAULT_LENGTH) => {
 		if (attempts % 5 === 0) currentLength++;
 	}
 };
-//#endregion
-//#region src/controllers/HierarchyUpdatesHub.ts
+// src/controllers/HierarchyUpdatesHub.ts
 /** Perform updates in the hierarchy for all registered controllers */
 var HierarchyUpdatesHub = class {
 	constructor() {
@@ -4389,21 +4518,18 @@ var HierarchyUpdatesHub = class {
 		for (const controller of this._controllers) controller.hostUpdatedWatcher?.(changedProperties);
 	}
 };
-//#endregion
-//#region \0@oxc-project+runtime@0.154.0/helpers/esm/decorateMetadata.js
+// \0@oxc-project+runtime@0.156.0/helpers/esm/decorateMetadata.js
 function __decorateMetadata(k, v) {
 	if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 }
-//#endregion
-//#region \0@oxc-project+runtime@0.154.0/helpers/esm/decorate.js
+// \0@oxc-project+runtime@0.156.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
 	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
 	else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
 	return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-//#endregion
-//#region src/hierarchy/AbstractThermalElement.ts
+// src/hierarchy/AbstractThermalElement.ts
 /** 
 * All the webcomponents of \@labirthermal/webcomponents (and its extensions) should be based on the abstract class `AbstractThermalElement`. 
 * 
@@ -4496,8 +4622,7 @@ __decorate([(0, _lit_context.consume)({
 	context: localeContext,
 	subscribe: true
 }), __decorateMetadata("design:type", String)], AbstractThermalElement.prototype, "_locale", void 0);
-//#endregion
-//#region src/controllers/AbstractReactiveController.ts
+// src/controllers/AbstractReactiveController.ts
 /** 
 * This is the abstract class for all reactive controllers from the `@labirthermal/webcomponents` package. 
 * @module @labirthermal/webcomponents
@@ -4512,8 +4637,7 @@ var AbstractReactiveController = class {
 		this.host.log(this.constructor.name, ...args);
 	}
 };
-//#endregion
-//#region src/controllers/AbstractHierarchyController.ts
+// src/controllers/AbstractHierarchyController.ts
 /** 
 * Common internal state for host elements that should be only internal states. 
 * @module @labirthermal/core
@@ -4546,8 +4670,7 @@ var AbstractHierarchyController = class extends AbstractReactiveController {
 		return this.host.getAttribute(primaryAttributeName) ?? this.host.getAttribute("slug") ?? this.UUID;
 	}
 };
-//#endregion
-//#region src/controllers/FileAnalysisSynchronisator.ts
+// src/controllers/FileAnalysisSynchronisator.ts
 var FileAnalysisSynchronisator = class FileAnalysisSynchronisator {
 	/** Lit.js is using null for removed attributes - we need normalize the value to either string or undefined. */
 	static normalize(value) {
@@ -4618,8 +4741,7 @@ var FileAnalysisSynchronisator = class FileAnalysisSynchronisator {
 		} else file.slots.createAnalysisFromSerialized(value, this._slotNumber)?.setSelected();
 	}
 };
-//#endregion
-//#region src/controllers/FileAnalysisSynchronisators.ts
+// src/controllers/FileAnalysisSynchronisators.ts
 var FileAnalysisSynchronisators = class {
 	constructor(_controller) {
 		this._controller = _controller;
@@ -4642,8 +4764,7 @@ var FileAnalysisSynchronisators = class {
 		this._forEach((synchronisator) => synchronisator.fileUnassigned());
 	}
 };
-//#endregion
-//#region src/controllers/FileController.ts
+// src/controllers/FileController.ts
 /** A crucial context for exporting the `FileController` object. */
 const fileControllerContext = (0, _lit_context.createContext)("file-controller-context");
 /** A crucial context exposing the `ThermalFileInstance` object from `FileController`. */
@@ -5041,8 +5162,7 @@ var FileController = class extends AbstractHierarchyController {
 		this.readyContextProvider.setValue(true);
 	}
 };
-//#endregion
-//#region src/controllers/FileLoadController.ts
+// src/controllers/FileLoadController.ts
 /** 
 * When appended to an element with `FileController`, takes care of loading the file from the host attributes such as `thermal` and `visible`.
 * 
@@ -5100,8 +5220,7 @@ var FileLoadController = class extends AbstractHierarchyController {
 		});
 	}
 };
-//#endregion
-//#region src/controllers/GroupController.ts
+// src/controllers/GroupController.ts
 /**
 * Exposes the `GroupController` instance to the `AbstractGroupConsumer` elements.
 * @see {@link GroupController}
@@ -5175,8 +5294,7 @@ var GroupController = class extends AbstractHierarchyController {
 	hostWillUpdateWatcher() {}
 	hostUpdatedWatcher() {}
 };
-//#endregion
-//#region src/controllers/GroupLoadController.ts
+// src/controllers/GroupLoadController.ts
 /**
 * Reactive controller for loading thermal and visible files into a {@link ThermalGroup}
 * driven by the host element's `group-files` attribute.
@@ -5373,8 +5491,7 @@ var GroupLoadController = class GroupLoadController extends AbstractHierarchyCon
 		}
 	}
 };
-//#endregion
-//#region src/controllers/GroupListingController.ts
+// src/controllers/GroupListingController.ts
 /**
 * Indicates how to order the files in a group. Used by {@link GroupListingController}
 * @module @labirthermal/webcomponents
@@ -5963,8 +6080,7 @@ var GroupListingController = class extends AbstractHierarchyController {
         </div>`;
 	}
 };
-//#endregion
-//#region src/controllers/GroupAnalysisSyncController.ts
+// src/controllers/GroupAnalysisSyncController.ts
 const SLOT_NUMBERS = [
 	1,
 	2,
@@ -6231,8 +6347,7 @@ var GroupAnalysisSyncController = class GroupAnalysisSyncController extends Abst
 		}
 	}
 };
-//#endregion
-//#region src/controllers/RegistryController.ts
+// src/controllers/RegistryController.ts
 /** Exposes the current `RegistryController`. This is very important. */
 const registryControllerContext = (0, _lit_context.createContext)("registry-controller-context");
 /** Exposes the current `ThermalRegistry` object from the `RegistryController`. */
@@ -6468,8 +6583,7 @@ var RegistryController = class extends AbstractHierarchyController {
 		if (this.highlightContextProvider.value !== valueInCelsius) this.highlightContextProvider.setValue(valueInCelsius);
 	}
 };
-//#endregion
-//#region src/hierarchy/providers/getters.ts
+// src/hierarchy/providers/getters.ts
 const defaultManager = new _labirthermal_core.ThermalManager();
 window.Thermal = { managers: /* @__PURE__ */ new Map() };
 window.Thermal.managers.set("default", defaultManager);
@@ -6499,8 +6613,7 @@ const removeManager = (manager) => {
 		}
 	}
 };
-//#endregion
-//#region src/controllers/ManagerController.ts
+// src/controllers/ManagerController.ts
 /** Exposes the main manager controller with all its setters and direct access to the host element values. */
 const managerControllerContext = (0, _lit_context.createContext)("manager-controller-context");
 const managerContext = (0, _lit_context.createContext)("manager-instance");
@@ -6739,8 +6852,7 @@ var ManagerController = class extends AbstractHierarchyController {
 		return this.managerObject.unit.current;
 	}
 };
-//#endregion
-//#region src/controllers/ConfigController.ts
+// src/controllers/ConfigController.ts
 /** Exposes the general configuration context for the application. Setters are here. */
 const configContext = (0, _lit_context.createContext)("config-context");
 /** Handles the global configuration related to the PNG exports */
@@ -6849,8 +6961,7 @@ var ConfigController = class extends AbstractReactiveController {
 		this.contextProvider.setValue(this, true);
 	}
 };
-//#endregion
-//#region src/apps/AbstractApp.ts
+// src/apps/AbstractApp.ts
 var AbstractApp = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -6890,8 +7001,7 @@ __decorate([(0, lit_decorators_js.property)({
 	reflect: true,
 	attribute: "show-fullscreen"
 }), __decorateMetadata("design:type", Boolean)], AbstractApp.prototype, "showFullscreen", void 0);
-//#endregion
-//#region src/ui/App.ts
+// src/ui/App.ts
 var ThermalAppElement = class ThermalAppElement extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -7448,8 +7558,7 @@ __decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type",
 __decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", String)], ThermalAppElement.prototype, "labelTooltip", void 0);
 __decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", Object)], ThermalAppElement.prototype, "labelVariant", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Function)], ThermalAppElement.prototype, "onlabel", void 0);
-//#endregion
-//#region src/ui/Bar.ts
+// src/ui/Bar.ts
 var ThermalBarElement = class extends lit.LitElement {
 	constructor(..._args) {
 		super(..._args);
@@ -7582,8 +7691,7 @@ var ThermalBarElement = class extends lit.LitElement {
 };
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], ThermalBarElement.prototype, "collapsed", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], ThermalBarElement.prototype, "lastContentWidth", void 0);
-//#endregion
-//#region src/ui/Btn.ts
+// src/ui/Btn.ts
 var ThermalBtnElement = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -8115,8 +8223,43 @@ __decorate([(0, lit_decorators_js.property)({
 	type: String,
 	reflect: true
 }), __decorateMetadata("design:type", String)], ThermalBtnElement.prototype, "align", void 0);
-//#endregion
-//#region src/ui/Dialog.ts
+// src/ui/BtnGroup.ts
+var ThermalBtnGroupElement = class extends AbstractThermalElement {
+	static {
+		this.styles = lit.css`
+    
+        :host {
+            display: block;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: no-wrap;
+        }
+
+        ::slotted(thermal-btn:first-child) {
+
+            --custom-radius: var( --thermal-radius ) 0 0 var( --thermal-radius );
+            border-right: none !important;
+        
+        }
+
+        ::slotted(thermal-btn:last-child) {
+            --custom-radius: 0 var( --thermal-radius ) var( --thermal-radius ) 0;
+        }
+
+        ::slotted(thermal-btn:not(:first-child):not(:last-child)) {
+            --custom-radius: 0;
+            border-right: none !important;
+        }
+    
+    `;
+	}
+	render() {
+		return lit.html`<div class="btn-group"><slot></slot></div>`;
+	}
+};
+// src/ui/Dialog.ts
 var ThermalDialogElement = class extends lit.LitElement {
 	constructor(..._args) {
 		super(..._args);
@@ -8318,8 +8461,7 @@ __decorate([(0, lit_decorators_js.property)({
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Function)], ThermalDialogElement.prototype, "beforeClose", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], ThermalDialogElement.prototype, "_open", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Function)], ThermalDialogElement.prototype, "onCloseEveryTime", void 0);
-//#endregion
-//#region src/ui/Dropdown.ts
+// src/ui/Dropdown.ts
 var ThermalDropdownElement = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -8558,8 +8700,7 @@ __decorate([(0, lit_decorators_js.property)({
 	type: String,
 	reflect: true
 }), __decorateMetadata("design:type", String)], ThermalDropdownElement.prototype, "iconStyle", void 0);
-//#endregion
-//#region src/ui/Dropin.ts
+// src/ui/Dropin.ts
 var ThermalDropinElement = class extends AbstractThermalElement {
 	static {
 		this.styles = lit.css`
@@ -8644,8 +8785,7 @@ var ThermalDropinElement = class extends AbstractThermalElement {
 	}
 };
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalDropinElement.prototype, "prompt", void 0);
-//#endregion
-//#region src/ui/Expandable.ts
+// src/ui/Expandable.ts
 var ThermalExpandableElement = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -8767,8 +8907,7 @@ __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
 	reflect: true
 }), __decorateMetadata("design:type", Boolean)], ThermalExpandableElement.prototype, "expanded", void 0);
-//#endregion
-//#region src/ui/Field.ts
+// src/ui/Field.ts
 var ThermalFieldElement = class extends lit.LitElement {
 	static {
 		this.styles = lit.css`
@@ -8828,8 +8967,7 @@ var ThermalFieldElement = class extends lit.LitElement {
 };
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalFieldElement.prototype, "label", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalFieldElement.prototype, "hint", void 0);
-//#endregion
-//#region src/ui/Icon.ts
+// src/ui/Icon.ts
 var ThermalIconElement = class extends AbstractThermalElement {
 	connectedCallback() {
 		super.connectedCallback();
@@ -8876,8 +9014,7 @@ __decorate([(0, lit_decorators_js.property)({
 	reflect: true
 }), __decorateMetadata("design:type", String)], ThermalIconElement.prototype, "css", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], ThermalIconElement.prototype, "element", void 0);
-//#endregion
-//#region src/ui/Loading.ts
+// src/ui/Loading.ts
 var ThermalPosterElement = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -8940,8 +9077,7 @@ __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadat
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalPosterElement.prototype, "bordercolor", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalPosterElement.prototype, "bgcolor", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalPosterElement.prototype, "textcolor", void 0);
-//#endregion
-//#region src/ui/Radio.ts
+// src/ui/Radio.ts
 var ThermalRadioElement = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -9028,8 +9164,7 @@ __decorate([(0, lit_decorators_js.property)({
 	reflect: true
 }), __decorateMetadata("design:type", Boolean)], ThermalRadioElement.prototype, "checked", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: Function }), __decorateMetadata("design:type", Function)], ThermalRadioElement.prototype, "onChange", void 0);
-//#endregion
-//#region src/ui/Slot.ts
+// src/ui/Slot.ts
 var ThermalSlotElement = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -9107,8 +9242,7 @@ var ThermalSlotElement = class extends AbstractThermalElement {
 };
 __decorate([(0, lit_decorators_js.property)(), __decorateMetadata("design:type", String)], ThermalSlotElement.prototype, "label", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Array)], ThermalSlotElement.prototype, "_slottedElements", void 0);
-//#endregion
-//#region src/ui/Spinner.ts
+// src/ui/Spinner.ts
 var ThermalSpinnerElement = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -9161,8 +9295,7 @@ var ThermalSpinnerElement = class extends AbstractThermalElement {
 };
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalSpinnerElement.prototype, "message", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalSpinnerElement.prototype, "color", void 0);
-//#endregion
-//#region src/ui/Tip.ts
+// src/ui/Tip.ts
 var ThermalTipElement = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -9232,8 +9365,7 @@ thermal-icon {
 };
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalTipElement.prototype, "icon", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], ThermalTipElement.prototype, "iconStyle", void 0);
-//#endregion
-//#region src/hierarchy/consumers/AbstractManagerConsumer.ts
+// src/hierarchy/consumers/AbstractManagerConsumer.ts
 /**
 * A webcomponent consuming a `ThermalManager` exposed by a parent `ManagerController`.
 * 
@@ -9291,8 +9423,7 @@ __decorate([(0, _lit_context.consume)({
 	context: managerControllerContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Object)], AbstractManagerConsumer.prototype, "managerController", void 0);
-//#endregion
-//#region src/hierarchy/consumers/AbstractRegistryConsumer.ts
+// src/hierarchy/consumers/AbstractRegistryConsumer.ts
 /**
 * A webcomponent consuming a `ThermalRegistry` exposed by a parent `RegistryController`.
 * 
@@ -9350,8 +9481,7 @@ __decorate([(0, _lit_context.consume)({
 	context: registryControllerContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Object)], AbstractRegistryConsumer.prototype, "registryController", void 0);
-//#endregion
-//#region src/hierarchy/consumers/AbstractGroupConsumer.ts
+// src/hierarchy/consumers/AbstractGroupConsumer.ts
 /**
 * A webcomponent consuming a `ThermalGroup` exposed by a parent `GroupController`.
 * 
@@ -9386,8 +9516,7 @@ __decorate([(0, _lit_context.consume)({
 	context: groupControllerContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Object)], AbstractGroupConsumer.prototype, "groupController", void 0);
-//#endregion
-//#region src/hierarchy/abstraction/AbstractFileProvider.ts
+// src/hierarchy/abstraction/AbstractFileProvider.ts
 var AbstractFileProvider = class extends AbstractGroupConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -9423,8 +9552,7 @@ var AbstractFileProvider = class extends AbstractGroupConsumer {
         `;
 	}
 };
-//#endregion
-//#region src/hierarchy/abstraction/AbstractGroupProvider.ts
+// src/hierarchy/abstraction/AbstractGroupProvider.ts
 var AbstractGroupProvider = class extends AbstractRegistryConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -9438,8 +9566,7 @@ var AbstractGroupProvider = class extends AbstractRegistryConsumer {
 		return lit.html`<slot></slot>`;
 	}
 };
-//#endregion
-//#region src/hierarchy/abstraction/AbstractManagerProvider.ts
+// src/hierarchy/abstraction/AbstractManagerProvider.ts
 var AbstractManagerProvider = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -9461,8 +9588,7 @@ var AbstractManagerProvider = class extends AbstractThermalElement {
 		return lit.html`<slot></slot>`;
 	}
 };
-//#endregion
-//#region src/hierarchy/abstraction/AbstractRegistryProvider.ts
+// src/hierarchy/abstraction/AbstractRegistryProvider.ts
 var AbstractRegistryProvider = class extends AbstractManagerConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -9482,8 +9608,7 @@ var AbstractRegistryProvider = class extends AbstractManagerConsumer {
 		return lit.html`<slot></slot>`;
 	}
 };
-//#endregion
-//#region src/hierarchy/consumers/AbstractFileConsumer.ts
+// src/hierarchy/consumers/AbstractFileConsumer.ts
 /**
 * Abstract base class for web components that consume a file `ThermalFileInstance` and
 * related state from a parent `FileController`.
@@ -9593,8 +9718,7 @@ __decorate([
 	(0, lit_decorators_js.state)(),
 	__decorateMetadata("design:type", Boolean)
 ], AbstractFileConsumer.prototype, "fileIsRecording", void 0);
-//#endregion
-//#region src/controls/independent/AppInfoButton.ts
+// src/controls/independent/AppInfoButton.ts
 var AppInfoButton = class extends AbstractThermalElement {
 	static {
 		this.styles = lit.css`
@@ -9721,8 +9845,7 @@ var AppInfoButton = class extends AbstractThermalElement {
         `;
 	}
 };
-//#endregion
-//#region src/controls/independent/DisplayPanel.ts
+// src/controls/independent/DisplayPanel.ts
 var DisplayPanel = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -9778,8 +9901,7 @@ __decorate([
 	(0, lit_decorators_js.state)(),
 	__decorateMetadata("design:type", Object)
 ], DisplayPanel.prototype, "managerController", void 0);
-//#endregion
-//#region src/controls/independent/ConfigDialog.ts
+// src/controls/independent/ConfigDialog.ts
 var ConfigDialog = class extends AbstractThermalElement {
 	render() {
 		return lit.html`<thermal-dialog
@@ -9799,8 +9921,7 @@ var ConfigDialog = class extends AbstractThermalElement {
         </thermal-dialog>`;
 	}
 };
-//#endregion
-//#region src/hierarchy/providers/FileCopy.ts
+// src/hierarchy/providers/FileCopy.ts
 /** 
 * This element creates a completely isolated hierarchy tree for the given original file. The file is copied and all contexts are exposed independently of the original context.
 * 
@@ -9947,8 +10068,7 @@ __decorate([(0, lit_decorators_js.property)({
 	attribute: false
 }), __decorateMetadata("design:type", Boolean)], FileCopyElement.prototype, "withAnalyses", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], FileCopyElement.prototype, "_canRenderChildren", void 0);
-//#endregion
-//#region src/hierarchy/providers/FileProvider.ts
+// src/hierarchy/providers/FileProvider.ts
 /** 
 * A webcomponent providing the file that is specified by its URL's.
 * 
@@ -9984,17 +10104,13 @@ var FileProviderElement = class extends AbstractFileProvider {
 		};
 	}
 };
-//#endregion
-//#region src/hierarchy/providers/GroupProvider.ts
+// src/hierarchy/providers/GroupProvider.ts
 var GroupProviderElement = class extends AbstractGroupProvider {};
-//#endregion
-//#region src/hierarchy/providers/ManagerProvider.ts
+// src/hierarchy/providers/ManagerProvider.ts
 var ManagerProviderElement = class extends AbstractManagerProvider {};
-//#endregion
-//#region src/hierarchy/providers/RegistryProvider.ts
+// src/hierarchy/providers/RegistryProvider.ts
 var RegistryProviderElement = class extends AbstractRegistryProvider {};
-//#endregion
-//#region src/controls/manager/ManagerExportPanel.ts
+// src/controls/manager/ManagerExportPanel.ts
 var ManagerExportPanel = class extends AbstractThermalElement {
 	renderRow(label, content, hint) {
 		return lit.html`<thermal-field label="${label}">
@@ -10107,8 +10223,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], ManagerExportPanel.prototype, "configController", void 0);
-//#endregion
-//#region src/controls/manager/ManagerGraphSmoothSwitch.ts
+// src/controls/manager/ManagerGraphSmoothSwitch.ts
 var ManagerGraphSmoothSwitch = class extends AbstractManagerConsumer {
 	static {
 		this.styles = lit.css`
@@ -10138,8 +10253,7 @@ __decorate([(0, _lit_context.consume)({
 	context: managerGraphFunctionContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Boolean)], ManagerGraphSmoothSwitch.prototype, "smooth", void 0);
-//#endregion
-//#region src/controls/manager/ManagerImageSmoothSwitch.ts
+// src/controls/manager/ManagerImageSmoothSwitch.ts
 var ManagerImageSmoothSwitch = class extends AbstractManagerConsumer {
 	static {
 		this.styles = lit.css`
@@ -10168,8 +10282,7 @@ __decorate([(0, _lit_context.consume)({
 	context: managerSmoothContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Boolean)], ManagerImageSmoothSwitch.prototype, "smooth", void 0);
-//#endregion
-//#region src/controls/manager/AbstractPaletteSwitch.ts
+// src/controls/manager/AbstractPaletteSwitch.ts
 var AbstractPaletteSwitch = class AbstractPaletteSwitch extends AbstractManagerConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -10221,8 +10334,7 @@ __decorate([
 	(0, lit_decorators_js.state)(),
 	__decorateMetadata("design:type", Object)
 ], AbstractPaletteSwitch.prototype, "value", void 0);
-//#endregion
-//#region src/controls/manager/ManagerPaletteButtons.ts
+// src/controls/manager/ManagerPaletteButtons.ts
 var ManagerPaletteButtons = class extends AbstractPaletteSwitch {
 	static {
 		this.styles = lit.css`
@@ -10251,8 +10363,7 @@ var ManagerPaletteButtons = class extends AbstractPaletteSwitch {
 </thermal-btn>`));
 	}
 };
-//#endregion
-//#region src/controls/manager/ManagerPaletteDropdown.ts
+// src/controls/manager/ManagerPaletteDropdown.ts
 var ManagerPaletteDropdown = class extends AbstractPaletteSwitch {
 	static {
 		this.styles = lit.css`
@@ -10293,8 +10404,7 @@ var ManagerPaletteDropdown = class extends AbstractPaletteSwitch {
         `;
 	}
 };
-//#endregion
-//#region src/controls/manager/ManagerToolsBar.ts
+// src/controls/manager/ManagerToolsBar.ts
 /**
 * A standard toolbar that is either horizontal or vertical.
 */
@@ -10366,8 +10476,69 @@ __decorate([(0, lit_decorators_js.property)({
 	reflect: true,
 	attribute: "tooltip-placement"
 }), __decorateMetadata("design:type", Object)], ManagerToolBar.prototype, "tooltipPlacement", void 0);
-//#endregion
-//#region src/controls/registry/RegistryRangeForm.ts
+// src/controls/manager/ManagerAdvancedPaletteSwitch.ts
+var ManagerAdvancedPaletteSwitch = class extends AbstractManagerConsumer {
+	render() {
+		return lit.html`<thermal-btn-group>
+            <thermal-btn
+                variant="${!this.advancedPalettes ? "foreground" : "default"}"
+                @click=${() => {
+			this.managerController.setAdvancedPalettes(false);
+		}}
+            >Základní palety</thermal-btn>
+            <thermal-btn
+                variant="${this.advancedPalettes ? "foreground" : "default"}"
+                @click=${() => {
+			this.managerController.setAdvancedPalettes(true);
+		}}
+            >Všechny palety</thermal-btn>
+        </thermal-btn-group>`;
+	}
+};
+__decorate([(0, _lit_context.consume)({
+	context: managerAdvancedPalettesContext,
+	subscribe: true
+}), __decorateMetadata("design:type", Boolean)], ManagerAdvancedPaletteSwitch.prototype, "advancedPalettes", void 0);
+// src/controls/manager/ManagerUnitSwitch.ts
+var ManagerUnitSwitch = class extends AbstractManagerConsumer {
+	constructor(..._args) {
+		super(..._args);
+		this.activeVariant = "foreground";
+		this.defaultVariant = "default";
+	}
+	getUnit() {
+		return this.managerObject.unit;
+	}
+	renderUnit(definition) {
+		const active = definition.key === this.getUnit().value;
+		const variant = active ? this.activeVariant : this.defaultVariant;
+		return lit.html`<thermal-btn
+            variant=${variant}
+            ?non-interactive=${active}
+            tooltip=${definition.name}
+            @click=${() => this.getUnit().set(definition.key)}
+        >${definition.symbol}</thermal-btn>`;
+	}
+	render() {
+		const units = Object.values(this.getUnit().getUnits()).map((unit) => this.renderUnit(unit));
+		return lit.html`<thermal-btn-group>${units}</thermal-btn-group>`;
+	}
+};
+__decorate([(0, lit_decorators_property_js.property)({
+	type: String,
+	reflect: true,
+	attribute: "active-variant"
+}), __decorateMetadata("design:type", Object)], ManagerUnitSwitch.prototype, "activeVariant", void 0);
+__decorate([(0, lit_decorators_property_js.property)({
+	type: String,
+	reflect: true,
+	attribute: "default-variant"
+}), __decorateMetadata("design:type", Object)], ManagerUnitSwitch.prototype, "defaultVariant", void 0);
+__decorate([(0, _lit_context.consume)({
+	context: managerUnitContext,
+	subscribe: true
+}), __decorateMetadata("design:type", Object)], ManagerUnitSwitch.prototype, "unit", void 0);
+// src/controls/registry/RegistryRangeForm.ts
 /**
 * Form control for editing a thermal registry's active range. It keeps its
 * inputs synchronized with registry range data and provides range presets,
@@ -11265,8 +11436,7 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Ar
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeForm.prototype, "inputValues", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], RegistryRangeForm.prototype, "isUpdatingFromRegistry", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeForm.prototype, "autoValue", void 0);
-//#endregion
-//#region src/controls/registry/RegistryTicksBar.ts
+// src/controls/registry/RegistryTicksBar.ts
 var RegistryTicksBar = class RegistryTicksBar extends AbstractRegistryConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -11493,8 +11663,7 @@ __decorate([(0, lit_decorators_js.property)({
 }), __decorateMetadata("design:type", String)], RegistryTicksBar.prototype, "placement", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryTicksBar.prototype, "minmax", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Array)], RegistryTicksBar.prototype, "ticks", void 0);
-//#endregion
-//#region src/controls/registry/RegistryRangeSlider.ts
+// src/controls/registry/RegistryRangeSlider.ts
 /**
 * Two-handle slider for the enclosing registry's temperature range.
 *
@@ -11964,8 +12133,7 @@ __decorate([
 ], RegistryRangeSlider.prototype, "unit", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeSlider.prototype, "draft", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], RegistryRangeSlider.prototype, "activeHandle", void 0);
-//#endregion
-//#region src/controls/registry/RegistryHistogram.ts
+// src/controls/registry/RegistryHistogram.ts
 var RegistryHistogram = class extends AbstractRegistryConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -12178,8 +12346,7 @@ __decorate([(0, lit_decorators_js.property)({
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], RegistryHistogram.prototype, "expanded", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], RegistryHistogram.prototype, "loading", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], RegistryHistogram.prototype, "error", void 0);
-//#endregion
-//#region src/controls/registry/RegistryRangeFullButton.ts
+// src/controls/registry/RegistryRangeFullButton.ts
 var RegistryRangeFullButton = class extends AbstractRegistryConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -12241,8 +12408,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], RegistryRangeFullButton.prototype, "unit", void 0);
-//#endregion
-//#region src/controls/registry/RegistryRangeAutoButton.ts
+// src/controls/registry/RegistryRangeAutoButton.ts
 var RegistryRangeAutoButton = class extends AbstractRegistryConsumer {
 	connectedCallback() {
 		super.connectedCallback();
@@ -12304,8 +12470,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], RegistryRangeAutoButton.prototype, "unit", void 0);
-//#endregion
-//#region src/controls/registry/RegistryRangeDisplay.ts
+// src/controls/registry/RegistryRangeDisplay.ts
 var RegistryRangeDisplay = class extends AbstractRegistryConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -12360,8 +12525,7 @@ __decorate([(0, lit_decorators_js.property)({
 	reflect: true,
 	attribute: true
 }), __decorateMetadata("design:type", String)], RegistryRangeDisplay.prototype, "separator", void 0);
-//#endregion
-//#region src/controls/registry/RegistryOpacitySlider.ts
+// src/controls/registry/RegistryOpacitySlider.ts
 var RegistryOpacitySlider = class extends AbstractRegistryConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -12428,8 +12592,7 @@ __decorate([(0, _lit_context.consume)({
 	context: registryOpacityContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Number)], RegistryOpacitySlider.prototype, "value", void 0);
-//#endregion
-//#region src/controls/group/GroupChartElement.ts
+// src/controls/group/GroupChartElement.ts
 /**
 * @license
 * Copyright 2014-2020 Google LLC
@@ -12554,8 +12717,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], GroupChartElement.prototype, "unit", void 0);
-//#endregion
-//#region src/controls/group/GroupAnalysisSyncButton.ts
+// src/controls/group/GroupAnalysisSyncButton.ts
 var GroupAnalysisSyncButton = class extends AbstractGroupConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -12661,8 +12823,7 @@ __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
 	reflect: true
 }), __decorateMetadata("design:type", Boolean)], GroupAnalysisSyncButton.prototype, "on", void 0);
-//#endregion
-//#region src/controls/group/GroupDownloadDropdown.ts
+// src/controls/group/GroupDownloadDropdown.ts
 var GroupDownloadDropdown = class extends AbstractGroupConsumer {
 	static {
 		this.styles = lit.css`
@@ -12757,8 +12918,7 @@ __decorate([(0, lit_decorators_js.property)({
 	type: String,
 	reflect: true
 }), __decorateMetadata("design:type", String)], GroupDownloadDropdown.prototype, "variant", void 0);
-//#endregion
-//#region src/controls/group/GroupDownloadButtons.ts
+// src/controls/group/GroupDownloadButtons.ts
 var GroupDownloadButtons = class extends AbstractGroupConsumer {
 	static {
 		this.styles = lit.css`
@@ -12825,8 +12985,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], GroupDownloadButtons.prototype, "configController", void 0);
-//#endregion
-//#region src/controls/group/AbstractGroupDropin.ts
+// src/controls/group/AbstractGroupDropin.ts
 var AbstractGroupDropin = class extends AbstractGroupConsumer {
 	connectedCallback() {
 		super.connectedCallback();
@@ -12867,8 +13026,7 @@ var AbstractGroupDropin = class extends AbstractGroupConsumer {
 };
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], AbstractGroupDropin.prototype, "ip", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: Function }), __decorateMetadata("design:type", Function)], AbstractGroupDropin.prototype, "onDrop", void 0);
-//#endregion
-//#region src/controls/group/GroupDropinElement.ts
+// src/controls/group/GroupDropinElement.ts
 var GroupDropinElement = class extends AbstractGroupDropin {
 	constructor(..._args) {
 		super(..._args);
@@ -13036,8 +13194,7 @@ var GroupDropinElement = class extends AbstractGroupDropin {
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], GroupDropinElement.prototype, "container", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], GroupDropinElement.prototype, "hover", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], GroupDropinElement.prototype, "uploading", void 0);
-//#endregion
-//#region src/controls/group/GroupDropinInput.ts
+// src/controls/group/GroupDropinInput.ts
 var GroupDropinInputElement = class extends AbstractGroupDropin {
 	constructor(..._args) {
 		super(..._args);
@@ -13201,8 +13358,7 @@ __decorate([(0, lit_decorators_js.property)({
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], GroupDropinInputElement.prototype, "container", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], GroupDropinInputElement.prototype, "hover", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], GroupDropinInputElement.prototype, "uploading", void 0);
-//#endregion
-//#region src/controls/file/buttons/AbstractFileButton.ts
+// src/controls/file/buttons/AbstractFileButton.ts
 var AbstractFileButton = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -13264,8 +13420,7 @@ __decorate([(0, lit_decorators_js.property)({
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], AbstractFileButton.prototype, "icon", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], AbstractFileButton.prototype, "iconStyle", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: Boolean }), __decorateMetadata("design:type", Boolean)], AbstractFileButton.prototype, "plain", void 0);
-//#endregion
-//#region src/controls/group/GroupRangePropagator.ts
+// src/controls/group/GroupRangePropagator.ts
 var GroupRangePropagatorElement = class extends AbstractGroupConsumer {
 	static {
 		this.styles = AbstractFileButton.styles;
@@ -13338,8 +13493,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], GroupRangePropagatorElement.prototype, "unit", void 0);
-//#endregion
-//#region src/utils/timelineTicks.ts
+// src/utils/timelineTicks.ts
 /**
 * Format data into a tick value
 */
@@ -13554,8 +13708,7 @@ const ticksCss = lit.css`
     
 
 `;
-//#endregion
-//#region src/controls/group/GroupTimeline.ts
+// src/controls/group/GroupTimeline.ts
 var GroupTimelineElement = class extends AbstractGroupConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -13741,8 +13894,7 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Ar
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], GroupTimelineElement.prototype, "has", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Array)], GroupTimelineElement.prototype, "ticks", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", typeof ReturnType === "undefined" ? Object : ReturnType)], GroupTimelineElement.prototype, "listener", void 0);
-//#endregion
-//#region src/controls/file/FileCanvas.ts
+// src/controls/file/FileCanvas.ts
 /**
 * The component rendering the file canvas through `@labirthermal/core` functionality.
 * 
@@ -13920,8 +14072,7 @@ __decorate([(0, lit_decorators_js.property)({
 	type: Boolean,
 	attribute: "prefers-gpu"
 }), __decorateMetadata("design:type", Boolean)], FileCanvasElement.prototype, "prefersGpu", void 0);
-//#endregion
-//#region src/controls/file/FileVideoExportButton.ts
+// src/controls/file/FileVideoExportButton.ts
 var FileVideoExportButton = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -14029,8 +14180,7 @@ __decorate([(0, lit_decorators_js.property)({
 	reflect: true
 }), __decorateMetadata("design:type", String)], FileVideoExportButton.prototype, "pre", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], FileVideoExportButton.prototype, "isOpen", void 0);
-//#endregion
-//#region src/controls/file/FilePlaybackSpeedDropdown.ts
+// src/controls/file/FilePlaybackSpeedDropdown.ts
 var FilePlaybackSpeedDropdown = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -14084,8 +14234,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], FilePlaybackSpeedDropdown.prototype, "playbackSpeed", void 0);
-//#endregion
-//#region src/controls/file/FileDownloadDropdown.ts
+// src/controls/file/FileDownloadDropdown.ts
 var FileDownloadButton = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -14240,8 +14389,7 @@ __decorate([(0, lit_decorators_js.property)({
 	type: String,
 	reflect: true
 }), __decorateMetadata("design:type", String)], FileDownloadButton.prototype, "iconStyle", void 0);
-//#endregion
-//#region src/controls/file/buttons/FileButton.ts
+// src/controls/file/buttons/FileButton.ts
 var FileButtonElement = class extends AbstractFileButton {
 	constructor(..._args) {
 		super(..._args);
@@ -14265,8 +14413,7 @@ __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadat
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Function)], FileButtonElement.prototype, "onEnter", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Function)], FileButtonElement.prototype, "onLeave", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Function)], FileButtonElement.prototype, "onAction", void 0);
-//#endregion
-//#region src/controls/file/buttons/FileDropdown.ts
+// src/controls/file/buttons/FileDropdown.ts
 var FileDropdown = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -14392,8 +14539,7 @@ __decorate([(0, lit_decorators_js.property)({
 	reflect: true
 }), __decorateMetadata("design:type", String)], FileDropdown.prototype, "label", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], FileDropdown.prototype, "expanded", void 0);
-//#endregion
-//#region src/controls/file/buttons/FileLrcButton.ts
+// src/controls/file/buttons/FileLrcButton.ts
 var FileLrcButton = class extends AbstractFileButton {
 	constructor(..._args) {
 		super(..._args);
@@ -14414,8 +14560,7 @@ var FileLrcButton = class extends AbstractFileButton {
 		return this.file?.reader.parser.extensions[0]?.extension ?? "lrc";
 	}
 };
-//#endregion
-//#region src/controls/file/buttons/FilePngButton.ts
+// src/controls/file/buttons/FilePngButton.ts
 var FilePngButton = class extends AbstractFileButton {
 	constructor(..._args) {
 		super(..._args);
@@ -14449,8 +14594,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], FilePngButton.prototype, "configController", void 0);
-//#endregion
-//#region src/controls/file/buttons/FileRangePropagator.ts
+// src/controls/file/buttons/FileRangePropagator.ts
 var FileRangePropagator = class extends AbstractFileButton {
 	constructor(..._args) {
 		super(..._args);
@@ -14519,8 +14663,7 @@ __decorate([(0, lit_decorators_js.property)({
 	reflect: true,
 	attribute: "hide-label"
 }), __decorateMetadata("design:type", Boolean)], FileRangePropagator.prototype, "hideLabel", void 0);
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisComplex.ts
+// src/controls/file/analysis/FileAnalysisComplex.ts
 var FileAnalysisComplexElement = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -14836,8 +14979,7 @@ __decorate([(0, lit_decorators_js.property)({
 	reflect: true,
 	attribute: "hide-hint"
 }), __decorateMetadata("design:type", Boolean)], FileAnalysisComplexElement.prototype, "hideHint", void 0);
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisDisplay.ts
+// src/controls/file/analysis/FileAnalysisDisplay.ts
 /** Display the analysis state for the purpose of exporting. */
 var FileAnalysisDisplayElement = class extends AbstractFileConsumer {
 	constructor(..._args) {
@@ -15099,8 +15241,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], FileAnalysisDisplayElement.prototype, "unit", void 0);
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisEdit.ts
+// src/controls/file/analysis/FileAnalysisEdit.ts
 /** Trigger the edit dialog for an analysis */
 var FileAnalisisEditDialog = class extends AbstractThermalElement {
 	willUpdate(changedProperties) {
@@ -15157,8 +15298,7 @@ var FileAnalisisEditDialog = class extends AbstractThermalElement {
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Object)], FileAnalisisEditDialog.prototype, "analysis", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], FileAnalisisEditDialog.prototype, "name", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], FileAnalisisEditDialog.prototype, "type", void 0);
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisGraph.ts
+// src/controls/file/analysis/FileAnalysisGraph.ts
 /** High level component around `thermal-chart` that provides the functionality of a file analysis graph */
 var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 	constructor(..._args) {
@@ -15566,8 +15706,7 @@ __decorate([(0, _lit_context.consume)({
 	context: managerUnitContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Object)], FileAnalysisGraphElement.prototype, "unit", void 0);
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisRow.ts
+// src/controls/file/analysis/FileAnalysisRow.ts
 var FileAnalysisRowElement = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
@@ -15896,8 +16035,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], FileAnalysisRowElement.prototype, "unit", void 0);
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisTable.ts
+// src/controls/file/analysis/FileAnalysisTable.ts
 /**
 * Table of the analyses of the enclosing file provider.
 *
@@ -16127,8 +16265,7 @@ __decorate([
 	(0, lit_decorators_js.state)(),
 	__decorateMetadata("design:type", Array)
 ], FileAnalysisTableElement.prototype, "analysis", void 0);
-//#endregion
-//#region src/controls/file/analysis/edit/analysisColorDropdown.ts
+// src/controls/file/analysis/edit/analysisColorDropdown.ts
 /** 
 * Render the dropdown for color selection of an analysis. Property `analysis` needs to be passed down from the parent component 
 * @package \@labirthermal/webcomponents
@@ -16204,8 +16341,7 @@ var AnalysisColorDropdown = class extends AbstractThermalElement {
 };
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Object)], AnalysisColorDropdown.prototype, "analysis", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], AnalysisColorDropdown.prototype, "color", void 0);
-//#endregion
-//#region src/controls/file/analysis/edit/analysisNameInput.ts
+// src/controls/file/analysis/edit/analysisNameInput.ts
 /** 
 * Render the input for editing the analysis name. Property `analysis` needs to be passed down from the parent component 
 * @package \@labirthermal/webcomponents
@@ -16249,8 +16385,7 @@ var AnalysisNameInput = class extends AbstractThermalElement {
 };
 __decorate([(0, lit_decorators_js.property)({ type: Object }), __decorateMetadata("design:type", Object)], AnalysisNameInput.prototype, "analysis", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], AnalysisNameInput.prototype, "name", void 0);
-//#endregion
-//#region src/controls/file/analysis/edit/editAreaTable.ts
+// src/controls/file/analysis/edit/editAreaTable.ts
 /** 
 * The full table and form for editing an area analysis properties. Enables editing of name, color and dimensions (top, left, width, height, right, bottom). Property `analysis` needs to be passed down from the parent component 
 * @package \@labirthermal/webcomponents
@@ -16393,8 +16528,7 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Nu
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], AreaEditTable.prototype, "bottom", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], AreaEditTable.prototype, "maxX", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], AreaEditTable.prototype, "maxY", void 0);
-//#endregion
-//#region src/controls/file/analysis/edit/editPointTable.ts
+// src/controls/file/analysis/edit/editPointTable.ts
 /** 
 * The full table and form for editing a point analysis properties. Enables editing of name, color and coordinates (top, left). Property `analysis` needs to be passed down from the parent component 
 * @package \@labirthermal/webcomponents
@@ -16504,8 +16638,7 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Nu
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], EditpointTable.prototype, "left", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], EditpointTable.prototype, "maxX", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], EditpointTable.prototype, "maxY", void 0);
-//#endregion
-//#region src/controls/file/analysis/chart/loader.ts
+// src/controls/file/analysis/chart/loader.ts
 /**
 * @license
 * Copyright 2014-2020 Google LLC
@@ -16605,8 +16738,7 @@ async function createChartWrapper(container) {
 	await load();
 	return new google.visualization.ChartWrapper({ "container": container });
 }
-//#endregion
-//#region src/controls/file/analysis/chart/chart.ts
+// src/controls/file/analysis/chart/chart.ts
 /**
 * @license
 * Copyright 2014-2020 Google LLC
@@ -17035,8 +17167,512 @@ __decorate([(0, lit_decorators_js.property)({
 	type: Number,
 	reflect: true
 }), __decorateMetadata("design:type", Number)], ThermalChartElement.prototype, "h", void 0);
-//#endregion
-//#region src/utils/iife.ts
+// src/apps/AbstractSingleFileApp.ts
+/**
+* Common foundation for apps that handle a single thermal file loaded from the URL.
+*/
+var AbstractSingleFileAppElement = class extends AbstractApp {
+	constructor(..._args) {
+		super(..._args);
+		this.interactiveAnalysis = true;
+		this.managerController = new ManagerController(this);
+		this.palette = "jet";
+		this.advancedPalettes = false;
+		this.smoothThermograms = false;
+		this.smoothGraph = false;
+		this.tool = "inspect";
+		this.registryController = new RegistryController(this);
+		this.opacity = 1;
+		this.loading = false;
+		this.groupController = new GroupController(this);
+		this.autoclearGroup = true;
+		this.fileController = new FileController(this);
+		this.ms = 0;
+		this.playbackSpeed = 1;
+		this.autoHighlight = false;
+		this.fileLoadController = new FileLoadController(this);
+	}
+	static {
+		this.properties = {
+			...AbstractApp.properties,
+			...ManagerController.HOST_PROPERTIES,
+			...RegistryController.HOST_PROPERTIES,
+			...GroupController.HOST_PROPERTIES,
+			...FileController.HOST_PROPERTIES,
+			...FileLoadController.HOST_PROPERTIES
+		};
+	}
+};
+__decorate([
+	(0, _lit_context.provide)({ context: managerInteractiveAnalysesContext }),
+	(0, lit_decorators_js.property)({
+		type: Boolean,
+		reflect: true,
+		attribute: "interactive-analysis"
+	}),
+	__decorateMetadata("design:type", Boolean)
+], AbstractSingleFileAppElement.prototype, "interactiveAnalysis", void 0);
+// src/apps/ThermalFileApp.ts
+var ThermalFileAppElement = class extends AbstractSingleFileAppElement {
+	connectedCallback() {
+		super.connectedCallback();
+		if (this.hasUpdated) this.observeLayout();
+	}
+	firstUpdated(changedProperties) {
+		super.firstUpdated(changedProperties);
+		this.observeLayout();
+	}
+	disconnectedCallback() {
+		this.layoutObserver?.disconnect();
+		this.layoutObserver = void 0;
+		super.disconnectedCallback();
+	}
+	/** Applies responsive classes to the rendered layout without recreating its interactive children. */
+	observeLayout() {
+		const layout = this.shadowRoot?.querySelector(".layout");
+		if (!layout || this.layoutObserver) return;
+		const observer = new ResizeObserver((entries) => {
+			if (!this.isConnected || this.layoutObserver !== observer) return;
+			const entry = entries.find((entry) => entry.target === layout);
+			if (entry) {
+				layout.classList.toggle("layout--stacked", entry.contentRect.width < 700);
+				layout.classList.toggle("layout--compact", entry.contentRect.width < 500);
+			}
+		});
+		this.layoutObserver = observer;
+		observer.observe(layout);
+	}
+	static {
+		this.styles = lit.css`
+    
+        .layout {
+            display: grid;
+            grid-template-columns: min-content minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-areas: "tools viewer analysis";
+            gap: 1em;
+            margin-top: 1em;
+        }
+
+        .layout > * {
+            min-width: 0;
+        }
+
+        manager-tool-bar {
+            grid-area: tools;
+            align-self: start;
+        }
+
+        .viewer {
+            grid-area: viewer;
+        }
+
+        file-analysis-complex {
+            grid-area: analysis;
+        }
+
+        .layout--stacked {
+            grid-template-columns: min-content minmax(0, 1fr);
+            grid-template-areas:
+                "tools viewer"
+                "tools analysis";
+        }
+
+        .layout--compact {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-areas:
+                "tools"
+                "viewer"
+                "analysis";
+        }
+
+        .layout--compact manager-tool-bar {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+    
+    `;
+	}
+	render() {
+		return lit.html`<thermal-app 
+            label="${(0, lit_directives_if_defined_js.ifDefined)(this.label)}" 
+            author="${(0, lit_directives_if_defined_js.ifDefined)(this.author)}" 
+            license="${(0, lit_directives_if_defined_js.ifDefined)(this.license)}" 
+            .showfullscreen=${this.showFullscreen}
+        >
+
+            <file-download-dropdown slot="bar-pre"></file-download-dropdown>
+            <file-info-button slot="bar-pre"></file-info-button>
+
+            <manager-palette-dropdown slot="bar-pre"></manager-palette-dropdown>
+            <manager-unit-switch slot="bar-pre" default-variant="default" active-variant="background"></manager-unit-switch>
+            <registry-range-form slot="bar-pre"></registry-range-form>
+            ${this.file && this.file.visibleUrl ? lit.html`<registry-opacity-slider slot="bar-pre"></registry-opacity-slider>` : lit.nothing}
+
+            <registry-histogram slot="pre" ?expandable=${true}></registry-histogram>
+            <registry-range-slider slot="pre"></registry-range-slider>
+            <registry-ticks-bar slot="pre"></registry-ticks-bar>
+
+            
+            <div class="layout">
+                <manager-tool-bar></manager-tool-bar>
+                <div class="viewer">
+                    <file-canvas></file-canvas>
+                    <file-timeline></file-timeline>
+                </div>
+                <file-analysis-complex></file-analysis-complex>
+            </div>
+            
+        </thermal-app>`;
+	}
+};
+// src/apps/ThermalDropinApp.ts
+var ThermalDropinAppElement = class extends AbstractApp {
+	constructor(..._args) {
+		super(..._args);
+		this.palette = "jet";
+		this.advancedPalettes = false;
+		this.smoothThermograms = false;
+		this.smoothGraph = false;
+		this.tool = "inspect";
+		this.managerController = new ManagerController(this);
+		this.opacity = 1;
+		this.loading = false;
+		this.registryController = new RegistryController(this);
+		this.autoclearGroup = false;
+		this.groupController = new GroupController(this);
+		this.ms = 0;
+		this.playbackSpeed = 1;
+		this.autoHighlight = false;
+		this.fileController = new FileController(this);
+		this.orderby = "date";
+		this.ordering = "asc";
+		this.groupListingController = new GroupListingController(this);
+		this.displayMode = "input";
+		this.toDisplay = [];
+	}
+	static {
+		this.properties = {
+			...ManagerController.HOST_PROPERTIES,
+			...RegistryController.HOST_PROPERTIES,
+			...GroupController.HOST_PROPERTIES,
+			...FileController.HOST_PROPERTIES,
+			...GroupListingController.HOST_PROPERTIES
+		};
+	}
+	get manager() {
+		return this.managerObject;
+	}
+	connectedCallback() {
+		super.connectedCallback();
+		try {
+			(0, public_ip.publicIpv4)().then((ip) => this.ip = ip);
+		} catch (error) {
+			console.error("Failed to get public IPv4 address:", error);
+		}
+		const listener = async (files) => {
+			this.log("Files received in listener:", files);
+			if (this.onValueChangeTimeout !== void 0) clearTimeout(this.onValueChangeTimeout);
+			this.onValueChangeTimeout = setTimeout(async () => {
+				this.toDisplay = files;
+			}, 0);
+		};
+		this.groupObject?.files.addListener(this.UUID, listener.bind(this));
+		this.groupController.onInternalObject.set(this.UUID, (group) => {
+			group.files.addListener(this.UUID, listener.bind(this));
+		});
+	}
+	willUpdate(_changedProperties) {
+		super.willUpdate(_changedProperties);
+		if (_changedProperties.has("toDisplay")) {
+			if (this.toDisplay.length === 0) this.displayMode = "input";
+			else if (this.toDisplay.length === 1) {
+				this.displayMode = "detail";
+				this.fileController.receiveInstance(this.toDisplay[0]);
+				this.postLoadedProcessingAndApplyMinmax();
+			} else if (this.toDisplay.length > 1) {
+				this.displayMode = "list";
+				this.postLoadedProcessingAndApplyMinmax();
+			}
+		}
+	}
+	/**
+	* Postprocess the registry and reset its range to apply min and max values.
+	*/
+	async postLoadedProcessingAndApplyMinmax() {
+		await this.registryObject.postLoadedProcessing();
+		this.registryObject.range.applyMinmax();
+	}
+	handleClear() {
+		if (this.groupObject !== void 0) {
+			this.fileController.removeInstance();
+			this.groupObject.files.removeAllInstances();
+			this.file = void 0;
+			this.requestUpdate();
+			this.analysis1 = void 0;
+			this.analysis2 = void 0;
+			this.analysis3 = void 0;
+			this.analysis4 = void 0;
+			this.analysis5 = void 0;
+			this.analysis6 = void 0;
+			this.analysis7 = void 0;
+		}
+	}
+	static {
+		this.styles = lit.css`
+        ${GroupListingController.styles}
+    
+        .layout {
+        
+            width: 100%;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1em;
+        
+        }
+
+        .layout-content {
+            min-width: 0;
+        }
+
+        manager-tool-bar {
+            height: 2em;
+        }
+
+    `;
+	}
+	async handleDropAndClear(results) {
+		this.log(results);
+		const readers = results.filter((result) => result instanceof _labirthermal_core.ThermalFileReader);
+		this.groupListingController.backupReaders(readers);
+		this.groupListingController.restoreTheEntireBackup();
+	}
+	renderIntroScene() {
+		return lit.html`
+            <group-dropin-element .onDrop=${this.handleDropAndClear.bind(this)}></group-dropin-element>
+        `;
+	}
+	renderLayout(children) {
+		return lit.html`
+        <div class="layout">
+            <div style="width: 2em;"></div>
+            <div class="layout-content">${children}</div>
+        </div>
+        `;
+	}
+	renderHeader() {
+		const elements = [];
+		if (this.displayMode === "input") elements.push(lit.html`<group-dropin-input 
+                slot="bar-pre"
+                variant="background"
+                icon="upload"
+                iconStyle="micro"
+                tooltip="Vyberte soubory z disku"
+                .onDrop=${this.handleDropAndClear.bind(this)}
+            ></group-dropin-input>`);
+		if (this.displayMode !== "input") elements.push(lit.html`
+            <manager-tool-bar slot="pre-bar"></manager-tool-bar>
+            <manager-palette-dropdown slot="pre-bar"></manager-palette-dropdown>
+            <manager-unit-switch slot="pre-bar" active-variant="background"></manager-unit-switch>
+            <registry-range-form slot="pre-bar"></registry-range-form>
+            
+            `);
+		if (this.displayMode === "list") elements.push(lit.html`${this.groupListingController.renderListHeader("bar-header")}`);
+		if (this.displayMode === "detail") elements.push(lit.html`${this.groupListingController.renderDetailHeader(this.groupObject.files.value[0], "bar-pre")}`);
+		if (this.displayMode !== "input") {
+			elements.push(lit.html`<thermal-dialog label="${t$1("config")}" slot="bar-pre">
+                <thermal-btn slot="invoker" tooltip="${t$1("config")}" icon="settings" iconStyle="solid"></thermal-btn>
+                <div slot="content">
+                    <table>
+                        <manager-export-panel></manager-export-panel>
+                        <display-panel></display-panel>
+                    </table>
+                </div>
+            </thermal-dialog>`);
+			elements.push(this.groupListingController.renderTemperatureScale());
+		}
+		return elements;
+	}
+	renderDetail() {
+		return this.renderLayout(this.groupListingController.renderDetailBody());
+	}
+	renderList() {
+		const map = (0, lit_directives_repeat_js.repeat)(this.toDisplay, (instance) => instance.id, (instance) => this.groupListingController.renderThumbnail(instance));
+		return this.renderLayout(this.groupListingController.renderListContainer(map));
+	}
+	renderAuto() {
+		switch (this.displayMode) {
+			case "input": return this.renderIntroScene();
+			case "list": return this.renderList();
+			case "detail": return this.renderDetail();
+		}
+	}
+	render() {
+		try {
+			const label = this.label ?? "LabIR Web Analyser";
+			return lit.html`<thermal-app 
+                label="${label}"
+                ?show-fullscreen=${true}
+            >
+
+                ${this.renderHeader()}
+
+                <slot name="bar-pre" slot="bar-pre"></slot>
+
+                ${this.renderAuto()}
+
+            </thermal-app>
+
+        `;
+		} catch (error) {
+			console.error(error);
+			return lit.html`Stala se chyba`;
+		}
+	}
+};
+__decorate([(0, lit_decorators_js.property)({
+	type: String,
+	reflect: true
+}), __decorateMetadata("design:type", String)], ThermalDropinAppElement.prototype, "displayMode", void 0);
+__decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], ThermalDropinAppElement.prototype, "ip", void 0);
+__decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Array)], ThermalDropinAppElement.prototype, "toDisplay", void 0);
+__decorate([
+	(0, _lit_context.provide)({ context: localeContext }),
+	(0, lit_decorators_js.property)({
+		reflect: true,
+		converter: localeConverter
+	}),
+	__decorateMetadata("design:type", Object)
+], ThermalDropinAppElement.prototype, "locale", void 0);
+// src/apps/ThermalGroupApp.ts
+var ThermalGroupAppElement = class extends AbstractApp {
+	constructor(..._args) {
+		super(..._args);
+		this.managerController = new ManagerController(this);
+		this.palette = "jet";
+		this.advancedPalettes = false;
+		this.smoothThermograms = false;
+		this.smoothGraph = false;
+		this.tool = "inspect";
+		this.registryController = new RegistryController(this);
+		this.opacity = 1;
+		this.loading = false;
+		this.groupController = new GroupController(this);
+		this.autoclearGroup = true;
+		this.fileController = new FileController(this);
+		this.ms = 0;
+		this.playbackSpeed = 1;
+		this.autoHighlight = false;
+		this.groupListingController = new GroupListingController(this);
+		this.orderby = "date";
+		this.ordering = "asc";
+		this.groupLoadController = new GroupLoadController(this);
+	}
+	static {
+		this.properties = {
+			...AbstractApp.properties,
+			...ManagerController.HOST_PROPERTIES,
+			...RegistryController.HOST_PROPERTIES,
+			...GroupController.HOST_PROPERTIES,
+			...FileController.HOST_PROPERTIES,
+			...GroupLoadController.HOST_PROPERTIES
+		};
+	}
+	connectedCallback() {
+		super.connectedCallback();
+		this.subscribedGroup = this.groupObject;
+		this.subscribedGroup.files.addListener(this.UUID, () => {
+			if (this.file && !this.groupObject.files.value.includes(this.file)) this.fileController.removeInstance();
+			this.requestUpdate();
+		});
+	}
+	disconnectedCallback() {
+		this.subscribedGroup?.files.removeListener(this.UUID);
+		this.subscribedGroup = void 0;
+		super.disconnectedCallback();
+	}
+	openDetail(instance) {
+		this.registryController.setHighlight(void 0);
+		this.ms = instance.timeline.currentMs;
+		this.playbackSpeed = instance.timeline.playbackSpeed;
+		[
+			"analysis1",
+			"analysis2",
+			"analysis3",
+			"analysis4",
+			"analysis5",
+			"analysis6",
+			"analysis7"
+		].forEach((attribute, index) => {
+			this[attribute] = instance.slots.getSlot(index + 1)?.serialized;
+		});
+		this.fileController.receiveInstance(instance);
+	}
+	closeDetail() {
+		this.registryController.setHighlight(void 0);
+		this.fileController.removeInstance();
+	}
+	static {
+		this.styles = lit.css`
+        ${GroupListingController.styles}
+
+        .layout {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 2em minmax(0, 1fr);
+            gap: 1em;
+        }
+
+        .layout-content {
+            min-width: 0;
+        }
+
+        manager-tool-bar {
+            height: 2em;
+        }
+    `;
+	}
+	render() {
+		const listingOptions = {
+			allowFileChanges: false,
+			onOpenDetail: (instance) => this.openDetail(instance),
+			onCloseDetail: () => this.closeDetail()
+		};
+		const hasFiles = this.groupObject?.files.value.length > 0;
+		return lit.html`<thermal-app
+            label=${this.label ?? "LabIR Web Analyser"}
+            author=${(0, lit_directives_if_defined_js.ifDefined)(this.author)}
+            license=${(0, lit_directives_if_defined_js.ifDefined)(this.license)}
+            ?show-fullscreen=${this.showFullscreen}
+        >
+            ${hasFiles ? lit.html`
+                <manager-tool-bar slot="pre-bar"></manager-tool-bar>
+                <manager-palette-dropdown slot="pre-bar"></manager-palette-dropdown>
+                <registry-range-form slot="pre-bar"></registry-range-form>
+                ${this.file ? this.groupListingController.renderDetailHeader(this.file, "bar-header", listingOptions) : this.groupListingController.renderListHeader("bar-header", listingOptions)}
+                <thermal-dialog label=${this.t("config")} slot="bar-pre">
+                    <thermal-btn slot="invoker" tooltip=${this.t("config")} icon="settings" iconStyle="solid"></thermal-btn>
+                    <div slot="content">
+                        <table>
+                            <manager-export-panel></manager-export-panel>
+                            <display-panel></display-panel>
+                        </table>
+                    </div>
+                </thermal-dialog>
+                ${this.groupListingController.renderTemperatureScale()}
+            ` : void 0}
+            <slot name="bar-pre" slot="bar-pre"></slot>
+            ${this.groupLoadController.errors.map((message) => lit.html`<p role="alert">${message}</p>`)}
+            <div class="layout">
+                <div></div>
+                <div class="layout-content">
+                    ${this.loading ? lit.html`<p role="status">${this.t("loading")}</p>` : void 0}
+                    ${hasFiles ? this.file ? this.groupListingController.renderDetailBody() : this.groupListingController.renderListContainer(this.groupListingController.renderList((instance) => this.groupListingController.renderThumbnail(instance, listingOptions))) : this.loading ? void 0 : lit.html`<p>Ve skupině nejsou žádné soubory.</p>`}
+                </div>
+            </div>
+        </thermal-app>`;
+	}
+};
+// src/utils/iife.ts
 /**
 * Registers and defines all custom elements from a provided list
 * 
@@ -17070,8 +17706,7 @@ const debugclsName = (tag, cls) => {
 		cls.name
 	];
 };
-//#endregion
-//#region src/apps/AustralianApparentTemperature.ts
+// src/apps/AustralianApparentTemperature.ts
 const converters = {
 	fromAttribute(value) {
 		if (typeof value === "string") {
@@ -17422,517 +18057,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], AatAppElement.prototype, "locale", void 0);
-//#endregion
-//#region src/apps/ThermalDropinApp.ts
-var DropinAppElement = class extends AbstractApp {
-	constructor(..._args) {
-		super(..._args);
-		this.palette = "jet";
-		this.advancedPalettes = false;
-		this.smoothThermograms = false;
-		this.smoothGraph = false;
-		this.tool = "inspect";
-		this.managerController = new ManagerController(this);
-		this.opacity = 1;
-		this.loading = false;
-		this.registryController = new RegistryController(this);
-		this.autoclearGroup = false;
-		this.groupController = new GroupController(this);
-		this.ms = 0;
-		this.playbackSpeed = 1;
-		this.autoHighlight = false;
-		this.fileController = new FileController(this);
-		this.orderby = "date";
-		this.ordering = "asc";
-		this.groupListingController = new GroupListingController(this);
-		this.displayMode = "input";
-		this.toDisplay = [];
-	}
-	static {
-		this.properties = {
-			...ManagerController.HOST_PROPERTIES,
-			...RegistryController.HOST_PROPERTIES,
-			...GroupController.HOST_PROPERTIES,
-			...FileController.HOST_PROPERTIES,
-			...GroupListingController.HOST_PROPERTIES
-		};
-	}
-	get manager() {
-		return this.managerObject;
-	}
-	connectedCallback() {
-		super.connectedCallback();
-		try {
-			(0, public_ip.publicIpv4)().then((ip) => this.ip = ip);
-		} catch (error) {
-			console.error("Failed to get public IPv4 address:", error);
-		}
-		const listener = async (files) => {
-			this.log("Files received in listener:", files);
-			if (this.onValueChangeTimeout !== void 0) clearTimeout(this.onValueChangeTimeout);
-			this.onValueChangeTimeout = setTimeout(async () => {
-				this.toDisplay = files;
-			}, 0);
-		};
-		this.groupObject?.files.addListener(this.UUID, listener.bind(this));
-		this.groupController.onInternalObject.set(this.UUID, (group) => {
-			group.files.addListener(this.UUID, listener.bind(this));
-		});
-	}
-	willUpdate(_changedProperties) {
-		super.willUpdate(_changedProperties);
-		if (_changedProperties.has("toDisplay")) {
-			if (this.toDisplay.length === 0) this.displayMode = "input";
-			else if (this.toDisplay.length === 1) {
-				this.displayMode = "detail";
-				this.fileController.receiveInstance(this.toDisplay[0]);
-				this.postLoadedProcessingAndApplyMinmax();
-			} else if (this.toDisplay.length > 1) {
-				this.displayMode = "list";
-				this.postLoadedProcessingAndApplyMinmax();
-			}
-		}
-	}
-	/**
-	* Postprocess the registry and reset its range to apply min and max values.
-	*/
-	async postLoadedProcessingAndApplyMinmax() {
-		await this.registryObject.postLoadedProcessing();
-		this.registryObject.range.applyMinmax();
-	}
-	handleClear() {
-		if (this.groupObject !== void 0) {
-			this.fileController.removeInstance();
-			this.groupObject.files.removeAllInstances();
-			this.file = void 0;
-			this.requestUpdate();
-			this.analysis1 = void 0;
-			this.analysis2 = void 0;
-			this.analysis3 = void 0;
-			this.analysis4 = void 0;
-			this.analysis5 = void 0;
-			this.analysis6 = void 0;
-			this.analysis7 = void 0;
-		}
-	}
-	static {
-		this.styles = lit.css`
-        ${GroupListingController.styles}
-    
-        .layout {
-        
-            width: 100%;
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 1em;
-        
-        }
-
-        .layout-content {
-            min-width: 0;
-        }
-
-        manager-tool-bar {
-            height: 2em;
-        }
-
-    `;
-	}
-	async handleDropAndClear(results) {
-		this.log(results);
-		const readers = results.filter((result) => result instanceof _labirthermal_core.ThermalFileReader);
-		this.groupListingController.backupReaders(readers);
-		this.groupListingController.restoreTheEntireBackup();
-	}
-	renderIntroScene() {
-		return lit.html`
-            <group-dropin-element .onDrop=${this.handleDropAndClear.bind(this)}></group-dropin-element>
-        `;
-	}
-	renderLayout(children) {
-		return lit.html`
-        <div class="layout">
-            <div style="width: 2em;"></div>
-            <div class="layout-content">${children}</div>
-        </div>
-        `;
-	}
-	renderHeader() {
-		const elements = [];
-		if (this.displayMode === "input") elements.push(lit.html`<group-dropin-input 
-                slot="bar-pre"
-                variant="background"
-                icon="upload"
-                iconStyle="micro"
-                tooltip="Vyberte soubory z disku"
-                .onDrop=${this.handleDropAndClear.bind(this)}
-            ></group-dropin-input>`);
-		if (this.displayMode !== "input") elements.push(lit.html`
-            <manager-tool-bar slot="pre-bar"></manager-tool-bar>
-            <manager-palette-dropdown slot="pre-bar"></manager-palette-dropdown>
-            <manager-unit-switch slot="pre-bar" active-variant="background"></manager-unit-switch>
-            <registry-range-form slot="pre-bar"></registry-range-form>
-            
-            `);
-		if (this.displayMode === "list") elements.push(lit.html`${this.groupListingController.renderListHeader("bar-header")}`);
-		if (this.displayMode === "detail") elements.push(lit.html`${this.groupListingController.renderDetailHeader(this.groupObject.files.value[0], "bar-pre")}`);
-		if (this.displayMode !== "input") {
-			elements.push(lit.html`<thermal-dialog label="${t$1("config")}" slot="bar-pre">
-                <thermal-btn slot="invoker" tooltip="${t$1("config")}" icon="settings" iconStyle="solid"></thermal-btn>
-                <div slot="content">
-                    <table>
-                        <manager-export-panel></manager-export-panel>
-                        <display-panel></display-panel>
-                    </table>
-                </div>
-            </thermal-dialog>`);
-			elements.push(this.groupListingController.renderTemperatureScale());
-		}
-		return elements;
-	}
-	renderDetail() {
-		return this.renderLayout(this.groupListingController.renderDetailBody());
-	}
-	renderList() {
-		const map = (0, lit_directives_repeat_js.repeat)(this.toDisplay, (instance) => instance.id, (instance) => this.groupListingController.renderThumbnail(instance));
-		return this.renderLayout(this.groupListingController.renderListContainer(map));
-	}
-	renderAuto() {
-		switch (this.displayMode) {
-			case "input": return this.renderIntroScene();
-			case "list": return this.renderList();
-			case "detail": return this.renderDetail();
-		}
-	}
-	render() {
-		try {
-			const label = this.label ?? "LabIR Web Analyser";
-			return lit.html`<thermal-app 
-                label="${label}"
-                ?show-fullscreen=${true}
-            >
-
-                ${this.renderHeader()}
-
-                <slot name="bar-pre" slot="bar-pre"></slot>
-
-                ${this.renderAuto()}
-
-            </thermal-app>
-
-        `;
-		} catch (error) {
-			console.error(error);
-			return lit.html`Stala se chyba`;
-		}
-	}
-};
-__decorate([(0, lit_decorators_js.property)({
-	type: String,
-	reflect: true
-}), __decorateMetadata("design:type", String)], DropinAppElement.prototype, "displayMode", void 0);
-__decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", String)], DropinAppElement.prototype, "ip", void 0);
-__decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Array)], DropinAppElement.prototype, "toDisplay", void 0);
-__decorate([
-	(0, _lit_context.provide)({ context: localeContext }),
-	(0, lit_decorators_js.property)({
-		reflect: true,
-		converter: localeConverter
-	}),
-	__decorateMetadata("design:type", Object)
-], DropinAppElement.prototype, "locale", void 0);
-//#endregion
-//#region src/apps/AbstractSingleFileApp.ts
-/**
-* Common foundation for apps that handle a single thermal file loaded from the URL.
-*/
-var AbstractSingleFileAppElement = class extends AbstractApp {
-	constructor(..._args) {
-		super(..._args);
-		this.interactiveAnalysis = true;
-		this.managerController = new ManagerController(this);
-		this.palette = "jet";
-		this.advancedPalettes = false;
-		this.smoothThermograms = false;
-		this.smoothGraph = false;
-		this.tool = "inspect";
-		this.registryController = new RegistryController(this);
-		this.opacity = 1;
-		this.loading = false;
-		this.groupController = new GroupController(this);
-		this.autoclearGroup = true;
-		this.fileController = new FileController(this);
-		this.ms = 0;
-		this.playbackSpeed = 1;
-		this.autoHighlight = false;
-		this.fileLoadController = new FileLoadController(this);
-	}
-	static {
-		this.properties = {
-			...AbstractApp.properties,
-			...ManagerController.HOST_PROPERTIES,
-			...RegistryController.HOST_PROPERTIES,
-			...GroupController.HOST_PROPERTIES,
-			...FileController.HOST_PROPERTIES,
-			...FileLoadController.HOST_PROPERTIES
-		};
-	}
-};
-__decorate([
-	(0, _lit_context.provide)({ context: managerInteractiveAnalysesContext }),
-	(0, lit_decorators_js.property)({
-		type: Boolean,
-		reflect: true,
-		attribute: "interactive-analysis"
-	}),
-	__decorateMetadata("design:type", Boolean)
-], AbstractSingleFileAppElement.prototype, "interactiveAnalysis", void 0);
-//#endregion
-//#region src/apps/ThermalFileApp.ts
-var ThermalFileAppElement = class extends AbstractSingleFileAppElement {
-	connectedCallback() {
-		super.connectedCallback();
-		if (this.hasUpdated) this.observeLayout();
-	}
-	firstUpdated(changedProperties) {
-		super.firstUpdated(changedProperties);
-		this.observeLayout();
-	}
-	disconnectedCallback() {
-		this.layoutObserver?.disconnect();
-		this.layoutObserver = void 0;
-		super.disconnectedCallback();
-	}
-	/** Applies responsive classes to the rendered layout without recreating its interactive children. */
-	observeLayout() {
-		const layout = this.shadowRoot?.querySelector(".layout");
-		if (!layout || this.layoutObserver) return;
-		const observer = new ResizeObserver((entries) => {
-			if (!this.isConnected || this.layoutObserver !== observer) return;
-			const entry = entries.find((entry) => entry.target === layout);
-			if (entry) {
-				layout.classList.toggle("layout--stacked", entry.contentRect.width < 700);
-				layout.classList.toggle("layout--compact", entry.contentRect.width < 500);
-			}
-		});
-		this.layoutObserver = observer;
-		observer.observe(layout);
-	}
-	static {
-		this.styles = lit.css`
-    
-        .layout {
-            display: grid;
-            grid-template-columns: min-content minmax(0, 1fr) minmax(0, 1fr);
-            grid-template-areas: "tools viewer analysis";
-            gap: 1em;
-            margin-top: 1em;
-        }
-
-        .layout > * {
-            min-width: 0;
-        }
-
-        manager-tool-bar {
-            grid-area: tools;
-            align-self: start;
-        }
-
-        .viewer {
-            grid-area: viewer;
-        }
-
-        file-analysis-complex {
-            grid-area: analysis;
-        }
-
-        .layout--stacked {
-            grid-template-columns: min-content minmax(0, 1fr);
-            grid-template-areas:
-                "tools viewer"
-                "tools analysis";
-        }
-
-        .layout--compact {
-            grid-template-columns: minmax(0, 1fr);
-            grid-template-areas:
-                "tools"
-                "viewer"
-                "analysis";
-        }
-
-        .layout--compact manager-tool-bar {
-            flex-direction: row;
-            flex-wrap: wrap;
-        }
-    
-    `;
-	}
-	render() {
-		return lit.html`<thermal-app 
-            label="${(0, lit_directives_if_defined_js.ifDefined)(this.label)}" 
-            author="${(0, lit_directives_if_defined_js.ifDefined)(this.author)}" 
-            license="${(0, lit_directives_if_defined_js.ifDefined)(this.license)}" 
-            .showfullscreen=${this.showFullscreen}
-        >
-
-            <file-download-dropdown slot="bar-pre"></file-download-dropdown>
-            <file-info-button slot="bar-pre"></file-info-button>
-
-            <manager-palette-dropdown slot="bar-pre"></manager-palette-dropdown>
-            <manager-unit-switch slot="bar-pre" default-variant="default" active-variant="background"></manager-unit-switch>
-            <registry-range-form slot="bar-pre"></registry-range-form>
-            ${this.file && this.file.visibleUrl ? lit.html`<registry-opacity-slider slot="bar-pre"></registry-opacity-slider>` : lit.nothing}
-
-            <registry-histogram slot="pre" ?expandable=${true}></registry-histogram>
-            <registry-range-slider slot="pre"></registry-range-slider>
-            <registry-ticks-bar slot="pre"></registry-ticks-bar>
-
-            
-            <div class="layout">
-                <manager-tool-bar></manager-tool-bar>
-                <div class="viewer">
-                    <file-canvas></file-canvas>
-                    <file-timeline></file-timeline>
-                </div>
-                <file-analysis-complex></file-analysis-complex>
-            </div>
-            
-        </thermal-app>`;
-	}
-};
-//#endregion
-//#region src/apps/ThermalGroupApp.ts
-var ThermalGroupAppElement = class extends AbstractApp {
-	constructor(..._args) {
-		super(..._args);
-		this.managerController = new ManagerController(this);
-		this.palette = "jet";
-		this.advancedPalettes = false;
-		this.smoothThermograms = false;
-		this.smoothGraph = false;
-		this.tool = "inspect";
-		this.registryController = new RegistryController(this);
-		this.opacity = 1;
-		this.loading = false;
-		this.groupController = new GroupController(this);
-		this.autoclearGroup = true;
-		this.fileController = new FileController(this);
-		this.ms = 0;
-		this.playbackSpeed = 1;
-		this.autoHighlight = false;
-		this.groupListingController = new GroupListingController(this);
-		this.orderby = "date";
-		this.ordering = "asc";
-		this.groupLoadController = new GroupLoadController(this);
-	}
-	static {
-		this.properties = {
-			...AbstractApp.properties,
-			...ManagerController.HOST_PROPERTIES,
-			...RegistryController.HOST_PROPERTIES,
-			...GroupController.HOST_PROPERTIES,
-			...FileController.HOST_PROPERTIES,
-			...GroupLoadController.HOST_PROPERTIES
-		};
-	}
-	connectedCallback() {
-		super.connectedCallback();
-		this.subscribedGroup = this.groupObject;
-		this.subscribedGroup.files.addListener(this.UUID, () => {
-			if (this.file && !this.groupObject.files.value.includes(this.file)) this.fileController.removeInstance();
-			this.requestUpdate();
-		});
-	}
-	disconnectedCallback() {
-		this.subscribedGroup?.files.removeListener(this.UUID);
-		this.subscribedGroup = void 0;
-		super.disconnectedCallback();
-	}
-	openDetail(instance) {
-		this.registryController.setHighlight(void 0);
-		this.ms = instance.timeline.currentMs;
-		this.playbackSpeed = instance.timeline.playbackSpeed;
-		[
-			"analysis1",
-			"analysis2",
-			"analysis3",
-			"analysis4",
-			"analysis5",
-			"analysis6",
-			"analysis7"
-		].forEach((attribute, index) => {
-			this[attribute] = instance.slots.getSlot(index + 1)?.serialized;
-		});
-		this.fileController.receiveInstance(instance);
-	}
-	closeDetail() {
-		this.registryController.setHighlight(void 0);
-		this.fileController.removeInstance();
-	}
-	static {
-		this.styles = lit.css`
-        ${GroupListingController.styles}
-
-        .layout {
-            width: 100%;
-            display: grid;
-            grid-template-columns: 2em minmax(0, 1fr);
-            gap: 1em;
-        }
-
-        .layout-content {
-            min-width: 0;
-        }
-
-        manager-tool-bar {
-            height: 2em;
-        }
-    `;
-	}
-	render() {
-		const listingOptions = {
-			allowFileChanges: false,
-			onOpenDetail: (instance) => this.openDetail(instance),
-			onCloseDetail: () => this.closeDetail()
-		};
-		const hasFiles = this.groupObject?.files.value.length > 0;
-		return lit.html`<thermal-app
-            label=${this.label ?? "LabIR Web Analyser"}
-            author=${(0, lit_directives_if_defined_js.ifDefined)(this.author)}
-            license=${(0, lit_directives_if_defined_js.ifDefined)(this.license)}
-            ?show-fullscreen=${this.showFullscreen}
-        >
-            ${hasFiles ? lit.html`
-                <manager-tool-bar slot="pre-bar"></manager-tool-bar>
-                <manager-palette-dropdown slot="pre-bar"></manager-palette-dropdown>
-                <registry-range-form slot="pre-bar"></registry-range-form>
-                ${this.file ? this.groupListingController.renderDetailHeader(this.file, "bar-header", listingOptions) : this.groupListingController.renderListHeader("bar-header", listingOptions)}
-                <thermal-dialog label=${this.t("config")} slot="bar-pre">
-                    <thermal-btn slot="invoker" tooltip=${this.t("config")} icon="settings" iconStyle="solid"></thermal-btn>
-                    <div slot="content">
-                        <table>
-                            <manager-export-panel></manager-export-panel>
-                            <display-panel></display-panel>
-                        </table>
-                    </div>
-                </thermal-dialog>
-                ${this.groupListingController.renderTemperatureScale()}
-            ` : void 0}
-            <slot name="bar-pre" slot="bar-pre"></slot>
-            ${this.groupLoadController.errors.map((message) => lit.html`<p role="alert">${message}</p>`)}
-            <div class="layout">
-                <div></div>
-                <div class="layout-content">
-                    ${this.loading ? lit.html`<p role="status">${this.t("loading")}</p>` : void 0}
-                    ${hasFiles ? this.file ? this.groupListingController.renderDetailBody() : this.groupListingController.renderListContainer(this.groupListingController.renderList((instance) => this.groupListingController.renderThumbnail(instance, listingOptions))) : this.loading ? void 0 : lit.html`<p>Ve skupině nejsou žádné soubory.</p>`}
-                </div>
-            </div>
-        </thermal-app>`;
-	}
-};
-//#endregion
-//#region src/apps/ThermalSlottedApp.ts
+// src/apps/ThermalSlottedApp.ts
 /**
 * Places left and right slot content beside the canvas, sized to their content.
 * Top, bottom and unnamed slot content span the full width.
@@ -17992,8 +18117,7 @@ var ThermalSlottedAppElement = class extends AbstractSingleFileAppElement {
         `;
 	}
 };
-//#endregion
-//#region src/controls/file/FileInfoButton.ts
+// src/controls/file/FileInfoButton.ts
 var FileInfoButton = class extends AbstractFileConsumer {
 	onFileLoaded() {}
 	onInstanceCreated() {}
@@ -18145,8 +18269,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], FileInfoButton.prototype, "unit", void 0);
-//#endregion
-//#region src/controls/file/fileLabel.ts
+// src/controls/file/fileLabel.ts
 var FileLabelElement = class extends AbstractFileConsumer {
 	onInstanceCreated() {}
 	onFailure() {}
@@ -18164,8 +18287,7 @@ var FileLabelElement = class extends AbstractFileConsumer {
 	}
 };
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], FileLabelElement.prototype, "label", void 0);
-//#endregion
-//#region src/controls/file/FileTimelineElement.ts
+// src/controls/file/FileTimelineElement.ts
 var FileTimelineElement = class FileTimelineElement extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -18539,8 +18661,7 @@ __decorate([(0, lit_decorators_js.property)({
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Boolean)], FileTimelineElement.prototype, "collapsed", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Array)], FileTimelineElement.prototype, "ticks", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], FileTimelineElement.prototype, "pointerMs", void 0);
-//#endregion
-//#region src/controls/file/video/ISingleVideoExportElement.ts
+// src/controls/file/video/ISingleVideoExportElement.ts
 let RecordingPhase = /* @__PURE__ */ function(RecordingPhase) {
 	RecordingPhase[RecordingPhase["IDLE"] = 0] = "IDLE";
 	RecordingPhase[RecordingPhase["RECORDING"] = 1] = "RECORDING";
@@ -18548,8 +18669,7 @@ let RecordingPhase = /* @__PURE__ */ function(RecordingPhase) {
 	RecordingPhase[RecordingPhase["CLEANUP"] = 3] = "CLEANUP";
 	return RecordingPhase;
 }({});
-//#endregion
-//#region src/controls/file/video/internals/VideoRecorder.ts
+// src/controls/file/video/internals/VideoRecorder.ts
 /**
 * Atribut pro označení dynamických elementů, které se mění mezi framy.
 * Tyto elementy budou mít svůj textContent aktualizován z originálu.
@@ -19285,8 +19405,7 @@ var VideoRecorder = class {
 		}
 	}
 };
-//#endregion
-//#region src/controls/file/video/AbstractSingleVideoExport.ts
+// src/controls/file/video/AbstractSingleVideoExport.ts
 var AbstractSingleVideoExport = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -19428,8 +19547,7 @@ __decorate([(0, lit_decorators_js.property)({
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", typeof RecordingPhase === "undefined" ? Object : RecordingPhase)], AbstractSingleVideoExport.prototype, "recordingPhase", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], AbstractSingleVideoExport.prototype, "recordingPhaseProgress", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Object)], AbstractSingleVideoExport.prototype, "renderProps", void 0);
-//#endregion
-//#region src/directives/DirectiveHelpers.ts
+// src/directives/DirectiveHelpers.ts
 /** Utilities for rendering */
 var DirectiveHelpers = class {
 	static unknownContainsSomething(content) {
@@ -19442,8 +19560,7 @@ var DirectiveHelpers = class {
 		return true;
 	}
 };
-//#endregion
-//#region src/directives/AbstractThermalDirective.ts
+// src/directives/AbstractThermalDirective.ts
 var AbstractThermalDirective = class extends lit_directive_js.Directive {
 	t(key) {
 		return t$1(T[key]);
@@ -19464,8 +19581,7 @@ var AbstractThermalDirective = class extends lit_directive_js.Directive {
 		return content;
 	}
 };
-//#endregion
-//#region src/directives/SlotOrNothing.ts
+// src/directives/SlotOrNothing.ts
 var SlotOrNothing = class extends AbstractThermalDirective {
 	render(label, content) {
 		if (!this.unknownContainsSomething(content)) return lit.nothing;
@@ -19475,8 +19591,7 @@ var SlotOrNothing = class extends AbstractThermalDirective {
 	}
 };
 const slotOrNothing = (0, lit_directive_js.directive)(SlotOrNothing);
-//#endregion
-//#region src/controls/file/video/directives/SingleVideoExportConfigDirective.ts
+// src/controls/file/video/directives/SingleVideoExportConfigDirective.ts
 var SingleVideoExportConfigDirective = class extends lit_directive_js.Directive {
 	renderRadio(label, checked, onChange) {
 		return lit.html`<thermal-radio
@@ -19725,8 +19840,7 @@ var SingleVideoExportConfigDirective = class extends lit_directive_js.Directive 
 	}
 };
 const exportConfigDirective = (0, lit_directive_js.directive)(SingleVideoExportConfigDirective);
-//#endregion
-//#region src/controls/file/video/directives/SingleVideoExportLayoutDirective.ts
+// src/controls/file/video/directives/SingleVideoExportLayoutDirective.ts
 var SingleVideoExportLayoutDirective = class extends lit_directive_js.Directive {
 	constructor(..._args) {
 		super(..._args);
@@ -20049,8 +20163,7 @@ var SingleVideoExportLayoutDirective = class extends lit_directive_js.Directive 
 	}
 };
 const exportLayoutDirective = (0, lit_directive_js.directive)(SingleVideoExportLayoutDirective);
-//#endregion
-//#region src/controls/file/video/directives/SingleVideoExportProvidersDirective.ts
+// src/controls/file/video/directives/SingleVideoExportProvidersDirective.ts
 var SingleVideoExportDirective = class extends lit_directive_js.Directive {
 	renderWrappedWithNestedProviders(app, content) {
 		const registry = app.registryObject;
@@ -20079,8 +20192,7 @@ var SingleVideoExportDirective = class extends lit_directive_js.Directive {
 	}
 };
 const singleVideoProviders = (0, lit_directive_js.directive)(SingleVideoExportDirective);
-//#endregion
-//#region src/controls/file/video/FileVideoExportPanel.ts
+// src/controls/file/video/FileVideoExportPanel.ts
 var FileVideoExportPanel = class extends AbstractSingleVideoExport {
 	constructor(..._args) {
 		super(..._args);
@@ -20353,72 +20465,7 @@ var FileVideoExportPanel = class extends AbstractSingleVideoExport {
 };
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], FileVideoExportPanel.prototype, "exportRealWidth", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], FileVideoExportPanel.prototype, "exportRealHeight", void 0);
-//#endregion
-//#region src/controls/manager/ManagerAdvancedPaletteSwitch.ts
-var ManagerAdvancedPaletteSwitch = class extends AbstractManagerConsumer {
-	render() {
-		return lit.html`<thermal-btn-group>
-            <thermal-btn
-                variant="${!this.advancedPalettes ? "foreground" : "default"}"
-                @click=${() => {
-			this.managerController.setAdvancedPalettes(false);
-		}}
-            >Základní palety</thermal-btn>
-            <thermal-btn
-                variant="${this.advancedPalettes ? "foreground" : "default"}"
-                @click=${() => {
-			this.managerController.setAdvancedPalettes(true);
-		}}
-            >Všechny palety</thermal-btn>
-        </thermal-btn-group>`;
-	}
-};
-__decorate([(0, _lit_context.consume)({
-	context: managerAdvancedPalettesContext,
-	subscribe: true
-}), __decorateMetadata("design:type", Boolean)], ManagerAdvancedPaletteSwitch.prototype, "advancedPalettes", void 0);
-//#endregion
-//#region src/controls/manager/ManagerUnitSwitch.ts
-var ManagerUnitSwitch = class extends AbstractManagerConsumer {
-	constructor(..._args) {
-		super(..._args);
-		this.activeVariant = "foreground";
-		this.defaultVariant = "default";
-	}
-	getUnit() {
-		return this.managerObject.unit;
-	}
-	renderUnit(definition) {
-		const active = definition.key === this.getUnit().value;
-		const variant = active ? this.activeVariant : this.defaultVariant;
-		return lit.html`<thermal-btn
-            variant=${variant}
-            ?non-interactive=${active}
-            tooltip=${definition.name}
-            @click=${() => this.getUnit().set(definition.key)}
-        >${definition.symbol}</thermal-btn>`;
-	}
-	render() {
-		const units = Object.values(this.getUnit().getUnits()).map((unit) => this.renderUnit(unit));
-		return lit.html`<thermal-btn-group>${units}</thermal-btn-group>`;
-	}
-};
-__decorate([(0, lit_decorators_property_js.property)({
-	type: String,
-	reflect: true,
-	attribute: "active-variant"
-}), __decorateMetadata("design:type", Object)], ManagerUnitSwitch.prototype, "activeVariant", void 0);
-__decorate([(0, lit_decorators_property_js.property)({
-	type: String,
-	reflect: true,
-	attribute: "default-variant"
-}), __decorateMetadata("design:type", Object)], ManagerUnitSwitch.prototype, "defaultVariant", void 0);
-__decorate([(0, _lit_context.consume)({
-	context: managerUnitContext,
-	subscribe: true
-}), __decorateMetadata("design:type", Object)], ManagerUnitSwitch.prototype, "unit", void 0);
-//#endregion
-//#region src/renderers/FileDetail.ts
+// src/renderers/FileDetail.ts
 var FileDetailElement = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -20497,8 +20544,7 @@ __decorate([(0, lit_decorators_js.property)({
 	reflect: true
 }), __decorateMetadata("design:type", Boolean)], FileDetailElement.prototype, "norender", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], FileDetailElement.prototype, "label", void 0);
-//#endregion
-//#region src/renderers/FileThumbnail.ts
+// src/renderers/FileThumbnail.ts
 var FileThumbnailElement = class extends AbstractFileConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -20589,45 +20635,7 @@ __decorate([(0, lit_decorators_js.property)({
 	attribute: "no-render"
 }), __decorateMetadata("design:type", Boolean)], FileThumbnailElement.prototype, "norender", void 0);
 __decorate([(0, lit_decorators_js.property)({ type: String }), __decorateMetadata("design:type", String)], FileThumbnailElement.prototype, "label", void 0);
-//#endregion
-//#region src/ui/BtnGroup.ts
-var BtnGroupElement = class extends AbstractThermalElement {
-	static {
-		this.styles = lit.css`
-    
-        :host {
-            display: block;
-        }
-
-        .btn-group {
-            display: flex;
-            flex-wrap: no-wrap;
-        }
-
-        ::slotted(thermal-btn:first-child) {
-
-            --custom-radius: var( --thermal-radius ) 0 0 var( --thermal-radius );
-            border-right: none !important;
-        
-        }
-
-        ::slotted(thermal-btn:last-child) {
-            --custom-radius: 0 var( --thermal-radius ) var( --thermal-radius ) 0;
-        }
-
-        ::slotted(thermal-btn:not(:first-child):not(:last-child)) {
-            --custom-radius: 0;
-            border-right: none !important;
-        }
-    
-    `;
-	}
-	render() {
-		return lit.html`<div class="btn-group"><slot></slot></div>`;
-	}
-};
-//#endregion
-//#region src/iifeCatalog.ts
+// src/iifeCatalog.ts
 /**
 * List of the UI components
 */
@@ -20635,7 +20643,7 @@ const elementsUi = {
 	"thermal-app": ThermalAppElement,
 	"thermal-bar": ThermalBarElement,
 	"thermal-btn": ThermalBtnElement,
-	"thermal-btn-group": BtnGroupElement,
+	"thermal-btn-group": ThermalBtnGroupElement,
 	"thermal-dialog": ThermalDialogElement,
 	"thermal-dropdown": ThermalDropdownElement,
 	"thermal-dropin": ThermalDropinElement,
@@ -20720,7 +20728,7 @@ const elementsFileControls = {
 };
 const elementsApplications = {
 	"apparent-temperature-aat": AatAppElement,
-	"thermal-dropin-app": DropinAppElement,
+	"thermal-dropin-app": ThermalDropinAppElement,
 	"thermal-file-app": ThermalFileAppElement,
 	"thermal-group-app": ThermalGroupAppElement,
 	"thermal-simple-app": ThermalSlottedAppElement
@@ -20745,10 +20753,8 @@ const isLabirthermalWebcomponent = (tag) => {
 const defineBaseWebcomponents = () => {
 	defineAllWebcomponents(name, version$1, elementsAll);
 };
-//#endregion
-//#region src/index.export.ts
+// src/index.export.ts
 const t = i18webcomponents.t;
-//#endregion
 exports.AbstractApp = AbstractApp;
 exports.AbstractFileConsumer = AbstractFileConsumer;
 exports.AbstractFileProvider = AbstractFileProvider;
@@ -20805,6 +20811,7 @@ exports.GroupRangePropagatorElement = GroupRangePropagatorElement;
 exports.GroupTimelineElement = GroupTimelineElement;
 exports.HierarchyUpdatesHub = HierarchyUpdatesHub;
 exports.INTERNAL_STATE_DECLARATION = INTERNAL_STATE_DECLARATION;
+exports.ManagerAdvancedPaletteSwitch = ManagerAdvancedPaletteSwitch;
 exports.ManagerController = ManagerController;
 exports.ManagerExportPanel = ManagerExportPanel;
 exports.ManagerGraphSmoothSwitch = ManagerGraphSmoothSwitch;
@@ -20813,6 +20820,7 @@ exports.ManagerPaletteButtons = ManagerPaletteButtons;
 exports.ManagerPaletteDropdown = ManagerPaletteDropdown;
 exports.ManagerProviderElement = ManagerProviderElement;
 exports.ManagerToolBar = ManagerToolBar;
+exports.ManagerUnitSwitch = ManagerUnitSwitch;
 exports.RegistryController = RegistryController;
 exports.RegistryHistogram = RegistryHistogram;
 exports.RegistryOpacitySlider = RegistryOpacitySlider;
@@ -20826,12 +20834,16 @@ exports.RegistryTicksBar = RegistryTicksBar;
 exports.ThermalAppElement = ThermalAppElement;
 exports.ThermalBarElement = ThermalBarElement;
 exports.ThermalBtnElement = ThermalBtnElement;
+exports.ThermalBtnGroupElement = ThermalBtnGroupElement;
 exports.ThermalChartElement = ThermalChartElement;
 exports.ThermalDialogElement = ThermalDialogElement;
 exports.ThermalDropdownElement = ThermalDropdownElement;
+exports.ThermalDropinAppElement = ThermalDropinAppElement;
 exports.ThermalDropinElement = ThermalDropinElement;
 exports.ThermalExpandableElement = ThermalExpandableElement;
 exports.ThermalFieldElement = ThermalFieldElement;
+exports.ThermalFileAppElement = ThermalFileAppElement;
+exports.ThermalGroupAppElement = ThermalGroupAppElement;
 exports.ThermalIconElement = ThermalIconElement;
 exports.ThermalPosterElement = ThermalPosterElement;
 exports.ThermalRadioElement = ThermalRadioElement;

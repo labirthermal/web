@@ -189,6 +189,7 @@ export { ThermalAppElement } from "./ui/App";
 export { ThermalBarElement } from "./ui/Bar";
 export { ThermalBtnElement } from "./ui/Btn";
 export type { BtnSizes, BtnVariants } from "./ui/Btn";
+export { ThermalBtnGroupElement } from "./ui/BtnGroup";
 export { ThermalDialogElement } from "./ui/Dialog";
 export { ThermalDropdownElement } from "./ui/Dropdown";
 export { ThermalDropinElement } from "./ui/Dropin";
@@ -240,6 +241,8 @@ export { ManagerImageSmoothSwitch } from "./controls/manager/ManagerImageSmoothS
 export { ManagerPaletteButtons } from "./controls/manager/ManagerPaletteButtons";
 export { ManagerPaletteDropdown } from "./controls/manager/ManagerPaletteDropdown";
 export { ManagerToolBar } from "./controls/manager/ManagerToolsBar";
+export { ManagerAdvancedPaletteSwitch } from "./controls/manager/ManagerAdvancedPaletteSwitch";
+export { ManagerUnitSwitch } from "./controls/manager/ManagerUnitSwitch";
 
 // Registry controls
 
@@ -288,6 +291,10 @@ export { EditpointTable } from "./controls/file/analysis/edit/editPointTable";
 
 // Export the internal chart element for the purpose of reuse
 export { ThermalChartElement } from "./controls/file/analysis/chart/chart";
+
+export { ThermalFileAppElement } from "./apps/ThermalFileApp";
+export { ThermalDropinAppElement } from "./apps/ThermalDropinApp";
+export { ThermalGroupAppElement } from "./apps/ThermalGroupApp";
 
 // Finally, expor the IIFE-related functionality
 

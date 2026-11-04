@@ -28,7 +28,7 @@ enum Mode {
     DETAIL = "detail"
 }
 
-export class DropinAppElement
+export class ThermalDropinAppElement
     extends AbstractApp
     implements
     IWithlocale,
@@ -160,7 +160,7 @@ export class DropinAppElement
         );
     }
 
-    willUpdate(_changedProperties: PropertyValues<DropinAppElement>) {
+    willUpdate(_changedProperties: PropertyValues<ThermalDropinAppElement>) {
         super.willUpdate(_changedProperties);
 
         // Side effect: update the display mode based on the number of instances to display

@@ -1,7 +1,7 @@
 import { css, html } from "lit";
 import { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
 
-export class BtnGroupElement extends AbstractThermalElement {
+export class ThermalBtnGroupElement extends AbstractThermalElement {
 
     static styles = css`
     
@@ -40,6 +40,6 @@ export class BtnGroupElement extends AbstractThermalElement {
 
 declare global {
     interface HTMLElementTagNameMap {
-        "thermal-btn-group": BtnGroupElement;
+        "thermal-btn-group": ThermalBtnGroupElement;
     }
 }

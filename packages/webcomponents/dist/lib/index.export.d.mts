@@ -5,14 +5,12 @@ import { Ref } from "lit/directives/ref.js";
 import { Placement } from "@floating-ui/dom";
 import { Quality } from "mediabunny";
 import { AbstractFileResult as AbstractFileResult$1 } from "@labirthermal/core/src/loading/workers/AbstractFileResult";
-//#region ../../node_modules/.pnpm/i18next@26.4.5_typescript@5.9.3/node_modules/i18next/typescript/helpers.d.ts
 // Types
 type $Dictionary<T = unknown> = {
   [key: string]: T;
 };
 type $SpecialObject = object | Array<string | object>;
 // Types Operators
-type $Prune<T> = never | { [K in keyof T as [keyof T[K]] extends [never] ? never : K]: T[K]; };
 /** All the way down. */
 interface $Turtles {
   [x: string]: $Turtles;
@@ -58,8 +56,6 @@ type $StringKeyPathToRecord<TPath extends string, TValue> = $UnionToIntersection
  * @see https://github.com/millsp/ts-toolbelt/blob/master/sources/Function/NoInfer.ts
  */
 type $NoInfer<A> = [A][A extends any ? 0 : never];
-//#endregion
-//#region ../../node_modules/.pnpm/i18next@26.4.5_typescript@5.9.3/node_modules/i18next/typescript/options.d.ts
 /**
  * This interface can be augmented by users to add types to `i18next` default TypeOptions.
  *
@@ -74,7 +70,6 @@ type $NoInfer<A> = [A][A extends any ? 0 : never];
  *     returnObjects: false;
  *     nsSeparator: ':';
  *     keySeparator: '.';
- *     compatibilityJSON: 'v4';
  *     allowObjectInHTMLChildren: false;
  *     resources: {
  *       custom: {
@@ -159,7 +154,10 @@ type TypeOptions = $MergeBy<$MergeBy<{
   defaultNS: 'translation';
   /** @see {InitOptions.fallbackNS} */
   fallbackNS: false;
-  /** @see {InitOptions.compatibilityJSON} */
+  /**
+   * @see {InitOptions.compatibilityJSON}
+   * @deprecated has no effect, removed in v27. Remove it from `CustomTypeOptions`.
+   */
   compatibilityJSON: 'v4';
   /** @see {InitOptions.resources} */
   resources: object;
@@ -175,6 +173,14 @@ type TypeOptions = $MergeBy<$MergeBy<{
    */
   strictKeyChecks: false;
   /**
+   * Flag that makes the `t()` options required for a string with interpolation
+   * variables, so that `{{name}}` cannot be left out of a call. Applies to the
+   * string-key API (with `strictKeyChecks`, also to `t(key, defaultValue)`) and
+   * to the selector API. Messages under `parseInterpolation: 'icu'` or `'mf2'`
+   * require their arguments regardless of this flag.
+   */
+  strictInterpolationChecks: false;
+  /**
    * Prefix for interpolation
    */
   interpolationPrefix: '{{';
@@ -182,6 +188,11 @@ type TypeOptions = $MergeBy<$MergeBy<{
    * Suffix for interpolation
    */
   interpolationSuffix: '}}';
+  /**
+   * Separates the variable from its format, as in `{{price, currency}}` (since v26.7.0)
+   * @see {InterpolationOptions.formatSeparator}
+   */
+  interpolationFormatSeparator: ',';
   /** @see {InterpolationOptions.unescapePrefix} */
   unescapePrefix: '-';
   /** @see {InterpolationOptions.unescapeSuffix} */
@@ -200,8 +211,24 @@ type TypeOptions = $MergeBy<$MergeBy<{
    * `}}`. This flag is type-only; runtime interpolation is governed by
    * `InterpolationOptions` and is unaffected.
    *
-   * Required by `i18next-icu` users — see that package's docs for the
-   * recommended `CustomTypeOptions` augmentation.
+   * Set to `'icu'` with `i18next-icu` to type `t()` options from the ICU
+   * MessageFormat arguments instead: `{name}` takes `string | number`,
+   * `{n, number}`, `plural` and `selectordinal` take `number`, `{d, date}`
+   * and `{t, time}` take `Date`, `select` takes its case keys or any string
+   * (for `other`), and arguments nested in cases are required too.
+   * `interpolationFormatTypeMap` overrides a type by its format name (e.g.
+   * `date: Date | number`). Options become required for a message with
+   * arguments.
+   *
+   * Set to `'mf2'` with `i18next-mf2` to type `t()` options from the
+   * MessageFormat 2 variables: `{$name}` takes `string | number`, a
+   * variable annotated with `:number`, `:integer`, `:currency`, `:percent`
+   * or `:unit` (directly or through `.input`/`.local`) takes `number`,
+   * `:datetime`, `:date` and `:time` take `Date`, `:string` takes `string`,
+   * option and markup variables (`minimumFractionDigits=$digits`,
+   * `{#link href=$url}`) take `string | number`, and `.local` variables are
+   * not arguments. `interpolationFormatTypeMap` overrides a type by its
+   * function name.
    *
    * @default true
    */
@@ -268,6 +295,20 @@ type TypeOptions = $MergeBy<$MergeBy<{
    * ```
    */
   interpolationFormatTypeMap: {};
+  /**
+   * The variables `interpolation.defaultVariables` fills in at runtime (since v26.7.0). They
+   * become optional in the `t()` options, also with `strictInterpolationChecks`.
+   *
+   * @default {}
+   *
+   * @example
+   * ```ts
+   * interface CustomTypeOptions {
+   *   defaultVariables: { appName: string };
+   * }
+   * ```
+   */
+  defaultVariables: {};
 }, CustomTypeOptions>,
 // HACK: apply merged resources *after* CustomTypeOptions so registry contributions
 // survive when CustomTypeOptions.resources is also defined. Without this
@@ -338,11 +379,13 @@ interface InterpolationOptions {
   /**
    * Escaped prefix for interpolation (regexSafe)
    * @default undefined
+   * @deprecated inserted into the RegExp unescaped, removed in v27. Pass the literal delimiter as `prefix`.
    */
   prefixEscaped?: string;
   /**
    * Escaped suffix for interpolation (regexSafe)
    * @default undefined
+   * @deprecated inserted into the RegExp unescaped, removed in v27. Pass the literal delimiter as `suffix`.
    */
   suffixEscaped?: string;
   /**
@@ -368,11 +411,13 @@ interface InterpolationOptions {
   /**
    * Escaped prefix for nesting (regexSafe)
    * @default undefined
+   * @deprecated inserted into the RegExp unescaped, removed in v27. Pass the literal delimiter as `nestingPrefix`.
    */
   nestingPrefixEscaped?: string;
   /**
    * Escaped suffix for nesting (regexSafe)
    * @default undefined
+   * @deprecated inserted into the RegExp unescaped, removed in v27. Pass the literal delimiter as `nestingSuffix`.
    */
   nestingSuffixEscaped?: string;
   /**
@@ -546,6 +591,9 @@ interface InitOptions<T = object> extends PluginOptions<T> {
   lowerCaseLng?: boolean;
   /**
    * Language will be lowercased EN --> en while leaving full locales like en-US
+   *
+   * From v27 codes without a region are canonicalized by default, as codes with one already are
+   * (`'EN'` → `'en'`, `'iw'` → `'he'`), and this option is deprecated.
    * @default false
    */
   cleanCode?: boolean;
@@ -648,10 +696,11 @@ interface InitOptions<T = object> extends PluginOptions<T> {
    */
   returnDetails?: boolean;
   /**
-   * Gets called if object was passed in as key but returnObjects was set to false
+   * Gets called if object was passed in as key but returnObjects was set to false.
+   * What it returns is what `t()` returns.
    * @default noop
    */
-  returnedObjectHandler?(key: string, value: string, options: any): void;
+  returnedObjectHandler?(key: string, value: string, options: any): unknown;
   /**
    * Char, eg. '\n' that arrays will be joined by
    * @default false
@@ -719,6 +768,7 @@ interface InitOptions<T = object> extends PluginOptions<T> {
    * Compatibility JSON version
    * @warning only `v4` is available and supported by typescript
    * @default 'v4'
+   * @deprecated has no effect since v24 (only the v4 JSON format is supported), removed in v27. Remove the option.
    */
   compatibilityJSON?: 'v4';
   /**
@@ -857,6 +907,10 @@ interface TOptionsBase {
    */
   interpolation?: InterpolationOptions;
   /**
+   * Skip interpolation and nesting for this call (since v26.7.0 in the types)
+   */
+  skipInterpolation?: boolean;
+  /**
    * Optional keyPrefix that will be applied to the key before resolving.
    * Accepts a string or a selector function (e.g. `$ => $.deeply.nested`).
    * Only supported on the TFunction returned by getFixedT().
@@ -867,15 +921,14 @@ type TOptions<TInterpolationMap extends object = $Dictionary> = TOptionsBase & T
 type FlatNamespace = $PreservedValue<keyof TypeOptions['resources'], string>;
 type Namespace<T = FlatNamespace> = T | readonly T[];
 type DefaultNamespace = TypeOptions['defaultNS'];
-//#endregion
-//#region ../../node_modules/.pnpm/i18next@26.4.5_typescript@5.9.3/node_modules/i18next/typescript/t.d.ts
 /** @todo consider to replace {} with Record<string, never> */
 // Type Options
 type _ReturnObjects = TypeOptions['returnObjects'];
 type _ReturnEmptyString = TypeOptions['returnEmptyString'];
 type _ReturnNull = TypeOptions['returnNull'];
 type _KeySeparator = TypeOptions['keySeparator'];
-type _NsSeparator = TypeOptions['nsSeparator'];
+// `nsSeparator: false`: no `ns:key` keys (a `false` here made `nsfalsekey` keys and split keys containing "false")
+type _NsSeparator = Exclude<TypeOptions['nsSeparator'], false>;
 type _PluralSeparator = TypeOptions['pluralSeparator'];
 type _ContextSeparator = TypeOptions['contextSeparator'];
 type _FallbackNamespace = TypeOptions['fallbackNS'];
@@ -883,9 +936,12 @@ type _Resources = TypeOptions['resources'];
 type _CompatibilityJSON = TypeOptions['compatibilityJSON'];
 type _InterpolationPrefix = TypeOptions['interpolationPrefix'];
 type _InterpolationSuffix = TypeOptions['interpolationSuffix'];
+type _InterpolationFormatSeparator = TypeOptions['interpolationFormatSeparator'];
+type _DefaultVariables = TypeOptions['defaultVariables'];
 type _UnescapePrefix = TypeOptions['unescapePrefix'];
 type _UnescapeSuffix = TypeOptions['unescapeSuffix'];
 type _StrictKeyChecks = TypeOptions['strictKeyChecks'];
+type _StrictInterpolationChecks = TypeOptions['strictInterpolationChecks'];
 type _EnableSelector = TypeOptions['enableSelector'];
 type _ParseInterpolation = TypeOptions['parseInterpolation'];
 type _InterpolationFormatTypeMap = TypeOptions['interpolationFormatTypeMap'];
@@ -901,6 +957,19 @@ type TrimSpaces<T extends string, Acc extends string = ''> = T extends `${infer 
 interface Branded<Ns extends Namespace> {
   $TFunctionBrand: $IsResourcesDefined extends true ? `${Ns extends readonly any[] ? Ns[0] : Ns}` : never;
 }
+/**
+ * `keyof Res`, built once per resource object. TypeScript does not cache
+ * `keyof` of an object type, so `keyof Res` inside a conditional that runs per
+ * key (or per `t()` call) rebuilt the union of all keys every time: quadratic
+ * in the namespace size. Conditional type instantiations are cached.
+ */
+type _KeysOf<Res> = [Res] extends [unknown] ? keyof Res : never;
+/**
+ * `Res[Key & keyof Res]`: a literal key is looked up directly instead of being
+ * intersected with every key; a wide key (`string`, `${string}_suffix` from a
+ * string context) still matches all keys it covers.
+ */
+type _ValueOf<Res, Key> = Key extends _KeysOf<Res> ? Res[Key] : _IsLiteral<Key & PropertyKey> extends true ? never : Res[Key & _KeysOf<Res>];
 /** ****************************************************
  * Build all keys and key prefixes based on Resources *
  ***************************************************** */
@@ -908,8 +977,8 @@ interface Branded<Ns extends Namespace> {
 // conditional types, so `KeyPrefix<Ns>` no longer resolves to a literal union
 // and `keyPrefix` inference widens to the whole namespace, polluting `t()`
 // return types with sibling keys (#2434 regression). Guard `never` in the merge.
-type KeysBuilderWithReturnObjects<Res, Key = keyof Res> = Key extends keyof Res ? Res[Key] extends $Dictionary | readonly unknown[] ? JoinKeys<Key, WithOrWithoutPlural<keyof $OmitArrayKeys<Res[Key]>>> | JoinKeys<Key, KeysBuilderWithReturnObjects<Res[Key]>> : never : never;
-type KeysBuilderWithoutReturnObjects<Res, Key = keyof $OmitArrayKeys<Res>> = Key extends keyof Res ? Res[Key] extends $Dictionary | readonly unknown[] ? JoinKeys<Key, KeysBuilderWithoutReturnObjects<Res[Key]>> : Key : never;
+type KeysBuilderWithReturnObjects<Res, Key = keyof Res> = Key extends _KeysOf<Res> ? Res[Key] extends $Dictionary | readonly unknown[] ? JoinKeys<Key, WithOrWithoutPlural<keyof $OmitArrayKeys<Res[Key]>>> | JoinKeys<Key, KeysBuilderWithReturnObjects<Res[Key]>> : never : never;
+type KeysBuilderWithoutReturnObjects<Res, Key = keyof $OmitArrayKeys<Res>> = Key extends _KeysOf<Res> ? Res[Key] extends $Dictionary | readonly unknown[] ? JoinKeys<Key, KeysBuilderWithoutReturnObjects<Res[Key]>> : Key : never;
 type KeysBuilder<Res, WithReturnObjects> = $IsResourcesDefined extends true ? WithReturnObjects extends true ? keyof Res | KeysBuilderWithReturnObjects<Res> : KeysBuilderWithoutReturnObjects<Res> : string;
 type KeysWithReturnObjects = { [Ns in FlatNamespace]: WithOrWithoutPlural<KeysBuilder<Resources[Ns], true>>; };
 type KeysWithoutReturnObjects = { [Ns in FlatNamespace]: WithOrWithoutPlural<KeysBuilder<Resources[Ns], false>>; };
@@ -929,7 +998,7 @@ type ParseKeys<Ns extends Namespace = DefaultNamespace, TOpt extends TOptions = 
  ******************************************************** */
 type ParseActualValue<Ret> = Ret extends `${_UnescapePrefix}${infer ActualValue}${_UnescapeSuffix}` ? TrimSpaces<ActualValue> : Ret;
 /** Parses interpolation entries as `[variableName, formatSpecifier | never]` tuples. */
-type ParseInterpolationEntries<Ret> = [_ParseInterpolation] extends [false] ? never : Ret extends `${string}${_InterpolationPrefix}${infer Value}${_InterpolationSuffix}${infer Rest}` ? (Value extends `${infer ActualValue},${infer Format}` ? [ParseActualValue<ActualValue>, TrimSpaces<Format>] : [ParseActualValue<Value>, never]) | ParseInterpolationEntries<Rest> : never;
+type ParseInterpolationEntries<Ret> = [_ParseInterpolation] extends [false | 'icu' | 'mf2'] ? never : Ret extends `${string}${_InterpolationPrefix}${infer Value}${_InterpolationSuffix}${infer Rest}` ? (Value extends `${infer ActualValue}${_InterpolationFormatSeparator}${infer Format}` ? [ParseActualValue<ActualValue>, TrimSpaces<Format>] : [ParseActualValue<Value>, never]) | ParseInterpolationEntries<Rest> : never;
 /** Built-in i18next formatter name → value type mapping. */
 type _BuiltInFormatTypeMap = {
   number: number;
@@ -946,15 +1015,69 @@ type _ResolveEntryType<Name extends string, Format> = [Format] extends [never] ?
 type _UnionToIntersection<T> = (T extends unknown ? (k: T) => void : never) extends ((k: infer I) => void) ? I : never;
 /** Builds a per-entry typed record from parsed interpolation entries and intersects them. */
 type _InterpolationMapFromEntries<E> = _UnionToIntersection<E extends [infer Name extends string, infer Format] ? $StringKeyPathToRecord<Name, _ResolveEntryType<Name, Format>> : never>;
-type InterpolationMap<Ret> = $PreservedValue<_InterpolationMapFromEntries<ParseInterpolationEntries<Ret>>, Record<string, unknown>>;
-type ParseTReturnPlural<Res, Key, KeyWithPlural = `${Key & string}${_PluralSeparator}${PluralSuffix}`> = Res[(KeyWithPlural | Key) & keyof Res];
-type ParseTReturnPluralOrdinal<Res, Key, KeyWithOrdinalPlural = `${Key & string}${_PluralSeparator}ordinal${_PluralSeparator}${PluralSuffix}`> = Res[(KeyWithOrdinalPlural | Key) & keyof Res];
+/** *********************************************************************
+ * ICU MessageFormat arguments (`parseInterpolation: 'icu'`)            *
+ *********************************************************************** */
+type _IcuWhitespace = ' ' | '\n' | '\t' | '\r';
+type _IcuTrim<S> = S extends `${_IcuWhitespace}${infer R}` ? _IcuTrim<R> : S extends `${infer R}${_IcuWhitespace}` ? _IcuTrim<R> : S;
+/**
+ * Drops ICU apostrophe quoting as intl-messageformat (i18next-icu) reads it:
+ * `''` is a literal apostrophe, `'{...}'` (also `'}'`, `'<'`, `'>'`, `'#'`) is
+ * literal text up to the next single apostrophe.
+ * Simplification: `'#` quotes everywhere here, at runtime only inside plurals.
+ */
+type _IcuStripQuotes<S, Acc extends string = ''> = S extends `${infer L}'${infer R}` ? R extends `'${infer R2}` ? _IcuStripQuotes<R2, `${Acc}${L}`> : R extends `${'{' | '}' | '<' | '>' | '#'}${string}` ? _IcuStripQuotes<_IcuSkipQuoted<R>, `${Acc}${L}`> : _IcuStripQuotes<R, `${Acc}${L}'`> : `${Acc}${S & string}`;
+type _IcuSkipQuoted<S> = S extends `${string}'${infer R}` ? R extends `'${infer R2}` ? _IcuSkipQuoted<R2> : R : '';
+/** Reads up to the `}` closing an already opened `{`; returns `[content, rest]`. */
+type _IcuBlock<S, Acc extends string = '', Depth extends 0[] = []> = S extends `${infer L}}${infer R}` ? L extends `${infer L2}{${infer R2}` ? _IcuBlock<`${R2}}${R}`, `${Acc}${L2}{`, [...Depth, 0]> : Depth extends [0, ...infer D extends 0[]] ? _IcuBlock<R, `${Acc}${L}}`, D> : [`${Acc}${L}`, R] : never;
+/** `[name, type]` entries of every argument in a message, nested cases included. */
+type _IcuEntries<S, Acc = never> = S extends `${string}{${infer R}` ? _IcuBlock<R> extends [infer Arg, infer Rest] ? _IcuEntries<Rest, Acc | _IcuArg<Arg>> : Acc : Acc;
+/** Walks plural/select cases: `[selector keys, entries of all case messages]`. */
+type _IcuCases<S, Keys = never, Acc = never> = S extends `${infer L}{${infer R}` ? _IcuBlock<R> extends [infer Msg, infer Rest] ? _IcuCases<Rest, Keys | _IcuTrim<L>, Acc | _IcuEntries<Msg>> : [Keys, Acc] : [Keys, Acc];
+type _IcuArg<A> = A extends `${infer Name},${infer Type},${infer Cases}` ? _IcuTrim<Type> extends 'plural' | 'selectordinal' ? [_IcuTrim<Name>, _IcuFormatType<_IcuTrim<Type>>] | _IcuCases<Cases>[1] : _IcuTrim<Type> extends 'select' ? _IcuCases<Cases> extends [infer Keys, infer E] ? [_IcuTrim<Name>, 'other' extends Keys ? Exclude<Keys, 'other'> | (string & {}) : Keys] | E : never : [_IcuTrim<Name>, _IcuFormatType<_IcuTrim<Type>>] // `{n, number, ::currency/EUR}`
+ : A extends `${infer Name},${infer Type}` ? [_IcuTrim<Name>, _IcuFormatType<_IcuTrim<Type>>] : [_IcuTrim<A>, _IcuFormatType<never>];
+/** `interpolationFormatTypeMap` wins, then ICU's built-in argument types. */
+type _IcuFormatType<F> = [F] extends [never] ? string | number : F extends keyof _InterpolationFormatTypeMap ? _InterpolationFormatTypeMap[F] : F extends 'number' | 'plural' | 'selectordinal' ? number : F extends 'date' | 'time' ? Date : string | number;
+/**
+ * Merges `[name, type]` entries into one record: a name used twice gets both
+ * types, a dotted MF2 name (`$user.name`) becomes a nested object.
+ */
+type _ArgsFromEntries<E> = _UnionToIntersection<E extends [infer Name extends string, infer Type] ? Name extends `${string}.${string}` ? $StringKeyPathToRecord<Name, Type> : { [K in Name]: Type; } : never> extends (infer M) ? [E] extends [never] ? never : { [K in keyof M]: M[K]; } : never;
+type _IcuArgsMap<Ret> = Ret extends string ? string extends Ret ? never : _ArgsFromEntries<_IcuEntries<_IcuStripQuotes<Ret>>> : never;
+/** *********************************************************************
+ * MessageFormat 2 variables (`parseInterpolation: 'mf2'`)              *
+ *********************************************************************** */
+/** Drops `\`-escapes (`\{`, `\}`, `\|`, `\\`), so they are neither braces nor quotes. */
+type _Mf2StripEscapes<S, Acc extends string = ''> = S extends `${infer L}\\${string}${infer R}` ? _Mf2StripEscapes<R, `${Acc}${L}`> : `${Acc}${S & string}`;
+/** Reads an expression up to its `}`, skipping `|quoted literals|`; returns `[body, rest]`. */
+type _Mf2Expression<S, Acc extends string = ''> = S extends `${infer B}}${infer Rest}` ? B extends `${infer Before}|${infer Lit}` ? `${Lit}}${Rest}` extends `${string}|${infer After}` ? _Mf2Expression<After, `${Acc}${Before} `> : never : [`${Acc}${B}`, Rest] : never;
+/** `[name, type]` entries of every variable in a message's expressions; `{{` opens a quoted pattern. */
+type _Mf2Entries<S, Acc = never> = S extends `${string}{${infer R}` ? R extends `{${infer Pattern}` ? _Mf2Entries<Pattern, Acc> : _Mf2Expression<R> extends [infer Body, infer Rest] ? _Mf2Entries<Rest, Acc | _Mf2ExprEntries<_Mf2Spaces<Body>>> : Acc : Acc;
+type _Mf2Space<S, C extends string> = S extends `${infer L}${C}${infer R}` ? _Mf2Space<`${L} ${R}`, C> : S;
+type _Mf2Spaces<S> = _IcuTrim<_Mf2Space<_Mf2Space<_Mf2Space<S, '\n'>, '\t'>, '\r'>>;
+type _Mf2Name<S> = S extends `${infer N} ${string}` ? _Mf2Name<N> : S extends `${infer N}/${string}` ? N : S;
+/** `{$x :fn opt=$y}`: `$x` typed by its function, option and markup variables `string | number`. */
+type _Mf2ExprEntries<Body> = Body extends `$${infer R}` ? R extends `${infer Name} ${infer Tail}` ? [Name, _Mf2FunctionType<_IcuTrim<Tail> extends `:${infer F}` ? _Mf2Name<F> : never>] | _Mf2Vars<Tail> : [_Mf2Name<R>, _Mf2FunctionType<never>] : _Mf2Vars<Body>;
+/** Every `$name` in a string, typed `string | number`. */
+type _Mf2Vars<S, Acc = never> = S extends `${string}$${infer R}` ? _Mf2Vars<R, Acc | [_Mf2Name<R>, string | number]> : Acc;
+/** `interpolationFormatTypeMap` wins, then messageformat's built-in functions. */
+type _Mf2FunctionType<F> = [F] extends [never] ? string | number : F extends keyof _InterpolationFormatTypeMap ? _InterpolationFormatTypeMap[F] : F extends 'number' | 'integer' | 'currency' | 'percent' | 'offset' | 'unit' | 'math' ? number : F extends 'datetime' | 'date' | 'time' ? Date : F extends 'string' ? string : string | number;
+/** Names declared by `.local $name = ...` (local, not passed in). */
+type _Mf2Locals<S, Acc = never> = S extends `${string}.local${infer R}` ? _Mf2Locals<R, Acc | (_IcuTrim<R> extends `$${infer N}=${string}` ? _IcuTrim<N> : never)> : Acc;
+/** `.match $a $b`: selectors, normally also declared by `.input` or `.local`. */
+type _Mf2Selectors<S> = S extends `${string}.match${infer R}` ? _Mf2Vars<_Mf2Spaces<R extends `${infer Sel}{${string}` ? Sel : R>> : never;
+type _Mf2ArgsMap<Ret> = Ret extends string ? string extends Ret ? never : _Mf2StripEscapes<Ret> extends (infer S) ? _ArgsFromEntries<Exclude<_Mf2Entries<S> | _Mf2Selectors<S>, [_IcuTrim<S> extends `.${string}` ? _Mf2Locals<S> : never, unknown]>> : never : never;
+/** The variables declared in `defaultVariables` are optional: they are filled in at runtime. */
+type _WithDefaultVariables<Map> = [keyof _DefaultVariables] extends [never] ? Map : Omit<Map, keyof _DefaultVariables> & Partial<Pick<Map, keyof _DefaultVariables & keyof Map>>;
+type InterpolationMap<Ret> = _WithDefaultVariables<[_ParseInterpolation] extends ['icu'] ? $PreservedValue<_IcuArgsMap<Ret>, Record<string, unknown>> : [_ParseInterpolation] extends ['mf2'] ? $PreservedValue<_Mf2ArgsMap<Ret>, Record<string, unknown>> : $PreservedValue<_InterpolationMapFromEntries<ParseInterpolationEntries<Ret>>, Record<string, unknown>>>;
+type ParseTReturnPlural<Res, Key, KeyWithPlural = `${Key & string}${_PluralSeparator}${PluralSuffix}`> = _ValueOf<Res, KeyWithPlural | Key>;
+type ParseTReturnPluralOrdinal<Res, Key, KeyWithOrdinalPlural = `${Key & string}${_PluralSeparator}ordinal${_PluralSeparator}${PluralSuffix}`> = _ValueOf<Res, KeyWithOrdinalPlural | Key>;
 type ParseTReturnWithFallback<Key, Val> = Val extends '' ? _ReturnEmptyString extends true ? '' : Key : Val extends null ? _ReturnNull extends true ? null : Key : Val;
-type ParseTReturn<Key, Res, TOpt extends TOptions = {}> = ParseTReturnWithFallback<Key, Key extends `${infer K1}${_KeySeparator}${infer RestKey}` ? ParseTReturn<RestKey, Res[K1 & keyof Res], TOpt> :
+type ParseTReturn<Key, Res, TOpt extends TOptions = {}> = ParseTReturnWithFallback<Key, Key extends `${infer K1}${_KeySeparator}${infer RestKey}` ? ParseTReturn<RestKey, _ValueOf<Res, K1>, TOpt> :
 // Process plurals only if count is provided inside options
 TOpt['count'] extends number ? TOpt['ordinal'] extends boolean ? ParseTReturnPluralOrdinal<Res, Key> : ParseTReturnPlural<Res, Key> :
 // otherwise access plain key without adding plural and ordinal suffixes
-Res extends readonly unknown[] ? Key extends `${infer NKey extends number}` ? Res[NKey] : never : Res[Key & keyof Res]>;
+Res extends readonly unknown[] ? Key extends `${infer NKey extends number}` ? Res[NKey] : never : _ValueOf<Res, Key>>;
 type TReturnOptionalNull = _ReturnNull extends true ? null : never;
 type TReturnOptionalObjects<TOpt extends {
   returnObjects?: unknown;
@@ -1008,25 +1131,71 @@ type AppendKeyPrefix<Key, KPrefix> = KPrefix extends string ? `${KPrefix}${_KeyS
 type EffectiveKPrefix<KPrefix, TOpt> = TOpt extends {
   keyPrefix: infer OptKP extends string;
 } ? OptKP : KPrefix;
+/** `parseInterpolation: 'icu'` or `'mf2'`: messages are typed by their arguments. */
+type _ParsesMessageFormat = [_ParseInterpolation] extends ['icu'] | ['mf2'] ? true : false;
+/**
+ * Whether `t()` options are required for a message with variables: always under
+ * ICU / MF2 (on a missing one, i18next-icu renders the raw message and
+ * i18next-mf2 a `{$name}` fallback), and with `strictInterpolationChecks: true`
+ * for `{{variables}}` (i18next renders the raw placeholder).
+ */
+type _RequiresMessageOptions = _ParsesMessageFormat extends true ? true : [_ParseInterpolation] extends [true] ? _StrictInterpolationChecks extends true ? true : false : false;
+/**
+ * `t()` options are optional, except for a message with variables when
+ * `_RequiresMessageOptions` is true. The conditional resolves eagerly; a generic
+ * one here would break inference.
+ */
+type _KeyAndOptions<Key, Ret, Opts> = _RequiresMessageOptions extends true ? [key: Key | Key[], options: Opts] | [key: (Key | Key[]) & _IfOptionalOptions<Ret>] : [key: Key | Key[], options?: Opts];
+/**
+ * `t(key, defaultValue)` under `strictKeyChecks`: the variables are required only
+ * with `strictInterpolationChecks`, else `unknown` (the call stays as before).
+ */
+type _IfOptionalDefaultOptions<Ret> = _StrictInterpolationChecks extends true ? _IfOptionalOptions<Ret> : unknown;
+/** `unknown` when options may be left out, else a type naming the missing arguments. */
+type _IfOptionalOptions<Ret> = _RequiresMessageOptions extends true ? {} extends InterpolationMap<Ret> ? unknown : {
+  'pass these arguments as t() options': InterpolationMap<Ret>;
+} : unknown;
+/** Options parameter of a selector overload: required for a message with arguments. */
+type _SelectorOptionsArg<Ret, Opts> = unknown extends _IfOptionalOptions<Ret> ? [options?: Opts] : [options: Opts];
+/** Union of the values an array of selectors resolves to (plural brands kept). */
+type _SelectorsReturn<Fns extends readonly unknown[]> = Fns[number] extends ((...args: any[]) => infer R) ? R : never;
+/** Whether any member of the union is a plural group (`false` for `any`). */
+type _HasPlural<R> = 0 extends 1 & R ? false : [Extract<R, PluralValue<string>>] extends [never] ? false : true;
+/** `{ count: number }` when any member of the union is a plural group. */
+type _CountIfPlural<R> = _HasPlural<R> extends true ? {
+  count: number;
+} : {};
+/** Options of a selector-array overload: required for variables or a plural member. */
+type _SelectorArrayOptionsArg<R, Opts> = _HasPlural<R> extends true ? [options: Opts & {
+  count: number;
+} & InterpolationMap<DeepUnwrapPlural<R>>] : _SelectorOptionsArg<DeepUnwrapPlural<R>, Opts & InterpolationMap<DeepUnwrapPlural<R>>>;
 /** ************************
  * T function declaration *
  ************************* */
 interface TFunctionStrict<Ns extends Namespace = DefaultNamespace, KPrefix = undefined> extends Branded<Ns> {
-  <const Key extends ParseKeys<Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> | TemplateStringsArray, const TOpt extends TOptions, Ret extends TFunctionReturn<Ns, AppendKeyPrefix<Key, EffectiveKPrefix<KPrefix, TOpt>>, TOpt>>(key: Key | Key[], options?: TOpt & InterpolationMap<Ret> & {
+  <const Key extends ParseKeys<Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> | TemplateStringsArray, const TOpt extends TOptions, Ret extends TFunctionReturn<Ns, AppendKeyPrefix<Key, EffectiveKPrefix<KPrefix, TOpt>>, TOpt>>(key: Key | Key[], options: TOpt & InterpolationMap<Ret> & {
     context?: Key extends string ? unknown extends TOpt['context'] ? TOpt['context'] : ContextOfKey<Key, Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> : never;
   }): TFunctionReturnOptionalDetails<TFunctionProcessReturnValue<$NoInfer<Ret>, never>, TOpt>;
-  <const Key extends ParseKeys<Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> | TemplateStringsArray, const TOpt extends TOptions, Ret extends TFunctionReturn<Ns, AppendKeyPrefix<Key, EffectiveKPrefix<KPrefix, TOpt>>, TOpt>>(key: Key | Key[], defaultValue: string, options?: TOpt & InterpolationMap<Ret> & {
+  <const Key extends ParseKeys<Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> | TemplateStringsArray, const TOpt extends TOptions, Ret extends TFunctionReturn<Ns, AppendKeyPrefix<Key, EffectiveKPrefix<KPrefix, TOpt>>, TOpt>>(key: (Key | Key[]) & _IfOptionalOptions<$NoInfer<Ret>>): TFunctionReturnOptionalDetails<TFunctionProcessReturnValue<$NoInfer<Ret>, never>, TOpt>;
+  <const Key extends ParseKeys<Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> | TemplateStringsArray, const TOpt extends TOptions, Ret extends TFunctionReturn<Ns, AppendKeyPrefix<Key, EffectiveKPrefix<KPrefix, TOpt>>, TOpt>>(key: Key | Key[], defaultValue: string, options: TOpt & InterpolationMap<Ret> & {
     context?: Key extends string ? unknown extends TOpt['context'] ? TOpt['context'] : ContextOfKey<Key, Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> : never;
   }): TFunctionReturnOptionalDetails<TFunctionProcessReturnValue<$NoInfer<Ret>, never>, TOpt>;
+  <const Key extends ParseKeys<Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> | TemplateStringsArray, const TOpt extends TOptions, Ret extends TFunctionReturn<Ns, AppendKeyPrefix<Key, EffectiveKPrefix<KPrefix, TOpt>>, TOpt>>(key: (Key | Key[]) & _IfOptionalDefaultOptions<$NoInfer<Ret>>, defaultValue: string): TFunctionReturnOptionalDetails<TFunctionProcessReturnValue<$NoInfer<Ret>, never>, TOpt>;
 }
 interface TFunctionNonStrict<Ns extends Namespace = DefaultNamespace, KPrefix = undefined> extends Branded<Ns> {
   <const Key extends ParseKeys<Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> | TemplateStringsArray, const TOpt extends TOptions, Ret extends TFunctionReturn<Ns, AppendKeyPrefix<Key, EffectiveKPrefix<KPrefix, TOpt>>, TOpt>, const ActualOptions extends Omit<TOpt, 'context'> & InterpolationMap<Ret> & {
     context?: Key extends string ? unknown extends TOpt['context'] ? TOpt['context'] : ContextOfKey<Key, Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> : never;
   } = TOpt & InterpolationMap<Ret> & {
     context?: Key extends string ? unknown extends TOpt['context'] ? TOpt['context'] : ContextOfKey<Key, Ns, TOpt, EffectiveKPrefix<KPrefix, TOpt>> : never;
-  }, DefaultValue extends string = never>(...args: [key: Key | Key[], options?: ActualOptions] | [key: string | string[], options: TOpt & $Dictionary & {
+  }, DefaultValue extends string = never>(
+  // `[key, defaultValue, options?]` is written as two tuples: on a failed call,
+  // TypeScript elaborates the error against the last of the equally matching
+  // members, and TypeScript 7 sorts a 3-element tuple last, so a wrong options
+  // object was reported as "not assignable to type 'string'" instead of the
+  // missing or mistyped argument.
+  ...args: [key: string | string[], options: TOpt & $Dictionary & {
     defaultValue: DefaultValue;
-  }] | [key: string | string[], defaultValue: DefaultValue, options?: TOpt & $Dictionary]): TFunctionReturnOptionalDetails<TFunctionProcessReturnValue<$NoInfer<Ret>, DefaultValue>, TOpt>;
+  }] | [key: string | string[], defaultValue: DefaultValue] | [key: string | string[], defaultValue: DefaultValue, options: TOpt & $Dictionary] | _KeyAndOptions<Key, $NoInfer<Ret>, ActualOptions>): TFunctionReturnOptionalDetails<TFunctionProcessReturnValue<$NoInfer<Ret>, DefaultValue>, TOpt>;
 }
 type TFunctionSignature<Ns extends Namespace = DefaultNamespace, KPrefix = undefined> = _EnableSelector extends true | 'optimize' | 'strict' ? TFunctionSelector<Ns, KPrefix, GetSource<Ns, KPrefix>> : _StrictKeyChecks extends true ? TFunctionStrict<Ns, KPrefix> : TFunctionNonStrict<Ns, KPrefix>;
 interface TFunction<Ns extends Namespace = DefaultNamespace, KPrefix = undefined> extends TFunctionSignature<Ns, KPrefix> {}
@@ -1069,17 +1238,31 @@ interface TFunctionSelector<Ns extends Namespace, KPrefix, Source> extends Brand
   // Placed first so that the more general selector overloads (below) are last —
   // TypeScript's `Parameters<>` utility resolves against the last call signature.
   <const Opts extends SelectorOptions<Ns[number]> = SelectorOptions<Ns[number]>>(key: SelectorKey | SelectorKey[], ...args: [options?: Opts & $Dictionary]): DefaultTReturn<Opts>;
-  // ── Selector(s) with explicit `ns` ───────────────────────────────────────────
-  <Target extends ConstrainTarget<Opts>, const NewNs extends NsArg<Ns> & Namespace, const Opts extends SelectorOptions<NewNs>, NewSrc extends GetSource<NewNs, KPrefix>>(selector: SelectorFn<NewSrc, ApplyTarget<Target, Opts>, Opts> | readonly SelectorFn<NewSrc, ApplyTarget<Target, Opts>, Opts>[], options: Opts & InterpolationMap<Target> & {
+  // ── Array of selectors with explicit `ns` ───────────────────────────────────
+  <Target extends ConstrainTarget<Opts>, const NewNs extends NsArg<Ns> & Namespace, const Opts extends SelectorOptions<NewNs>, NewSrc extends GetSource<NewNs, KPrefix>>(selectors: readonly SelectorFn<NewSrc, ApplyTarget<Target, Opts>, Opts>[], options: Opts & InterpolationMap<Target> & {
     ns: NewNs;
-  }): SelectorReturn<Target, Opts>;
+  } & _CountIfPlural<Target>): SelectorReturn<Target, Opts>;
+  // ── Single selector with explicit `ns` ──────────────────────────────────────
+  <Target extends ConstrainTarget<Opts>, const NewNs extends NsArg<Ns> & Namespace, const Opts extends SelectorOptions<NewNs>, NewSrc extends GetSource<NewNs, KPrefix>>(selector: SelectorFn<NewSrc, ApplyTarget<Target, Opts>, Opts>, options: Opts & InterpolationMap<DeepUnwrapPlural<Target>> & {
+    ns: NewNs;
+  } & (Target extends PluralValue<string> ? {
+    count: number;
+  } : {})): SelectorReturn<Target, Opts>;
+  // ── Array of selectors with defaultValue — preserves literal type of DV ─────
+  // Same TypeScript limitation as the single-selector defaultValue overload below:
+  // `const Opts` loses the `defaultValue` literal when inferred through the
+  // conditional rest tuple of the general array overload. A plural member
+  // requires `count`, as in the single-selector overload.
+  <const Fns extends readonly ((src: Select<Source, Opts['context']>) => string | object)[], const DV extends string, const Opts extends SelectorOptions<Ns[number]> = SelectorOptions<Ns[number]>>(selectors: Fns, options: Opts & {
+    defaultValue: DV;
+  } & _CountIfPlural<_SelectorsReturn<Fns>> & InterpolationMap<DeepUnwrapPlural<_SelectorsReturn<Fns>>>): SelectorReturn<_SelectorsReturn<Fns>, Opts, DV>;
   // ── Array of selectors with default `ns` ─────────────────────────────────────
   // Captures the selector tuple as `const Fns` so TypeScript preserves each
   // element's exact return type.  The union of return types is then extracted
   // via a distributive `infer`, which correctly handles mixed PluralValue<T> and
   // plain-string callbacks that would otherwise cause TypeScript to "lock in" the
   // type from the first element.
-  <const Fns extends readonly ((src: Select<Source, Opts['context']>) => string | object)[], const Opts extends SelectorOptions<Ns[number]> = SelectorOptions<Ns[number]>>(selectors: Fns, options?: Opts & InterpolationMap<DeepUnwrapPlural<Fns[number] extends ((...args: any[]) => infer R) ? R : never>>): SelectorReturn<Fns[number] extends ((...args: any[]) => infer R) ? R : never, Opts>;
+  <const Fns extends readonly ((src: Select<Source, Opts['context']>) => string | object)[], const Opts extends SelectorOptions<Ns[number]> = SelectorOptions<Ns[number]>>(selectors: Fns, ...args: _SelectorArrayOptionsArg<_SelectorsReturn<Fns>, Opts>): SelectorReturn<_SelectorsReturn<Fns>, Opts>;
   // ── Single selector with context + returnObjects ────────────────────────────
   // More specific than the general context overload below. Captures `Context` as
   // a const generic and uses `const Fn` + `ReturnType<Fn>` so FilterKeys sees the
@@ -1122,7 +1305,7 @@ interface TFunctionSelector<Ns extends Namespace, KPrefix, Source> extends Brand
   // the return type; `Opts` is inferred later from the resolved rest args.
   <const Fn extends (src: Select<Source, undefined>) => ConstrainTarget<Opts>, const Opts extends SelectorOptions<Ns[number]> = SelectorOptions<Ns[number]>>(selector: Fn, ...args: ReturnType<Fn> extends PluralValue<string> ? [options: Opts & {
     count: number;
-  } & InterpolationMap<DeepUnwrapPlural<ReturnType<Fn>>>] : [options?: Opts & InterpolationMap<ReturnType<Fn>>]): SelectorReturn<ReturnType<Fn>, Opts>;
+  } & InterpolationMap<DeepUnwrapPlural<ReturnType<Fn>>>] : _SelectorOptionsArg<ReturnType<Fn>, Opts & InterpolationMap<ReturnType<Fn>>>): SelectorReturn<ReturnType<Fn>, Opts>;
 }
 interface SelectorOptions<Ns = Namespace> extends Omit<TOptionsBase, 'ns' | 'nsSeparator'>, $Dictionary {
   ns?: Ns;
@@ -1131,18 +1314,22 @@ type SelectorReturn<Target, Opts extends {
   defaultValue?: unknown;
   returnObjects?: boolean;
 }, DV = Opts['defaultValue']> = $IsResourcesDefined extends true ? TFunctionReturnOptionalDetails<ProcessReturnValue<DeepUnwrapPlural<Target>, DV>, Opts> : DefaultTReturn<Opts>;
+/** Public for react-i18next's `Trans` types (since v26.7.0). */
 interface SelectorFn<Source, Target, Opts extends SelectorOptions<unknown>> {
   (translations: Select<Source, Opts['context']>): Target;
 }
 type ApplyKeyPrefix<T extends [any], KPrefix> = KPrefix extends `${infer Head}${_KeySeparator}${infer Tail}` ? ApplyKeyPrefix<[T[0][Head]], Tail> : T[0][KPrefix & string];
+/** Public for react-i18next's `Trans` types (since v26.7.0). */
 type ApplyTarget<Target, Opts extends {
   returnObjects?: unknown;
 }> = Opts['returnObjects'] extends true ? unknown : Target;
+/** Public for react-i18next's `Trans` types (since v26.7.0). */
 type ConstrainTarget<Opts extends SelectorOptions<any>> = _ReturnObjects extends true ? unknown : Opts['returnObjects'] extends true ? unknown : $IsResourcesDefined extends false ? unknown : string;
 type ProcessReturnValue<Target, DefaultValue> = $Turtles extends Target ? string : [DefaultValue] extends [never] ? Target : unknown extends DefaultValue ? Target : Target | DefaultValue;
 type PickNamespaces<T, K extends keyof any> = { [P in K as P extends keyof T ? P : never]: T[P & keyof T]; };
 /** Extracts the sub-tree returned by a selector function used as keyPrefix. */
 type SelectorReturnSource<KPrefix, Fallback> = KPrefix extends ((...args: any[]) => infer R) ? R extends object ? R : Fallback : Fallback;
+/** Public for react-i18next's `Trans` types (since v26.7.0). */
 type GetSource<Ns extends Namespace, KPrefix, Res = NsResource<Ns>> = KPrefix extends ((...args: any[]) => any) ? SelectorReturnSource<KPrefix, Res> : KPrefix extends keyof Res ? Res[KPrefix] : undefined extends KPrefix ? Res : ApplyKeyPrefix<[Res], KPrefix>;
 type Select<T, Context> = $IsResourcesDefined extends false ? $Turtles : [_EnableSelector] extends ['optimize'] ? T : FilterKeys<T, Context>;
 /**
@@ -1150,9 +1337,38 @@ type Select<T, Context> = $IsResourcesDefined extends false ? $Turtles : [_Enabl
  * as optional `undefined`, e.g. `transKey1_withContext?: undefined`).
  */
 type _DefinedContextKeys<T, Pattern extends string> = { [P in keyof T as P extends Pattern ? ([T[P]] extends [undefined] ? never : P) : never]: true; };
-type _HasContextVariant<T, K extends string, Context> = [keyof _DefinedContextKeys<T, `${K}${_ContextSeparator}${Context & string}` | `${K}${_ContextSeparator}${Context & string}${_PluralSeparator}${PluralSuffix}`>] extends [never] ? false : true;
+/**
+ * Keys of T whose value is not `undefined` (JSON-union phantoms are typed as
+ * optional `undefined`), built once per object.
+ */
+type _DefinedKeys<T> = [T] extends [unknown] ? keyof { [P in keyof T as [T[P]] extends [undefined] ? never : P]: true; } : never;
+/**
+ * For every defined key, the prefixes K before each context separator, as
+ * `[all, bases]`: `all` has every K with a defined key `${K}${_ContextSeparator}...`,
+ * `bases` only those where the rest is not just a plural suffix. Jumps from one
+ * separator occurrence to the next (so the recursion depth is the number of
+ * separators, not the key length, which can be a whole sentence) and resumes one
+ * character after the match, so overlapping occurrences (`a___b` with `__`) count.
+ */
+type _ContextPrefixesOf<P, Head extends string = '', All = never, Bases = never> = P extends `${infer B}${_ContextSeparator}${string}` ? P extends `${B}${infer FromSep}` ? FromSep extends `${infer C}${infer Rest}` ? _ContextPrefixesOf<Rest, `${Head}${B}${C}`, All | `${Head}${B}`, FromSep extends `${_PluralSeparator}${PluralSuffix}` | `${_PluralSeparator}ordinal${_PluralSeparator}${PluralSuffix}` ? Bases : Bases | `${Head}${B}`> : [All, Bases] : [All, Bases] : [All, Bases];
+/**
+ * The context prefixes of an object, built once per object (conditional type
+ * instantiations are cached): scanning all keys for every key was quadratic
+ * in the object size, TS2589 at about 1,000 keys with context variants.
+ */
+type _ContextPrefixes<T> = [T] extends [unknown] ? _ContextPrefixesOf<_DefinedKeys<T> & string> : never;
+type _AllContextPrefixes<T> = [T] extends [unknown] ? _ContextPrefixes<T>[0] : never;
+type _ContextBases<T> = [T] extends [unknown] ? _ContextPrefixes<T>[1] : never;
+/** Whether a string type is a single literal (not `string` or a `${string}` pattern). */
+type _IsLiteral<S extends PropertyKey> = {} extends Record<S, unknown> ? false : true;
+/**
+ * Whether T has a defined key matching Pattern: literal keys are looked up, a
+ * pattern with a wide member scans the keys.
+ */
+type _HasDefinedKey<T, Pattern extends string> = [false extends (Pattern extends unknown ? _IsLiteral<Pattern> : never) ? keyof _DefinedContextKeys<T, Pattern> : Extract<Pattern, _DefinedKeys<T>>] extends [never] ? false : true;
+type _HasContextVariant<T, K extends string, Context> = string extends Context ? _IsLiteral<K> extends true ? K extends _AllContextPrefixes<T> ? true : false : _HasDefinedKey<T, `${K}${_ContextSeparator}${string}`> : _HasDefinedKey<T, `${K}${_ContextSeparator}${Context & string}` | `${K}${_ContextSeparator}${Context & string}${_PluralSeparator}${PluralSuffix}`>;
 /** Checks whether key K has **any** context variant in T (excluding pure plural suffixes). */
-type _IsContextualKey<T, K extends string> = [Exclude<keyof _DefinedContextKeys<T, `${K}${_ContextSeparator}${string}`>, `${K}${_PluralSeparator}${PluralSuffix}` | `${K}${_PluralSeparator}ordinal${_PluralSeparator}${PluralSuffix}`>] extends [never] ? false : true;
+type _IsContextualKey<T, K extends string> = _IsLiteral<K> extends true ? K extends _ContextBases<T> ? true : false : [Exclude<keyof _DefinedContextKeys<T, `${K}${_ContextSeparator}${string}`>, `${K}${_PluralSeparator}${PluralSuffix}` | `${K}${_PluralSeparator}ordinal${_PluralSeparator}${PluralSuffix}`>] extends [never] ? false : true;
 /**
  * Distributes {@link FilterKeysObject} over unions so heterogeneous JSON array
  * element types (each object literal in the array) are filtered independently,
@@ -1161,9 +1377,10 @@ type _IsContextualKey<T, K extends string> = [Exclude<keyof _DefinedContextKeys<
  * produced partial element unions for `returnObjects` + `context` (#2398).
  */
 type FilterKeys<T, Context> = [T] extends [readonly any[]] ? { [I in keyof T]: FilterKeys<T[I], Context>; } : T extends any ? FilterKeysObject<T, Context> : never;
-type FilterKeysObject<T, Context> = $Prune<{ [
+type FilterKeysObject<T, Context> = { [
 // Mapped type 1: object-valued keys (recurse) + plain leaf keys (non-plural, non-context)
-K in keyof T as T[K] extends object ? K : [Context] extends [string] ? K extends `${string}${_ContextSeparator}${Context}` | `${string}${_ContextSeparator}${Context}${_PluralSeparator}${PluralSuffix}` ? never // context keys handled by mapped type 3
+K in keyof T as [keyof T[K]] extends [never] ? never // nothing to select (empty object, null, undefined, optional or unknown)
+ : T[K] extends object ? K : [Context] extends [string] ? K extends `${string}${_ContextSeparator}${Context}` | `${string}${_ContextSeparator}${Context}${_PluralSeparator}${PluralSuffix}` ? never // context keys handled by mapped type 3
  : K extends `${string}${_PluralSeparator}${PluralSuffix}` ? never // plural keys handled by mapped type 2
  : K extends string ? _HasContextVariant<T, K, Context> extends true ? never // context variant exists, drop base key (type 3 handles it)
  : _IsContextualKey<T, K> extends true ? never // key has context variants but not for this context
@@ -1173,9 +1390,7 @@ K in keyof T as T[K] extends object ? K : [Context] extends [string] ? K extends
 K in keyof T as T[K] extends object ? never : [Context] extends [string] ? K extends `${string}${_ContextSeparator}${Context}` | `${string}${_ContextSeparator}${Context}${_PluralSeparator}${PluralSuffix}` ? never // context keys handled by mapped type 3
  : K extends `${infer Prefix}${_PluralSeparator}${PluralSuffix}` | `${infer Prefix}${_PluralSeparator}ordinal${_PluralSeparator}${PluralSuffix}` ? Prefix : never : K extends `${infer Prefix}${_PluralSeparator}${PluralSuffix}` | `${infer Prefix}${_PluralSeparator}ordinal${_PluralSeparator}${PluralSuffix}` ? Prefix : never]: T[K] extends object ? FilterKeys<T[K], Context> : PluralValue<T[K] & string>; } & { [
 // Mapped type 3: context key collapsing (skip JSON-union phantoms typed as `undefined`)
-K in keyof T as T[K] extends object ? never : [T[K]] extends [undefined] ? never : [Context] extends [string] ? K extends `${infer Prefix}${_ContextSeparator}${Context}` | `${infer Prefix}${_ContextSeparator}${Context}${_PluralSeparator}${PluralSuffix}` ? Prefix : never : never]: T[K] extends object ? FilterKeys<T[K], Context> : T[K]; }>;
-//#endregion
-//#region ../../node_modules/.pnpm/i18next@26.4.5_typescript@5.9.3/node_modules/i18next/index.d.ts
+K in keyof T as T[K] extends object ? never : [keyof T[K]] extends [never] ? never : [Context] extends [string] ? K extends `${infer Prefix}${_ContextSeparator}${Context}` | `${infer Prefix}${_ContextSeparator}${Context}${_PluralSeparator}${PluralSuffix}` ? Prefix : never : never]: T[K] extends object ? FilterKeys<T[K], Context> : T[K]; };
 interface Interpolator {
   init(options: InterpolationOptions, reset: boolean): undefined;
   reset(): undefined;
@@ -1217,6 +1432,12 @@ interface Services {
   pluralResolver: any;
   resourceStore: ResourceStore;
   formatter?: Formatter;
+  /** Calls bound to the i18next instance, for plugins */
+  utils?: {
+    hasLoadedNamespace: i18n$1['hasLoadedNamespace'];
+    /** Reloads resources through the backend, as `i18next.reloadResources()` (since v26.7.0) */
+    reloadResources: i18n$1['reloadResources'];
+  };
 }
 type ModuleType = 'backend' | 'logger' | 'languageDetector' | 'postProcessor' | 'i18nFormat' | 'formatter' | '3rdParty';
 interface Module {
@@ -1232,6 +1453,16 @@ type MultiReadCallback = (err: CallbackError, data: Resource | null | undefined)
  */
 interface BackendModule<Options = object> extends Module {
   type: 'backend';
+  /**
+   * Declares how i18next calls `read` and `create` (since v26.7.0; as an instance or static property):
+   * - `true`: `read(language, namespace, callback)` and
+   *   `create(languages, namespace, key, fallbackValue, callback, options)`
+   * - `false`: `read(language, namespace)` and `create(languages, namespace, key, fallbackValue, options)`
+   *   return a promise or a value
+   *
+   * Left out, i18next guesses it from the number of parameters, which is deprecated.
+   */
+  callbackApi?: boolean;
   init(services: Services, backendOptions: Options, i18nextOptions: InitOptions): void;
   read(language: string, namespace: string, callback: ReadCallback): void;
   /** Save the missing translation */
@@ -1262,6 +1493,12 @@ interface LanguageDetectorAsyncModule extends Module {
   type: 'languageDetector';
   /** Set to true to enable async detection */
   async: true;
+  /**
+   * Declares how the async `detect` answers (since v26.7.0; as an instance or static property):
+   * `true` for `detect(callback)`, `false` for `detect()` returning a promise.
+   * Left out, i18next guesses it from the number of parameters, which is deprecated.
+   */
+  callbackApi?: boolean;
   init?(services: Services, detectorOptions: object, i18nextOptions: InitOptions): void;
   /** Must call callback passing detected language or return a Promise */
   detect(callback: (lng: string | readonly string[] | undefined) => void | undefined): void | Promise<string | readonly string[] | undefined>;
@@ -1420,6 +1657,8 @@ interface i18n$1 extends CustomInstanceExtensions$1 {
   loadLanguages(lngs: string | readonly string[], callback?: Callback): Promise<void>;
   /**
    * Reloads resources on given state. Optionally you can pass an array of languages and namespaces as params if you don't want to reload all.
+   * Without languages it reloads the current languages and every language the backend loaded or tried to load, for this
+   * instance and its clones (since v26.7.1), and it retries the bundles that failed.
    */
   reloadResources(lngs?: string | readonly string[], ns?: string | readonly string[], callback?: () => void): Promise<void>;
   reloadResources(lngs: null, ns: string | readonly string[], callback?: () => void): Promise<void>;
@@ -1431,6 +1670,12 @@ interface i18n$1 extends CustomInstanceExtensions$1 {
    * Returns rtl or ltr depending on languages read direction.
    */
   dir(lng?: string): 'ltr' | 'rtl';
+  /**
+   * Puts resources rendered on the server into the store and changes to the server's language, each
+   * only the first time (sets `initializedStoreOnce` and `initializedLanguageOnce`). For SSR
+   * integrations like react-i18next's `useSSR`. Call it after `init()`. Since v26.7.0.
+   */
+  hydrate(resources?: Resource, lng?: string): i18n$1;
   /**
    * Exposes interpolation.format function added on init.
    */
@@ -1543,11 +1788,11 @@ interface i18n$1 extends CustomInstanceExtensions$1 {
    */
   isInitializing: boolean;
   /**
-   * Store was initialized
+   * Store was initialized. Set by `hydrate()`; SSR integrations should call that instead of setting it.
    */
   initializedStoreOnce: boolean;
   /**
-   * Language was initialized
+   * Language was initialized. Set by `hydrate()`; SSR integrations should call that instead of setting it.
    */
   initializedLanguageOnce: boolean;
   /**
@@ -1555,19 +1800,13 @@ interface i18n$1 extends CustomInstanceExtensions$1 {
    */
   emit(eventName: string, ...args: any[]): void;
 }
-//#endregion
-//#region ../../node_modules/.pnpm/i18next@26.4.5_typescript@5.9.3/node_modules/i18next/index.d.mts
 interface CustomInstanceExtensions {}
 // eslint-disable-next-line @typescript-eslint/naming-convention
 interface i18n extends i18n$1, CustomInstanceExtensions {}
-//#endregion
-//#region src/utils/converters/numberRangeConverter.d.ts
 export declare const numberRangeConverter: (emptyValue: number, min: number, max: number) => {
   fromAttribute: (value: unknown) => number;
   toAttribute: (value: number) => string;
 };
-//#endregion
-//#region src/utils/converters/booleanConverter.d.ts
 /**
  *
  * @deprecated Use the recommended boolean conventions by LIT.
@@ -1576,8 +1815,6 @@ export declare const booleanConverter: (emptyValue: boolean) => {
   fromAttribute: (value: string | null) => boolean;
   toAttribute: (value: boolean) => "true" | "false";
 };
-//#endregion
-//#region src/utils/converters/paletteConverter.d.ts
 /** A unified converter for thermal palettes. Recommended usage:
  * @example
  * ```ts
@@ -1598,21 +1835,15 @@ export declare const paletteConverter: {
   fromAttribute: (value: unknown) => AvailableThermalPalette;
   toAttribute: (value: AvailableThermalPalette) => string;
 };
-//#endregion
-//#region src/utils/converters/stringOrUndefinedConverter.d.ts
 export declare const stringOrUndefinedConverter: {
   fromAttribute(value: unknown): string | undefined;
   toAttribute(value: string | undefined): string | undefined;
 };
-//#endregion
-//#region src/utils/converters/durationConverter.d.ts
 /** Converts a duration property indicated as string to millis and back */
 export declare const durationConverter: {
   fromAttribute: (value: string | null) => number | undefined;
   toAttribute: (value: number | undefined) => string | undefined;
 };
-//#endregion
-//#region src/utils/converters/unitConverter.d.ts
 /**
  * Normalize any value to a `ThermalUnit` key. The comparison is case-insensitive
  * and surrounding whitespace is ignored, so `"f"` and `" F "` both give `ThermalUnit.F`.
@@ -1637,8 +1868,6 @@ export declare const unitConverter: {
   fromAttribute: (value: string | null) => ThermalUnit | undefined;
   toAttribute: (value: ThermalUnit | undefined) => string | undefined;
 };
-//#endregion
-//#region src/utils/converters/optionalNumberConverter.d.ts
 /**
  * Converter for optional numeric attributes.
  *
@@ -1657,12 +1886,8 @@ export declare const optionalNumberConverter: {
   fromAttribute(value: string | null): number | undefined;
   toAttribute(value: number | undefined): string | undefined;
 };
-//#endregion
-//#region src/utils/getContrastColor.d.ts
 /** Choose the higher WCAG contrast against an opaque CSS background color. */
 export declare function getContrastColor(backgroundColor: string): "#000000" | "#FFFFFF";
-//#endregion
-//#region src/utils/icons.d.ts
 /**
  * Definice SVG ikon s jejich variantami
  * Každá ikona může mít více variant (outline, solid, mini, micro)
@@ -1832,15 +2057,9 @@ type IconsType = { [K in keyof typeof svg]: { [V in keyof typeof svg[K]]: (class
  * Použití: icons.folder.outline("my-class", "color: red")
  */
 declare const icons: IconsType;
-//#endregion
-//#region src/translations/i18n.d.ts
 /** i18n engine exported from the `@labirthermal/webcomponents` package */
 declare const i18webcomponents: i18n;
-//#endregion
-//#region src/styles/defaultStyles.d.ts
 export declare const addInlineStyles: () => void;
-//#endregion
-//#region src/translations/Languages.d.ts
 /**
  * Keys of all translation keys.
  *
@@ -2120,8 +2339,6 @@ declare enum T {
   foldermayhavefiles = "foldermayhavefiles",
   foldermayhavesubfolders = "foldermayhavesubfolders"
 }
-//#endregion
-//#region src/controllers/AbstractReactiveController.d.ts
 /**
  * This is the abstract class for all reactive controllers from the `@labirthermal/webcomponents` package.
  * @module @labirthermal/webcomponents
@@ -2136,8 +2353,6 @@ export declare abstract class AbstractReactiveController<T extends AbstractTherm
   /** Logs anything using the host's logging mechanism. Adds the controller's className as the first argument. */
   protected log(...args: any[]): void;
 }
-//#endregion
-//#region src/controllers/AbstractHierarchyController.d.ts
 /**
  * Common internal state for host elements that should be only internal states.
  * @module @labirthermal/core
@@ -2199,8 +2414,6 @@ export declare abstract class AbstractHierarchyController<T extends AbstractTher
   /** Retrieve the default slug from the host element, falling back to the element UUID. Should be called only in host connected. */
   protected _getDefaultSlugFromHost(primaryAttributeName: string): string;
 }
-//#endregion
-//#region src/controllers/HierarchyUpdatesHub.d.ts
 /** Perform updates in the hierarchy for all registered controllers */
 export declare class HierarchyUpdatesHub {
   private _controllers;
@@ -2211,8 +2424,6 @@ export declare class HierarchyUpdatesHub {
   /** Zavolá updated na všech zaregistrovaných controllerech */
   updated(changedProperties: PropertyValues<AbstractThermalElement>): void;
 }
-//#endregion
-//#region src/hierarchy/AbstractThermalElement.d.ts
 /**
  * All the webcomponents of \@labirthermal/webcomponents (and its extensions) should be based on the abstract class `AbstractThermalElement`.
  *
@@ -2269,8 +2480,6 @@ export declare abstract class AbstractThermalElement extends LitElement {
   willUpdate(changedProperties: PropertyValues<AbstractThermalElement>): void;
   updated(changedProperties: PropertyValues<AbstractThermalElement>): void;
 }
-//#endregion
-//#region src/controllers/ManagerController.d.ts
 interface IHostProperties$7 {
   /** Element property for the manager slug. It is absolutely required. Recommended property name: manager-slug */
   managerSlug: string;
@@ -2403,8 +2612,6 @@ export declare class ManagerController extends AbstractHierarchyController<IElem
   fromCurrentUnit(valueInCurrentUnit: number): number;
   get currentUnit(): ThermalUnitDefinition;
 }
-//#endregion
-//#region src/controllers/RegistryController.d.ts
 type IHostProperties$6 = {
   /**
    * This object is obligatory and it comes either from:
@@ -2530,8 +2737,6 @@ export declare class RegistryController extends AbstractHierarchyController<IEle
   /** Set the highlight range for the registry. Internal units are Celsius. */
   setHighlight(valueInCelsius: ThermalRangeOrUndefined): void;
 }
-//#endregion
-//#region src/controllers/GroupController.d.ts
 type IHostProperties$5 = {
   managerController: ManagerController;
   registryController: RegistryController;
@@ -2584,8 +2789,6 @@ export declare class GroupController extends AbstractHierarchyController<IElemen
   hostWillUpdateWatcher(): void;
   hostUpdatedWatcher(): void;
 }
-//#endregion
-//#region src/controllers/FileController.d.ts
 type IHostProperties$4 = {
   managerController: ManagerController;
   registryController: RegistryController;
@@ -2661,7 +2864,7 @@ export declare const filePlayingContext: {
 };
 /** Exposes the current playback speed value from `FileController`. */
 export declare const filePlaybackSpeedContext: {
-  __context__: 1 | 2 | 0.5 | 3 | 5 | 10 | undefined;
+  __context__: 1 | 2 | 3 | 5 | 0.5 | 10 | undefined;
 };
 /** Exposes the current recording state from `FileController`. */
 export declare const fileRecordingContext: {
@@ -2687,7 +2890,7 @@ export declare class FileController extends AbstractHierarchyController<IElement
   get fileObject(): ThermalFileInstance | undefined;
   get failure(): ThermalFileFailure | undefined;
   get ms(): number;
-  get playbackSpeed(): 1 | 2 | 0.5 | 3 | 5 | 10;
+  get playbackSpeed(): 1 | 2 | 3 | 5 | 0.5 | 10;
   get analysis1(): string | undefined;
   get analysis2(): string | undefined;
   get analysis3(): string | undefined;
@@ -2760,8 +2963,6 @@ export declare class FileController extends AbstractHierarchyController<IElement
   private setLoading;
   private endLoading;
 }
-//#endregion
-//#region src/controllers/FileLoadController.d.ts
 type IHostProperties$3 = {
   thermal: string | undefined;
   visible: string | undefined;
@@ -2801,8 +3002,6 @@ export declare class FileLoadController extends AbstractHierarchyController<IEle
   hostDisconnected(): void;
   private _load;
 }
-//#endregion
-//#region src/controllers/GroupListingController.d.ts
 /**
  * Indicates how to order the files in a group. Used by {@link GroupListingController}
  * @module @labirthermal/webcomponents
@@ -2887,8 +3086,6 @@ export declare class GroupListingController extends AbstractHierarchyController<
   /** Assumes the contexts to be provided by the host element */
   renderDetailBody(): unknown;
 }
-//#endregion
-//#region src/controllers/GroupLoadController.d.ts
 type IHostProperties$1 = {
   /**
    * The string of file requests for the `GroupLoadController`. Property name is `group-files`. Reactivity is defined by `GroupLoadController.HOST_PROPERTIES`.
@@ -3045,8 +3242,6 @@ export declare class GroupLoadController extends AbstractHierarchyController<IEl
   /** Loads the files  specified in the `requests` array. */
   private _load;
 }
-//#endregion
-//#region src/controllers/GroupAnalysisSyncController.d.ts
 declare const SLOT_NUMBERS: readonly [1, 2, 3, 4, 5, 6, 7];
 type SlotNumber = typeof SLOT_NUMBERS[number];
 type AnalysisProperty = `analysis${SlotNumber}`;
@@ -3099,8 +3294,6 @@ export declare class GroupAnalysisSyncController extends AbstractHierarchyContro
   turnOn(instance: ThermalFileInstance): void;
   turnOff(): void;
 }
-//#endregion
-//#region src/controllers/ConfigController.d.ts
 interface PngExportSettings {
   readonly width: number;
   readonly fontSize: number;
@@ -3151,14 +3344,10 @@ export declare class ConfigController extends AbstractReactiveController<Abstrac
   private _setGroupSetting;
   private _publish;
 }
-//#endregion
-//#region src/translations/localeContext.d.ts
 type Locales = "en" | "cs" | "fr" | "cy" | "de";
 interface IWithlocale {
   locale: Locales;
 }
-//#endregion
-//#region src/apps/AbstractApp.d.ts
 export declare abstract class AbstractApp extends AbstractThermalElement implements IWithlocale {
   protected readonly configController: ConfigController;
   locale: Locales;
@@ -3168,8 +3357,6 @@ export declare abstract class AbstractApp extends AbstractThermalElement impleme
   showFullscreen: boolean;
   firstUpdated(_changedProperties: PropertyValues): void;
 }
-//#endregion
-//#region src/ui/Btn.d.ts
 type BtnVariants = "primary" | "foreground" | "background" | "default" | "breadcrumb";
 type BtnSizes = "sm" | "md" | "lg" | "xl";
 export declare class ThermalBtnElement extends AbstractThermalElement {
@@ -3220,8 +3407,6 @@ declare global {
     "thermal-btn": ThermalBtnElement;
   }
 }
-//#endregion
-//#region src/ui/App.d.ts
 export declare class ThermalAppElement extends AbstractThermalElement {
   language: string;
   private _overflowCount;
@@ -3284,8 +3469,6 @@ declare global {
     "thermal-app": ThermalAppElement;
   }
 }
-//#endregion
-//#region src/ui/Bar.d.ts
 export declare class ThermalBarElement extends LitElement {
   static styles: import("lit").CSSResult;
   protected collapsed: boolean;
@@ -3305,8 +3488,15 @@ declare global {
     "thermal-bar": ThermalBarElement;
   }
 }
-//#endregion
-//#region src/ui/Dialog.d.ts
+export declare class ThermalBtnGroupElement extends AbstractThermalElement {
+  static styles: import("lit").CSSResult;
+  protected render(): unknown;
+}
+declare global {
+  interface HTMLElementTagNameMap {
+    "thermal-btn-group": ThermalBtnGroupElement;
+  }
+}
 export declare class ThermalDialogElement extends LitElement {
   static shadowRootOptions: ShadowRootInit;
   button: string;
@@ -3332,8 +3522,6 @@ declare global {
     "thermal-dialog": ThermalDialogElement;
   }
 }
-//#endregion
-//#region src/ui/Dropdown.d.ts
 export declare class ThermalDropdownElement extends AbstractThermalElement {
   static shadowRootOptions: ShadowRootInit;
   _options: Array<HTMLElement>;
@@ -3365,8 +3553,6 @@ declare global {
     "thermal-dropdown": ThermalDropdownElement;
   }
 }
-//#endregion
-//#region src/ui/Dropin.d.ts
 export declare class ThermalDropinElement extends AbstractThermalElement {
   prompt?: string;
   static styles?: CSSResultGroup | undefined;
@@ -3377,8 +3563,6 @@ declare global {
     "thermal-dropin": ThermalDropinElement;
   }
 }
-//#endregion
-//#region src/ui/Expandable.d.ts
 export declare class ThermalExpandableElement extends AbstractThermalElement {
   label?: string;
   closeIcon: boolean;
@@ -3400,8 +3584,6 @@ declare global {
     "thermal-expandable": ThermalExpandableElement;
   }
 }
-//#endregion
-//#region src/ui/Field.d.ts
 export declare class ThermalFieldElement extends LitElement {
   label: string;
   hint?: string;
@@ -3413,8 +3595,6 @@ declare global {
     "thermal-field": ThermalFieldElement;
   }
 }
-//#endregion
-//#region src/ui/Icon.d.ts
 export declare class ThermalIconElement extends AbstractThermalElement {
   icon?: string;
   variant?: string;
@@ -3431,8 +3611,6 @@ declare global {
     "thermal-icon": ThermalIconElement;
   }
 }
-//#endregion
-//#region src/ui/Loading.d.ts
 export declare class ThermalPosterElement extends AbstractThermalElement {
   protected loaded: boolean;
   loading: boolean;
@@ -3451,8 +3629,6 @@ declare global {
     "thermal-loading": ThermalPosterElement;
   }
 }
-//#endregion
-//#region src/ui/Radio.d.ts
 export declare class ThermalRadioElement extends AbstractThermalElement {
   type: "radio" | "checkbox";
   checked: boolean;
@@ -3469,8 +3645,6 @@ declare global {
     "thermal-radio": ThermalRadioElement;
   }
 }
-//#endregion
-//#region src/ui/Slot.d.ts
 export declare class ThermalSlotElement extends AbstractThermalElement {
   label?: string;
   private _slottedElements;
@@ -3484,8 +3658,6 @@ declare global {
     "thermal-slot": ThermalSlotElement;
   }
 }
-//#endregion
-//#region src/ui/Spinner.d.ts
 export declare class ThermalSpinnerElement extends AbstractThermalElement {
   message?: string;
   color: string;
@@ -3498,8 +3670,6 @@ declare global {
     "thermal-spinner": ThermalSpinnerElement;
   }
 }
-//#endregion
-//#region src/ui/Tip.d.ts
 export declare class ThermalTipElement extends AbstractThermalElement {
   icon: string;
   iconStyle: string;
@@ -3511,8 +3681,6 @@ declare global {
     "thermal-tip": ThermalTipElement;
   }
 }
-//#endregion
-//#region src/hierarchy/consumers/AbstractManagerConsumer.d.ts
 /**
  * A webcomponent consuming a `ThermalManager` exposed by a parent `ManagerController`.
  *
@@ -3572,8 +3740,6 @@ export declare abstract class AbstractManagerConsumer extends AbstractThermalEle
    */
   managerController: ManagerController;
 }
-//#endregion
-//#region src/hierarchy/consumers/AbstractRegistryConsumer.d.ts
 /**
  * A webcomponent consuming a `ThermalRegistry` exposed by a parent `RegistryController`.
  *
@@ -3633,8 +3799,6 @@ export declare abstract class AbstractRegistryConsumer extends AbstractManagerCo
    */
   registryController: RegistryController;
 }
-//#endregion
-//#region src/hierarchy/consumers/AbstractGroupConsumer.d.ts
 /**
  * A webcomponent consuming a `ThermalGroup` exposed by a parent `GroupController`.
  *
@@ -3671,8 +3835,6 @@ export declare abstract class AbstractGroupConsumer extends AbstractRegistryCons
    */
   groupController: GroupController;
 }
-//#endregion
-//#region src/hierarchy/abstraction/AbstractFileProvider.d.ts
 export declare abstract class AbstractFileProvider extends AbstractGroupConsumer implements IElementWithFileController {
   static properties: {
     managerController: import("lit").PropertyDeclaration<unknown, unknown>;
@@ -3720,8 +3882,6 @@ export declare abstract class AbstractFileProvider extends AbstractGroupConsumer
   deleteFile(): void;
   protected render(): unknown;
 }
-//#endregion
-//#region src/hierarchy/abstraction/AbstractGroupProvider.d.ts
 export declare abstract class AbstractGroupProvider extends AbstractRegistryConsumer implements IElementWithGroupController {
   static properties: {
     managerController: import("lit").PropertyDeclaration<unknown, unknown>;
@@ -3737,8 +3897,6 @@ export declare abstract class AbstractGroupProvider extends AbstractRegistryCons
   autoclearGroup: boolean;
   protected render(): unknown;
 }
-//#endregion
-//#region src/hierarchy/abstraction/AbstractManagerProvider.d.ts
 export declare abstract class AbstractManagerProvider extends AbstractThermalElement implements IElementWithManagerController {
   static properties: {
     managerSlug: import("lit").PropertyDeclaration<unknown, unknown>;
@@ -3764,8 +3922,6 @@ export declare abstract class AbstractManagerProvider extends AbstractThermalEle
   disconnectedCallback(): void;
   protected render(): unknown;
 }
-//#endregion
-//#region src/hierarchy/abstraction/AbstractRegistryProvider.d.ts
 export declare abstract class AbstractRegistryProvider extends AbstractManagerConsumer implements IElementWithRegistryController {
   static properties: {
     managerController: import("lit").PropertyDeclaration<unknown, unknown>;
@@ -3796,8 +3952,6 @@ export declare abstract class AbstractRegistryProvider extends AbstractManagerCo
   disconnectedCallback(): void;
   protected render(): unknown;
 }
-//#endregion
-//#region src/hierarchy/consumers/AbstractFileConsumer.d.ts
 /**
  * Abstract base class for web components that consume a file `ThermalFileInstance` and
  * related state from a parent `FileController`.
@@ -3869,27 +4023,19 @@ export declare abstract class AbstractFileConsumer extends AbstractGroupConsumer
    */
   abstract onFailure(error: ThermalFileFailure): void;
 }
-//#endregion
-//#region src/controls/independent/AppInfoButton.d.ts
 export declare class AppInfoButton extends AbstractThermalElement {
   static styles: import("lit").CSSResult;
   protected render(): unknown;
 }
-//#endregion
-//#region src/controls/independent/DisplayPanel.d.ts
 export declare class DisplayPanel extends AbstractThermalElement {
   static styles?: CSSResultGroup | undefined;
   advancedPalettes: boolean;
   managerController: ManagerController;
   protected render(): unknown;
 }
-//#endregion
-//#region src/controls/independent/ConfigDialog.d.ts
 export declare class ConfigDialog extends AbstractThermalElement {
   protected render(): unknown;
 }
-//#endregion
-//#region src/hierarchy/providers/FileCopy.d.ts
 /**
  * This element creates a completely isolated hierarchy tree for the given original file. The file is copied and all contexts are exposed independently of the original context.
  *
@@ -4017,8 +4163,6 @@ declare global {
     "file-copy": FileCopyElement;
   }
 }
-//#endregion
-//#region src/hierarchy/providers/FileProvider.d.ts
 /**
  * A webcomponent providing the file that is specified by its URL's.
  *
@@ -4073,32 +4217,24 @@ declare global {
     "file-provider": FileProviderElement;
   }
 }
-//#endregion
-//#region src/hierarchy/providers/GroupProvider.d.ts
 export declare class GroupProviderElement extends AbstractGroupProvider {}
 declare global {
   interface HTMLElementTagNameMap {
     "group-provider": GroupProviderElement;
   }
 }
-//#endregion
-//#region src/hierarchy/providers/ManagerProvider.d.ts
 export declare class ManagerProviderElement extends AbstractManagerProvider {}
 declare global {
   interface HTMLElementTagNameMap {
     "manager-provider": ManagerProviderElement;
   }
 }
-//#endregion
-//#region src/hierarchy/providers/RegistryProvider.d.ts
 export declare class RegistryProviderElement extends AbstractRegistryProvider {}
 declare global {
   interface HTMLElementTagNameMap {
     "registry-provider": RegistryProviderElement;
   }
 }
-//#endregion
-//#region src/controls/manager/ManagerExportPanel.d.ts
 export declare class ManagerExportPanel extends AbstractThermalElement {
   protected configController?: ConfigController;
   protected renderRow(label: string, content: ReturnType<typeof html>, hint?: ReturnType<typeof html> | string): import("lit").TemplateResult<1>;
@@ -4115,8 +4251,6 @@ declare global {
     "manager-export-panel": ManagerExportPanel;
   }
 }
-//#endregion
-//#region src/controls/manager/ManagerGraphSmoothSwitch.d.ts
 export declare class ManagerGraphSmoothSwitch extends AbstractManagerConsumer {
   smooth: boolean;
   static styles: import("lit").CSSResult;
@@ -4127,8 +4261,6 @@ declare global {
     "manager-graph-smooth-switch": ManagerGraphSmoothSwitch;
   }
 }
-//#endregion
-//#region src/controls/manager/ManagerImageSmoothSwitch.d.ts
 export declare class ManagerImageSmoothSwitch extends AbstractManagerConsumer {
   smooth: boolean;
   static styles: import("lit").CSSResult;
@@ -4139,8 +4271,6 @@ declare global {
     "manager-image-smooth-switch": ManagerImageSmoothSwitch;
   }
 }
-//#endregion
-//#region src/controls/manager/AbstractPaletteSwitch.d.ts
 declare abstract class AbstractPaletteSwitch extends AbstractManagerConsumer {
   protected static BASIC_PALETTES: string[];
   protected advancedPalettesContext: boolean;
@@ -4151,8 +4281,6 @@ declare abstract class AbstractPaletteSwitch extends AbstractManagerConsumer {
   /** Handle user input events */
   protected onSelect(palette: AvailableThermalPalette): void;
 }
-//#endregion
-//#region src/controls/manager/ManagerPaletteButtons.d.ts
 export declare class ManagerPaletteButtons extends AbstractPaletteSwitch {
   static styles: import("lit").CSSResult;
   private paletteTemplate;
@@ -4163,8 +4291,6 @@ declare global {
     "manager-palette-buttons": ManagerPaletteButtons;
   }
 }
-//#endregion
-//#region src/controls/manager/ManagerPaletteDropdown.d.ts
 export declare class ManagerPaletteDropdown extends AbstractPaletteSwitch {
   static styles: import("lit").CSSResult;
   protected paletteTemplate(palette: ThermalPaletteType): import("lit").TemplateResult<1>;
@@ -4175,8 +4301,6 @@ declare global {
     "manager-palette-dropdown": ManagerPaletteDropdown;
   }
 }
-//#endregion
-//#region src/controls/manager/ManagerToolsBar.d.ts
 /**
  * A standard toolbar that is either horizontal or vertical.
  */
@@ -4194,8 +4318,23 @@ declare global {
     "manager-tool-bar": ManagerToolBar;
   }
 }
-//#endregion
-//#region src/controls/registry/RegistryRangeForm.d.ts
+export declare class ManagerAdvancedPaletteSwitch extends AbstractManagerConsumer {
+  private advancedPalettes;
+  render(): import("lit").TemplateResult<1>;
+}
+declare global {
+  interface HTMLElementTagNameMap {
+    "manager-advanced-palette-switch": ManagerAdvancedPaletteSwitch;
+  }
+}
+export declare class ManagerUnitSwitch extends AbstractManagerConsumer {
+  activeVariant: BtnVariants;
+  defaultVariant: BtnVariants;
+  protected unit: ThermalUnit;
+  private getUnit;
+  private renderUnit;
+  render(): import("lit").TemplateResult<1>;
+}
 /**
  * Form control for editing a thermal registry's active range. It keeps its
  * inputs synchronized with registry range data and provides range presets,
@@ -4444,8 +4583,6 @@ declare global {
     "registry-range-form": RegistryRangeForm;
   }
 }
-//#endregion
-//#region src/controls/registry/RegistryTicksBar.d.ts
 type TickType = {
   percentage: number;
   value: number;
@@ -4493,8 +4630,6 @@ declare global {
     "registry-ticks-bar": RegistryTicksBar;
   }
 }
-//#endregion
-//#region src/controls/registry/RegistryRangeSlider.d.ts
 /**
  * Two-handle slider for the enclosing registry's temperature range.
  *
@@ -4578,8 +4713,6 @@ declare global {
     "registry-range-slider": RegistryRangeSlider;
   }
 }
-//#endregion
-//#region src/controls/registry/RegistryHistogram.d.ts
 export declare class RegistryHistogram extends AbstractRegistryConsumer {
   protected histogram: ThermalRegistry["histogram"]["value"];
   height: string;
@@ -4600,8 +4733,6 @@ declare global {
     "registry-histogram": RegistryHistogram;
   }
 }
-//#endregion
-//#region src/controls/registry/RegistryRangeFullButton.d.ts
 export declare class RegistryRangeFullButton extends AbstractRegistryConsumer {
   protected buttonRef: Ref<HTMLElement>;
   private min?;
@@ -4619,8 +4750,6 @@ declare global {
     "registry-range-full-button": RegistryRangeFullButton;
   }
 }
-//#endregion
-//#region src/controls/registry/RegistryRangeAutoButton.d.ts
 export declare class RegistryRangeAutoButton extends AbstractRegistryConsumer {
   /** The auto range remains in Celsius until it is formatted for the tooltip. */
   private autoRange;
@@ -4643,8 +4772,6 @@ declare global {
     "registry-range-auto-button": RegistryRangeAutoButton;
   }
 }
-//#endregion
-//#region src/controls/registry/RegistryRangeDisplay.d.ts
 export declare class RegistryRangeDisplay extends AbstractRegistryConsumer {
   protected from?: number;
   protected to?: number;
@@ -4659,8 +4786,6 @@ declare global {
     "registry-range-display": RegistryRangeDisplay;
   }
 }
-//#endregion
-//#region src/controls/registry/RegistryOpacitySlider.d.ts
 export declare class RegistryOpacitySlider extends AbstractRegistryConsumer {
   value: number;
   protected containerRef: Ref<HTMLElement>;
@@ -4678,8 +4803,6 @@ declare global {
     "registry-opacity-slider": RegistryOpacitySlider;
   }
 }
-//#endregion
-//#region src/controls/group/GroupChartElement.d.ts
 export declare class GroupChartElement extends AbstractGroupConsumer {
   protected instances: ThermalFileInstance[];
   protected timeout?: NodeJS.Timeout;
@@ -4706,8 +4829,6 @@ declare global {
     "group-chart": GroupChartElement;
   }
 }
-//#endregion
-//#region src/controls/group/GroupAnalysisSyncButton.d.ts
 export declare class GroupAnalysisSyncButton extends AbstractGroupConsumer {
   on: boolean;
   connectedCallback(): void;
@@ -4722,8 +4843,6 @@ declare global {
     "group-analysis-sync-button": GroupAnalysisSyncButton;
   }
 }
-//#endregion
-//#region src/controls/group/GroupDownloadDropdown.d.ts
 export declare class GroupDownloadDropdown extends AbstractGroupConsumer {
   static styles?: CSSResultGroup | undefined;
   private configController?;
@@ -4737,8 +4856,6 @@ declare global {
     "group-download-dropdown": GroupDownloadDropdown;
   }
 }
-//#endregion
-//#region src/controls/group/GroupDownloadButtons.d.ts
 export declare class GroupDownloadButtons extends AbstractGroupConsumer {
   label?: string;
   protected configController?: ConfigController;
@@ -4750,8 +4867,6 @@ declare global {
     "group-download-buttons": GroupDownloadButtons;
   }
 }
-//#endregion
-//#region src/controls/group/AbstractGroupDropin.d.ts
 declare abstract class AbstractGroupDropin extends AbstractGroupConsumer {
   ip?: string;
   onDrop?: (instances: AbstractFileResult$1[]) => Promise<void>;
@@ -4760,8 +4875,6 @@ declare abstract class AbstractGroupDropin extends AbstractGroupConsumer {
   emitMultipleUpload(fileNames?: string[] | undefined): void;
   protected emitSingleUpload(fileName: string, fileSize: number): void;
 }
-//#endregion
-//#region src/controls/group/GroupDropinElement.d.ts
 export declare class GroupDropinElement extends AbstractGroupDropin {
   protected container: Ref<HTMLVideoElement>;
   protected hover: boolean;
@@ -4775,8 +4888,6 @@ declare global {
     "group-dropin-element": GroupDropinElement;
   }
 }
-//#endregion
-//#region src/controls/group/GroupDropinInput.d.ts
 export declare class GroupDropinInputElement extends AbstractGroupDropin {
   icon?: string;
   iconStyle?: string;
@@ -4795,8 +4906,6 @@ declare global {
     "group-dropin-input": GroupDropinInputElement;
   }
 }
-//#endregion
-//#region src/controls/group/GroupRangePropagator.d.ts
 export declare class GroupRangePropagatorElement extends AbstractGroupConsumer {
   static styles: import("lit").CSSResultGroup | undefined;
   /** Group bounds are kept in Celsius and formatted only when rendered. */
@@ -4817,8 +4926,6 @@ declare global {
     "group-range-propagator": GroupRangePropagatorElement;
   }
 }
-//#endregion
-//#region src/utils/timelineTicks.d.ts
 declare enum TICK {
   MINOR = "minor",
   MAJOR = "major",
@@ -4830,8 +4937,6 @@ type Tick = {
   type: TICK;
   label: string;
 };
-//#endregion
-//#region src/controls/group/GroupTimeline.d.ts
 export declare class GroupTimelineElement extends AbstractGroupConsumer {
   static TICK_WIDTH: number;
   static TICK_POINTER_HEIGHT: number;
@@ -4870,8 +4975,6 @@ declare global {
     "group-timeline": GroupTimelineElement;
   }
 }
-//#endregion
-//#region src/controls/file/FileCanvas.d.ts
 /**
  * The component rendering the file canvas through `@labirthermal/core` functionality.
  *
@@ -4904,8 +5007,6 @@ declare global {
     "file-canvas": FileCanvasElement;
   }
 }
-//#endregion
-//#region src/controls/file/FileVideoExportButton.d.ts
 export declare class FileVideoExportButton extends AbstractFileConsumer {
   variant?: BtnVariants;
   size?: BtnSizes;
@@ -4932,8 +5033,6 @@ declare global {
     "file-video-export-button": FileVideoExportButton;
   }
 }
-//#endregion
-//#region src/controls/file/FilePlaybackSpeedDropdown.d.ts
 export declare class FilePlaybackSpeedDropdown extends AbstractFileConsumer {
   enabled: "on" | "off";
   protected playbackSpeed: PlaybackSpeeds;
@@ -4948,8 +5047,6 @@ declare global {
     "file-playback-speed-dropdown": FilePlaybackSpeedDropdown;
   }
 }
-//#endregion
-//#region src/controls/file/FileDownloadDropdown.d.ts
 export declare class FileDownloadButton extends AbstractFileConsumer {
   protected configController?: ConfigController;
   protected hasGraphs: boolean;
@@ -4967,8 +5064,6 @@ declare global {
     "file-download-dropdown": FileDownloadButton;
   }
 }
-//#endregion
-//#region src/controls/file/buttons/AbstractFileButton.d.ts
 declare abstract class AbstractFileButton extends AbstractFileConsumer {
   variant?: BtnVariants;
   size?: BtnSizes;
@@ -4990,8 +5085,6 @@ declare abstract class AbstractFileButton extends AbstractFileConsumer {
   static styles?: CSSResultGroup | undefined;
   protected render(): unknown;
 }
-//#endregion
-//#region src/controls/file/buttons/FileButton.d.ts
 export declare class FileButtonElement extends AbstractFileButton {
   tooltip: undefined;
   label: string;
@@ -5009,8 +5102,6 @@ declare global {
     "file-button": FileButtonElement;
   }
 }
-//#endregion
-//#region src/controls/file/buttons/FileDropdown.d.ts
 export declare class FileDropdown extends AbstractThermalElement {
   label?: string;
   protected expanded: boolean;
@@ -5026,8 +5117,6 @@ declare global {
     "file-dropdown-elt": FileDropdown;
   }
 }
-//#endregion
-//#region src/controls/file/buttons/FileLrcButton.d.ts
 export declare class FileLrcButton extends AbstractFileButton {
   tooltip: undefined;
   onInstanceCreated(): void;
@@ -5041,8 +5130,6 @@ declare global {
     "file-download-lrc": FileLrcButton;
   }
 }
-//#endregion
-//#region src/controls/file/buttons/FilePngButton.d.ts
 export declare class FilePngButton extends AbstractFileButton {
   tooltip: undefined;
   protected configController?: ConfigController;
@@ -5057,8 +5144,6 @@ declare global {
     "file-download-png": FilePngButton;
   }
 }
-//#endregion
-//#region src/controls/file/buttons/FileRangePropagator.d.ts
 export declare class FileRangePropagator extends AbstractFileButton {
   private unit?;
   hideLabel: boolean;
@@ -5083,11 +5168,7 @@ declare global {
     "file-range-propagator": FileRangePropagator;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/AnalysisTableOptions.d.ts
 type AnalysisTableMode = "full" | "compact";
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisComplex.d.ts
 export declare class FileAnalysisComplexElement extends AbstractFileConsumer {
   tableMode: AnalysisTableMode;
   interactiveAnalysis: boolean;
@@ -5138,8 +5219,6 @@ declare global {
     "file-analysis-complex": FileAnalysisComplexElement;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisDisplay.d.ts
 /** Display the analysis state for the purpose of exporting. */
 export declare class FileAnalysisDisplayElement extends AbstractFileConsumer {
   protected container: Ref<HTMLDivElement>;
@@ -5178,8 +5257,6 @@ declare global {
     "file-analysis-display": FileAnalysisDisplayElement;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisEdit.d.ts
 /** Trigger the edit dialog for an analysis */
 export declare class FileAnalisisEditDialog extends AbstractThermalElement {
   analysis: AbstractAnalysis;
@@ -5195,15 +5272,11 @@ declare global {
     "file-analysis-edit": FileAnalisisEditDialog;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/chart/loader.d.ts
 /** Types that can be converted to `DataTable`. */
 type DataTableLike = unknown[][] | {
   cols: unknown[];
   rows?: unknown[][];
 } | google.visualization.DataTable;
-//#endregion
-//#region src/controls/file/analysis/chart/chart.d.ts
 /**
  * `google-chart` encapsulates Google Charts as a web component, allowing you to
  * easily visualize data. From simple line charts to complex hierarchical tree
@@ -5506,8 +5579,6 @@ declare global {
     'thermal-chart': ThermalChartElement;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisGraph.d.ts
 /** High level component around `thermal-chart` that provides the functionality of a file analysis graph */
 export declare class FileAnalysisGraphElement extends AbstractFileConsumer {
   protected hydrated: boolean;
@@ -5566,8 +5637,6 @@ declare global {
     "file-analysis-graph": FileAnalysisGraphElement;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisRow.d.ts
 export declare class FileAnalysisRowElement extends AbstractThermalElement {
   analysis?: AbstractAnalysis;
   tableMode: AnalysisTableMode;
@@ -5615,8 +5684,6 @@ declare global {
     "file-analysis-table-row": FileAnalysisRowElement;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/FileAnalysisTable.d.ts
 /**
  * Table of the analyses of the enclosing file provider.
  *
@@ -5667,8 +5734,6 @@ declare global {
     "file-analysis-table": FileAnalysisTableElement;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/edit/analysisColorDropdown.d.ts
 /**
  * Render the dropdown for color selection of an analysis. Property `analysis` needs to be passed down from the parent component
  * @package \@labirthermal/webcomponents
@@ -5688,8 +5753,6 @@ declare global {
     "analysis-color": AnalysisColorDropdown;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/edit/analysisNameInput.d.ts
 /**
  * Render the input for editing the analysis name. Property `analysis` needs to be passed down from the parent component
  * @package \@labirthermal/webcomponents
@@ -5708,8 +5771,6 @@ declare global {
     "analysis-name": AnalysisNameInput;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/edit/editAreaTable.d.ts
 /**
  * The full table and form for editing an area analysis properties. Enables editing of name, color and dimensions (top, left, width, height, right, bottom). Property `analysis` needs to be passed down from the parent component
  * @package \@labirthermal/webcomponents
@@ -5738,8 +5799,6 @@ declare global {
     "edit-area": AreaEditTable;
   }
 }
-//#endregion
-//#region src/controls/file/analysis/edit/editPointTable.d.ts
 /**
  * The full table and form for editing a point analysis properties. Enables editing of name, color and coordinates (top, left). Property `analysis` needs to be passed down from the parent component
  * @package \@labirthermal/webcomponents
@@ -5764,170 +5823,6 @@ declare global {
     "edit-point": EditpointTable;
   }
 }
-//#endregion
-//#region src/utils/iife.d.ts
-type ComponentsCatalog = Record<string, CustomElementConstructor>;
-/**
- * Registers and defines all custom elements from a provided list
- *
- * @module @labirthermal/webcomponents
- *
- */
-export declare const defineAllWebcomponents: (name: string, version: string, catalog: ComponentsCatalog) => void;
-/**
- * Registers a custom element and defines it right away.
- *
- * @module @labirthermal/webcomponents
- */
-export declare const defineWebcomponent: (name: string, version: string, tag: string, cls: CustomElementConstructor) => void;
-//#endregion
-//#region src/apps/AustralianApparentTemperature.d.ts
-declare enum VUNIT {
-  mps = "mps",
-  kph = "kph"
-}
-declare class AatAppElement extends AbstractThermalElement implements IWithlocale {
-  tRef: Ref<HTMLInputElement>;
-  vRef: Ref<HTMLInputElement>;
-  vunitsRef: Ref<HTMLSelectElement>;
-  haRef: Ref<HTMLInputElement>;
-  /** Air temperature in degree celsius */
-  temperature?: number;
-  /** Wind speed in m/s */
-  v?: number;
-  /** Air humidity in percent */
-  ha?: number;
-  /** Result apparent temperature */
-  protected ta?: number;
-  vunits: VUNIT;
-  locale: Locales;
-  protected kphToMps(kph: number): number;
-  protected calculateE(h: number, t: number): number;
-  protected calculateTa(t: number, e: number, v: number): number;
-  protected firstUpdated(_changedProperties: PropertyValues): void;
-  protected processValueChange(_changedProperties: PropertyValues<AatAppElement>, key: keyof AatAppElement): void;
-  protected recalculateVa(): void;
-  protected shouldUpdate(_changedProperties: PropertyValues<AatAppElement>): boolean;
-  willUpdate(_changedProperties: PropertyValues<AatAppElement>): void;
-  static styles?: CSSResultGroup | undefined;
-  protected renderNumberField(inputRef: Ref<HTMLInputElement>, id: "temperature" | "v" | "ha", label: string, unit: string | ReturnType<typeof html> | typeof nothing, value?: number, min?: number, max?: number, step?: number, hint?: string): import("lit").TemplateResult<1>;
-  protected renderResult(apparentTemperature: number, temperature: number): import("lit").TemplateResult<1>;
-  protected render(): import("lit").TemplateResult<1>;
-}
-//#endregion
-//#region src/apps/ThermalDropinApp.d.ts
-declare enum Mode {
-  INPUT = "input",
-  LIST = "list",
-  DETAIL = "detail"
-}
-declare class DropinAppElement extends AbstractApp implements IWithlocale, IElementWithManagerController, IElementWithRegistryController, IElementWithGroupController, IElementWithFileController, IElementWithGroupListingController {
-  static properties: {
-    orderby: import("lit").PropertyDeclaration<unknown, unknown>;
-    ordering: import("lit").PropertyDeclaration<unknown, unknown>;
-    managerController: import("lit").PropertyDeclaration<unknown, unknown>;
-    registryController: import("lit").PropertyDeclaration<unknown, unknown>;
-    groupController: import("lit").PropertyDeclaration<unknown, unknown>;
-    fileController: import("lit").PropertyDeclaration<unknown, unknown>;
-    file?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    failure?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    loading: import("lit").PropertyDeclaration<unknown, unknown>;
-    ms: import("lit").PropertyDeclaration<unknown, unknown>;
-    playbackSpeed: import("lit").PropertyDeclaration<unknown, unknown>;
-    analysis1?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    analysis2?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    analysis3?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    analysis4?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    analysis5?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    analysis6?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    analysis7?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    autoHighlight: import("lit").PropertyDeclaration<unknown, unknown>;
-    groupSlug: import("lit").PropertyDeclaration<unknown, unknown>;
-    groupObject: import("lit").PropertyDeclaration<unknown, unknown>;
-    autoclearGroup: import("lit").PropertyDeclaration<unknown, unknown>;
-    registrySlug: import("lit").PropertyDeclaration<unknown, unknown>;
-    registryObject: import("lit").PropertyDeclaration<unknown, unknown>;
-    opacity: import("lit").PropertyDeclaration<unknown, unknown>;
-    min?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    max?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    from?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    to?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    highlight?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
-    managerSlug: import("lit").PropertyDeclaration<unknown, unknown>;
-    managerObject: import("lit").PropertyDeclaration<unknown, unknown>;
-    palette: import("lit").PropertyDeclaration<unknown, unknown>;
-    advancedPalettes: import("lit").PropertyDeclaration<unknown, unknown>;
-    smoothThermograms: import("lit").PropertyDeclaration<unknown, unknown>;
-    smoothGraph: import("lit").PropertyDeclaration<unknown, unknown>;
-    tool: import("lit").PropertyDeclaration<unknown, unknown>;
-    unit: import("lit").PropertyDeclaration<unknown, unknown>;
-  };
-  managerSlug: string;
-  managerObject: ThermalManager;
-  palette: AvailableThermalPalette;
-  advancedPalettes: boolean;
-  smoothThermograms: boolean;
-  smoothGraph: boolean;
-  tool: string;
-  unit: ThermalUnit;
-  managerController: ManagerController;
-  registrySlug: string;
-  registryObject: ThermalRegistry;
-  opacity: number;
-  /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
-  min?: number | undefined;
-  /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
-  max?: number | undefined;
-  from?: number | undefined;
-  to?: number | undefined;
-  highlight?: ThermalRangeOrUndefined;
-  loading: boolean;
-  registryController: RegistryController;
-  groupSlug: string;
-  groupObject: ThermalGroup;
-  autoclearGroup: boolean;
-  groupController: GroupController;
-  file?: ThermalFileInstance | undefined;
-  failure?: ThermalFileFailure | undefined;
-  ms: number;
-  playbackSpeed: PlaybackSpeeds;
-  analysis1?: string | undefined;
-  analysis2?: string | undefined;
-  analysis3?: string | undefined;
-  analysis4?: string | undefined;
-  analysis5?: string | undefined;
-  analysis6?: string | undefined;
-  analysis7?: string | undefined;
-  autoHighlight: boolean;
-  fileController: FileController;
-  orderby: GroupOrderby;
-  ordering: GroupOrdering;
-  groupListingController: GroupListingController;
-  displayMode: Mode;
-  get manager(): ThermalManager;
-  protected ip?: string;
-  toDisplay: ThermalFileInstance[];
-  locale: Locales;
-  connectedCallback(): void;
-  willUpdate(_changedProperties: PropertyValues<DropinAppElement>): void;
-  /**
-   * Postprocess the registry and reset its range to apply min and max values.
-   */
-  private postLoadedProcessingAndApplyMinmax;
-  private onValueChangeTimeout;
-  protected handleClear(): void;
-  static styles: import("lit").CSSResult;
-  handleDropAndClear(results: AbstractFileResult[]): Promise<void>;
-  protected renderIntroScene(): import("lit").TemplateResult<1>;
-  protected renderLayout(children: unknown): import("lit").TemplateResult<1>;
-  protected renderHeader(): unknown[];
-  protected renderDetail(): import("lit").TemplateResult<1>;
-  renderList(): import("lit").TemplateResult<1>;
-  protected renderAuto(): import("lit").TemplateResult<1>;
-  protected render(): unknown;
-}
-//#endregion
-//#region src/apps/AbstractSingleFileApp.d.ts
 /**
  * Common foundation for apps that handle a single thermal file loaded from the URL.
  */
@@ -6016,9 +5911,7 @@ declare abstract class AbstractSingleFileAppElement extends AbstractApp implemen
   thermal: string | undefined;
   visible: string | undefined;
 }
-//#endregion
-//#region src/apps/ThermalFileApp.d.ts
-declare class ThermalFileAppElement extends AbstractSingleFileAppElement {
+export declare class ThermalFileAppElement extends AbstractSingleFileAppElement {
   /** Observes the interactive layout's content width; released on disconnect. */
   private layoutObserver?;
   connectedCallback(): void;
@@ -6029,9 +5922,117 @@ declare class ThermalFileAppElement extends AbstractSingleFileAppElement {
   static styles: import("lit").CSSResult;
   render(): import("lit").TemplateResult<1>;
 }
-//#endregion
-//#region src/apps/ThermalGroupApp.d.ts
-declare class ThermalGroupAppElement extends AbstractApp implements IElementWithManagerController, IElementWithRegistryController, IElementWithGroupController, IElementWithFileController, IElementWithGroupListingController, IElementWithGroupLoadController {
+declare enum Mode {
+  INPUT = "input",
+  LIST = "list",
+  DETAIL = "detail"
+}
+export declare class ThermalDropinAppElement extends AbstractApp implements IWithlocale, IElementWithManagerController, IElementWithRegistryController, IElementWithGroupController, IElementWithFileController, IElementWithGroupListingController {
+  static properties: {
+    orderby: import("lit").PropertyDeclaration<unknown, unknown>;
+    ordering: import("lit").PropertyDeclaration<unknown, unknown>;
+    managerController: import("lit").PropertyDeclaration<unknown, unknown>;
+    registryController: import("lit").PropertyDeclaration<unknown, unknown>;
+    groupController: import("lit").PropertyDeclaration<unknown, unknown>;
+    fileController: import("lit").PropertyDeclaration<unknown, unknown>;
+    file?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    failure?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    loading: import("lit").PropertyDeclaration<unknown, unknown>;
+    ms: import("lit").PropertyDeclaration<unknown, unknown>;
+    playbackSpeed: import("lit").PropertyDeclaration<unknown, unknown>;
+    analysis1?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    analysis2?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    analysis3?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    analysis4?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    analysis5?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    analysis6?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    analysis7?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    autoHighlight: import("lit").PropertyDeclaration<unknown, unknown>;
+    groupSlug: import("lit").PropertyDeclaration<unknown, unknown>;
+    groupObject: import("lit").PropertyDeclaration<unknown, unknown>;
+    autoclearGroup: import("lit").PropertyDeclaration<unknown, unknown>;
+    registrySlug: import("lit").PropertyDeclaration<unknown, unknown>;
+    registryObject: import("lit").PropertyDeclaration<unknown, unknown>;
+    opacity: import("lit").PropertyDeclaration<unknown, unknown>;
+    min?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    max?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    from?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    to?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    highlight?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
+    managerSlug: import("lit").PropertyDeclaration<unknown, unknown>;
+    managerObject: import("lit").PropertyDeclaration<unknown, unknown>;
+    palette: import("lit").PropertyDeclaration<unknown, unknown>;
+    advancedPalettes: import("lit").PropertyDeclaration<unknown, unknown>;
+    smoothThermograms: import("lit").PropertyDeclaration<unknown, unknown>;
+    smoothGraph: import("lit").PropertyDeclaration<unknown, unknown>;
+    tool: import("lit").PropertyDeclaration<unknown, unknown>;
+    unit: import("lit").PropertyDeclaration<unknown, unknown>;
+  };
+  managerSlug: string;
+  managerObject: ThermalManager;
+  palette: AvailableThermalPalette;
+  advancedPalettes: boolean;
+  smoothThermograms: boolean;
+  smoothGraph: boolean;
+  tool: string;
+  unit: ThermalUnit;
+  managerController: ManagerController;
+  registrySlug: string;
+  registryObject: ThermalRegistry;
+  opacity: number;
+  /** Current minimum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
+  min?: number | undefined;
+  /** Current maximum temperature of the registry in Celsius. Set internally by `@labirthermal/core`. */
+  max?: number | undefined;
+  from?: number | undefined;
+  to?: number | undefined;
+  highlight?: ThermalRangeOrUndefined;
+  loading: boolean;
+  registryController: RegistryController;
+  groupSlug: string;
+  groupObject: ThermalGroup;
+  autoclearGroup: boolean;
+  groupController: GroupController;
+  file?: ThermalFileInstance | undefined;
+  failure?: ThermalFileFailure | undefined;
+  ms: number;
+  playbackSpeed: PlaybackSpeeds;
+  analysis1?: string | undefined;
+  analysis2?: string | undefined;
+  analysis3?: string | undefined;
+  analysis4?: string | undefined;
+  analysis5?: string | undefined;
+  analysis6?: string | undefined;
+  analysis7?: string | undefined;
+  autoHighlight: boolean;
+  fileController: FileController;
+  orderby: GroupOrderby;
+  ordering: GroupOrdering;
+  groupListingController: GroupListingController;
+  displayMode: Mode;
+  get manager(): ThermalManager;
+  protected ip?: string;
+  toDisplay: ThermalFileInstance[];
+  locale: Locales;
+  connectedCallback(): void;
+  willUpdate(_changedProperties: PropertyValues<ThermalDropinAppElement>): void;
+  /**
+   * Postprocess the registry and reset its range to apply min and max values.
+   */
+  private postLoadedProcessingAndApplyMinmax;
+  private onValueChangeTimeout;
+  protected handleClear(): void;
+  static styles: import("lit").CSSResult;
+  handleDropAndClear(results: AbstractFileResult[]): Promise<void>;
+  protected renderIntroScene(): import("lit").TemplateResult<1>;
+  protected renderLayout(children: unknown): import("lit").TemplateResult<1>;
+  protected renderHeader(): unknown[];
+  protected renderDetail(): import("lit").TemplateResult<1>;
+  renderList(): import("lit").TemplateResult<1>;
+  protected renderAuto(): import("lit").TemplateResult<1>;
+  protected render(): unknown;
+}
+export declare class ThermalGroupAppElement extends AbstractApp implements IElementWithManagerController, IElementWithRegistryController, IElementWithGroupController, IElementWithFileController, IElementWithGroupListingController, IElementWithGroupLoadController {
   static properties: {
     filesString?: import("lit").PropertyDeclaration<unknown, unknown> | undefined;
     managerController: import("lit").PropertyDeclaration<unknown, unknown>;
@@ -6122,8 +6123,52 @@ declare class ThermalGroupAppElement extends AbstractApp implements IElementWith
   static styles: import("lit").CSSResult;
   protected render(): unknown;
 }
-//#endregion
-//#region src/apps/ThermalSlottedApp.d.ts
+type ComponentsCatalog = Record<string, CustomElementConstructor>;
+/**
+ * Registers and defines all custom elements from a provided list
+ *
+ * @module @labirthermal/webcomponents
+ *
+ */
+export declare const defineAllWebcomponents: (name: string, version: string, catalog: ComponentsCatalog) => void;
+/**
+ * Registers a custom element and defines it right away.
+ *
+ * @module @labirthermal/webcomponents
+ */
+export declare const defineWebcomponent: (name: string, version: string, tag: string, cls: CustomElementConstructor) => void;
+declare enum VUNIT {
+  mps = "mps",
+  kph = "kph"
+}
+declare class AatAppElement extends AbstractThermalElement implements IWithlocale {
+  tRef: Ref<HTMLInputElement>;
+  vRef: Ref<HTMLInputElement>;
+  vunitsRef: Ref<HTMLSelectElement>;
+  haRef: Ref<HTMLInputElement>;
+  /** Air temperature in degree celsius */
+  temperature?: number;
+  /** Wind speed in m/s */
+  v?: number;
+  /** Air humidity in percent */
+  ha?: number;
+  /** Result apparent temperature */
+  protected ta?: number;
+  vunits: VUNIT;
+  locale: Locales;
+  protected kphToMps(kph: number): number;
+  protected calculateE(h: number, t: number): number;
+  protected calculateTa(t: number, e: number, v: number): number;
+  protected firstUpdated(_changedProperties: PropertyValues): void;
+  protected processValueChange(_changedProperties: PropertyValues<AatAppElement>, key: keyof AatAppElement): void;
+  protected recalculateVa(): void;
+  protected shouldUpdate(_changedProperties: PropertyValues<AatAppElement>): boolean;
+  willUpdate(_changedProperties: PropertyValues<AatAppElement>): void;
+  static styles?: CSSResultGroup | undefined;
+  protected renderNumberField(inputRef: Ref<HTMLInputElement>, id: "temperature" | "v" | "ha", label: string, unit: string | ReturnType<typeof html> | typeof nothing, value?: number, min?: number, max?: number, step?: number, hint?: string): import("lit").TemplateResult<1>;
+  protected renderResult(apparentTemperature: number, temperature: number): import("lit").TemplateResult<1>;
+  protected render(): import("lit").TemplateResult<1>;
+}
 /**
  * Places left and right slot content beside the canvas, sized to their content.
  * Top, bottom and unnamed slot content span the full width.
@@ -6132,8 +6177,6 @@ declare class ThermalSlottedAppElement extends AbstractSingleFileAppElement {
   static styles: import("lit").CSSResult;
   render(): import("lit").TemplateResult<1>;
 }
-//#endregion
-//#region src/controls/file/FileInfoButton.d.ts
 declare class FileInfoButton extends AbstractFileConsumer {
   protected onFileLoaded(): void;
   onInstanceCreated(): void;
@@ -6151,8 +6194,6 @@ declare global {
     "file-info-button": FileInfoButton;
   }
 }
-//#endregion
-//#region src/controls/file/fileLabel.d.ts
 declare class FileLabelElement extends AbstractFileConsumer {
   label?: string;
   onInstanceCreated(): void;
@@ -6165,8 +6206,6 @@ declare global {
     "file-label": FileLabelElement;
   }
 }
-//#endregion
-//#region src/controls/file/FileTimelineElement.d.ts
 declare class FileTimelineElement extends AbstractFileConsumer {
   protected playing: boolean;
   protected currentFrame?: FileControllerCurrentFrameType;
@@ -6218,8 +6257,6 @@ declare global {
     "file-timeline": FileTimelineElement;
   }
 }
-//#endregion
-//#region src/controls/file/video/ISingleVideoExportElement.d.ts
 declare enum VideoExportSkin {
   LIGHT = "light",
   DARK = "dark",
@@ -6270,8 +6307,6 @@ interface ISingleVideoExportElement {
   setPreviewScale(value: number): void;
   setAutoScale(value: boolean): void;
 }
-//#endregion
-//#region src/controls/file/video/AbstractSingleVideoExport.d.ts
 declare abstract class AbstractSingleVideoExport extends AbstractFileConsumer implements ISingleVideoExportElement {
   fileCopyElementRef: Ref<FileCopyElement>;
   exportedDivRef: Ref<HTMLElement>;
@@ -6308,8 +6343,6 @@ declare abstract class AbstractSingleVideoExport extends AbstractFileConsumer im
   record(): Promise<void>;
   currentFrame(): Promise<void>;
 }
-//#endregion
-//#region src/controls/file/video/FileVideoExportPanel.d.ts
 declare class FileVideoExportPanel extends AbstractSingleVideoExport {
   /** Reference na preview sekci pro měření výšky */
   private previewSectionRef;
@@ -6348,29 +6381,6 @@ declare global {
     "file-video-export-panel": FileVideoExportPanel;
   }
 }
-//#endregion
-//#region src/controls/manager/ManagerAdvancedPaletteSwitch.d.ts
-declare class ManagerAdvancedPaletteSwitch extends AbstractManagerConsumer {
-  private advancedPalettes;
-  render(): import("lit").TemplateResult<1>;
-}
-declare global {
-  interface HTMLElementTagNameMap {
-    "manager-advanced-palette-switch": ManagerAdvancedPaletteSwitch;
-  }
-}
-//#endregion
-//#region src/controls/manager/ManagerUnitSwitch.d.ts
-declare class ManagerUnitSwitch extends AbstractManagerConsumer {
-  activeVariant: BtnVariants;
-  defaultVariant: BtnVariants;
-  protected unit: ThermalUnit;
-  private getUnit;
-  private renderUnit;
-  render(): import("lit").TemplateResult<1>;
-}
-//#endregion
-//#region src/renderers/FileDetail.d.ts
 declare class FileDetailElement extends AbstractFileConsumer {
   onback?: () => void;
   norender: boolean;
@@ -6380,8 +6390,6 @@ declare class FileDetailElement extends AbstractFileConsumer {
   static styles?: CSSResultGroup | undefined;
   protected render(): unknown;
 }
-//#endregion
-//#region src/renderers/FileThumbnail.d.ts
 declare class FileThumbnailElement extends AbstractFileConsumer {
   ondetail?: (file: ThermalFileInstance) => void;
   norender: boolean;
@@ -6391,19 +6399,6 @@ declare class FileThumbnailElement extends AbstractFileConsumer {
   static styles?: CSSResultGroup | undefined;
   protected render(): unknown;
 }
-//#endregion
-//#region src/ui/BtnGroup.d.ts
-declare class BtnGroupElement extends AbstractThermalElement {
-  static styles: import("lit").CSSResult;
-  protected render(): unknown;
-}
-declare global {
-  interface HTMLElementTagNameMap {
-    "thermal-btn-group": BtnGroupElement;
-  }
-}
-//#endregion
-//#region src/iifeCatalog.d.ts
 export declare const independentElements: {};
 /**
  * List of provider components
@@ -6421,7 +6416,7 @@ export declare const elementsProviders: {
  */
 export declare const elementsAll: {
   readonly "apparent-temperature-aat": typeof AatAppElement;
-  readonly "thermal-dropin-app": typeof DropinAppElement;
+  readonly "thermal-dropin-app": typeof ThermalDropinAppElement;
   readonly "thermal-file-app": typeof ThermalFileAppElement;
   readonly "thermal-group-app": typeof ThermalGroupAppElement;
   readonly "thermal-simple-app": typeof ThermalSlottedAppElement;
@@ -6479,7 +6474,7 @@ export declare const elementsAll: {
   readonly "thermal-app": typeof ThermalAppElement;
   readonly "thermal-bar": typeof ThermalBarElement;
   readonly "thermal-btn": typeof ThermalBtnElement;
-  readonly "thermal-btn-group": typeof BtnGroupElement;
+  readonly "thermal-btn-group": typeof ThermalBtnGroupElement;
   readonly "thermal-dialog": typeof ThermalDialogElement;
   readonly "thermal-dropdown": typeof ThermalDropdownElement;
   readonly "thermal-dropin": typeof ThermalDropinElement;
@@ -6500,9 +6495,6 @@ export declare const elementsAll: {
 export declare const isLabirthermalWebcomponent: (tag: string) => boolean;
 /** Define all webcomponents from the @labirthermal/webcomponents package */
 export declare const defineBaseWebcomponents: () => void;
-//#endregion
-//#region src/index.export.d.ts
 declare const t: TFunction<["translation", ...string[]], undefined>;
-//#endregion
 export { type BtnSizes, type BtnVariants, type ConfigSettings, type FileControllerCurrentFrameType, type FileControllerDurationContextType, type GroupExportSettings, type HostReactiveProperties, type IElementWithFileLoadController, type IElementWithGroupAnalysisSyncController, type IElementWithGroupController, type IElementWithGroupListingController, type IElementWithGroupLoadController, type IElementWithManagerController, type IElementWithRegistryController, type ManagerPaletteContextType, type PngExportSettings, i18webcomponents as i18nWebcomponents, icons, t };
 //# sourceMappingURL=index.export.d.mts.map

@@ -1,7 +1,7 @@
 import {name, version} from "../package.json";
 
 import { AatAppElement } from "./apps/AustralianApparentTemperature";
-import { DropinAppElement } from "./apps/ThermalDropinApp";
+import { ThermalDropinAppElement } from "./apps/ThermalDropinApp";
 import { ThermalFileAppElement } from "./apps/ThermalFileApp";
 import { ThermalGroupAppElement } from "./apps/ThermalGroupApp";
 import { ThermalSlottedAppElement } from "./apps/ThermalSlottedApp";
@@ -63,7 +63,7 @@ import { FileThumbnailElement } from "./renderers/FileThumbnail";
 import { ThermalAppElement } from "./ui/App";
 import { ThermalBarElement } from "./ui/Bar";
 import { ThermalBtnElement } from "./ui/Btn";
-import { BtnGroupElement } from "./ui/BtnGroup";
+import { ThermalBtnGroupElement } from "./ui/BtnGroup";
 import { ThermalDialogElement } from "./ui/Dialog";
 import { ThermalDropdownElement } from "./ui/Dropdown";
 import { ThermalDropinElement } from "./ui/Dropin";
@@ -84,7 +84,7 @@ export const elementsUi = {
     "thermal-app": ThermalAppElement,
     "thermal-bar": ThermalBarElement,
     "thermal-btn": ThermalBtnElement,
-    "thermal-btn-group": BtnGroupElement,
+    "thermal-btn-group": ThermalBtnGroupElement,
     "thermal-dialog": ThermalDialogElement,
     "thermal-dropdown": ThermalDropdownElement,
     "thermal-dropin": ThermalDropinElement,
@@ -188,7 +188,7 @@ const elementsFileControls = {
 
 const elementsApplications = {
     "apparent-temperature-aat": AatAppElement,
-    "thermal-dropin-app": DropinAppElement,
+    "thermal-dropin-app": ThermalDropinAppElement,
     "thermal-file-app": ThermalFileAppElement,
     "thermal-group-app": ThermalGroupAppElement,
     "thermal-simple-app": ThermalSlottedAppElement
