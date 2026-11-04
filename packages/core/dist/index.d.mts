@@ -1,5 +1,4 @@
 import Pool from "workerpool/types/Pool";
-//#region src/properties/callbacksManager.d.ts
 /**
  * Manage callbacks on optional property values. All callbacks are registered with a unique key. This class extends the built-in `Map` class.
  *
@@ -12,11 +11,7 @@ export declare class CallbacksManager<CallbackType extends (...args: any[]) => a
   /** Trigger all registered callbacks wuth the provided value(s) */
   call(...args: Parameters<CallbackType>): void;
 }
-//#endregion
-//#region src/utils/pool.d.ts
 export declare const getPool: () => Promise<Pool>;
-//#endregion
-//#region src/parsers/structure.d.ts
 /** Timing of one frame in file order. All time values are in milliseconds. */
 type ParsedTimelineFrame = {
   /** Zero-based frame index, also used by `IParserObject.getFrameSubset`. */
@@ -307,8 +302,6 @@ interface IParserObject {
    */
   ellipsisAnalysisData(file: ArrayBuffer, x: number, y: number, width: number, height: number): Promise<AreaAnalysisData>;
 }
-//#endregion
-//#region src/filters/AbstractFilter.d.ts
 type AbstractFilterParameters = {
   key: number;
   text: string;
@@ -323,16 +316,12 @@ declare abstract class AbstractFilter<T extends AbstractFilterParameters = Abstr
   protected abstract getParameters(): T;
   abstract apply(buffer: ArrayBuffer): Promise<ArrayBuffer>;
 }
-//#endregion
-//#region src/base/BaseStructureObject.d.ts
 declare abstract class BaseStructureObject {
   abstract getInstances(): ThermalFileInstance[];
   abstract destroySelfAndBelow(): void;
   abstract removeAllChildren(): void;
   abstract reset(): void;
 }
-//#endregion
-//#region src/loading/workers/AbstractFileResult.d.ts
 /** Both `ThermalFileReader` and `ThermalFileFailure` share common attributes since they are both results of `FilesService.loadFile()` */
 export declare abstract class AbstractFileResult {
   readonly thermalUrl: string;
@@ -340,8 +329,6 @@ export declare abstract class AbstractFileResult {
   constructor(thermalUrl: string, visibleUrl?: string | undefined);
   abstract isSuccess(): boolean;
 }
-//#endregion
-//#region src/loading/workers/dropin/DropinElementManager.d.ts
 /** Turn any element into a dropzone! */
 export declare class DropinElementListener {
   readonly service: FilesService;
@@ -385,8 +372,6 @@ export declare class DropinElementListener {
   protected getInput(): HTMLInputElement;
   openFileDialog(multiple?: boolean): void;
 }
-//#endregion
-//#region src/loading/workers/FileRequest.d.ts
 /**
  * Internal member of `FilesService`
  * - `FileService` members may listen to resolving of this object
@@ -421,8 +406,6 @@ declare class FileRequest {
    */
   protected pocessTheService(result: AbstractFileResult): AbstractFileResult;
 }
-//#endregion
-//#region src/loading/workers/FilesService.d.ts
 /**
  * A singleton instance handling file loading
  */
@@ -460,8 +443,6 @@ declare class FilesService {
     callback?: (result: AbstractFileResult) => Promise<void>;
   }[]): Promise<AbstractFileResult[]>;
 }
-//#endregion
-//#region src/properties/scale/palettes.d.ts
 /** Definition of a palette containing its name, gradient and pixels value. */
 type ThermalPaletteType = {
   /** Actial pixels that shall be ised for drawings of thermograms. */
@@ -537,8 +518,6 @@ declare const PALETTES: {
 type AvailableThermalPalette = keyof typeof PALETTES;
 /** Palette definitions available in `@labirthermal/core`. */
 export declare const ThermalPalettes: Record<AvailableThermalPalette, ThermalPaletteType>;
-//#endregion
-//#region src/properties/scale/PaletteDrive.d.ts
 declare class PaletteDrive extends AbstractProperty<AvailableThermalPalette, ThermalManager> {
   private get availablePalettes();
   /** All the current palette properties should be accessed through this property. */
@@ -551,8 +530,6 @@ declare class PaletteDrive extends AbstractProperty<AvailableThermalPalette, The
   /** Takes any string input and converts it to a valid AvailableThermalPalettes key */
   sanitizeInputKey(input: string | null | undefined): AvailableThermalPalette;
 }
-//#endregion
-//#region src/loading/workers/errors.d.ts
 /** Codes of errors */
 declare enum FileErrors {
   NOT_SPECIFIED = 0,
@@ -567,8 +544,6 @@ declare class FileLoadingError extends Error {
   readonly url: string;
   constructor(code: FileErrors, url: string, message?: string);
 }
-//#endregion
-//#region src/loading/workers/ThermalFileFailure.d.ts
 export declare class ThermalFileFailure extends AbstractFileResult {
   readonly code: FileErrors;
   readonly message: string;
@@ -576,8 +551,6 @@ export declare class ThermalFileFailure extends AbstractFileResult {
   isSuccess(): boolean;
   static fromError(error: FileLoadingError): ThermalFileFailure;
 }
-//#endregion
-//#region src/loading/batch/BatchLoader.d.ts
 /**
  * Handle batch loading of thermal files.
  *
@@ -621,16 +594,12 @@ declare class BatchLoader {
    */
   batchFinished(batch: Batch): void;
 }
-//#endregion
-//#region src/loading/ThermalRequest.d.ts
 /** File URLs and an optional instance label for the registry's full-load methods. */
 type ThermalFileRequest = {
   thermalUrl: string;
   visibleUrl?: string;
   label?: string;
 };
-//#endregion
-//#region src/properties/display/OpacityDrive.d.ts
 declare class OpacityDrive extends AbstractProperty<number, ThermalRegistry> {
   /** Make sure the value is allways between 0 and 1 */
   protected validate(value: number): number;
@@ -641,8 +610,6 @@ declare class OpacityDrive extends AbstractProperty<number, ThermalRegistry> {
   /** Impose an opacity to all instances */
   imposeOpacity(value: number): number;
 }
-//#endregion
-//#region src/properties/lists/GroupsState.d.ts
 /** Handles group creation and removal */
 declare class GroupsState extends AbstractProperty<ThermalGroup[], ThermalRegistry> {
   protected _map: Map<string, ThermalGroup>;
@@ -656,8 +623,6 @@ declare class GroupsState extends AbstractProperty<ThermalGroup[], ThermalRegist
   forEveryGroup(callback: (group: ThermalGroup) => void): void;
   forEveryInstance(callback: (instance: ThermalFileInstance) => void): void;
 }
-//#endregion
-//#region src/properties/scale/abstractMinmaxProperty.d.ts
 interface ThermalMinmaxType {
   min: number;
   max: number;
@@ -670,8 +635,6 @@ declare abstract class AbstractMinmaxProperty<Target extends ThermalRegistry | T
   /** Get the current distance between min and max */
   get distanceInCelsius(): undefined | number;
 }
-//#endregion
-//#region src/properties/scale/MinmaxRegistryState.d.ts
 /** The current minmax values aggregated from all groups. The value is always in Celsius. */
 declare class MinmaxRegistryProperty extends AbstractMinmaxProperty<ThermalRegistry> {
   protected validate(value: ThermalMinmaxOrUndefined): ThermalMinmaxOrUndefined;
@@ -679,8 +642,6 @@ declare class MinmaxRegistryProperty extends AbstractMinmaxProperty<ThermalRegis
   recalculateFromGroups(): ThermalMinmaxOrUndefined;
   protected _getMinmaxFromAllGroups(groups: ThermalGroup[]): ThermalMinmaxOrUndefined;
 }
-//#endregion
-//#region src/properties/scale/RangeDriver.d.ts
 /** The range should allways contain both properties. The internal value is always in Celsius. */
 type ThermalRangeType = {
   from: number;
@@ -718,8 +679,6 @@ declare class RangeDriver extends AbstractProperty<ThermalRangeOrUndefined, Ther
   /** Recalculate the internal automatic value based on the current histogram. The internal value is always in Celsius. */
   recalculateAutoValue(): ThermalRangeOrUndefined;
 }
-//#endregion
-//#region src/loading/workers/ThermalFileReader.d.ts
 /**
  * Stores the file's `ArrayBuffer` and provides all the data for instance
  * - this service is registered in FilesService
@@ -761,8 +720,6 @@ export declare class ThermalFileReader extends AbstractFileResult {
   isSuccess(): boolean;
   /** @todo This method relies on the functionality of filters. */
   protected copyBuffer(buffer: ArrayBuffer): ArrayBuffer;
-  /** Create copy of the self so that the instance refers to its own ThermalFileReader */
-  protected cloneForInstance(): ThermalFileReader;
   /** Read the fundamental data of the file. If this method had been called before, return the cached result. */
   baseInfo(): ReturnType<IParserObject["baseInfo"]>;
   /** Decide whether a job reading the given buffer is worth offloading to the worker pool. */
@@ -825,8 +782,6 @@ export declare class ThermalFileReader extends AbstractFileResult {
   applyFilters(filters: AbstractFilter[]): Promise<ThermalFileReader>;
   createInstance(group: ThermalGroup, doAdd?: boolean): Promise<ThermalFileInstance>;
 }
-//#endregion
-//#region src/properties/states/HistogramState.d.ts
 /**
  * Handles the histogram creation and subscription.
  * - should be used only in registries
@@ -870,16 +825,12 @@ declare class HistogramState extends AbstractProperty<ThermalStatistics[], Therm
    */
   protected calculateHistogram(readers: ThermalFileReader[]): Promise<ThermalStatistics[]>;
 }
-//#endregion
-//#region src/properties/states/LoadingState.d.ts
 declare class LoadingState extends AbstractProperty<boolean, ThermalRegistry> {
   protected validate(value: boolean): boolean;
   protected afterSetEffect(): void;
   markAsLoading(): void;
   markAsLoaded(): void;
 }
-//#endregion
-//#region src/hierarchy/ThermalRegistry.d.ts
 type ThermalRegistryOptions = {
   histogramResolution?: number;
 };
@@ -962,8 +913,6 @@ type ThermalStatistics = {
   count: number;
   height: number;
 };
-//#endregion
-//#region src/loading/batch/Batch.d.ts
 /**
  * A single batch object
  *
@@ -1017,8 +966,6 @@ export declare class Batch {
    */
   private execute;
 }
-//#endregion
-//#region src/properties/analysis/group/AnalysisGroupGraph.d.ts
 type ThermalGroupGraphData = [string[], ...[Date, ...number[]][]];
 type ThermalGraphDefinition = {
   data: ThermalGroupGraphData;
@@ -1035,8 +982,6 @@ declare class AnalysisGroupGraph extends AbstractProperty<ThermalGraphGroupDataO
   protected validate(value: ThermalGraphGroupDataOrUndefined): ThermalGraphGroupDataOrUndefined;
   protected afterSetEffect(): void;
 }
-//#endregion
-//#region src/properties/analysis/slots/AnalysisSlotsDrive.d.ts
 type AnalysisSlotsMap = Map<number, AnalysisSlot>;
 /** Say the slot number. True = next free. False = no slot at all */
 type SlotInitialisationValue = number | true | false;
@@ -1125,8 +1070,6 @@ declare class AnalysisSlotsState extends AbstractProperty<AnalysisSlotsMap, Ther
    */
   forEveryExistingSlot(fn: (slot: AnalysisSlot, num: number) => void): void;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/AbstractPoint.d.ts
 declare enum PointPlacement {
   START = 1,
   MIDDLE = 2,
@@ -1227,8 +1170,6 @@ declare abstract class AbstractPoint {
   activate(): void;
   deactivate(): void;
 }
-//#endregion
-//#region src/properties/analysis/tool/internals/AbstractTool.d.ts
 interface ITool {
   key: string;
   name: string;
@@ -1263,8 +1204,6 @@ export declare abstract class AbstractTool {
   protected get unit(): UnitDrive;
   protected getFormattedTemperature(x: number, y: number, file: ThermalFileInstance): string;
 }
-//#endregion
-//#region src/properties/analysis/tool/ToolDrive.d.ts
 /** The tool type merging Abstract class and the interface */
 type ThermalTool = AbstractTool & ITool & {
   key: string;
@@ -1284,8 +1223,6 @@ declare class ToolDrive extends AbstractProperty<ThermalTool, ThermalManager> {
   /** Pick a tool. Its activation is handled by the `afterSetEffect` */
   selectTool(tool: ThermalTool | keyof ToolDrive["tools"]): void;
 }
-//#endregion
-//#region src/properties/analysis/analysis/storage/AnalysisPointsAccessor.d.ts
 /** Access list of points from analysis layers */
 declare class AnalysisPointsAccessor {
   readonly drive: AnalysisDrive;
@@ -1299,8 +1236,6 @@ declare class AnalysisPointsAccessor {
   /** Extract points from all provided layers */
   protected extractPointsFromLayers(layers: AbstractAnalysis[], activeOnly?: boolean): AbstractPoint[];
 }
-//#endregion
-//#region src/properties/analysis/analysis/AnalysisDrive.d.ts
 declare class AnalysisDrive extends AbstractProperty<AbstractAnalysis[], ThermalFileInstance> {
   readonly layers: AnalysisLayersStorage;
   readonly points: AnalysisPointsAccessor;
@@ -1329,8 +1264,6 @@ declare class AnalysisDrive extends AbstractProperty<AbstractAnalysis[], Thermal
   /** Remove all listeners from the file's listener layer */
   deactivateListeners(): void;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/AbstractArea.d.ts
 declare abstract class AbstractArea {
   readonly analysis: AbstractAnalysis;
   private pxX;
@@ -1361,8 +1294,6 @@ declare abstract class AbstractArea {
   setColor(value: string): void;
   abstract onSetColor(value: string): void;
 }
-//#endregion
-//#region src/properties/analysis/data/graphs/AnalysisGraph.d.ts
 type GraphDataTypes = PointAnalysisData | AreaAnalysisData;
 export declare class AnalysisGraph {
   readonly analysis: AbstractAnalysis;
@@ -1430,8 +1361,6 @@ export declare class AnalysisGraph {
   hasDataToPrint(): boolean;
   getDtaAtTime(timestamp: number): number[];
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/AbstractHandlePoint.d.ts
 declare abstract class AbstractHandlePoint extends AbstractPoint {
   analysis: AbstractAreaAnalysis;
   constructor(key: string, top: number, left: number, analysis: AbstractAreaAnalysis, color: string, placementX: PointPlacement, placementY: PointPlacement);
@@ -1439,8 +1368,6 @@ declare abstract class AbstractHandlePoint extends AbstractPoint {
   actionOnMouseEnter(): void;
   actionOnMouseLeave(): void;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/CornerPoint.d.ts
 declare class CornerPoint extends AbstractHandlePoint {
   protected _pairX: CornerPoint;
   protected _pairY: CornerPoint;
@@ -1472,14 +1399,10 @@ declare class CornerPoint extends AbstractHandlePoint {
   protected actionOnActivate(): void;
   protected actionOnDeactivate(): void;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/rectangle/RectangleArea.d.ts
 declare class RectangleArea extends AbstractArea {
   onBuild(): void;
   onSetColor(value: string): void;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/AbstractAreaAnalysis.d.ts
 export declare abstract class AbstractAreaAnalysis extends AbstractAnalysis {
   points: Map<string, CornerPoint>;
   protected readonly wPx: string;
@@ -1527,8 +1450,6 @@ export declare abstract class AbstractAreaAnalysis extends AbstractAnalysis {
   recievedSerialized(input: string): void;
   toSerialized(): string;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/ellipsis/EllipsisAnalysis.d.ts
 export declare class EllipsisAnalysis extends AbstractAreaAnalysis {
   getType(): string;
   static startAddingAtPoint(key: string, color: string, file: ThermalFileInstance, top: number, left: number): EllipsisAnalysis;
@@ -1537,8 +1458,6 @@ export declare class EllipsisAnalysis extends AbstractAreaAnalysis {
   isWithin(x: number, y: number): boolean;
   getAnalysisData(): Promise<AreaAnalysisData>;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/point/PointPoint.d.ts
 declare class PointPoint extends AbstractPoint {
   static size: number;
   static sizePx(aspect?: number): string;
@@ -1570,8 +1489,6 @@ declare class PointPoint extends AbstractPoint {
   getRadius(): number;
   protected setBoxShadow(color?: string | undefined): void;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/point/PointAnalysis.d.ts
 export declare class PointAnalysis extends AbstractAnalysis {
   getType(): string;
   readonly center: PointPoint;
@@ -1601,8 +1518,6 @@ export declare class PointAnalysis extends AbstractAnalysis {
   recievedSerialized(input: string): void;
   toSerialized(): string;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/rectangle/RectangleAnalysis.d.ts
 export declare class RectangleAnalysis extends AbstractAreaAnalysis {
   getType(): string;
   static startAddingAtPoint(key: string, color: string, file: ThermalFileInstance, top: number, left: number): RectangleAnalysis;
@@ -1610,8 +1525,6 @@ export declare class RectangleAnalysis extends AbstractAreaAnalysis {
   protected buildArea(x: number, y: number, width?: number, height?: number): AbstractArea;
   getAnalysisData(): Promise<AreaAnalysisData>;
 }
-//#endregion
-//#region src/properties/analysis/analysis/storage/AnalysisSerializableChangeType.d.ts
 /** What kind of change occured with the given analysis? */
 declare enum AnalysisSerializableChangeType {
   /** The analysis was added */
@@ -1625,8 +1538,6 @@ declare enum AnalysisSerializableChangeType {
   /** Graph visibility changes */
   GRAPH = 4
 }
-//#endregion
-//#region src/properties/analysis/analysis/storage/AnalysisLayersStorage.d.ts
 type AnalysisAddedCallback = (analysis: AbstractAnalysis, layers: AbstractAnalysis[]) => void;
 type AnalysisRemovedCallback = (key: string) => void;
 type SelectionChangeEvent = (selectedAnalysis: AbstractAnalysis[]) => void;
@@ -1712,8 +1623,6 @@ declare class AnalysisLayersStorage extends Map<string, AbstractAnalysis> {
   /** Get name for the next analysis. The number is the lowest one not occupied by an existing analysis of the same type. */
   private getNextName;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/AbstractAnalysis.d.ts
 type AnalysisEvent = (analysis: AbstractAnalysis) => void;
 export declare abstract class AbstractAnalysis {
   readonly key: string;
@@ -1878,8 +1787,6 @@ export declare abstract class AbstractAnalysis {
   /** Override this method to get proper analysis data. */
   abstract getAnalysisData(): Promise<PointAnalysisData | AreaAnalysisData>;
 }
-//#endregion
-//#region src/properties/analysis/slots/AnalysisSlot.d.ts
 /**
  * Analysis slot takes care of serialisation
  *
@@ -1912,8 +1819,6 @@ declare class AnalysisSlot {
   /** Call global and particular callbacks */
   protected propagateSerialisationUp(value: string | undefined): void;
 }
-//#endregion
-//#region src/properties/analysis/sync/utils/GroupExportCSV.d.ts
 type ExportHeaderEntryType = {
   key: string;
   displayLabel: string;
@@ -1939,8 +1844,6 @@ declare class GroupExportCSV {
   };
   downloadAsCsv(): void;
 }
-//#endregion
-//#region src/utils/AbstractPngExport.d.ts
 type AbstractExportProps = {
   fileName?: string;
   width?: number;
@@ -2022,8 +1925,6 @@ declare abstract class AbstractPngExport<O extends AbstractExportProps, M extend
     to: number;
   }): HTMLDivElement;
 }
-//#endregion
-//#region src/properties/analysis/sync/utils/GroupExportPNG.d.ts
 type GroupExportPNGParams = AbstractExportProps & {
   columns?: number;
   showGroupName?: boolean;
@@ -2059,8 +1960,6 @@ declare class GroupExportPNG extends AbstractPngExport<GroupExportPNGParams, Gro
    */
   protected getFinalParams(params?: GroupExportPNGParams): GroupExportPNGParamsMandatory;
 }
-//#endregion
-//#region src/properties/analysis/sync/analysisSync.d.ts
 declare class AnalysisSyncDrive extends AbstractProperty<boolean, ThermalGroup> {
   static readonly LISTENER_KEY = "__analysis__sync";
   /** Event that is triggered every time a slot is synchronised & serialised */
@@ -2135,8 +2034,6 @@ declare class AnalysisSyncDrive extends AbstractProperty<boolean, ThermalGroup> 
    */
   copyAllSlotsToAllInstances(instance: ThermalFileInstance): void;
 }
-//#endregion
-//#region src/properties/cursor/CursorPositionDrive.d.ts
 /** The cursor position coordinates */
 type ThermalCursorPosition = {
   x: number;
@@ -2152,8 +2049,6 @@ declare class CursorPositionDrive extends AbstractProperty<ThermalCursorPosition
   protected afterSetEffect(value: ThermalCursorPositionOrUndefined): void;
   recieveCursorPosition(position: ThermalCursorPositionOrUndefined): void;
 }
-//#endregion
-//#region src/properties/lists/filesState.d.ts
 declare class FilesState extends AbstractProperty<ThermalFileInstance[], ThermalGroup> {
   protected _map: Map<string, ThermalFileInstance>;
   get map(): Map<string, ThermalFileInstance>;
@@ -2177,8 +2072,6 @@ declare class FilesState extends AbstractProperty<ThermalFileInstance[], Thermal
   downloadAllFiles(): void;
   batchCreateInstances(readers: ThermalFileReader[], doReplaceExisting?: boolean): Promise<void>;
 }
-//#endregion
-//#region src/properties/scale/MinmaxGroupProperty.d.ts
 /** The min and max values of the current group. The value is always in Celsius. */
 declare class MinmaxGroupProperty extends AbstractMinmaxProperty<ThermalGroup> {
   protected validate(value: ThermalMinmaxOrUndefined): ThermalMinmaxOrUndefined;
@@ -2187,8 +2080,6 @@ declare class MinmaxGroupProperty extends AbstractMinmaxProperty<ThermalGroup> {
   recalculateFromInstances(): ThermalMinmaxOrUndefined;
   protected _getMinmaxFromInstances(): ThermalMinmaxOrUndefined;
 }
-//#endregion
-//#region src/properties/time/group/GroupPlayback.d.ts
 /**
  * Control coordinated playback of files within a group.
  *
@@ -2256,8 +2147,6 @@ declare class GroupPlayback extends AbstractProperty<number, ThermalGroup> {
    */
   reset(): void;
 }
-//#endregion
-//#region src/hierarchy/ThermalGroup.d.ts
 /**
  * Group of thermal images
  */
@@ -2290,16 +2179,12 @@ export declare class ThermalGroup extends BaseStructureObject {
   getInstances(): ThermalFileInstance[];
   startBatch(id: string): Batch;
 }
-//#endregion
-//#region src/properties/cursor/CursorValueDrive.d.ts
 declare class CursorValueDrive extends AbstractProperty<number | undefined, ThermalFileInstance> {
   protected validate(value: number | undefined): number | undefined;
   protected afterSetEffect(): void;
   recalculateFromCursor(position: ThermalCursorPositionOrUndefined): void;
   protected _getValueAtCoordinate(x: number | undefined, y: number | undefined): number | undefined;
 }
-//#endregion
-//#region src/properties/time/playback/internals/FrameBuffer.d.ts
 declare class FrameBuffer {
   protected readonly drive: TimelineDrive;
   /** @internal use accessors to get and set with side effects */
@@ -2333,8 +2218,6 @@ declare class FrameBuffer {
   /** Preload frame data to the buffer based on the provided step */
   protected preloadAfterFrameSet(step: ParsedTimelineFrame): Promise<TimelineChangedStatusType>;
 }
-//#endregion
-//#region src/properties/time/playback/TimelineDrive.d.ts
 type FramesMap = Map<number, ParsedTimelineFrame>;
 type TimelineChangedStatusType = {
   absoluteTime: number;
@@ -2416,8 +2299,6 @@ declare class TimelineDrive extends AbstractProperty<number, ThermalFileInstance
   pause(): void;
   stop(): void;
 }
-//#endregion
-//#region src/properties/time/recording/RecordingDrive.d.ts
 declare class RecordingDrive extends AbstractProperty<boolean, ThermalFileInstance> {
   parent: ThermalFileInstance;
   protected stream?: MediaStream;
@@ -2449,8 +2330,6 @@ declare class RecordingDrive extends AbstractProperty<boolean, ThermalFileInstan
   protected download(): void;
   protected clearRecording(): void;
 }
-//#endregion
-//#region src/file/dom/layers/AbstractLayer.d.ts
 declare abstract class AbstractLayer {
   readonly dom: InstanceDOM;
   get instance(): AbstractThermalFile;
@@ -2463,8 +2342,6 @@ declare abstract class AbstractLayer {
   destroy(): void;
   protected abstract onDestroy(): void;
 }
-//#endregion
-//#region src/file/dom/layers/thermalCanvasLayer.d.ts
 /** Displays the canvas and renders it */
 declare class ThermalCanvasLayer extends AbstractLayer {
   private container;
@@ -2476,8 +2353,6 @@ declare class ThermalCanvasLayer extends AbstractLayer {
   getLayerRoot(): HTMLElement;
   protected onDestroy(): void;
 }
-//#endregion
-//#region src/file/dom/layers/thermalCursorLayer.d.ts
 /** Displays the cursor pointer and its value */
 declare class ThermalCursorLayer extends AbstractLayer {
   protected layerRoot: HTMLDivElement;
@@ -2501,8 +2376,6 @@ declare class ThermalCursorLayer extends AbstractLayer {
   getLayerRoot(): HTMLDivElement;
   protected onDestroy(): void;
 }
-//#endregion
-//#region src/file/dom/layers/thermalListenerLayer.d.ts
 /** Listens for the mouse events. Needs to be placed on top. */
 declare class ThermalListenerLayer extends AbstractLayer {
   protected container: HTMLDivElement;
@@ -2510,8 +2383,6 @@ declare class ThermalListenerLayer extends AbstractLayer {
   getLayerRoot(): HTMLElement;
   protected onDestroy(): void;
 }
-//#endregion
-//#region src/file/dom/layers/VisibleLayer.d.ts
 /** Contains the visible image. Needs to be placed on the bottom. */
 declare class VisibleLayer extends AbstractLayer {
   _url?: string | undefined;
@@ -2524,8 +2395,6 @@ declare class VisibleLayer extends AbstractLayer {
   getLayerRoot(): HTMLElement;
   protected onDestroy(): void;
 }
-//#endregion
-//#region src/file/dom/InstanceDom.d.ts
 declare class InstanceDOM {
   readonly parent: AbstractThermalFile;
   readonly root: HTMLDivElement;
@@ -2566,8 +2435,6 @@ declare class InstanceDOM {
   /** Deactivate all listeners */
   dehydrate(): void;
 }
-//#endregion
-//#region src/file/render/AbstractRenderer.d.ts
 declare abstract class AbstractRenderer {
   protected readonly file: AbstractThermalFile;
   /** Canvas musí být vytvořený před inicializací rendereru */
@@ -2598,8 +2465,6 @@ declare abstract class AbstractRenderer {
   /** Funkce volaná při zničení canvasu */
   abstract destroy(): Promise<void>;
 }
-//#endregion
-//#region src/file/utils/FileMeta.d.ts
 /**
  * The file metadata = Parsed file base info.
  *
@@ -2618,8 +2483,6 @@ declare class FileMeta {
   constructor(baseInfo: ParsedFileBaseInfo);
   set(value: ParsedFileBaseInfo): void;
 }
-//#endregion
-//#region src/file/AbstractThermalFile.d.ts
 /**
  * Displayable object for every file type.
  *
@@ -2721,7 +2584,9 @@ declare abstract class AbstractThermalFile extends BaseStructureObject {
   abstract hydrateListener(dom: InstanceDOM): void;
   abstract dehydrateListener(dom: InstanceDOM): void;
   private rendererFactory;
-  mountToDom(container: HTMLDivElement): void;
+  mountToDom(container: HTMLDivElement,
+  /** Optionally disable renderer initialization for the purpose of tests */
+  initialiseRenderer?: boolean): void;
   unmountFromDom(): void;
   /**
    * @todo The render needs to be a little delayed. This should be foxed so that the render happens immediately.
@@ -2735,8 +2600,6 @@ declare abstract class AbstractThermalFile extends BaseStructureObject {
   getColorAtPoint(x: number, y: number): string | undefined;
   reset(): void;
 }
-//#endregion
-//#region src/filters/FilterContainer.d.ts
 type FilterParent = ThermalManager | ThermalRegistry | ThermalGroup | AbstractThermalFile;
 declare class FilterContainer {
   readonly parent: FilterParent;
@@ -2751,8 +2614,6 @@ declare class FilterContainer {
   applyFilters(): void;
   getFiltersArray(): void;
 }
-//#endregion
-//#region src/properties/analysis/data/graphs/AnalysisGraphsStorage.d.ts
 declare class AnalysisGraphsStorage {
   readonly drive: AnalysisDataState;
   readonly listenerKey = "___listen-to-graphs___";
@@ -2779,8 +2640,6 @@ declare class AnalysisGraphsStorage {
     }[];
   };
 }
-//#endregion
-//#region src/properties/analysis/data/AnalysisDataState.d.ts
 type HeaderRow = string[];
 type ValueRow = [Date, ...number[]];
 type DataType = [HeaderRow, ...ValueRow[]];
@@ -2802,8 +2661,6 @@ declare class AnalysisDataState extends AbstractProperty<AnalysisDataStateValue,
   /** Refresh the values of all analyses for the current frame from their graph data. No calculation is performed. */
   refreshAllAnalysesValues(): void;
 }
-//#endregion
-//#region src/file/utils/FilePngExport.d.ts
 type FileExportPngParams = AbstractExportProps;
 type FileExportPngParamsMandatory = AbstractExportTypeMandatory;
 declare class FilePngExport extends AbstractPngExport<FileExportPngParams, FileExportPngParamsMandatory> {
@@ -2817,8 +2674,6 @@ declare class FilePngExport extends AbstractPngExport<FileExportPngParams, FileE
   protected getFinalParams(params?: AbstractExportProps | undefined): FileExportPngParamsMandatory;
   protected onDownload(params: AbstractExportTypeMandatory): Promise<void>;
 }
-//#endregion
-//#region src/file/ThermalFileInstance.d.ts
 /**
  * An instance of the loaded file
  *
@@ -2854,8 +2709,6 @@ export declare class ThermalFileInstance extends AbstractThermalFile {
   getAllApplicableFilters(): AbstractFilter[];
   applyAllAvailableFilters(): Promise<void>;
 }
-//#endregion
-//#region src/properties/scale/units.d.ts
 /**
  * Available keys of thermal units. Used by {@link thermalUnits} and by {@link UnitDrive}.
  * @module `@labirthermal/core`
@@ -2891,8 +2744,6 @@ type ThermalUnitDefinition = {
  * @module `@labirthermal/core`
  */
 export declare const thermalUnits: Record<ThermalUnit, ThermalUnitDefinition>;
-//#endregion
-//#region src/properties/abstractProperty.d.ts
 /** All available property data types */
 type PropertyListenersTypes = boolean | number | string | ThermalRangeOrUndefined | ThermalMinmaxOrUndefined | ThermalCursorPositionOrUndefined | ThermalGroup[] | ThermalRegistry[] | ThermalStatistics[] | ThermalFileInstance[] | AbstractAnalysis[] | AbstractTool | AnalysisDataStateValue | AnalysisSlotsMap | ThermalGraphGroupDataOrUndefined | ThermalUnit;
 type PropertyListenerFn<T extends PropertyListenersTypes> = (value: T) => void;
@@ -2951,8 +2802,6 @@ declare abstract class AbstractProperty<ValueType extends PropertyListenersTypes
    */
   protected callAllListenersWithCurrentValue(): void;
 }
-//#endregion
-//#region src/properties/scale/UnitDrive.d.ts
 /**
  * Controls the thermal unit selection and conversion for the entire `ThermalManager` context. Internal states such as minmax and range are still kept in Celsius. But the GUI and exports will convert their values to the currently selected thermal unit. For this purpose, this class has all the necessary conversion methods.
  * @module `@labirthermal/core`
@@ -3013,24 +2862,18 @@ export declare class UnitDrive extends AbstractProperty<ThermalUnit, ThermalMana
    */
   getUnits(): Readonly<Record<ThermalUnit, ThermalUnitDefinition>>;
 }
-//#endregion
-//#region src/properties/display/GraphSmoothDrive.d.ts
 /** Controls image smoothing */
 declare class GraphSmoothDrive extends AbstractProperty<boolean, ThermalManager> {
   protected validate(value: boolean): boolean;
   protected afterSetEffect(): void;
   setGraphSmooth(value: boolean): void;
 }
-//#endregion
-//#region src/properties/display/SmoothDrive.d.ts
 /** Controls image smoothing */
 declare class SmoothDrive extends AbstractProperty<boolean, ThermalManager> {
   protected validate(value: boolean): boolean;
   protected afterSetEffect(value: boolean): void;
   setSmooth(value: boolean): void;
 }
-//#endregion
-//#region src/properties/lists/RegistriesState.d.ts
 declare class RegistriesState extends AbstractProperty<ThermalRegistry[], ThermalManager> {
   private map;
   protected validate(value: ThermalRegistry[]): ThermalRegistry[];
@@ -3042,8 +2885,6 @@ declare class RegistriesState extends AbstractProperty<ThermalRegistry[], Therma
   forEveryGroup(callback: (group: ThermalGroup) => void): void;
   forEveryInstance(callback: (instance: ThermalFileInstance) => void): void;
 }
-//#endregion
-//#region src/hierarchy/ThermalManager.d.ts
 type ThermalManagerOptions = {
   /** Optionaly set the initial palette value */
   palette?: AvailableThermalPalette;
@@ -3070,8 +2911,6 @@ export declare class ThermalManager extends BaseStructureObject {
   removeAllChildren(): void;
   reset(): void;
 }
-//#endregion
-//#region src/parsers/index.d.ts
 /**
  * Array of all supported file types and extensions
  * - this is only for the purpose of display!
@@ -3080,21 +2919,11 @@ export declare class ThermalManager extends BaseStructureObject {
  */
 export declare const supportedFileTypes: IParserObject["extensions"][];
 export declare const supportedFileTypesInputProperty: string;
-//#endregion
-//#region src/properties/analysis/analysis/storage/availableAnalysisColors.d.ts
 export declare const availableAnalysisColors: string[];
-//#endregion
-//#region src/properties/analysis/analysis/storage/SlotNumber.d.ts
 type SlotNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-//#endregion
-//#region src/properties/analysis/analysis/storage/SlotUnion.d.ts
 type SlotUnion = "analysis1" | "analysis2" | "analysis3" | "analysis4" | "analysis5" | "analysis6" | "analysis7";
-//#endregion
-//#region src/properties/analysis/analysis/internals/AbstractAddTool.d.ts
 /** Tool for analysis addition */
 export declare abstract class AbstractAddTool extends AbstractTool {}
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/ellipsis/AddEllipsisTool.d.ts
 export declare class AddEllipsisTool extends AbstractAddTool implements ITool {
   readonly key: string;
   readonly name: string;
@@ -3111,8 +2940,6 @@ export declare class AddEllipsisTool extends AbstractAddTool implements ITool {
   onPointEnter(): void;
   getLabelValue: (x: number, y: number, file: ThermalFileInstance) => string;
 }
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/rectangle/AddRectangleTool.d.ts
 export declare class AddRectangleTool extends AbstractAddTool implements ITool {
   readonly key: string;
   readonly name: string;
@@ -3129,8 +2956,6 @@ export declare class AddRectangleTool extends AbstractAddTool implements ITool {
   onPointEnter(): void;
   getLabelValue: (x: number, y: number, file: ThermalFileInstance) => string;
 }
-//#endregion
-//#region src/properties/analysis/tool/internals/EditTool.d.ts
 export declare class EditTool extends AbstractTool implements ITool {
   readonly key = "edit";
   readonly name = "editanalysis";
@@ -3147,8 +2972,6 @@ export declare class EditTool extends AbstractTool implements ITool {
   onPointUp(point: AbstractPoint): void;
   getLabelValue(x: number, y: number, file: ThermalFileInstance): string;
 }
-//#endregion
-//#region src/properties/analysis/tool/internals/InspectTool.d.ts
 export declare class InspectTool extends AbstractTool implements ITool {
   readonly key = "inspect";
   readonly name: string;
@@ -3165,15 +2988,11 @@ export declare class InspectTool extends AbstractTool implements ITool {
   onPointUp(): void;
   getLabelValue: (x: number, y: number, file: ThermalFileInstance) => string;
 }
-//#endregion
-//#region src/utils/time/base.d.ts
 type AcceptableDateInput = number | Date;
 declare abstract class TimeUtilsBase {
   /** Convert an input to a date object */
   static inputToDate: (value: AcceptableDateInput) => Date;
 }
-//#endregion
-//#region src/utils/time/formatting.d.ts
 /** Utility class for time formatting in the LabIR ecosystem. */
 export declare class TimeFormat extends TimeUtilsBase {
   /** YYYY-MM-DD */
@@ -3192,8 +3011,6 @@ export declare class TimeFormat extends TimeUtilsBase {
   static humanRangeDates(from: AcceptableDateInput, to: AcceptableDateInput): string;
   static human(date: AcceptableDateInput): string;
 }
-//#endregion
-//#region src/utils/time/periods.d.ts
 /** Defined time periods used in the LabIR ecosystem. */
 export declare enum TimePeriod {
   HOUR = "jednu hodinu",
@@ -3202,8 +3019,6 @@ export declare enum TimePeriod {
   MONTH = "jeden měsíc",
   YEAR = "jeden rok"
 }
-//#endregion
-//#region src/utils/time/rounding.d.ts
 /** Utility class for time rounding in the LabIR ecosystem. */
 export declare class TimeRound extends TimeUtilsBase {
   static down: (value: AcceptableDateInput, roundTo: TimePeriod) => Date;
@@ -3211,6 +3026,5 @@ export declare class TimeRound extends TimeUtilsBase {
   static pick: (value: AcceptableDateInput, period: TimePeriod) => Date[];
   static modify: (value: AcceptableDateInput, amount: number, period: TimePeriod) => Date;
 }
-//#endregion
 export type { AnalysisDataStateValue, AvailableThermalPalette, IParserObject, ParsedTimelineFrame, PlaybackSpeeds, SlotNumber, SlotUnion, ThermalCursorPositionOrUndefined, ThermalManagerOptions, ThermalMinmaxOrUndefined, ThermalPaletteType, ThermalRangeOrUndefined, ThermalRegistryOptions, ThermalTool, ThermalUnitDefinition };
 //# sourceMappingURL=index.d.mts.map

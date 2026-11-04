@@ -3,10 +3,9 @@ import { download, generateCsv, mkConfig } from "export-to-csv";
 import { addDays, addHours, addMonths, addYears, endOfDay, endOfHour, endOfMonth, endOfWeek, endOfYear, format, formatISO9075, startOfDay, startOfHour, startOfMonth, startOfWeek, startOfYear } from "date-fns";
 import domtoimage from "dom-to-image";
 import { downloadZip } from "client-zip";
-//#region package.json
-var version = "2.0.1";
-//#endregion
-//#region src/properties/callbacksManager.ts
+// package.json
+var version = "2.0.2";
+// src/properties/callbacksManager.ts
 /**
 * Manage callbacks on optional property values. All callbacks are registered with a unique key. This class extends the built-in `Map` class.
 * 
@@ -27,15 +26,13 @@ var CallbacksManager = class extends Map {
 		this.forEach((fn) => fn(...args));
 	}
 };
-//#endregion
-//#region src/utils/pool.ts
+// src/utils/pool.ts
 let pool = void 0;
 const getPool = async () => {
 	if (!pool) pool = workerpool.pool({ maxWorkers: 6 });
 	return pool;
 };
-//#endregion
-//#region src/properties/abstractProperty.ts
+// src/properties/abstractProperty.ts
 /** 
 * A common basis for all observable properties.
 * 
@@ -109,8 +106,7 @@ var AbstractProperty = class {
 		this._listeners.call(this._value);
 	}
 };
-//#endregion
-//#region src/properties/scale/units.ts
+// src/properties/scale/units.ts
 /** 
 * Available keys of thermal units. Used by {@link thermalUnits} and by {@link UnitDrive}. 
 * @module `@labirthermal/core`
@@ -160,8 +156,7 @@ const thermalUnits = {
 		toKelvin: noConversion
 	}
 };
-//#endregion
-//#region src/properties/scale/UnitDrive.ts
+// src/properties/scale/UnitDrive.ts
 /** 
 * Controls the thermal unit selection and conversion for the entire `ThermalManager` context. Internal states such as minmax and range are still kept in Celsius. But the GUI and exports will convert their values to the currently selected thermal unit. For this purpose, this class has all the necessary conversion methods.
 * @module `@labirthermal/core`
@@ -252,11 +247,9 @@ var UnitDrive = class UnitDrive extends AbstractProperty {
 		return UnitDrive.UNITS;
 	}
 };
-//#endregion
-//#region src/base/BaseStructureObject.ts
+// src/base/BaseStructureObject.ts
 var BaseStructureObject = class {};
-//#endregion
-//#region src/filters/FilterContainer.ts
+// src/filters/FilterContainer.ts
 var FilterContainer = class {
 	parent;
 	_layers = [];
@@ -294,8 +287,7 @@ var FilterContainer = class {
 	}
 	getFiltersArray() {}
 };
-//#endregion
-//#region src/loading/workers/errors.ts
+// src/loading/workers/errors.ts
 /** The error that is thrown anytime something happens during the loading */
 var FileLoadingError = class extends Error {
 	code;
@@ -306,8 +298,7 @@ var FileLoadingError = class extends Error {
 		this.url = url;
 	}
 };
-//#endregion
-//#region src/parsers/lrc/jobs/baseInfo.ts
+// src/parsers/lrc/jobs/baseInfo.ts
 const baseInfo$1 = async (entireFileBuffer) => {
 	const view = new DataView(entireFileBuffer);
 	const width = view.getUint16(17, true);
@@ -406,8 +397,7 @@ const baseInfo$1 = async (entireFileBuffer) => {
 		averageReflectedKelvins: sums.reflectedKelvins / frames.length
 	};
 };
-//#endregion
-//#region src/parsers/lrc/jobs/getFrameSubset.ts
+// src/parsers/lrc/jobs/getFrameSubset.ts
 const getFrameSubset$1 = (entireFileBuffer, index) => {
 	const headerView = new DataView(entireFileBuffer.slice(0, 25));
 	const dataType = headerView.getUint8(15);
@@ -462,8 +452,7 @@ const frameData$1 = async (frameSubset, dataType) => {
 		pixels
 	};
 };
-//#endregion
-//#region src/parsers/lrc/jobs/pointAnalysisData.ts
+// src/parsers/lrc/jobs/pointAnalysisData.ts
 const pointAnalysisData$1 = async (entireFileBuffer, x, y) => {
 	const view = new DataView(entireFileBuffer);
 	const width = view.getUint16(17, true);
@@ -516,8 +505,7 @@ const pointAnalysisData$1 = async (entireFileBuffer, x, y) => {
 	}
 	return output;
 };
-//#endregion
-//#region src/parsers/lrc/jobs/rectAnalysisData.ts
+// src/parsers/lrc/jobs/rectAnalysisData.ts
 const rectAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) => {
 	const view = new DataView(entireFileBuffer);
 	const fileWidth = view.getUint16(17, true);
@@ -593,8 +581,7 @@ const rectAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) 
 	}
 	return output;
 };
-//#endregion
-//#region src/parsers/lrc/jobs/is.ts
+// src/parsers/lrc/jobs/is.ts
 /** Length of the LRC file header preceding the first frame. */
 const HEADER_BYTE_SIZE = 25;
 /**
@@ -606,8 +593,7 @@ const is$1 = (buffer) => {
 	const signature = new Uint8Array(buffer, 0, 4);
 	return signature[0] === 76 && signature[1] === 82 && signature[2] === 67 && signature[3] === 0;
 };
-//#endregion
-//#region src/parsers/lrc/jobs/ellipsisAnalysisData.ts
+// src/parsers/lrc/jobs/ellipsisAnalysisData.ts
 const ellipsisAnalysisData$1 = async (entireFileBuffer, left, top, _width, _height) => {
 	const view = new DataView(entireFileBuffer);
 	const fileWidth = view.getUint16(17, true);
@@ -690,8 +676,7 @@ const ellipsisAnalysisData$1 = async (entireFileBuffer, left, top, _width, _heig
 	}
 	return output;
 };
-//#endregion
-//#region src/parsers/lrc/jobs/histogramPixels.ts
+// src/parsers/lrc/jobs/histogramPixels.ts
 /**
 * All temperatures of all frames as one array.
 * **Must stay self-contained, it is executed in a worker.**
@@ -749,8 +734,7 @@ const LrcParser = Object.freeze({
 	rectAnalysisData: rectAnalysisData$1,
 	ellipsisAnalysisData: ellipsisAnalysisData$1
 });
-//#endregion
-//#region src/parsers/flir/jobs/analysisData.ts
+// src/parsers/flir/jobs/analysisData.ts
 const pointAnalysisData = async (workingBuffer, x, y) => {
 	const view = new DataView(workingBuffer);
 	const width = view.getUint16(10, true);
@@ -832,8 +816,7 @@ const ellipsisAnalysisData = async (workingBuffer, left, top, areaWidth, areaHei
 	};
 	return output;
 };
-//#endregion
-//#region src/parsers/flir/jobs/baseInfo.ts
+// src/parsers/flir/jobs/baseInfo.ts
 /**
 * Reads the working buffer header.
 * **Must stay self-contained, it is executed in a worker.**
@@ -862,8 +845,7 @@ const baseInfo = async (workingBuffer) => {
 		averageReflectedKelvins: view.getFloat32(44, true)
 	};
 };
-//#endregion
-//#region src/parsers/flir/jobs/frameData.ts
+// src/parsers/flir/jobs/frameData.ts
 /** A FLIR JPEG has one frame only, the subset is a copy of the working buffer. */
 const getFrameSubset = (workingBuffer) => {
 	return {
@@ -887,8 +869,7 @@ const frameData = async (frameSubset) => {
 		pixels: Array.from(new Float32Array(frameSubset, 64, width * height))
 	};
 };
-//#endregion
-//#region src/parsers/flir/jobs/histogram.ts
+// src/parsers/flir/jobs/histogram.ts
 /**
 * Copy of the temperatures for histogram calculation.
 * **Must stay self-contained, it is executed in a worker.**
@@ -899,8 +880,7 @@ const histogramPixels = async (workingBuffer) => {
 	const height = view.getUint16(12, true);
 	return new Float32Array(workingBuffer.slice(64, 64 + width * height * 4));
 };
-//#endregion
-//#region src/parsers/flir/decoder/FlirDecodingError.ts
+// src/parsers/flir/decoder/FlirDecodingError.ts
 /** Raised whenever a FLIR JPEG cannot be decoded into a valid temperature raster. */
 var FlirDecodingError = class extends Error {
 	constructor(message) {
@@ -911,8 +891,7 @@ var FlirDecodingError = class extends Error {
 const requireFlir = (condition, message) => {
 	if (!condition) throw new FlirDecodingError(message);
 };
-//#endregion
-//#region src/parsers/flir/decoder/jpeg.ts
+// src/parsers/flir/decoder/jpeg.ts
 const SOI = 216;
 const SOS = 218;
 const EOI = 217;
@@ -1006,12 +985,10 @@ const extractFlirContainer = (buffer) => {
 	}
 	return container;
 };
-//#endregion
-//#region src/parsers/flir/jobs/is.ts
+// src/parsers/flir/jobs/is.ts
 /** Detects radiometric FLIR JPEGs by content, regardless of the file extension. */
 const is = (buffer) => hasFlirSegment(buffer);
-//#endregion
-//#region src/parsers/flir/decoder/fff.ts
+// src/parsers/flir/decoder/fff.ts
 const DIRECTORY_OFFSET = 24;
 const DIRECTORY_COUNT = 28;
 const FFF_HEADER_SIZE = 64;
@@ -1068,8 +1045,7 @@ const detectRecordByteOrder = (data, recordName) => {
 	requireFlir(isLittleEndian || isBigEndian, `Unknown byte order of the FLIR ${recordName} record.`);
 	return isLittleEndian;
 };
-//#endregion
-//#region src/parsers/flir/decoder/cameraInfo.ts
+// src/parsers/flir/decoder/cameraInfo.ts
 const OFFSETS = {
 	emissivity: 32,
 	objectDistance: 36,
@@ -1128,8 +1104,7 @@ const readCameraInfo = (record) => {
 		timezoneOffset: view.getInt16(OFFSETS.dateTimeZone, littleEndian)
 	};
 };
-//#endregion
-//#region src/parsers/flir/decoder/radiometry.ts
+// src/parsers/flir/decoder/radiometry.ts
 /**
 * Convert detector counts into object temperatures in °C.
 *
@@ -1191,8 +1166,7 @@ const computeTemperatures = (counts, camera) => {
 		max
 	};
 };
-//#endregion
-//#region src/parsers/flir/decoder/rawData.ts
+// src/parsers/flir/decoder/rawData.ts
 const RAW_HEADER_SIZE = 32;
 const MAX_DIMENSION = 8192;
 const PNG_SIGNATURE = [
@@ -1347,8 +1321,7 @@ const decodeRawData = async (record) => {
 		counts
 	};
 };
-//#endregion
-//#region src/parsers/flir/decoder/workingBuffer.ts
+// src/parsers/flir/decoder/workingBuffer.ts
 /**
 * Layout of the decoded working buffer used by `FlirParser` jobs.
 *
@@ -1393,8 +1366,7 @@ const createWorkingBuffer = (width, height, encoding, camera, temperatures, orig
 	new Float32Array(buffer, L.HEADER_SIZE, width * height).set(temperatures.celsius);
 	return buffer;
 };
-//#endregion
-//#region src/parsers/flir/decoder/decodeFlirJpeg.ts
+// src/parsers/flir/decoder/decodeFlirJpeg.ts
 /**
 * Decode a radiometric FLIR JPEG into a temperature raster.
 * @throws FlirDecodingError
@@ -1425,8 +1397,7 @@ const prepareFlirWorkingBuffer = async (buffer) => {
 	const decoded = await decodeFlirJpeg(buffer);
 	return createWorkingBuffer(decoded.width, decoded.height, decoded.encoding, decoded.camera, decoded.temperatures, buffer.byteLength);
 };
-//#endregion
-//#region src/parsers/flir/jobs/prepare.ts
+// src/parsers/flir/jobs/prepare.ts
 /**
 * Decode the JPEG once into the working buffer used by all other jobs.
 * @throws FileLoadingError
@@ -1438,8 +1409,7 @@ const prepare = async (buffer, url) => {
 		throw new FileLoadingError(3, url, `Unable to read FLIR radiometric data from '${url}': ${error.message}`);
 	}
 };
-//#endregion
-//#region src/parsers/flir/FlirParser.ts
+// src/parsers/flir/FlirParser.ts
 const extensions = [{
 	extension: "jpg",
 	minme: "image/jpeg"
@@ -1513,8 +1483,7 @@ const parser = {
 	ellipsisAnalysisData
 };
 const FlirParser = Object.freeze(parser);
-//#endregion
-//#region src/parsers/index.ts
+// src/parsers/index.ts
 const parsersArray = Object.values({
 	LrcParser,
 	FlirParser
@@ -1560,8 +1529,7 @@ const determineAndPrepare = async (buffer, url) => {
 */
 const supportedFileTypes = parsersArray.map((parser) => parser.extensions);
 const supportedFileTypesInputProperty = supportedFileTypes.map((type) => type.map((entry) => entry.minme + ", ." + entry.extension).join(", ")).join(", ");
-//#endregion
-//#region src/loading/workers/dropin/DropinElementManager.ts
+// src/loading/workers/dropin/DropinElementManager.ts
 /** Turn any element into a dropzone! */
 var DropinElementListener = class DropinElementListener {
 	service;
@@ -1699,8 +1667,7 @@ var DropinElementListener = class DropinElementListener {
 		}
 	}
 };
-//#endregion
-//#region src/loading/workers/AbstractFileResult.ts
+// src/loading/workers/AbstractFileResult.ts
 /** Both `ThermalFileReader` and `ThermalFileFailure` share common attributes since they are both results of `FilesService.loadFile()` */
 var AbstractFileResult = class {
 	thermalUrl;
@@ -1710,8 +1677,7 @@ var AbstractFileResult = class {
 		this.visibleUrl = visibleUrl;
 	}
 };
-//#endregion
-//#region src/loading/workers/ThermalFileFailure.ts
+// src/loading/workers/ThermalFileFailure.ts
 var ThermalFileFailure = class ThermalFileFailure extends AbstractFileResult {
 	code;
 	message;
@@ -1727,8 +1693,7 @@ var ThermalFileFailure = class ThermalFileFailure extends AbstractFileResult {
 		return new ThermalFileFailure(error.url, error.code, error.message);
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/AbstractAnalysis.ts
+// src/properties/analysis/analysis/internals/AbstractAnalysis.ts
 var AbstractAnalysis = class AbstractAnalysis {
 	key;
 	file;
@@ -2096,8 +2061,7 @@ var AbstractAnalysis = class AbstractAnalysis {
 		};
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/AbstractPoint.ts
+// src/properties/analysis/analysis/internals/AbstractPoint.ts
 var AbstractPoint = class {
 	key;
 	analysis;
@@ -2298,8 +2262,7 @@ var AbstractPoint = class {
 		this.actionOnDeactivate();
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/point/PointPoint.ts
+// src/properties/analysis/analysis/internals/point/PointPoint.ts
 var PointPoint = class PointPoint extends AbstractPoint {
 	static size = 20;
 	static sizePx(aspect = 1) {
@@ -2424,8 +2387,7 @@ var PointPoint = class PointPoint extends AbstractPoint {
 		}
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/point/PointAnalysis.ts
+// src/properties/analysis/analysis/internals/point/PointAnalysis.ts
 var PointAnalysis = class PointAnalysis extends AbstractAnalysis {
 	getType() {
 		return "point";
@@ -2526,8 +2488,7 @@ var PointAnalysis = class PointAnalysis extends AbstractAnalysis {
 		return output.join(";");
 	}
 };
-//#endregion
-//#region src/properties/analysis/data/graphs/AnalysisGraph.ts
+// src/properties/analysis/data/graphs/AnalysisGraph.ts
 var AnalysisGraph = class {
 	analysis;
 	constructor(analysis) {
@@ -2693,8 +2654,7 @@ var AnalysisGraph = class {
 		return output;
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/AbstractHandlePoint.ts
+// src/properties/analysis/analysis/internals/area/AbstractHandlePoint.ts
 var AbstractHandlePoint = class extends AbstractPoint {
 	constructor(key, top, left, analysis, color, placementX, placementY) {
 		super(key, top, left, analysis, color, placementX, placementY);
@@ -2727,8 +2687,7 @@ var AbstractHandlePoint = class extends AbstractPoint {
 		}
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/CornerPoint.ts
+// src/properties/analysis/analysis/internals/area/CornerPoint.ts
 var CornerPoint = class extends AbstractHandlePoint {
 	_pairX;
 	_pairY;
@@ -2812,8 +2771,7 @@ var CornerPoint = class extends AbstractHandlePoint {
 		if (this.innerElement) this.setColor(this.isInSelectedLayer() ? this.initialColor : this.inactiveColor);
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/AbstractAreaAnalysis.ts
+// src/properties/analysis/analysis/internals/area/AbstractAreaAnalysis.ts
 var AbstractAreaAnalysis = class extends AbstractAnalysis {
 	wPx = (100 / this.file.width / 2).toString() + "%";
 	hPx = (100 / this.file.height / 2).toString() + "%";
@@ -3078,8 +3036,7 @@ var AbstractAreaAnalysis = class extends AbstractAnalysis {
 		return output.join(";");
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/AbstractArea.ts
+// src/properties/analysis/analysis/internals/area/AbstractArea.ts
 var AbstractArea = class {
 	analysis;
 	pxX;
@@ -3152,8 +3109,7 @@ var AbstractArea = class {
 		this.onSetColor(value);
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/ellipsis/EllipsisArea.ts
+// src/properties/analysis/analysis/internals/area/ellipsis/EllipsisArea.ts
 var EllipsisArea = class extends AbstractArea {
 	onBuild() {
 		this.element.style.borderWidth = "1px";
@@ -3165,8 +3121,7 @@ var EllipsisArea = class extends AbstractArea {
 		this.element.style.borderColor = value;
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/ellipsis/EllipsisAnalysis.ts
+// src/properties/analysis/analysis/internals/area/ellipsis/EllipsisAnalysis.ts
 var EllipsisAnalysis = class EllipsisAnalysis extends AbstractAreaAnalysis {
 	getType() {
 		return "ellipsis";
@@ -3197,8 +3152,7 @@ var EllipsisAnalysis = class EllipsisAnalysis extends AbstractAreaAnalysis {
 		return await this.file.reader.ellipsisAnalysisData(this.left, this.top, this.width, this.height);
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/rectangle/RectangleArea.ts
+// src/properties/analysis/analysis/internals/area/rectangle/RectangleArea.ts
 var RectangleArea = class extends AbstractArea {
 	onBuild() {
 		this.element.style.borderWidth = "1px";
@@ -3209,8 +3163,7 @@ var RectangleArea = class extends AbstractArea {
 		this.element.style.borderColor = value;
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/rectangle/RectangleAnalysis.ts
+// src/properties/analysis/analysis/internals/area/rectangle/RectangleAnalysis.ts
 var RectangleAnalysis = class RectangleAnalysis extends AbstractAreaAnalysis {
 	getType() {
 		return "rectangle";
@@ -3235,8 +3188,7 @@ var RectangleAnalysis = class RectangleAnalysis extends AbstractAreaAnalysis {
 		return await this.file.reader.rectAnalysisData(this.left, this.top, this.width, this.height);
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/storage/availableAnalysisColors.ts
+// src/properties/analysis/analysis/storage/availableAnalysisColors.ts
 const availableAnalysisColors = [
 	"Blue",
 	"Red",
@@ -3251,8 +3203,7 @@ const availableAnalysisColors = [
 	"SpringGreen",
 	"SkyBlue"
 ];
-//#endregion
-//#region src/properties/analysis/analysis/storage/AnalysisLayersStorage.ts
+// src/properties/analysis/analysis/storage/AnalysisLayersStorage.ts
 var AnalysisLayersStorage = class extends Map {
 	drive;
 	/** Array of all layers ordered from oldest to the newest */
@@ -3417,8 +3368,7 @@ var AnalysisLayersStorage = class extends Map {
 		return `${type} ${index}`;
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/storage/AnalysisPointsAccessor.ts
+// src/properties/analysis/analysis/storage/AnalysisPointsAccessor.ts
 /** Access list of points from analysis layers */
 var AnalysisPointsAccessor = class {
 	drive;
@@ -3445,8 +3395,7 @@ var AnalysisPointsAccessor = class {
 		}, []);
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/AnalysisDrive.ts
+// src/properties/analysis/analysis/AnalysisDrive.ts
 var AnalysisDrive = class extends AbstractProperty {
 	layers = new AnalysisLayersStorage(this);
 	points = new AnalysisPointsAccessor(this);
@@ -3527,8 +3476,7 @@ var AnalysisDrive = class extends AbstractProperty {
 		if (this.bindedPointerUpListener && this.listener) this.listener.removeEventListener("pointerup", this.bindedPointerUpListener);
 	}
 };
-//#endregion
-//#region src/properties/analysis/data/graphs/AnalysisGraphsStorage.ts
+// src/properties/analysis/data/graphs/AnalysisGraphsStorage.ts
 var AnalysisGraphsStorage = class {
 	drive;
 	listenerKey = "___listen-to-graphs___";
@@ -3660,8 +3608,7 @@ var AnalysisGraphsStorage = class {
 		};
 	}
 };
-//#endregion
-//#region src/properties/analysis/data/AnalysisDataState.ts
+// src/properties/analysis/data/AnalysisDataState.ts
 /** Stores the data of all analysis. Purpose: store data for the purpose of graph. The graph data format is constructed for Google Charts webcomponent. */
 var AnalysisDataState = class extends AbstractProperty {
 	_hasActiveGraphs = false;
@@ -3708,8 +3655,7 @@ var AnalysisDataState = class extends AbstractProperty {
 		this.parent.analysis.value.forEach((analysis) => analysis.recalculateValues());
 	}
 };
-//#endregion
-//#region src/properties/analysis/slots/AnalysisSlot.ts
+// src/properties/analysis/slots/AnalysisSlot.ts
 /** 
 * Analysis slot takes care of serialisation
 * 
@@ -3783,8 +3729,7 @@ var AnalysisSlot = class {
 		}
 	}
 };
-//#endregion
-//#region src/properties/analysis/slots/AnalysisSlotsDrive.ts
+// src/properties/analysis/slots/AnalysisSlotsDrive.ts
 /**
 * Create up to 7 slots for analysis of the image.
 * 
@@ -4008,8 +3953,7 @@ var AnalysisSlotsState = class AnalysisSlotsState extends AbstractProperty {
 		}
 	}
 };
-//#endregion
-//#region src/properties/cursor/CursorValueDrive.ts
+// src/properties/cursor/CursorValueDrive.ts
 var CursorValueDrive = class extends AbstractProperty {
 	validate(value) {
 		return value;
@@ -4024,8 +3968,7 @@ var CursorValueDrive = class extends AbstractProperty {
 		return this.parent.pixels[index];
 	}
 };
-//#endregion
-//#region src/properties/time/playback/internals/FrameBuffer.ts
+// src/properties/time/playback/internals/FrameBuffer.ts
 var FrameBuffer = class {
 	drive;
 	/** @internal use accessors to get and set with side effects */
@@ -4117,8 +4060,7 @@ var FrameBuffer = class {
 		};
 	}
 };
-//#endregion
-//#region src/properties/time/playback/TimelineDrive.ts
+// src/properties/time/playback/TimelineDrive.ts
 const playbackSpeed = {
 	1: 1,
 	.5: 2,
@@ -4339,8 +4281,7 @@ var TimelineDrive = class extends AbstractProperty {
 		this.callbacksStop.call();
 	}
 };
-//#endregion
-//#region src/properties/time/recording/RecordingDrive.ts
+// src/properties/time/recording/RecordingDrive.ts
 var RecordingDrive = class extends AbstractProperty {
 	stream;
 	recorder;
@@ -4480,8 +4421,7 @@ var RecordingDrive = class extends AbstractProperty {
 		this.mimeType = void 0;
 	}
 };
-//#endregion
-//#region src/file/dom/domFactories.ts
+// src/file/dom/domFactories.ts
 var ThermalDomFactory = class ThermalDomFactory {
 	static createCanvasContainer() {
 		const container = document.createElement("div");
@@ -4632,8 +4572,7 @@ var ThermalDomFactory = class ThermalDomFactory {
 		return axeLabel;
 	}
 };
-//#endregion
-//#region src/file/dom/layers/AbstractLayer.ts
+// src/file/dom/layers/AbstractLayer.ts
 var AbstractLayer = class {
 	dom;
 	get instance() {
@@ -4666,8 +4605,7 @@ var AbstractLayer = class {
 		this.onDestroy();
 	}
 };
-//#endregion
-//#region src/file/dom/layers/thermalCanvasLayer.ts
+// src/file/dom/layers/thermalCanvasLayer.ts
 /** Displays the canvas and renders it */
 var ThermalCanvasLayer = class extends AbstractLayer {
 	container;
@@ -4702,8 +4640,7 @@ var ThermalCanvasLayer = class extends AbstractLayer {
 		this.container.remove();
 	}
 };
-//#endregion
-//#region src/file/dom/layers/thermalCursorLayer.ts
+// src/file/dom/layers/thermalCursorLayer.ts
 /** Displays the cursor pointer and its value */
 var ThermalCursorLayer = class extends AbstractLayer {
 	layerRoot;
@@ -4801,8 +4738,7 @@ var ThermalCursorLayer = class extends AbstractLayer {
 		this.layerRoot.remove();
 	}
 };
-//#endregion
-//#region src/file/dom/layers/thermalListenerLayer.ts
+// src/file/dom/layers/thermalListenerLayer.ts
 /** Listens for the mouse events. Needs to be placed on top. */
 var ThermalListenerLayer = class extends AbstractLayer {
 	container;
@@ -4817,8 +4753,7 @@ var ThermalListenerLayer = class extends AbstractLayer {
 		this.container.remove();
 	}
 };
-//#endregion
-//#region src/file/dom/layers/VisibleLayer.ts
+// src/file/dom/layers/VisibleLayer.ts
 /** Contains the visible image. Needs to be placed on the bottom. */
 var VisibleLayer = class extends AbstractLayer {
 	_url;
@@ -4852,8 +4787,7 @@ var VisibleLayer = class extends AbstractLayer {
 		this.container.remove();
 	}
 };
-//#endregion
-//#region src/file/dom/InstanceDom.ts
+// src/file/dom/InstanceDom.ts
 var InstanceDOM = class InstanceDOM {
 	parent;
 	root;
@@ -5017,8 +4951,7 @@ var InstanceDOM = class InstanceDOM {
 		this.setHydrated(false);
 	}
 };
-//#endregion
-//#region src/file/render/AbstractRenderer.ts
+// src/file/render/AbstractRenderer.ts
 var AbstractRenderer = class {
 	file;
 	canvas;
@@ -5075,8 +5008,7 @@ var AbstractRenderer = class {
 		return await this.executeRender();
 	}
 };
-//#endregion
-//#region src/file/render/CpuRenderer.ts
+// src/file/render/CpuRenderer.ts
 var CpuRenderer = class extends AbstractRenderer {
 	get pool() {
 		return this.registry.pool;
@@ -5114,8 +5046,7 @@ var CpuRenderer = class extends AbstractRenderer {
 	}
 	async destroy() {}
 };
-//#endregion
-//#region src/file/render/GlRenderer.ts
+// src/file/render/GlRenderer.ts
 var GlRenderer = class GlRenderer extends AbstractRenderer {
 	context;
 	program;
@@ -5295,8 +5226,7 @@ var GlRenderer = class GlRenderer extends AbstractRenderer {
 		this.context.deleteTexture(this.paletteTexture);
 	}
 };
-//#endregion
-//#region src/file/utils/FileMeta.ts
+// src/file/utils/FileMeta.ts
 /**
 * The file metadata = Parsed file base info.
 * 
@@ -5329,8 +5259,7 @@ var FileMeta = class {
 		this.onChange.call(this.current);
 	}
 };
-//#endregion
-//#region src/file/AbstractThermalFile.ts
+// src/file/AbstractThermalFile.ts
 /** 
 * Displayable object for every file type.
 * 
@@ -5506,15 +5435,17 @@ var AbstractThermalFile = class extends BaseStructureObject {
 		}
 		return new CpuRenderer(this, canvas);
 	}
-	mountToDom(container) {
+	mountToDom(container, initialiseRenderer = true) {
 		if (this._dom !== void 0) {
 			this._dom.destroy();
 			this._dom = void 0;
 		}
 		this._dom = new InstanceDOM(this, container);
 		this._dom.build();
-		this.renderer = this.rendererFactory(this._dom.canvasLayer.canvas);
-		this.renderer.init();
+		if (initialiseRenderer) {
+			this.renderer = this.rendererFactory(this._dom.canvasLayer.canvas);
+			this.renderer.init();
+		}
 		this._dom.hydrate();
 	}
 	unmountFromDom() {
@@ -5557,8 +5488,7 @@ var AbstractThermalFile = class extends BaseStructureObject {
 	}
 	reset() {}
 };
-//#endregion
-//#region src/utils/AbstractPngExport.ts
+// src/utils/AbstractPngExport.ts
 var AbstractPngExport = class AbstractPngExport {
 	static FONT_SIZE_NORMAL = "16px";
 	static FONT_SIZE_SMALL = "12px";
@@ -5763,8 +5693,7 @@ var AbstractPngExport = class AbstractPngExport {
 		return box;
 	}
 };
-//#endregion
-//#region src/utils/time/base.ts
+// src/utils/time/base.ts
 var TimeUtilsBase = class {
 	/** Convert an input to a date object */
 	static inputToDate = (value) => {
@@ -5776,8 +5705,7 @@ var TimeUtilsBase = class {
 		return value;
 	};
 };
-//#endregion
-//#region src/utils/time/formatting.ts
+// src/utils/time/formatting.ts
 /** Utility class for time formatting in the LabIR ecosystem. */
 var TimeFormat = class TimeFormat extends TimeUtilsBase {
 	/** YYYY-MM-DD */
@@ -5827,8 +5755,7 @@ var TimeFormat = class TimeFormat extends TimeUtilsBase {
 		return `${TimeFormat.humanDate(date)} ${TimeFormat.humanTime(date, true)} `;
 	}
 };
-//#endregion
-//#region src/file/utils/FilePngExport.ts
+// src/file/utils/FilePngExport.ts
 var FilePngExport = class FilePngExport extends AbstractPngExport {
 	file;
 	static DEFAULT_PARAMS = {
@@ -5973,8 +5900,7 @@ var FilePngExport = class FilePngExport extends AbstractPngExport {
 		}
 	}
 };
-//#endregion
-//#region src/file/ThermalFileInstance.ts
+// src/file/ThermalFileInstance.ts
 /**
 * An instance of the loaded file
 * 
@@ -6107,8 +6033,7 @@ var ThermalFileInstance = class ThermalFileInstance extends AbstractThermalFile 
 		this.setPixels(frameData.pixels);
 	}
 };
-//#endregion
-//#region src/loading/workers/ThermalFileReader.ts
+// src/loading/workers/ThermalFileReader.ts
 /**
 * Stores the file's `ArrayBuffer` and provides all the data for instance
 * - this service is registered in FilesService
@@ -6174,11 +6099,6 @@ var ThermalFileReader = class ThermalFileReader extends AbstractFileResult {
 		const copiedArray = new Uint8Array(copiedBuffer);
 		copiedArray.set(new Uint8Array(buffer));
 		return copiedArray.buffer;
-	}
-	/** Create copy of the self so that the instance refers to its own ThermalFileReader */
-	cloneForInstance() {
-		/** @todo Until the filters are implemented properly, there is no need of copying the buffer.*/
-		return this;
 	}
 	/** Read the fundamental data of the file. If this method had been called before, return the cached result. */
 	async baseInfo() {
@@ -6289,16 +6209,14 @@ var ThermalFileReader = class ThermalFileReader extends AbstractFileResult {
 		return this;
 	}
 	async createInstance(group, doAdd = true) {
-		const reader = this.cloneForInstance();
-		const baseInfo = await reader.baseInfo();
-		const firstFrame = await reader.frameData(0);
-		const instance = ThermalFileInstance.fromService(group, reader, baseInfo, firstFrame);
+		const baseInfo = await this.baseInfo();
+		const firstFrame = await this.frameData(0);
+		const instance = ThermalFileInstance.fromService(group, this, baseInfo, firstFrame);
 		if (doAdd) group.files.addFile(instance);
 		return instance;
 	}
 };
-//#endregion
-//#region src/loading/workers/FileRequest.ts
+// src/loading/workers/FileRequest.ts
 /**
 * Internal member of `FilesService`
 * - `FileService` members may listen to resolving of this object
@@ -6355,8 +6273,7 @@ var FileRequest = class FileRequest {
 		return result;
 	}
 };
-//#endregion
-//#region src/loading/workers/FilesService.ts
+// src/loading/workers/FilesService.ts
 /**
 * A singleton instance handling file loading
 */
@@ -6432,8 +6349,7 @@ var FilesService = class {
 		}));
 	}
 };
-//#endregion
-//#region src/properties/display/GraphSmoothDrive.ts
+// src/properties/display/GraphSmoothDrive.ts
 /** Controls image smoothing */
 var GraphSmoothDrive = class extends AbstractProperty {
 	validate(value) {
@@ -6444,8 +6360,7 @@ var GraphSmoothDrive = class extends AbstractProperty {
 		this.value = value;
 	}
 };
-//#endregion
-//#region src/properties/scale/palettes.ts
+// src/properties/scale/palettes.ts
 const generatePaletteFromStops = (stops) => {
 	const palette = new Array(256);
 	const sortedStops = [...stops].sort((a, b) => a.percent - b.percent);
@@ -6930,8 +6845,7 @@ const ThermalPalettes = {
 		slug: "rainbow_hc"
 	}
 };
-//#endregion
-//#region src/properties/scale/PaletteDrive.ts
+// src/properties/scale/PaletteDrive.ts
 var PaletteDrive = class extends AbstractProperty {
 	get availablePalettes() {
 		return ThermalPalettes;
@@ -6961,8 +6875,7 @@ var PaletteDrive = class extends AbstractProperty {
 		else return "jet";
 	}
 };
-//#endregion
-//#region src/properties/display/SmoothDrive.ts
+// src/properties/display/SmoothDrive.ts
 /** Controls image smoothing */
 var SmoothDrive = class extends AbstractProperty {
 	validate(value) {
@@ -6979,8 +6892,7 @@ var SmoothDrive = class extends AbstractProperty {
 		this.value = value;
 	}
 };
-//#endregion
-//#region src/properties/analysis/tool/internals/AbstractTool.ts
+// src/properties/analysis/tool/internals/AbstractTool.ts
 var AbstractTool = class {
 	manager;
 	active = false;
@@ -7004,12 +6916,10 @@ var AbstractTool = class {
 		return this.unit.formatSingle(inCurrentUnit);
 	}
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/AbstractAddTool.ts
+// src/properties/analysis/analysis/internals/AbstractAddTool.ts
 /** Tool for analysis addition */
 var AbstractAddTool = class extends AbstractTool {};
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/ellipsis/AddEllipsisTool.ts
+// src/properties/analysis/analysis/internals/area/ellipsis/AddEllipsisTool.ts
 var AddEllipsisTool = class extends AbstractAddTool {
 	key = "add-ellipsis";
 	name = "addellipsisanalysis";
@@ -7055,8 +6965,7 @@ var AddEllipsisTool = class extends AbstractAddTool {
 		return `X:${x}<br />Y:${y}<br />${file.group.tool.tools.inspect.getLabelValue(x, y, file)}`;
 	};
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/area/rectangle/AddRectangleTool.ts
+// src/properties/analysis/analysis/internals/area/rectangle/AddRectangleTool.ts
 var AddRectangleTool = class extends AbstractAddTool {
 	key = "add-rect";
 	name = "addrectangleanalysis";
@@ -7102,8 +7011,7 @@ var AddRectangleTool = class extends AbstractAddTool {
 		return `X:${x}<br />Y:${y}<br />${this.getFormattedTemperature(x, y, file)}`;
 	};
 };
-//#endregion
-//#region src/properties/analysis/analysis/internals/point/AddPointTool.ts
+// src/properties/analysis/analysis/internals/point/AddPointTool.ts
 var AddPointTool = class extends AbstractAddTool {
 	key = "add-point";
 	name = "addpointanalysis";
@@ -7139,8 +7047,7 @@ var AddPointTool = class extends AbstractAddTool {
 		return `X:${x}<br />Y:${y}<br />${this.getFormattedTemperature(x, y, file)}`;
 	};
 };
-//#endregion
-//#region src/properties/analysis/tool/internals/EditTool.ts
+// src/properties/analysis/tool/internals/EditTool.ts
 var EditTool = class extends AbstractTool {
 	key = "edit";
 	name = "editanalysis";
@@ -7182,8 +7089,7 @@ var EditTool = class extends AbstractTool {
 		return `${hoveredAnalysis.length > 0 ? hoveredAnalysis.join("<br />") + "<br />" : ""}${this.getFormattedTemperature(x, y, file)}<br />X: ${x}<br />Y: ${y}`;
 	}
 };
-//#endregion
-//#region src/properties/analysis/tool/internals/InspectTool.ts
+// src/properties/analysis/tool/internals/InspectTool.ts
 var InspectTool = class extends AbstractTool {
 	key = "inspect";
 	name = "inspecttemperatures";
@@ -7211,8 +7117,7 @@ var InspectTool = class extends AbstractTool {
 		}
 	};
 };
-//#endregion
-//#region src/properties/analysis/tool/ToolDrive.ts
+// src/properties/analysis/tool/ToolDrive.ts
 const toolsRegistry = [
 	InspectTool,
 	AddPointTool,
@@ -7255,8 +7160,7 @@ var ToolDrive = class extends AbstractProperty {
 		else this.value = this.tools[tool];
 	}
 };
-//#endregion
-//#region src/loading/batch/Batch.ts
+// src/loading/batch/Batch.ts
 /**
 * A single batch object
 * 
@@ -7375,8 +7279,7 @@ var Batch = class Batch {
 		}
 	}
 };
-//#endregion
-//#region src/loading/batch/BatchLoader.ts
+// src/loading/batch/BatchLoader.ts
 /**
 * Handle batch loading of thermal files.
 * 
@@ -7449,8 +7352,7 @@ var BatchLoader = class {
 		if (this.numberOfBatches === 0) this.registry.loading.markAsLoaded();
 	}
 };
-//#endregion
-//#region src/properties/display/OpacityDrive.ts
+// src/properties/display/OpacityDrive.ts
 var OpacityDrive = class extends AbstractProperty {
 	/** Make sure the value is allways between 0 and 1 */
 	validate(value) {
@@ -7470,8 +7372,7 @@ var OpacityDrive = class extends AbstractProperty {
 		return this.value;
 	}
 };
-//#endregion
-//#region src/properties/analysis/group/AnalysisGroupGraph.ts
+// src/properties/analysis/group/AnalysisGroupGraph.ts
 var AnalysisGroupGraph = class AnalysisGroupGraph extends AbstractProperty {
 	static LISTENER_ID = "AnalysisGroupGraph";
 	constructor(parent) {
@@ -7521,8 +7422,7 @@ var AnalysisGroupGraph = class AnalysisGroupGraph extends AbstractProperty {
 	}
 	afterSetEffect() {}
 };
-//#endregion
-//#region src/properties/analysis/sync/utils/GroupExportCSV.ts
+// src/properties/analysis/sync/utils/GroupExportCSV.ts
 var GroupExportCSV = class {
 	drive;
 	constructor(drive) {
@@ -7635,8 +7535,7 @@ var GroupExportCSV = class {
 		download(csvConfig)(csv);
 	}
 };
-//#endregion
-//#region src/properties/analysis/sync/utils/GroupExportPNG.ts
+// src/properties/analysis/sync/utils/GroupExportPNG.ts
 var GroupExportPNG = class GroupExportPNG extends AbstractPngExport {
 	drive;
 	static DEFAULT_PROPS = {
@@ -7826,8 +7725,7 @@ var GroupExportPNG = class GroupExportPNG extends AbstractPngExport {
 		};
 	}
 };
-//#endregion
-//#region src/properties/analysis/sync/analysisSync.ts
+// src/properties/analysis/sync/analysisSync.ts
 var AnalysisSyncDrive = class AnalysisSyncDrive extends AbstractProperty {
 	static LISTENER_KEY = "__analysis__sync";
 	/** Event that is triggered every time a slot is synchronised & serialised */
@@ -8055,8 +7953,7 @@ var AnalysisSyncDrive = class AnalysisSyncDrive extends AbstractProperty {
 		});
 	}
 };
-//#endregion
-//#region src/properties/cursor/CursorPositionDrive.ts
+// src/properties/cursor/CursorPositionDrive.ts
 /** Handles cursor position */
 var CursorPositionDrive = class extends AbstractProperty {
 	_hover = this.value !== void 0;
@@ -8074,8 +7971,7 @@ var CursorPositionDrive = class extends AbstractProperty {
 		this.value = position;
 	}
 };
-//#endregion
-//#region src/properties/lists/filesState.ts
+// src/properties/lists/filesState.ts
 var FilesState = class extends AbstractProperty {
 	_map = /* @__PURE__ */ new Map();
 	get map() {
@@ -8148,8 +8044,7 @@ var FilesState = class extends AbstractProperty {
 		} else this.value = [...this.value, ...instances];
 	}
 };
-//#endregion
-//#region src/properties/scale/abstractMinmaxProperty.ts
+// src/properties/scale/abstractMinmaxProperty.ts
 /** 
 * A common basis for all Minmax properties. The value is always in Celsius.
 */
@@ -8160,8 +8055,7 @@ var AbstractMinmaxProperty = class extends AbstractProperty {
 		return Math.abs(this.value.min - this.value.max);
 	}
 };
-//#endregion
-//#region src/properties/scale/MinmaxGroupProperty.ts
+// src/properties/scale/MinmaxGroupProperty.ts
 /** The min and max values of the current group. The value is always in Celsius. */
 var MinmaxGroupProperty = class extends AbstractMinmaxProperty {
 	validate(value) {
@@ -8188,8 +8082,7 @@ var MinmaxGroupProperty = class extends AbstractMinmaxProperty {
 		});
 	}
 };
-//#endregion
-//#region src/properties/time/group/GroupPlayback.ts
+// src/properties/time/group/GroupPlayback.ts
 /** 
 * Control coordinated playback of files within a group. 
 * 
@@ -8356,8 +8249,7 @@ var GroupPlayback = class extends AbstractProperty {
 		}
 	}
 };
-//#endregion
-//#region src/hierarchy/ThermalGroup.ts
+// src/hierarchy/ThermalGroup.ts
 /**
 * Group of thermal images
 */
@@ -8421,8 +8313,7 @@ var ThermalGroup = class extends BaseStructureObject {
 		return this.registry.batch.getBatchById(id);
 	}
 };
-//#endregion
-//#region src/properties/lists/GroupsState.ts
+// src/properties/lists/GroupsState.ts
 /** Handles group creation and removal */
 var GroupsState = class extends AbstractProperty {
 	_map = /* @__PURE__ */ new Map();
@@ -8464,8 +8355,7 @@ var GroupsState = class extends AbstractProperty {
 		this.value.forEach((group) => group.files.forEveryInstance(callback));
 	}
 };
-//#endregion
-//#region src/properties/scale/MinmaxRegistryState.ts
+// src/properties/scale/MinmaxRegistryState.ts
 /** The current minmax values aggregated from all groups. The value is always in Celsius. */
 var MinmaxRegistryProperty = class extends AbstractMinmaxProperty {
 	validate(value) {
@@ -8491,8 +8381,7 @@ var MinmaxRegistryProperty = class extends AbstractMinmaxProperty {
 		});
 	}
 };
-//#endregion
-//#region src/properties/scale/RangeDriver.ts
+// src/properties/scale/RangeDriver.ts
 /** Handles the thermal range display. Internal value is always stored in Celsius. */
 var RangeDriver = class extends AbstractProperty {
 	onAutoValueChanged = new CallbacksManager();
@@ -8568,8 +8457,7 @@ var RangeDriver = class extends AbstractProperty {
 		return this._autoValue;
 	}
 };
-//#endregion
-//#region src/parsers/histogramFromPixels.ts
+// src/parsers/histogramFromPixels.ts
 /**
 * Build a histogram over several pixel sets in one shared temperature range
 * and with shared bins, so that files of different formats are comparable.
@@ -8631,8 +8519,7 @@ const histogramFromPixels = async (pixelSets) => {
 		height: percentageDistance === 0 ? 100 : bar.percentage / percentageDistance * 100
 	}));
 };
-//#endregion
-//#region src/properties/states/HistogramResultCache.ts
+// src/properties/states/HistogramResultCache.ts
 const MAX_CACHE_ENTRIES = 64;
 const HISTOGRAM_ALGORITHM_VERSION = 1;
 const cloneHistogram = (histogram) => histogram.map((item) => ({ ...item }));
@@ -8692,8 +8579,7 @@ var HistogramResultCache = class {
 };
 /** Shared across all managers using this core module instance. */
 const histogramResultCache = new HistogramResultCache();
-//#endregion
-//#region src/properties/states/HistogramState.ts
+// src/properties/states/HistogramState.ts
 /** 
 * Handles the histogram creation and subscription.
 * - should be used only in registries
@@ -8777,8 +8663,7 @@ var HistogramState = class extends AbstractProperty {
 		return this.parent.pool.exec(histogramFromPixels, [pixelSets]);
 	}
 };
-//#endregion
-//#region src/properties/states/LoadingState.ts
+// src/properties/states/LoadingState.ts
 var LoadingState = class extends AbstractProperty {
 	validate(value) {
 		return value;
@@ -8791,8 +8676,7 @@ var LoadingState = class extends AbstractProperty {
 		if (this.value === true) this.value = false;
 	}
 };
-//#endregion
-//#region src/hierarchy/ThermalRegistry.ts
+// src/hierarchy/ThermalRegistry.ts
 /**
 * The global thermal registry
 * @todo implementing EventTarget
@@ -8958,8 +8842,7 @@ var ThermalRegistry = class extends BaseStructureObject {
 		return instances;
 	}
 };
-//#endregion
-//#region src/properties/lists/RegistriesState.ts
+// src/properties/lists/RegistriesState.ts
 var RegistriesState = class extends AbstractProperty {
 	map = /* @__PURE__ */ new Map();
 	validate(value) {
@@ -9002,8 +8885,7 @@ var RegistriesState = class extends AbstractProperty {
 		});
 	}
 };
-//#endregion
-//#region src/hierarchy/ThermalManager.ts
+// src/hierarchy/ThermalManager.ts
 const options = "chrome" in window ? { maxWorkers: 4 } : {};
 const globalPool = workerpool.pool(options);
 var ThermalManager = class extends BaseStructureObject {
@@ -9052,8 +8934,7 @@ var ThermalManager = class extends BaseStructureObject {
 		this.tool.reset();
 	}
 };
-//#endregion
-//#region src/utils/time/periods.ts
+// src/utils/time/periods.ts
 /** Defined time periods used in the LabIR ecosystem. */
 let TimePeriod = /* @__PURE__ */ function(TimePeriod) {
 	TimePeriod["HOUR"] = "jednu hodinu";
@@ -9063,8 +8944,7 @@ let TimePeriod = /* @__PURE__ */ function(TimePeriod) {
 	TimePeriod["YEAR"] = "jeden rok";
 	return TimePeriod;
 }({});
-//#endregion
-//#region src/utils/time/rounding.ts
+// src/utils/time/rounding.ts
 /** Utility class for time rounding in the LabIR ecosystem. */
 var TimeRound = class TimeRound extends TimeUtilsBase {
 	static down = (value, roundTo) => {
@@ -9094,10 +8974,8 @@ var TimeRound = class TimeRound extends TimeUtilsBase {
 		}
 	};
 };
-//#endregion
-//#region src/index.ts
+// src/index.ts
 console.info("@labirthermal/core", version);
-//#endregion
 export { AbstractAddTool, AbstractAnalysis, AbstractAreaAnalysis, AbstractFileResult, AbstractTool, AddEllipsisTool, AddRectangleTool, AnalysisGraph, Batch, CallbacksManager, DropinElementListener, EditTool, EllipsisAnalysis, InspectTool, PointAnalysis, RectangleAnalysis, ThermalFileFailure, ThermalFileInstance, ThermalFileReader, ThermalGroup, ThermalManager, ThermalPalettes, ThermalRegistry, ThermalUnit, TimeFormat, TimePeriod, TimeRound, UnitDrive, availableAnalysisColors, celsiusToFahrenheit, celsiusToKelvin, fahrenheitToCelsius, fahrenheitToKelvin, getPool, kelvinToCelsius, kelvinToFahrenheit, playbackSpeed, supportedFileTypes, supportedFileTypesInputProperty, thermalUnits };
 
 //# sourceMappingURL=index.mjs.map
