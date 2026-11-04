@@ -20,12 +20,10 @@ describe( "Analysis Sync", () => {
         ]);
 
 
-
-
         const instances = await Promise.all(request.map(async (item) => {
             const element = document.createElement("div");
             const instance = await item.createInstance(group);
-            instance.mountToDom(element);
+            instance.mountToDom(element, false);
             instance.dom?.hydrate();
             return instance;
         }));
@@ -51,83 +49,6 @@ describe( "Analysis Sync", () => {
         expect( instances[1].analysis.value.length ).toEqual(1);
         expect( instances[0].slots.getSlot(1)?.serialized ).toBeUndefined();
 
-
-
-
-
-
-
-
-        /*
-
-
-        const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-        describe("Analysis Sync", () => {
-
-            test("Synchronisation of analysis", async () => {
-
-                // Init fake timer in this test
-                vi.useFakeTimers();
-
-                const manager = new ThermalManager;
-                const registry = manager.registries.addOrGetRegistry("test");
-                const group = registry.groups.addOrGetGroup("test");
-
-                const request = await Promise.all([
-                    await registry.service.loadFile(THERMOGRAM_PATHS.SOUSTRUH) as ThermalFileReader,
-                    await registry.service.loadFile(THERMOGRAM_PATHS.TUCNACI) as ThermalFileReader
-                ]);
-
-                const instances = await Promise.all(request.map(async (item) => {
-                    const element = document.createElement("div");
-                    const instance = await item.createInstance(group);
-                    instance.mountToDom(element);
-                    return instance;
-                }));
-
-                expect(request.length).toEqual(2);
-                expect(instances.length).toEqual(2);
-                expect(group.files.value.length).toEqual(2);
-
-                // Analysis Sync should be off by default
-                expect(group.analysisSync.value).toEqual(false);
-
-                group.analysisSync.turnOn(instances[0]);
-
-                // Now it should be on
-                expect(group.analysisSync.value).toEqual(true);
-                expect(group.analysisSync.currentPointer).toEqual(instances[0]);
-
-                group.analysisSync.recieveSlotSerialized("Analýza A;rectangle;color:red;top:40;left:40;width:100;height:100;avg", 1);
-
-                console.log( instances[0].slots.getSlot(1) );
-
-                expect( instances[0].analysis.value.length ).toEqual(1);
-                expect( instances[1].analysis.value.length ).toEqual(1);
-                expect( instances[0].slots.getSlot(1)?.serialized ).toBeUndefined();
-
-                /*
-                instances.forEach(instance => {
-                    console.log(instance.slots.getSlot(1));
-                });
-
-                expect(instances[0].analysis.value.length).toEqual(1);
-
-                sleep(10);
-                vi.advanceTimersToNextTimer();
-
-                expect(
-                    instances[0].slots.value
-                ).toEqual(false);
-                
-            });
-            */
-
-            
-
-
-
     } );
 
 
@@ -144,7 +65,7 @@ describe( "Analysis Sync", () => {
         const instances = await Promise.all(request.map(async (item) => {
             const element = document.createElement("div");
             const instance = await item.createInstance(group);
-            instance.mountToDom(element);
+            instance.mountToDom(element, false);
             return instance;
         }));
 
@@ -168,7 +89,7 @@ describe( "Analysis Sync", () => {
         const instances = await Promise.all(request.map(async (item) => {
             const element = document.createElement("div");
             const instance = await item.createInstance(group);
-            instance.mountToDom(element);
+            instance.mountToDom(element, false);
             return instance;
         }));
 

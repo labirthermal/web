@@ -129,7 +129,7 @@ export abstract class AbstractThermalFile extends BaseStructureObject {
 
     public switchToCPURenderer(): void {
 
-        if ( this.renderer instanceof CpuRenderer ) {
+        if (this.renderer instanceof CpuRenderer) {
             return;
         }
 
@@ -139,7 +139,7 @@ export abstract class AbstractThermalFile extends BaseStructureObject {
 
         this.unmountFromDom();
 
-        this.mountToDom( container! );
+        this.mountToDom(container!);
 
         this.renderer = new CpuRenderer(this, this.dom!.canvasLayer!.canvas);
 
@@ -240,7 +240,7 @@ export abstract class AbstractThermalFile extends BaseStructureObject {
 
         // If WebGL is preferred, try to return the renderer
         if (this._preferWebGl === true) {
-            
+
             // Check if WebGL2 is available
             const gl = canvas.getContext('webgl2');
             if (gl) {
@@ -255,7 +255,11 @@ export abstract class AbstractThermalFile extends BaseStructureObject {
 
 
 
-    public mountToDom(container: HTMLDivElement): void {
+    public mountToDom(
+        container: HTMLDivElement,
+        /** Optionally disable renderer initialization for the purpose of tests */
+        initialiseRenderer: boolean = true
+    ): void {
 
         // Delete any existing DOM binding
         if (this._dom !== undefined) {
@@ -268,8 +272,10 @@ export abstract class AbstractThermalFile extends BaseStructureObject {
 
         this._dom.build();
 
-        this.renderer = this.rendererFactory(this._dom.canvasLayer!.canvas);
-        this.renderer.init();
+        if (initialiseRenderer) {
+            this.renderer = this.rendererFactory(this._dom.canvasLayer!.canvas);
+            this.renderer.init();
+        }
 
         this._dom.hydrate();
 

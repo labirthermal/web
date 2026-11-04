@@ -10,7 +10,7 @@ export const loadFileForTests = async ( url: THERMOGRAM_PATHS ) => {
         const file = await service.loadFile( url ) as ThermalFileReader;
         const instance = await file.createInstance( group );
         const element = document.createElement( "div" );
-        instance.mountToDom( element );
+        instance.mountToDom( element, false );
         instance.dom?.hydrate();
 
         instance.buildInternalProperties();

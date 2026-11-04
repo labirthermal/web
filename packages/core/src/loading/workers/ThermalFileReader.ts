@@ -96,24 +96,6 @@ export class ThermalFileReader extends AbstractFileResult {
         return copiedArray.buffer;
     }
 
-    /** Create copy of the self so that the instance refers to its own ThermalFileReader */
-    protected cloneForInstance(): ThermalFileReader {
-
-        /** @todo Until the filters are implemented properly, there is no need of copying the buffer.*/
-        return this;
-
-
-        return new ThermalFileReader( 
-            this.service,
-            this.buffer,
-            this.parser,
-            this.thermalUrl,
-            this.visibleUrl,
-            true,
-            this.sourceBuffer
-        );
-    }
-
 
     /** Read the fundamental data of the file. If this method had been called before, return the cached result. */
     public async baseInfo(): ReturnType<IParserObject["baseInfo"]> {
@@ -276,25 +258,12 @@ export class ThermalFileReader extends AbstractFileResult {
         doAdd: boolean = true
     ): Promise<ThermalFileInstance> {
 
-        // Create a new instance with copied buffer
-        const reader = this.cloneForInstance();
-
-        // Collect all filters above the instance
-        // const filters = [
-        //    ...group.registry.manager.filters.getActiveFilters(),
-        //    ...group.registry.filters.getActiveFilters(),
-        //    ...group.filters.getActiveFilters()
-        //];
-
-        // Apply the filters
-        // await reader.applyFilters( filters );
-
         // Collect the necessary information
-        const baseInfo = await reader.baseInfo();
-        const firstFrame = await reader.frameData( 0 );
+        const baseInfo = await this.baseInfo();
+        const firstFrame = await this.frameData( 0 );
 
         // Create the instance with the necessary information
-        const instance = ThermalFileInstance.fromService( group, reader, baseInfo, firstFrame );
+        const instance = ThermalFileInstance.fromService( group, this, baseInfo, firstFrame );
 
         // Register the instance to the group
         if (doAdd) {

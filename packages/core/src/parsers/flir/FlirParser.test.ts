@@ -8,6 +8,21 @@ import { LrcParser } from "../lrc/LrcParser";
 import { FileLoadingError } from "../../loading/workers/errors";
 import { FlirParser } from "./FlirParser";
 
+/**
+ * FLIR parser test strategy:
+ * - Use real radiometric JPEG fixtures and synthetic plain JPEGs to cover
+ *   content-based detection, parser selection and invalid-file errors.
+ * - Prepare each real fixture once, then compare metadata, decoded frame
+ *   pixels, point/area analyses and histogram data with independent flyr
+ *   references stored in the fixture reference file.
+ * - Check analysis boundary behavior and that reading histogram pixels does
+ *   not mutate the parser's working buffer.
+ * - Compare parser jobs on the main thread with workerpool results to verify
+ *   that the self-contained jobs behave consistently in both execution paths.
+ * - Keep LabIR application exports and the real file-upload flow in
+ *   FlirParser.reference.test.ts, separate from these parser-focused tests.
+ */
+
 /** Reference values are computed in double precision, the parser stores Float32 */
 const TOLERANCE = 0.01;
 const DIGITS = 2;
@@ -124,23 +139,6 @@ describe( "FlirParser", () => {
             expect( ( await FlirParser.pointAnalysisData( working, 0, 0 ) )[ 0 ] ).not.toBe( 9999 );
         } );
 
-    } );
-
-    test( "matches LabIR 1.6.2 analyses for flir_02.jpg", async () => {
-        const working = await getWorkingBuffer( "flir_02.jpg" );
-
-        const rectangle = ( await FlirParser.rectAnalysisData( working, 433, 289, 307, 234 ) )[ 0 ];
-        expect( rectangle.min ).toBeCloseTo( 23.8, 1 );
-        expect( rectangle.max ).toBeCloseTo( 32.6, 1 );
-        expect( rectangle.avg ).toBeCloseTo( 24.9, 1 );
-
-        const ellipse = ( await FlirParser.ellipsisAnalysisData( working, 443, 48, 337, 155 ) )[ 0 ];
-        expect( ellipse.min ).toBeCloseTo( 24.1, 1 );
-        expect( ellipse.max ).toBeCloseTo( 28.3, 1 );
-        expect( ellipse.avg ).toBeCloseTo( 24.5, 1 );
-
-        expect( ( await FlirParser.pointAnalysisData( working, 180, 262 ) )[ 0 ] ).toBeCloseTo( 24.8, 1 );
-        expect( ( await FlirParser.pointAnalysisData( working, 769, 495 ) )[ 0 ] ).toBeCloseTo( 29.7, 1 );
     } );
 
     test( "matches flyr wherever flyr can read the file", () => {

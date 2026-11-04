@@ -7,6 +7,17 @@ import { readFlirFixture } from '../../../devserver/node/flirFixtures';
 import { determineParser } from '../index';
 import { getPool } from '../../utils/pool';
 
+/**
+ * LRC parser test strategy:
+ * - Exercise the loading pipeline through FilesService and ThermalFileReader
+ *   for parser metadata, image/sequence metadata and frame reads.
+ * - Test content-based parser detection independently of file extensions.
+ * - Compare Float32 and Uint16 fixtures directly to verify equivalent scene
+ *   decoding within the expected Uint16 quantisation step.
+ * - Keep LabIR-export comparisons in LrcParser.reference.test.ts, where the
+ *   reference tables and real upload path are tested separately.
+ */
+
 describe("LrcParser", async () => {
 
     const pool = await getPool();

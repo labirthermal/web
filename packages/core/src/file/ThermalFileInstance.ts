@@ -130,8 +130,6 @@ export class ThermalFileInstance extends AbstractThermalFile {
 
     public buildInternalProperties() {
 
-
-
         this.cursorValue = new CursorValueDrive(this, undefined);
         this.timeline = new TimelineDrive(this, 0, this.meta.current.timeline, this.firstFrame);
         this.timeline.init();
