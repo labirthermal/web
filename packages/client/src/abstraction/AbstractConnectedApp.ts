@@ -16,7 +16,8 @@ import type { AppWithFileSelectionController} from "../controllers/FileSelection
 import { FileSelectionController } from "../controllers/FileSelectionController";
 import type { AppWithFolderSelectionController} from "../controllers/FolderSelectionController";
 import { FolderSelectionController } from "../controllers/FolderSelectionController";
-import { AbstractApp, booleanConverter, BtnVariants } from "@labirthermal/webcomponents";
+import type { BtnVariants } from "@labirthermal/webcomponents";
+import { AbstractApp, booleanConverter } from "@labirthermal/webcomponents";
 import { ApiClient } from "../client/ApiClient";
 import { ControlledClientContext, ControlledContentContext, DisplayControllerContext, FileSelectionControllerContext, FolderSelectionControllerContext } from "../controllers/controllersContexts";
 
