@@ -4,7 +4,7 @@ import { addDays, addHours, addMonths, addYears, endOfDay, endOfHour, endOfMonth
 import domtoimage from "dom-to-image";
 import { downloadZip } from "client-zip";
 // package.json
-var version = "2.0.2";
+var version = "2.0.3";
 // src/properties/callbacksManager.ts
 /**
 * Manage callbacks on optional property values. All callbacks are registered with a unique key. This class extends the built-in `Map` class.

@@ -3886,7 +3886,7 @@ window.i18next = instance;
 const i18webcomponents = instance;
 // package.json
 var name = "@labirthermal/webcomponents";
-var version$1 = "2.0.2";
+var version$1 = "2.0.3";
 window.matchMedia("(prefers-color-scheme: dark)");
 const DARK_MODE_CLASS = "thermal-dark-mode";
 // src/styles/defaultStyles.ts

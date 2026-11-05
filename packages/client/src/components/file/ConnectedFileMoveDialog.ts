@@ -4,8 +4,8 @@ import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
 import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
 import type { FileInfo } from "../../client/responseEntities";
-import type { ConnectedLocationSelector } from "../selection/move/ConnectedLocationSelector";
-import { LocationSelectorMode } from "../selection/move/ConnectedLocationSelector";
+import type { ConnectedLocationSelector } from "../selection/ConnectedLocationSelector";
+import { LocationSelectorMode } from "../selection/ConnectedLocationSelector";
 
 export class ConnectedFileMoveDialog extends AbstractControlledConsumer {
 

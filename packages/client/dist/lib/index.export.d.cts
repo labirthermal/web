@@ -2,13 +2,10 @@ import { AvailableThermalPalette, CallbacksManager, ThermalFileInstance, Thermal
 import { CSSResultGroup, PropertyValues, ReactiveController, TemplateResult } from "lit";
 import { AbstractApp, AbstractThermalElement, BtnSizes, BtnVariants, FileProviderElement, RegistryController } from "@labirthermal/webcomponents";
 import { Ref } from "lit/directives/ref.js";
-//#region src/controllers/AbstractConnectedController.d.ts
 declare abstract class AbstractConnectedController {
   host: AppWithClientController;
   protected log(...args: any[]): void;
 }
-//#endregion
-//#region src/client/responseEntities.d.ts
 /**
  * @package `@labirthermal/client`
  */
@@ -192,8 +189,6 @@ type TagUpdateObject = {
     color?: string;
   };
 };
-//#endregion
-//#region src/client/authentication/Auth.d.ts
 declare class Auth {
   protected readonly client: ApiClient;
   protected identity?: Identity;
@@ -210,8 +205,6 @@ declare class Auth {
   private toBase64;
   private manualBase64Encode;
 }
-//#endregion
-//#region src/client/request/RequestFactory.d.ts
 type AvailableMethod = "GET" | "POST";
 /**
  * An universal factory of requests to LabIR servers.
@@ -264,8 +257,6 @@ declare class RequestFactory {
   createRequest(): Request | false;
   getAction(): string | undefined;
 }
-//#endregion
-//#region src/client/routes/ResponseTypes.d.ts
 type ApiResponseDataType = object;
 /**
  * The response of LabIR server to any request.
@@ -291,8 +282,6 @@ type ApiResponseType<R extends ApiResponseDataType = ApiResponseDataType> = {
   success: false;
   data: undefined;
 });
-//#endregion
-//#region src/client/routes/Operation.d.ts
 /**
  * A base class for all routes. It is intentionally concieved very universally, because it might happen that one operation would consist of several subsequent requests.
  * @package `@labirthermal/client`
@@ -306,8 +295,6 @@ declare abstract class Operation<R extends ApiResponseDataType> {
   /** Perform the operation and all its requests. */
   abstract execute(): Promise<ApiResponseType<R>>;
 }
-//#endregion
-//#region src/client/routes/get/GetConnect.d.ts
 type GetConnectDataType = {
   identity: false | Identity;
   userFolders: FolderInfo[];
@@ -320,8 +307,6 @@ declare class GetConnect extends Operation<GetConnectDataType> {
   init(): this;
   execute(): Promise<ApiResponseType<GetConnectDataType>>;
 }
-//#endregion
-//#region src/client/routes/get/GetCurrentUserTree.d.ts
 type GetCurrentUserTreeDataType = {
   tree: TreeItem[];
 };
@@ -333,8 +318,6 @@ declare class GetCurrentUserTree extends Operation<GetCurrentUserTreeDataType> {
   init(): this;
   execute(): Promise<ApiResponseType<GetCurrentUserTreeDataType>>;
 }
-//#endregion
-//#region src/client/routes/OperationWithPath.d.ts
 /**
  * A base operation that needs to have a path specified.
  * @package `@labirthermal/client`
@@ -342,8 +325,6 @@ declare class GetCurrentUserTree extends Operation<GetCurrentUserTreeDataType> {
 declare abstract class OperationWithPath<R extends ApiResponseDataType> extends Operation<R> {
   setPath(path: string): this;
 }
-//#endregion
-//#region src/client/routes/get/GetInfo.d.ts
 type GetInfoDataType = {
   breadcrumb: BreadcrumbItem[];
   folder: FolderInfo;
@@ -362,8 +343,6 @@ declare class GetInto extends OperationWithPath<GetInfoDataType> {
   init(): this;
   execute(): Promise<ApiResponseType<GetInfoDataType>>;
 }
-//#endregion
-//#region src/client/routes/get/GetFile.d.ts
 type GetFileDataType = {
   file: FileInfo;
 };
@@ -376,8 +355,6 @@ declare class GetFile extends OperationWithPath<GetFileDataType> {
   setFileName(value: string): this;
   execute(): Promise<ApiResponseType<GetFileDataType>>;
 }
-//#endregion
-//#region src/client/routes/OperationWithPathAndFilters.d.ts
 /**
  * An operation containing filters based on time and tags. Needs to have path specified.
  * @package `@labirthermal/client`
@@ -394,8 +371,6 @@ declare abstract class OperationWithFilters<R extends ApiResponseDataType> exten
    */
   private applyTags;
 }
-//#endregion
-//#region src/client/routes/get/GetFiles.d.ts
 type GetFilesDataType = {
   folder: FolderInfo;
   subfolders: {
@@ -423,8 +398,6 @@ declare class GetFiles extends OperationWithFilters<GetFilesDataType> {
   init(): this;
   execute(): Promise<ApiResponseType<GetFilesDataType>>;
 }
-//#endregion
-//#region src/client/routes/get/GetGrid.d.ts
 type GetGridDataType = {
   folder: FolderInfo;
   all_subdirectories: {
@@ -486,8 +459,6 @@ declare class GetGrid extends OperationWithFilters<GetGridDataType> {
   protected applyFolders(): this;
   execute(): Promise<ApiResponseType<GetGridDataType>>;
 }
-//#endregion
-//#region src/client/routes/factories/GetRoutesFactory.d.ts
 /**
  * Factory for creating GET routes
  *
@@ -583,8 +554,6 @@ declare class GetRoutesFactory {
    */
   currentUserTree(): GetCurrentUserTree;
 }
-//#endregion
-//#region src/client/routes/post/CreateFolder.d.ts
 type CreateDataType = {
   result: {
     slug?: string;
@@ -623,8 +592,6 @@ declare class CreateFolder extends OperationWithPath<CreateDataType> {
   setMayHaveFiles(mayHaveFiles: boolean): this;
   execute(): Promise<ApiResponseType<CreateDataType>>;
 }
-//#endregion
-//#region src/client/routes/OperationWithFile.d.ts
 /**
  * A base operation that needs to have a path specified.
  * @package `@labirthermal/client`
@@ -632,8 +599,6 @@ declare class CreateFolder extends OperationWithPath<CreateDataType> {
 declare abstract class OperationWithFile<R extends ApiResponseDataType> extends OperationWithPath<R> {
   setFile(filename: string): this;
 }
-//#endregion
-//#region src/client/routes/post/DeleteFile.d.ts
 type DeleteFileDataType = object;
 /**
  * Post route for deleting a file on the server.
@@ -644,8 +609,6 @@ declare class DeleteFile extends OperationWithFile<DeleteFileDataType> {
   setLrc(file: File): this;
   execute(): Promise<ApiResponseType<DeleteFileDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/DeleteFolder.d.ts
 type DeleteFolderDataType = object;
 /**
  * Post route for deleting a folder on the server.
@@ -655,8 +618,6 @@ declare class DeleteFolder extends OperationWithPath<DeleteFolderDataType> {
   init(): this;
   execute(): Promise<ApiResponseType<DeleteFolderDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/FileAddComment.d.ts
 type FileAddCommentDataType = {
   file: FileInfo;
 };
@@ -674,8 +635,6 @@ declare class FileAddComment extends OperationWithFile<FileAddCommentDataType> {
   setMessage(message: string): this;
   execute(): Promise<ApiResponseType<FileAddCommentDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/FileClearComments.d.ts
 type FileClearCommentsDataType = {
   file: FileInfo;
 };
@@ -690,8 +649,6 @@ declare class FileClearComments extends OperationWithFile<FileClearCommentsDataT
    */
   execute(): Promise<ApiResponseType<FileClearCommentsDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/FileDeleteComment.d.ts
 type FileDeleteCommentDataType = {
   file: FileInfo;
 };
@@ -704,8 +661,6 @@ declare class FileDeleteComment extends OperationWithFile<FileDeleteCommentDataT
   setCommentTimestamp(timestamp: number): this;
   execute(): Promise<ApiResponseType<FileDeleteCommentDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/FileUpdateComment.d.ts
 type FileUpdateCommentDataType = {
   file: FileInfo;
 };
@@ -724,8 +679,6 @@ declare class FileUpdateComment extends OperationWithFile<FileUpdateCommentDataT
   setMessage(message: string): this;
   execute(): Promise<ApiResponseType<FileUpdateCommentDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/Login.d.ts
 type PostLoginDataType = {
   login: Identity;
   userFolders: FolderInfo[];
@@ -740,8 +693,6 @@ declare class Login extends Operation<PostLoginDataType> {
   setPassword(password: string): this;
   execute(): Promise<ApiResponseType<PostLoginDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/Logout.d.ts
 type LogoutDataType = object;
 /**
  * Post route for logging out a user from the server.
@@ -751,8 +702,6 @@ declare class Logout extends Operation<LogoutDataType> {
   init(): this;
   execute(): Promise<ApiResponseType<LogoutDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/MoveFolder.d.ts
 type MoveFolderDataType = object;
 /**
  * Post route for moving a folder within one server.
@@ -763,8 +712,6 @@ declare class MoveFolder extends OperationWithPath<MoveFolderDataType> {
   setTarget(target: string): this;
   execute(): Promise<ApiResponseType<MoveFolderDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/UpdateFile.d.ts
 type UpdateFileDataType = {
   file: FileInfo;
 };
@@ -790,8 +737,6 @@ declare class UpdateFile extends OperationWithFile<UpdateFileDataType> {
   clearAnalyses(): this;
   execute(): Promise<ApiResponseType<UpdateFileDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/UpdateFolder.d.ts
 type PostUpdateFolderDataType = {
   result: {
     /** The new slug of the updated folder */
@@ -824,8 +769,6 @@ declare class UpdateFolder extends OperationWithPath<PostUpdateFolderDataType> {
   setMetadata(value: Record<string, any>): this;
   execute(): Promise<ApiResponseType<PostUpdateFolderDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/UploadFile.d.ts
 type UploadFileDataType = {
   file: FileInfo;
 };
@@ -852,8 +795,6 @@ declare class UploadFile extends OperationWithPath<UploadFileDataType> {
   setTags(tags: string[]): this;
   execute(): Promise<ApiResponseType<UploadFileDataType>>;
 }
-//#endregion
-//#region src/client/routes/post/MoveFile.d.ts
 type MoveFileDataType = object;
 /**
  * Post route for moving a file within one server.
@@ -864,8 +805,6 @@ declare class MoveFile extends OperationWithFile<MoveFileDataType> {
   setTarget(target: string): this;
   execute(): Promise<ApiResponseType<MoveFileDataType>>;
 }
-//#endregion
-//#region src/client/routes/factories/PostRoutesFactory.d.ts
 /**
  * Factory for creating POST routes
  *
@@ -893,8 +832,6 @@ declare class PostRoutesFactory {
   deleteFile(folderPath: string, fileName: string): DeleteFile;
   moveFile(folderPath: string, fileName: string, target: string): MoveFile;
 }
-//#endregion
-//#region src/client/routes/factories/Routes.d.ts
 /**
  * Object containing instances of all available API routes.
  * @package `@labirthermal/webcomponents`
@@ -911,8 +848,6 @@ declare class Routes {
   readonly post: PostRoutesFactory;
   constructor(client: ApiClient);
 }
-//#endregion
-//#region src/client/ApiClient.d.ts
 /**
  * The client for accessing a remote LabIR server.
  *
@@ -1028,8 +963,6 @@ declare class ApiClient {
    */
   fetch<R extends ApiResponseDataType>(factory: RequestFactory): Promise<ApiResponseType<R>>;
 }
-//#endregion
-//#region src/controllers/ClientController.d.ts
 /** Public properties for application elements using ClientController */
 interface AppWithClientController extends AbstractThermalElement {
   /** URL Address of the webserver */
@@ -1099,8 +1032,6 @@ declare class ClientController extends AbstractConnectedController implements Re
   subscribeToLoadingChanges(element: AbstractThermalElement): void;
   subscribeToServerInfoUpdates(element: AbstractThermalElement): void;
 }
-//#endregion
-//#region src/controllers/ContentController.d.ts
 /**
  * Public parameters of an application
  */
@@ -1217,8 +1148,6 @@ declare class ContentController extends AbstractConnectedController implements R
   unsubscribeFromAll(element: AbstractThermalElement): void;
   getRegistrySlug(): string;
 }
-//#endregion
-//#region src/controllers/DisplayController.d.ts
 declare enum DisplayState {
   LOADING = 0,
   ARBITRARY = 1,
@@ -1367,8 +1296,6 @@ declare class DisplayController extends AbstractConnectedController implements R
    */
   canTurnOnTagsEditing(folder: FolderInfo): boolean;
 }
-//#endregion
-//#region src/controllers/FileSelectionController.d.ts
 interface AppWithFileSelectionController extends AppWithDisplayController {
   display: DisplayController;
   fileSelection: FileSelectionController;
@@ -1419,8 +1346,6 @@ declare class FileSelectionController implements ReactiveController {
   fileIsSelected(file: FileInfo): boolean;
   getSelectedFiles(): FileInfo[];
 }
-//#endregion
-//#region src/controllers/FolderSelectionController.d.ts
 interface AppWithFolderSelectionController extends AppWithDisplayController {
   display: DisplayController;
   folderSelection: FolderSelectionController;
@@ -1471,8 +1396,6 @@ declare class FolderSelectionController implements ReactiveController {
   folderIsSelected(folder: FolderInfo): boolean;
   getSelectedFiles(): FolderInfo[];
 }
-//#endregion
-//#region src/abstraction/AbstractConnectedApp.d.ts
 declare abstract class AbstractConnectedApp extends AbstractApp implements AppWithClientController, AppWithContentController, AppWithDisplayController, AppWithFileSelectionController, AppWithFolderSelectionController {
   /** Name of the listener event called upon initialisation of the connected app */
   static readonly INITIALISATION_LISTENER = "connected-app-initialisation";
@@ -1542,8 +1465,6 @@ declare abstract class AbstractConnectedApp extends AbstractApp implements AppWi
   protected unknownIsNotEmpty(value: unknown): boolean;
   protected wrapContentIfNotEmpty(content: unknown, classes: string): unknown;
 }
-//#endregion
-//#region src/apps/ConnectedBrowserApp.d.ts
 declare class ConnectedBrowserApp extends AbstractConnectedApp {
   private managerProviderRef;
   get manager(): ThermalManager;
@@ -1569,8 +1490,6 @@ declare global {
     "connected-browser-app": ConnectedBrowserApp;
   }
 }
-//#endregion
-//#region src/abstraction/AbstractControlledConsumer.d.ts
 declare abstract class AbstractControlledConsumer extends AbstractThermalElement {
   /**  */
   protected client: ClientController;
@@ -1580,8 +1499,6 @@ declare abstract class AbstractControlledConsumer extends AbstractThermalElement
   protected selectionFolder: FolderSelectionController;
   disconnectedCallback(): void;
 }
-//#endregion
-//#region src/components/folder/upload/ConnectedUploadForm.d.ts
 declare class ConnectedUploadForm extends AbstractControlledConsumer {
   folder: FolderInfo;
   label: string;
@@ -1635,8 +1552,6 @@ declare global {
     "connected-upload-form": ConnectedUploadForm;
   }
 }
-//#endregion
-//#region src/components/folder/upload/ConnectedUploadDialog.d.ts
 declare class ConnectedUploadDialog extends AbstractControlledConsumer {
   folder: FolderInfo;
   label: string;
@@ -1681,8 +1596,6 @@ declare global {
     "connected-upload-dialog": ConnectedUploadDialog;
   }
 }
-//#endregion
-//#region src/components/folder/ConnectedFolderHeader.d.ts
 declare class ConnectedFolderHeader extends AbstractControlledConsumer {
   onParentClick?: (folder: BreadcrumbItem) => void;
   protected icon: string;
@@ -1696,8 +1609,6 @@ declare global {
     "connected-folder-header": ConnectedFolderHeader;
   }
 }
-//#endregion
-//#region src/components/folder/thumbs/AbstractFolderThumbnail.d.ts
 declare class AbstractFolderThumbnail extends AbstractControlledConsumer {
   folder: FolderInfo;
   onClick?: (folder: FolderInfo) => void;
@@ -1716,8 +1627,6 @@ declare class AbstractFolderThumbnail extends AbstractControlledConsumer {
   private renderThumbnailImage;
   private renderThumbnailLrc;
 }
-//#endregion
-//#region src/components/folder/thumbs/ConnectedFolderRow.d.ts
 declare class ConnectedFolderRow extends AbstractFolderThumbnail {
   static styles: CSSResultGroup;
   render(): TemplateResult;
@@ -1727,8 +1636,6 @@ declare global {
     "connected-folder-row": ConnectedFolderRow;
   }
 }
-//#endregion
-//#region src/components/folder/thumbs/ConnectedFolderThumbnail.d.ts
 declare class ConnectedFolderThumbnail extends AbstractFolderThumbnail {
   static styles: CSSResultGroup;
   render(): TemplateResult;
@@ -1738,8 +1645,6 @@ declare global {
     "connected-folder-thumbnail": ConnectedFolderThumbnail;
   }
 }
-//#endregion
-//#region src/components/folder/listing/ConnetcedFileList.d.ts
 declare class ConnectedFileList extends AbstractControlledConsumer {
   onFileClick: (file: FileInfo) => void;
   onChange?: (file: FileInfo) => void;
@@ -1751,7 +1656,7 @@ declare class ConnectedFileList extends AbstractControlledConsumer {
   editableTags: boolean;
   static styles?: CSSResultGroup | undefined;
   connectedCallback(): void;
-  protected renderFile(file: FileInfo): TemplateResult;
+  protected renderFile(file: FileInfo): unknown;
   protected render(): unknown;
 }
 declare global {
@@ -1759,8 +1664,6 @@ declare global {
     "connected-file-list": ConnectedFileList;
   }
 }
-//#endregion
-//#region src/components/folder/listing/ConnectedSubfoldersGrid.d.ts
 declare class ConnectedSubfoldersGrid extends AbstractControlledConsumer {
   slug: string;
   onFolderClick?: (folder: FolderInfo) => void;
@@ -1789,8 +1692,6 @@ declare global {
     "connected-subfolders-grid": ConnectedSubfoldersGrid;
   }
 }
-//#endregion
-//#region src/components/folder/listing/ConnectedSubfolderList.d.ts
 declare class ConnectedFolderFileList extends AbstractControlledConsumer {
   onFolderClick?: (folder: FolderInfo) => void;
   folderMode: FolderListDisplayMode;
@@ -1804,8 +1705,6 @@ declare global {
     "connected-subfolder-list": ConnectedFolderFileList;
   }
 }
-//#endregion
-//#region src/components/user/LoginFormNew.d.ts
 declare class ConnectedLoginForm extends AbstractControlledConsumer {
   prompt?: string;
   protected error?: string;
@@ -1832,8 +1731,6 @@ declare global {
     "connected-login-form": ConnectedLoginForm;
   }
 }
-//#endregion
-//#region src/components/user/ConnectedUserButton.d.ts
 declare class ConnectedUserButton extends AbstractControlledConsumer {
   protected message?: string;
   disableLogging: boolean;
@@ -1855,8 +1752,6 @@ declare global {
     "connected-user-button": ConnectedUserButton;
   }
 }
-//#endregion
-//#region src/components/ConnectedShareDialog.d.ts
 declare class ConnectedShareDialog extends AbstractControlledConsumer {
   private palette;
   private from?;
@@ -1879,8 +1774,6 @@ declare global {
     "connected-share-dialog": ConnectedShareDialog;
   }
 }
-//#endregion
-//#region src/components/ConnectedBreadcrumb.d.ts
 type BreadcrumbItemInternal = {
   onClick?: () => void;
   icon: string;
@@ -1906,8 +1799,6 @@ declare global {
     "connected-breadcrumb": ConnectedBreadcrumb;
   }
 }
-//#endregion
-//#region src/components/selection/ConnectedFolderSelectionCheckbox.d.ts
 /** Connected folder selection checkbox component */
 declare class ConnectedFolderSelectionCheckbox extends AbstractControlledConsumer {
   folder: FolderInfo;
@@ -1922,8 +1813,6 @@ declare global {
     "connected-folder-selection-checkbox": ConnectedFolderSelectionCheckbox;
   }
 }
-//#endregion
-//#region src/components/selection/ConnectedFolderSelectionActions.d.ts
 declare class ConnectedFolderSelectionActions extends AbstractControlledConsumer {
   private progress;
   private total;
@@ -1953,8 +1842,6 @@ declare global {
     "connected-folder-selection-actions": ConnectedFolderSelectionActions;
   }
 }
-//#endregion
-//#region src/components/selection/ConnectedFileSelectionCheckbox.d.ts
 /** Connected file selection checkbox component */
 declare class ConnectedFileSelectionCheckbox extends AbstractControlledConsumer {
   file: FileInfo;
@@ -1969,8 +1856,6 @@ declare global {
     "connected-file-selection-checkbox": ConnectedFileSelectionCheckbox;
   }
 }
-//#endregion
-//#region src/components/selection/ConnectedFileSelectionActions.d.ts
 declare class ConnectedFileSelectionActions extends AbstractControlledConsumer {
   private progress;
   private total;
@@ -2003,8 +1888,6 @@ declare global {
     "connected-file-selection-actions": ConnectedFileSelectionActions;
   }
 }
-//#endregion
-//#region src/components/selection/move/ConnectedLocationSelector.d.ts
 declare enum LocationSelectorMode {
   FOLDER = "folder",
   FILE = "file"
@@ -2046,8 +1929,6 @@ declare global {
     "connected-location-selector": ConnectedLocationSelector;
   }
 }
-//#endregion
-//#region src/components/folder/crud/ConnectedFolderMoveDialog.d.ts
 declare class ConnectedFolderMoveDialog extends AbstractControlledConsumer {
   folder: FolderInfo;
   private selectionRef;
@@ -2060,8 +1941,6 @@ declare global {
     "connected-folder-move-dialog": ConnectedFolderMoveDialog;
   }
 }
-//#endregion
-//#region src/components/folder/crud/AbstractFolderDialog.d.ts
 /** A base class for all dialogs related to folder CRUD operations. */
 declare abstract class AbstractFolderDialog extends AbstractControlledConsumer {
   folder: FolderInfo;
@@ -2091,8 +1970,6 @@ declare abstract class AbstractFolderDialog extends AbstractControlledConsumer {
   protected abstract shouldRenderDialog(): boolean;
   protected render(): unknown;
 }
-//#endregion
-//#region src/components/folder/crud/ConnectedFolderEditDialog.d.ts
 declare class ConnectedFolderEditDialog extends AbstractFolderDialog {
   protected closeLabel: string;
   protected dialogLabel: string;
@@ -2114,8 +1991,6 @@ declare global {
     "connected-folder-edit-dialog": ConnectedFolderEditDialog;
   }
 }
-//#endregion
-//#region src/components/folder/crud/ConnectedFolderDeleteDialog.d.ts
 declare class ConnectedFolderDeleteDialog extends AbstractFolderDialog {
   protected closeLabel: string;
   protected dialogLabel: string;
@@ -2132,8 +2007,6 @@ declare global {
     "connected-folder-delete-dialog": ConnectedFolderDeleteDialog;
   }
 }
-//#endregion
-//#region src/components/folder/crud/ConnectedFolderCreateDialog.d.ts
 declare class ConnectedFolderCreateDialog extends AbstractFolderDialog {
   protected closeLabel: string;
   protected dialogLabel: string;
@@ -2157,8 +2030,6 @@ declare global {
     "connected-folder-create-dialog": ConnectedFolderCreateDialog;
   }
 }
-//#endregion
-//#region src/components/folder/crud/ConnectedFolderContentModeSwitch.d.ts
 declare class ConnectedFolderContentModeSwitch extends AbstractControlledConsumer {
   connectedCallback(): void;
   private userMayEdit;
@@ -2179,8 +2050,6 @@ declare global {
     "connected-folder-content-mode-switch": ConnectedFolderContentModeSwitch;
   }
 }
-//#endregion
-//#region src/components/file/ConnectedFileThumbnail.d.ts
 declare class ConnectedFileThumbnail extends AbstractControlledConsumer {
   protected group?: ThermalGroup;
   protected instanceRef: Ref<FileProviderElement>;
@@ -2220,8 +2089,6 @@ declare global {
     "connected-file-thumbnail": ConnectedFileThumbnail;
   }
 }
-//#endregion
-//#region src/components/file/ConnectedFileTags.d.ts
 type TagSizes = "sm" | "md";
 declare class ConnectedFileTags extends AbstractControlledConsumer {
   editable: boolean;
@@ -2244,8 +2111,6 @@ declare global {
     "connected-file-tags": ConnectedFileTags;
   }
 }
-//#endregion
-//#region src/components/file/ConnectedFileMoveDialog.d.ts
 declare class ConnectedFileMoveDialog extends AbstractControlledConsumer {
   file?: FileInfo;
   private dialogRef;
@@ -2257,8 +2122,6 @@ declare global {
     "connected-file-move-dialog": ConnectedFileMoveDialog;
   }
 }
-//#endregion
-//#region src/components/file/ConnectedFileHeader.d.ts
 declare class ConnectedFileHeader extends AbstractControlledConsumer {
   connectedCallback(): void;
   static styles?: CSSResultGroup | undefined;
@@ -2271,8 +2134,6 @@ declare global {
     "connected-file-header": ConnectedFileHeader;
   }
 }
-//#endregion
-//#region src/components/file/ConnectedFileEditDialog.d.ts
 declare class ConnectedFileEditDialog extends AbstractControlledConsumer {
   label: string;
   variant?: BtnVariants;
@@ -2294,8 +2155,6 @@ declare global {
     "connected-file-edit-dialog": ConnectedFileEditDialog;
   }
 }
-//#endregion
-//#region src/components/file/ConnectedFileDeleteDialog.d.ts
 declare class ConnectedFileDeleteDialog extends AbstractControlledConsumer {
   showLabel: boolean;
   label: string;
@@ -2318,8 +2177,6 @@ declare global {
     "connected-file-delete-dialog": ConnectedFileDeleteDialog;
   }
 }
-//#endregion
-//#region src/components/file/comments/ConnectedFileComments.d.ts
 declare class ConnectedFileComments extends AbstractControlledConsumer {
   file: FileInfo;
   folder: FolderInfo;
@@ -2335,8 +2192,6 @@ declare global {
     "connected-file-comments": ConnectedFileComments;
   }
 }
-//#endregion
-//#region src/components/file/comments/ConnectedFileComment.d.ts
 declare class ConnectedFileComment extends AbstractControlledConsumer {
   comment: Comment;
   file: FileInfo;
@@ -2355,8 +2210,6 @@ declare global {
     "connected-file-comment": ConnectedFileComment;
   }
 }
-//#endregion
-//#region src/components/file/analysis/ConnectedFileAnalysisButtons.d.ts
 declare class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
   label: string;
   tooltip: string;
@@ -2366,9 +2219,9 @@ declare class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
   enableCopyToAll: boolean;
   protected analyses: string[];
   protected hasChanged: boolean;
-  private file?;
+  file?: ThermalFileInstance;
   connectedCallback(): void;
-  updated(_changedProperties: PropertyValues): void;
+  updated(_changedProperties: PropertyValues<this>): void;
   onInstanceCreated(instance: ThermalFileInstance): void;
   protected getCurrentAnalysisState(instance: ThermalFileInstance): string[];
   protected renderCopyToAllButton(): unknown;
@@ -2386,15 +2239,11 @@ declare global {
     "connected-file-analysis-buttons": ConnectedFileAnalysisButtons;
   }
 }
-//#endregion
-//#region src/components/configuration/AbstractConfigElement.d.ts
 declare abstract class AbstractConfigElement extends AbstractControlledConsumer {
   static styles?: CSSResultGroup | undefined;
   protected renderToggle(label: string, checked: boolean, onChange: (checked: boolean) => void): unknown;
   protected renderToggleButton(active: boolean, onClick: () => void, icon?: string, label?: string, tooltip?: string): unknown;
 }
-//#endregion
-//#region src/components/configuration/ConnectedConfigSubfolderMode.d.ts
 declare class ConnectedConfigSubfolderMode extends AbstractConfigElement {
   connectedCallback(): void;
   protected render(): unknown;
@@ -2404,8 +2253,6 @@ declare global {
     "connected-config-subfolder-mode": ConnectedConfigSubfolderMode;
   }
 }
-//#endregion
-//#region src/components/configuration/ConnectedConfigFileDisplayMode.d.ts
 declare class ConnectedConfigFileMode extends AbstractConfigElement {
   connectedCallback(): void;
   protected render(): unknown;
@@ -2415,8 +2262,6 @@ declare global {
     "connected-config-file-display-mode": ConnectedConfigFileMode;
   }
 }
-//#endregion
-//#region src/components/configuration/ConnectedConfigFileContentMode.d.ts
 declare class ConnectedConfigFileContentMode extends AbstractConfigElement {
   connectedCallback(): void;
   protected render(): unknown;
@@ -2426,8 +2271,6 @@ declare global {
     "connected-config-file-content-mode": ConnectedConfigFileContentMode;
   }
 }
-//#endregion
-//#region src/components/file/comments/ControlledFileCommentForm.d.ts
 declare class ConnectedFileCommentForm extends AbstractControlledConsumer {
   comment?: Comment;
   file: FileInfo;
@@ -2449,8 +2292,6 @@ declare global {
     "connected-file-comment-form": ConnectedFileCommentForm;
   }
 }
-//#endregion
-//#region src/iifeCatalog.d.ts
 /**
  * All the webcomponents from the @labirthermal/webcomponents package in a list for the purpose of its registration in `defineAllWebcomponents`.
  * @see {@link defineAllWebcomponents}
@@ -2494,6 +2335,5 @@ export declare const elementsAll: {
   readonly "connected-browser-app": typeof ConnectedBrowserApp;
 };
 export declare const isLabirthermalWebcomponent: (tag: string) => boolean;
-//#endregion
 export {};
 //# sourceMappingURL=index.export.d.cts.map

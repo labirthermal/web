@@ -8,8 +8,8 @@ import type { Ref } from "lit/directives/ref.js";
 import { createRef, ref } from "lit/directives/ref.js";
 import type { StyleInfo } from "lit/directives/style-map.js";
 import { styleMap } from "lit/directives/style-map.js";
-import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
-import type { BreadcrumbItem, FolderInfo } from "../../../client/responseEntities";
+import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
+import type { BreadcrumbItem, FolderInfo } from "../../client/responseEntities";
 import { ifDefined } from "lit/directives/if-defined.js";
 
 

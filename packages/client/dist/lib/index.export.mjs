@@ -4,13 +4,13 @@ import { consume, createContext, provide } from "@lit/context";
 import { property, state } from "lit/decorators.js";
 import { cache } from "lit/directives/cache.js";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { AbstractApp, AbstractThermalElement, booleanConverter, fileContext, groupObjectContext, icons, managerPaletteContext, registryControllerContext, registryObjectContext, registryRangeFromContext, registryRangeToContext, t } from "@labirthermal/webcomponents";
+import { AbstractApp, AbstractThermalElement, fileContext, groupObjectContext, icons, managerPaletteContext, registryControllerContext, registryObjectContext, registryRangeFromContext, registryRangeToContext, t } from "@labirthermal/webcomponents";
 import { Directive, directive } from "lit/directive.js";
 import { CallbacksManager, TimeFormat } from "@labirthermal/core";
 import { classMap } from "lit/directives/class-map.js";
 import { map } from "lit/directives/map.js";
 import { styleMap } from "lit/directives/style-map.js";
-//#region src/translations/Languages.ts
+// src/translations/Languages.ts
 /**
 * Keys of all translation keys.
 * 
@@ -319,8 +319,7 @@ Object.fromEntries([
 		flag: "🇫🇷"
 	}
 ].map((l) => [l.code, l]));
-//#endregion
-//#region src/directives/DirectiveHelpers.ts
+// src/directives/DirectiveHelpers.ts
 /** Utilities for rendering */
 var DirectiveHelpers = class {
 	static unknownContainsSomething(content) {
@@ -362,8 +361,7 @@ var DirectiveHelpers = class {
 		return client.isLoggedIn;
 	}
 };
-//#endregion
-//#region src/directives/AbstractConnectedDirective.ts
+// src/directives/AbstractConnectedDirective.ts
 var AbstractConnectedDirective = class extends Directive {
 	t(key) {
 		return t(T[key]);
@@ -391,8 +389,7 @@ var AbstractConnectedDirective = class extends Directive {
 		return content;
 	}
 };
-//#endregion
-//#region src/directives/layout/AbstractLayoutDirective.ts
+// src/directives/layout/AbstractLayoutDirective.ts
 var AbstractLayoutDirective = class extends AbstractConnectedDirective {
 	static {
 		this.styles = css`
@@ -449,9 +446,6 @@ var AbstractLayoutDirective = class extends AbstractConnectedDirective {
             grid-template-rows: auto;
 
             dl {
-                dt {
-                    
-                }
                 dd {
                     margin-left: 0;
                     font-weight: bold;
@@ -514,15 +508,13 @@ var AbstractLayoutDirective = class extends AbstractConnectedDirective {
         ></thermal-poster>`;
 	}
 };
-//#endregion
-//#region src/controllers/AbstractConnectedController.ts
+// src/controllers/AbstractConnectedController.ts
 var AbstractConnectedController = class {
 	log(...args) {
 		this.host.log(this.constructor.name, ...args);
 	}
 };
-//#endregion
-//#region src/controllers/ClientController.ts
+// src/controllers/ClientController.ts
 /** 
 * Basic reactive controller for applications connected to the API 
 */
@@ -701,8 +693,7 @@ var ClientController = class extends AbstractConnectedController {
 		});
 	}
 };
-//#endregion
-//#region src/controllers/ContentController.ts
+// src/controllers/ContentController.ts
 /**
 * This controller takes care of the entire content state management:
 * - fetching data from the server
@@ -1059,8 +1050,7 @@ var ContentController = class extends AbstractConnectedController {
 		return items.join("__");
 	}
 };
-//#endregion
-//#region src/controllers/DisplayController.ts
+// src/controllers/DisplayController.ts
 let DisplayState = /* @__PURE__ */ function(DisplayState) {
 	DisplayState[DisplayState["LOADING"] = 0] = "LOADING";
 	DisplayState[DisplayState["ARBITRARY"] = 1] = "ARBITRARY";
@@ -1413,8 +1403,7 @@ var DisplayController = class DisplayController extends AbstractConnectedControl
 		return folder.may_manage_files_in;
 	}
 };
-//#endregion
-//#region src/controllers/FileSelectionController.ts
+// src/controllers/FileSelectionController.ts
 /** Controls the selection inside the current app*/
 var FileSelectionController = class {
 	/** Dynamically converted upon every call - created from the _selectedFiles Set */
@@ -1516,8 +1505,7 @@ var FileSelectionController = class {
 		return this._selectedFiles;
 	}
 };
-//#endregion
-//#region src/controllers/FolderSelectionController.ts
+// src/controllers/FolderSelectionController.ts
 /** Controls the selection inside the current app */
 var FolderSelectionController = class {
 	/** Dynamically converted upon every call - created from the _selectedFiles Set */
@@ -1619,11 +1607,9 @@ var FolderSelectionController = class {
 		return this._selectedFolders;
 	}
 };
-//#endregion
-//#region package.json
-var version = "2.0.1";
-//#endregion
-//#region src/client/authentication/Auth.ts
+// package.json
+var version = "2.0.3";
+// src/client/authentication/Auth.ts
 var Auth = class {
 	constructor(client) {
 		this.client = client;
@@ -1669,8 +1655,7 @@ var Auth = class {
 		return result;
 	}
 };
-//#endregion
-//#region src/client/request/RequestFactory.ts
+// src/client/request/RequestFactory.ts
 /**
 * An universal factory of requests to LabIR servers.
 * 
@@ -1801,8 +1786,7 @@ var RequestFactory = class {
 		return this.action;
 	}
 };
-//#endregion
-//#region src/client/routes/Operation.ts
+// src/client/routes/Operation.ts
 /** 
 * A base class for all routes. It is intentionally concieved very universally, because it might happen that one operation would consist of several subsequent requests. 
 * @package `@labirthermal/client`
@@ -1813,8 +1797,7 @@ var Operation = class {
 		this.request = this.client.createRequest();
 	}
 };
-//#endregion
-//#region src/client/routes/get/GetConnect.ts
+// src/client/routes/get/GetConnect.ts
 /**
 * Get route for connecting to a remote folder on a remote server.
 * @package `@labirthermal/client`
@@ -1833,8 +1816,7 @@ var GetConnect = class extends Operation {
 		return response;
 	}
 };
-//#endregion
-//#region src/client/routes/get/GetCurrentUserTree.ts
+// src/client/routes/get/GetCurrentUserTree.ts
 /**
 * Get the list of all folders accessible to the currently logged in user.
 * @package `@labirthermal/client`
@@ -1849,8 +1831,7 @@ var GetCurrentUserTree = class extends Operation {
 		return this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/OperationWithPath.ts
+// src/client/routes/OperationWithPath.ts
 /** 
 * A base operation that needs to have a path specified. 
 * @package `@labirthermal/client`
@@ -1861,8 +1842,7 @@ var OperationWithPath = class extends Operation {
 		return this;
 	}
 };
-//#endregion
-//#region src/client/routes/get/GetInfo.ts
+// src/client/routes/get/GetInfo.ts
 /**
 * Get route for retrieving folder information from the server.
 * @package `@labirthermal/client`
@@ -1876,8 +1856,7 @@ var GetInto = class extends OperationWithPath {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/get/GetFile.ts
+// src/client/routes/get/GetFile.ts
 /**
 * Get route for retrieving a file's information from the server.
 * @package `@labirthermal/client`
@@ -1896,8 +1875,7 @@ var GetFile = class extends OperationWithPath {
 		return this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/OperationWithPathAndFilters.ts
+// src/client/routes/OperationWithPathAndFilters.ts
 /** 
 * An operation containing filters based on time and tags. Needs to have path specified. 
 * @package `@labirthermal/client`
@@ -1943,8 +1921,7 @@ var OperationWithFilters = class extends OperationWithPath {
 		return this;
 	}
 };
-//#endregion
-//#region src/client/routes/get/GetFiles.ts
+// src/client/routes/get/GetFiles.ts
 /**
 * Get route for retrieving files information from a folder on the server.
 * @package `@labirthermal/client`
@@ -1959,8 +1936,7 @@ var GetFiles = class extends OperationWithFilters {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/get/GetGrid.ts
+// src/client/routes/get/GetGrid.ts
 /**
 * Get route for retrieving grid content from the server, grouped by time intervals.
 * @package `@labirthermal/client`
@@ -2008,8 +1984,7 @@ var GetGrid = class extends OperationWithFilters {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/factories/GetRoutesFactory.ts
+// src/client/routes/factories/GetRoutesFactory.ts
 /**
 * Factory for creating GET routes
 * 
@@ -2118,8 +2093,7 @@ var GetRoutesFactory = class {
 		return new GetCurrentUserTree(this.client).init();
 	}
 };
-//#endregion
-//#region src/client/routes/post/CreateFolder.ts
+// src/client/routes/post/CreateFolder.ts
 /**
 * Vytvoření nové složky (viz actionCreate v PHP)
 * Parametry: name (povinné), description (volitelné), meta (volitelné), tags (volitelné), access (volitelné)
@@ -2178,8 +2152,7 @@ var CreateFolder = class extends OperationWithPath {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/OperationWithFile.ts
+// src/client/routes/OperationWithFile.ts
 /** 
 * A base operation that needs to have a path specified.
 * @package `@labirthermal/client`
@@ -2190,8 +2163,7 @@ var OperationWithFile = class extends OperationWithPath {
 		return this;
 	}
 };
-//#endregion
-//#region src/client/routes/post/DeleteFile.ts
+// src/client/routes/post/DeleteFile.ts
 /**
 * Post route for deleting a file on the server.
 * @package `@labirthermal/client`
@@ -2210,8 +2182,7 @@ var DeleteFile = class extends OperationWithFile {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/DeleteFolder.ts
+// src/client/routes/post/DeleteFolder.ts
 /**
 * Post route for deleting a folder on the server.
 * @package `@labirthermal/client`
@@ -2226,8 +2197,7 @@ var DeleteFolder = class extends OperationWithPath {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/FileAddComment.ts
+// src/client/routes/post/FileAddComment.ts
 /**
 * Post route for adding a comment to a file on the server.
 * @package `@labirthermal/client`
@@ -2251,8 +2221,7 @@ var FileAddComment = class extends OperationWithFile {
 		return this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/FileClearComments.ts
+// src/client/routes/post/FileClearComments.ts
 /**
 * Post route for clearing all comments on a file on the server.
 * @package `@labirthermal/client`
@@ -2270,8 +2239,7 @@ var FileClearComments = class extends OperationWithFile {
 		return this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/FileDeleteComment.ts
+// src/client/routes/post/FileDeleteComment.ts
 /**
 * Post route for deleting a file's comment on the server.
 * @package `@labirthermal/client`
@@ -2290,8 +2258,7 @@ var FileDeleteComment = class extends OperationWithFile {
 		return this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/FileUpdateComment.ts
+// src/client/routes/post/FileUpdateComment.ts
 /**
 * Post route for updating a file's comment on the server.
 * @package `@labirthermal/client`
@@ -2319,8 +2286,7 @@ var FileUpdateComment = class extends OperationWithFile {
 		return this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/Login.ts
+// src/client/routes/post/Login.ts
 /**
 * Post route for logging in a user to the server.
 * @package `@labirthermal/client`
@@ -2345,8 +2311,7 @@ var Login = class extends Operation {
 		return response;
 	}
 };
-//#endregion
-//#region src/client/routes/post/Logout.ts
+// src/client/routes/post/Logout.ts
 /**
 * Post route for logging out a user from the server.
 * @package `@labirthermal/client`
@@ -2361,8 +2326,7 @@ var Logout = class extends Operation {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/MoveFolder.ts
+// src/client/routes/post/MoveFolder.ts
 /**
 * Post route for moving a folder within one server.
 * @package `@labirthermal/client`
@@ -2381,8 +2345,7 @@ var MoveFolder = class extends OperationWithPath {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/UpdateFile.ts
+// src/client/routes/post/UpdateFile.ts
 /**
 * Post route for updating metadata of a file on the server.
 * @package `@labirthermal/client`
@@ -2444,8 +2407,7 @@ var UpdateFile = class extends OperationWithFile {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/UpdateFolder.ts
+// src/client/routes/post/UpdateFolder.ts
 /**
 * Post route for updating a folder on the server.
 * @package `@labirthermal/client`
@@ -2495,8 +2457,7 @@ var UpdateFolder = class extends OperationWithPath {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/UploadFile.ts
+// src/client/routes/post/UploadFile.ts
 /**
 * Post route for uploading a file to a server folder.
 * @package `@labirthermal/client`
@@ -2544,8 +2505,7 @@ var UploadFile = class extends OperationWithPath {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/post/MoveFile.ts
+// src/client/routes/post/MoveFile.ts
 /**
 * Post route for moving a file within one server.
 * @package `@labirthermal/client`
@@ -2564,8 +2524,7 @@ var MoveFile = class extends OperationWithFile {
 		return await this.client.fetch(this.request);
 	}
 };
-//#endregion
-//#region src/client/routes/factories/PostRoutesFactory.ts
+// src/client/routes/factories/PostRoutesFactory.ts
 /**
 * Factory for creating POST routes
 * 
@@ -2618,8 +2577,7 @@ var PostRoutesFactory = class {
 		return new MoveFile(this.client).init().setPath(folderPath).setFile(fileName).setTarget(target);
 	}
 };
-//#endregion
-//#region src/client/routes/factories/Routes.ts
+// src/client/routes/factories/Routes.ts
 /** 
 * Object containing instances of all available API routes. 
 * @package `@labirthermal/webcomponents`
@@ -2631,8 +2589,7 @@ var Routes = class {
 		this.post = new PostRoutesFactory(this.client);
 	}
 };
-//#endregion
-//#region src/client/ApiClient.ts
+// src/client/ApiClient.ts
 /**
 * The client for accessing a remote LabIR server.
 * 
@@ -2802,28 +2759,24 @@ var ApiClient = class {
 		}
 	}
 };
-//#endregion
-//#region src/controllers/controllersContexts.ts
+// src/controllers/controllersContexts.ts
 const ControlledClientContext = createContext("controlled-client-controller");
 const ControlledContentContext = createContext("controlled-content-controller");
 const DisplayControllerContext = createContext("connected-display-controller");
 const FileSelectionControllerContext = createContext("connected-file-selection-controller");
 const FolderSelectionControllerContext = createContext("connected-folder-selection-controller");
-//#endregion
-//#region \0@oxc-project+runtime@0.154.0/helpers/esm/decorateMetadata.js
+// \0@oxc-project+runtime@0.156.0/helpers/esm/decorateMetadata.js
 function __decorateMetadata(k, v) {
 	if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 }
-//#endregion
-//#region \0@oxc-project+runtime@0.154.0/helpers/esm/decorate.js
+// \0@oxc-project+runtime@0.156.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
 	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
 	else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
 	return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-//#endregion
-//#region src/abstraction/AbstractConnectedApp.ts
+// src/abstraction/AbstractConnectedApp.ts
 var AbstractConnectedApp = class AbstractConnectedApp extends AbstractApp {
 	constructor(..._args) {
 		super(..._args);
@@ -3150,19 +3103,16 @@ __decorate([property({
 __decorate([property({
 	type: Boolean,
 	attribute: "files-compact",
-	reflect: true,
-	converter: booleanConverter(false)
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], AbstractConnectedApp.prototype, "fileDisplayCompact", void 0);
 __decorate([property({
 	type: Boolean,
 	attribute: "edit-tags",
-	converter: booleanConverter(false),
 	reflect: true
 }), __decorateMetadata("design:type", Boolean)], AbstractConnectedApp.prototype, "editTags", void 0);
 __decorate([property({
 	type: Boolean,
 	attribute: "display-comments",
-	converter: booleanConverter(true),
 	reflect: true
 }), __decorateMetadata("design:type", Boolean)], AbstractConnectedApp.prototype, "displayComments", void 0);
 __decorate([state(), __decorateMetadata("design:type", typeof DisplayState === "undefined" ? Object : DisplayState)], AbstractConnectedApp.prototype, "appState", void 0);
@@ -3191,8 +3141,7 @@ __decorate([property({
 	attribute: "label-variant",
 	reflect: true
 }), __decorateMetadata("design:type", String)], AbstractConnectedApp.prototype, "labelVariant", void 0);
-//#endregion
-//#region src/directives/SlotOrNothing.ts
+// src/directives/SlotOrNothing.ts
 var SlotOrNothing = class extends AbstractConnectedDirective {
 	render(label, content) {
 		if (!this.unknownContainsSomething(content)) return nothing;
@@ -3202,11 +3151,10 @@ var SlotOrNothing = class extends AbstractConnectedDirective {
 	}
 };
 const slotOrNothing = directive(SlotOrNothing);
-//#endregion
-//#region src/directives/layout/ConnectedFileDetailDirective.ts
+// src/directives/layout/ConnectedFileDetailDirective.ts
 var ConnectedFileDetail = class extends AbstractLayoutDirective {
 	renderFileHeaderFileSlot(app) {
-		if (app.content.folder === void 0) return nothing;
+		if (app.content.folder === void 0 || app.content.file === void 0) return nothing;
 		const fileOperations = [];
 		if (app.content.folder.may_manage_files_in) {
 			fileOperations.push(html`<connected-file-edit-dialog
@@ -3219,7 +3167,7 @@ var ConnectedFileDetail = class extends AbstractLayoutDirective {
                 .file=${app.content.file}
                 .folder=${app.content.folder}
                 size="md"
-                .label=${void 0}
+                .label=${""}
                 ></connected-file-delete-dialog>`);
 		}
 		fileOperations.push(html`<file-info-button></file-info-button>`);
@@ -3233,13 +3181,13 @@ var ConnectedFileDetail = class extends AbstractLayoutDirective {
 		if (app.content.folder && DirectiveHelpers.userMayEditFile(app.client, app.content.folder)) display.push(html`<connected-config-file-content-mode></connected-config-file-content-mode>`);
 		display.push(html`<registry-opacity-slider></registry-opacity-slider>`);
 		slots.push(slotOrNothing("display", display));
-		slots.push(html`<connected-file-analysis-buttons .info=${app.content.file}></connected-file-analysis-buttons>`);
-		if (app.content.file !== void 0 && app.content.file.tags.length > 0) {
+		if (app.content.file !== void 0) slots.push(html`<connected-file-analysis-buttons .info=${app.content.file}></connected-file-analysis-buttons>`);
+		if (app.content.folder !== void 0 && app.content.file !== void 0 && app.content.file.tags.length > 0) {
 			const tags = slotOrNothing("edit", html`<connected-file-tags
                 .file=${app.content.file}
                 .folder=${app.content.folder}
-                editable=${app.display.editTags ? "true" : "false"}
-                inline=${true}
+                .editable=${app.display.editTags}
+                inline
                 size="sm"
             ></connected-file-tags>`);
 			slots.push(tags);
@@ -3255,6 +3203,7 @@ var ConnectedFileDetail = class extends AbstractLayoutDirective {
 		]);
 	}
 	renderFileDetailContent(app) {
+		if (app.content.folder === void 0 || app.content.file === void 0) return nothing;
 		const content = [html`<div>
                 <registry-histogram ?expandable=${true}></registry-histogram>
                 <registry-range-slider></registry-range-slider>
@@ -3282,8 +3231,7 @@ var ConnectedFileDetail = class extends AbstractLayoutDirective {
 	}
 };
 const connectedFileDetail = directive(ConnectedFileDetail);
-//#endregion
-//#region src/directives/layout/AbstractFolderLayoutDirective.ts
+// src/directives/layout/AbstractFolderLayoutDirective.ts
 var AbstractFolderLayoutDirective = class extends AbstractLayoutDirective {
 	renderFolderContentStatsSlot(app) {
 		return slotOrNothing("content", html`<connected-folder-content-mode-switch></connected-folder-content-mode-switch>`);
@@ -3352,8 +3300,7 @@ var AbstractFolderLayoutDirective = class extends AbstractLayoutDirective {
 		} else console.warn("scrollToUploadForm: no upload form found");
 	}
 };
-//#endregion
-//#region src/directives/layout/ConnectedFolderFilesDirective.ts
+// src/directives/layout/ConnectedFolderFilesDirective.ts
 var ConnectedFolderFilesDirective = class extends AbstractFolderLayoutDirective {
 	renderDisplaySlot(app) {
 		if (!DirectiveHelpers.folderContainsFiles(app.content.folder, app.content.files || [])) return nothing;
@@ -3384,10 +3331,10 @@ var ConnectedFolderFilesDirective = class extends AbstractFolderLayoutDirective 
 		const mayUpload = DirectiveHelpers.userMayEditFile(app.client, app.content.folder);
 		const content = [];
 		if (hasFiles) content.push(html`<connected-file-list
-                compact=${app.display.fileDisplayCompact}
+                .compact=${app.display.fileDisplayCompact}
                 display-mode=${app.display.fileDisplayMode}
-                editable-tags=${app.display.editTags}
-                show-discussion=${app.display.displayComments}
+                .editableTags=${app.display.editTags}
+                .showDiscussion=${app.display.displayComments}
                 
                 .onFileClick=${(file) => app.display.navigateToFileAndLoad(file.path, file.fileName)}
             ></connected-file-list>`);
@@ -3403,8 +3350,7 @@ var ConnectedFolderFilesDirective = class extends AbstractFolderLayoutDirective 
 	}
 };
 const connectedFolderFiles = directive(ConnectedFolderFilesDirective);
-//#endregion
-//#region src/directives/layout/ConnectedFolderGridDirective.ts
+// src/directives/layout/ConnectedFolderGridDirective.ts
 var ConnectedFolderGridDirective = class extends AbstractFolderLayoutDirective {
 	renderDisplaySlot(app) {
 		if (!DirectiveHelpers.folderContainsFiles(app.content.folder, app.content.files || [])) {}
@@ -3455,8 +3401,7 @@ var ConnectedFolderGridDirective = class extends AbstractFolderLayoutDirective {
 	}
 };
 const connectedFolderGrid = directive(ConnectedFolderGridDirective);
-//#endregion
-//#region src/directives/layout/ConnectedFolderSubfoldersDirective.ts
+// src/directives/layout/ConnectedFolderSubfoldersDirective.ts
 var ConnectedFolderSubfoldersDirective = class extends AbstractFolderLayoutDirective {
 	renderSelectionSlot(app) {
 		if (app.folderSelection.array.length === 0) return nothing;
@@ -3494,8 +3439,7 @@ var ConnectedFolderSubfoldersDirective = class extends AbstractFolderLayoutDirec
 	}
 };
 const connectedFolderSubfolders = directive(ConnectedFolderSubfoldersDirective);
-//#endregion
-//#region src/directives/layout/UserFoldersDirective.ts
+// src/directives/layout/UserFoldersDirective.ts
 var UserFoldersDirective = class extends AbstractLayoutDirective {
 	renderUserDetail(identity) {
 		const rows = [
@@ -3534,8 +3478,7 @@ var UserFoldersDirective = class extends AbstractLayoutDirective {
 	}
 };
 const userFolders = directive(UserFoldersDirective);
-//#endregion
-//#region src/apps/ConnectedBrowserApp.ts
+// src/apps/ConnectedBrowserApp.ts
 var ConnectedBrowserApp = class extends AbstractConnectedApp {
 	constructor(..._args) {
 		super(..._args);
@@ -3630,8 +3573,7 @@ var ConnectedBrowserApp = class extends AbstractConnectedApp {
 		})();
 	}
 };
-//#endregion
-//#region src/abstraction/AbstractControlledConsumer.ts
+// src/abstraction/AbstractControlledConsumer.ts
 var AbstractControlledConsumer = class extends AbstractThermalElement {
 	disconnectedCallback() {
 		super.disconnectedCallback();
@@ -3659,8 +3601,7 @@ __decorate([consume({
 	context: FolderSelectionControllerContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Object)], AbstractControlledConsumer.prototype, "selectionFolder", void 0);
-//#endregion
-//#region src/components/folder/upload/ConnectedUploadForm.ts
+// src/components/folder/upload/ConnectedUploadForm.ts
 var ConnectedUploadForm = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -4316,8 +4257,8 @@ var ConnectedUploadForm = class extends AbstractControlledConsumer {
                 tooltip="Odstranit" 
                 icon="close"
                 iconStyle="micro"
-                plain="true"
-                .variant="breadcrumb"
+                plain
+                variant="breadcrumb"
                 @click=${() => this.removePairedFile(file)}></thermal-btn>` : nothing;
 		return html`<div class="file-preview file-preview__has-file">
     ${removeButton}
@@ -4363,7 +4304,7 @@ var ConnectedUploadForm = class extends AbstractControlledConsumer {
 		return html`
 <div class="paired-files">
 
-<h3 class="stage-label">Soubory k uploadu <small>${titleSuffix}</h3>
+<h3 class="stage-label">Soubory k uploadu <small>${titleSuffix}</small></h3>
 
 <table class="paired-files-table">
 <tbody>
@@ -4383,7 +4324,7 @@ ${this.pairedFiles.map((pair, index) => this.renderPairedFileRow(pair, index))}
         icon="info"
         iconStyle="outline"
         variantExpanded="foreground"
-        closeIcon="true"
+        ?closeIcon=${true}
     >
 
         <div class="unmatched-files__list">
@@ -4518,8 +4459,9 @@ __decorate([property({ type: String }), __decorateMetadata("design:type", String
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], ConnectedUploadForm.prototype, "variant", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedUploadForm.prototype, "errorMessage", void 0);
 __decorate([property({
-	type: String,
-	converter: booleanConverter(false)
+	type: Boolean,
+	attribute: "plain",
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], ConnectedUploadForm.prototype, "plain", void 0);
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], ConnectedUploadForm.prototype, "tooltip", void 0);
 __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedUploadForm.prototype, "allFiles", void 0);
@@ -4527,9 +4469,8 @@ __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedUploadF
 __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedUploadForm.prototype, "unmatchedPngs", void 0);
 __decorate([state(), __decorateMetadata("design:type", Object)], ConnectedUploadForm.prototype, "isDragging", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedUploadForm.prototype, "infoMessage", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedUploadForm.prototype, "onSuccess", void 0);
-//#endregion
-//#region src/components/folder/upload/ConnectedUploadDialog.ts
+__decorate([property({ attribute: false }), __decorateMetadata("design:type", Function)], ConnectedUploadForm.prototype, "onSuccess", void 0);
+// src/components/folder/upload/ConnectedUploadDialog.ts
 var ConnectedUploadDialog = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -4609,9 +4550,6 @@ var ConnectedUploadDialog = class extends AbstractControlledConsumer {
         }
         .paired-files-table td:not(:first-child) { 
             width: calc(100% / 3); 
-        }
-
-        .paired-file-group {
         }
 
         .paired-file-group__header td { 
@@ -5062,7 +5000,7 @@ var ConnectedUploadDialog = class extends AbstractControlledConsumer {
             <thermal-expandable
                 label="${title}"
                 variantExpanded="foreground"
-                closeIcon="true"
+                ?closeIcon=${true}
                 icon="info"
                 iconStyle="outline"
                 tooltip="Obrázky PNG, které se nám dle jejich jména nepodařilo spárovat s žádným LRC souborem"
@@ -5138,8 +5076,9 @@ __decorate([property({ type: String }), __decorateMetadata("design:type", String
 __decorate([property({ type: String }), __decorateMetadata("design:type", Object)], ConnectedUploadDialog.prototype, "variant", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedUploadDialog.prototype, "errorMessage", void 0);
 __decorate([property({
-	type: String,
-	converter: booleanConverter(false)
+	type: Boolean,
+	attribute: "plain",
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], ConnectedUploadDialog.prototype, "plain", void 0);
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], ConnectedUploadDialog.prototype, "tooltip", void 0);
 __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedUploadDialog.prototype, "allFiles", void 0);
@@ -5147,9 +5086,8 @@ __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedUploadD
 __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedUploadDialog.prototype, "unmatchedPngs", void 0);
 __decorate([state(), __decorateMetadata("design:type", Object)], ConnectedUploadDialog.prototype, "isDragging", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedUploadDialog.prototype, "infoMessage", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedUploadDialog.prototype, "onSuccess", void 0);
-//#endregion
-//#region src/components/folder/ConnectedFolderHeader.ts
+__decorate([property({ attribute: false }), __decorateMetadata("design:type", Function)], ConnectedUploadDialog.prototype, "onSuccess", void 0);
+// src/components/folder/ConnectedFolderHeader.ts
 var ConnectedFolderHeader = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -5284,8 +5222,7 @@ var ConnectedFolderHeader = class extends AbstractControlledConsumer {
 	}
 };
 __decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFolderHeader.prototype, "onParentClick", void 0);
-//#endregion
-//#region src/components/folder/thumbs/AbstractFolderThumbnail.ts
+// src/components/folder/thumbs/AbstractFolderThumbnail.ts
 var AbstractFolderThumbnail = class extends AbstractControlledConsumer {
 	get internalSlug() {
 		return this.folder.path.replaceAll("/", "-").replaceAll(" ", "_") + "___thumbnail";
@@ -5430,19 +5367,16 @@ var AbstractFolderThumbnail = class extends AbstractControlledConsumer {
 	}
 	renderThumbnailLrc(thermalUrl) {
 		return html`<registry-provider
-            autoclear="true"
-            batch="true"
-            slug="${this.internalSlug}"
+            registry-slug="${this.internalSlug}"
+            autoclear
         >
             <group-provider 
-                slug="${this.internalSlug}"
-                autoclear="true"
-                batch="true"
+                group-slug="${this.internalSlug}"
+                autoclear
             >
                 <file-provider
                     thermal="${thermalUrl}"
-                    batch="true"
-                    autoclear="true"
+                    autoclear
                 >
                     <file-canvas></file-canvas>
                 </file-provider>
@@ -5451,11 +5385,10 @@ var AbstractFolderThumbnail = class extends AbstractControlledConsumer {
 	}
 };
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], AbstractFolderThumbnail.prototype, "folder", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], AbstractFolderThumbnail.prototype, "onClick", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], AbstractFolderThumbnail.prototype, "onUpdate", void 0);
+__decorate([property({ attribute: false }), __decorateMetadata("design:type", Function)], AbstractFolderThumbnail.prototype, "onClick", void 0);
+__decorate([property({ attribute: false }), __decorateMetadata("design:type", Function)], AbstractFolderThumbnail.prototype, "onUpdate", void 0);
 __decorate([property({ type: Number }), __decorateMetadata("design:type", Number)], AbstractFolderThumbnail.prototype, "subfoldersCount", void 0);
-//#endregion
-//#region src/components/folder/thumbs/ConnectedFolderRow.ts
+// src/components/folder/thumbs/ConnectedFolderRow.ts
 var ConnectedFolderRow = class extends AbstractFolderThumbnail {
 	static {
 		this.styles = [AbstractFolderThumbnail.styles, css`
@@ -5674,8 +5607,7 @@ var ConnectedFolderRow = class extends AbstractFolderThumbnail {
         `;
 	}
 };
-//#endregion
-//#region src/components/folder/thumbs/ConnectedFolderThumbnail.ts
+// src/components/folder/thumbs/ConnectedFolderThumbnail.ts
 var ConnectedFolderThumbnail = class extends AbstractFolderThumbnail {
 	static {
 		this.styles = [AbstractFolderThumbnail.styles, css`
@@ -5824,8 +5756,7 @@ var ConnectedFolderThumbnail = class extends AbstractFolderThumbnail {
         `;
 	}
 };
-//#endregion
-//#region src/components/folder/listing/ConnetcedFileList.ts
+// src/components/folder/listing/ConnetcedFileList.ts
 var ConnectedFileList = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -5870,16 +5801,17 @@ var ConnectedFileList = class extends AbstractControlledConsumer {
 		this.display.subscribeToDisplayComments(this);
 	}
 	renderFile(file) {
-		const callback = this.onFileClick !== void 0 ? () => this.onFileClick(file) : void 0;
+		if (!this.content.folder) return nothing;
+		const callback = this.onFileClick !== void 0 ? () => this.onFileClick(file) : () => {};
 		return html`<connected-file-thumbnail
     .file=${file}
     .folder=${this.content.folder}
     .onFileDelete=${this.onFileDelete}
     .onFileClick=${callback}
     display-mode=${this.displayMode}
-    compact=${this.compact ? "true" : "false"}
-    show-discussion=${this.showDiscussion ? "true" : "false"}
-    editable-tags=${this.editableTags ? "true" : "false"}
+    ?compact=${this.compact}
+    ?show-discussion=${this.showDiscussion}
+    ?editable-tags=${this.editableTags}
 ></connected-file-thumbnail>`;
 	}
 	render() {
@@ -5887,13 +5819,13 @@ var ConnectedFileList = class extends AbstractControlledConsumer {
 		return html`${this.content.files?.map((subfolder) => this.renderFile(subfolder))}`;
 	}
 };
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFileList.prototype, "onFileClick", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFileList.prototype, "onChange", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFileList.prototype, "onFileDelete", void 0);
+__decorate([property({ attribute: false }), __decorateMetadata("design:type", Function)], ConnectedFileList.prototype, "onFileClick", void 0);
+__decorate([property({ attribute: false }), __decorateMetadata("design:type", Function)], ConnectedFileList.prototype, "onChange", void 0);
+__decorate([property({ attribute: false }), __decorateMetadata("design:type", Function)], ConnectedFileList.prototype, "onFileDelete", void 0);
 __decorate([property({
-	type: String,
+	type: Boolean,
 	reflect: true,
-	converter: booleanConverter(false)
+	attribute: "compact"
 }), __decorateMetadata("design:type", Boolean)], ConnectedFileList.prototype, "compact", void 0);
 __decorate([property({
 	type: String,
@@ -5901,19 +5833,16 @@ __decorate([property({
 	attribute: "display-mode"
 }), __decorateMetadata("design:type", Object)], ConnectedFileList.prototype, "displayMode", void 0);
 __decorate([property({
-	type: String,
+	type: Boolean,
 	reflect: true,
-	converter: booleanConverter(false),
 	attribute: "show-discussion"
 }), __decorateMetadata("design:type", Boolean)], ConnectedFileList.prototype, "showDiscussion", void 0);
 __decorate([property({
 	type: Boolean,
 	reflect: true,
-	converter: booleanConverter(false),
 	attribute: "editable-tags"
 }), __decorateMetadata("design:type", Boolean)], ConnectedFileList.prototype, "editableTags", void 0);
-//#endregion
-//#region src/components/folder/listing/ConnectedSubfoldersGrid.ts
+// src/components/folder/listing/ConnectedSubfoldersGrid.ts
 var ConnectedSubfoldersGrid = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -6418,8 +6347,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], ConnectedSubfoldersGrid.prototype, "registry", void 0);
-//#endregion
-//#region src/components/folder/listing/ConnectedSubfolderList.ts
+// src/components/folder/listing/ConnectedSubfolderList.ts
 var ConnectedFolderFileList = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -6501,8 +6429,7 @@ __decorate([property({
 	type: String,
 	attribute: "folder-mode"
 }), __decorateMetadata("design:type", typeof FolderListDisplayMode === "undefined" ? Object : FolderListDisplayMode)], ConnectedFolderFileList.prototype, "folderMode", void 0);
-//#endregion
-//#region src/components/user/LoginFormNew.ts
+// src/components/user/LoginFormNew.ts
 var ConnectedLoginForm = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -6641,11 +6568,13 @@ __decorate([property({
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedLoginForm.prototype, "error", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedLoginForm.prototype, "message", void 0);
 __decorate([state(), __decorateMetadata("design:type", Boolean)], ConnectedLoginForm.prototype, "isLoggingIn", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedLoginForm.prototype, "onLoginSuccess", void 0);
+__decorate([property({
+	type: Function,
+	attribute: false
+}), __decorateMetadata("design:type", Function)], ConnectedLoginForm.prototype, "onLoginSuccess", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedLoginForm.prototype, "login", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedLoginForm.prototype, "password", void 0);
-//#endregion
-//#region src/components/user/ConnectedUserButton.ts
+// src/components/user/ConnectedUserButton.ts
 var ConnectedUserButton = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -6812,12 +6741,11 @@ var ConnectedUserButton = class extends AbstractControlledConsumer {
 };
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedUserButton.prototype, "message", void 0);
 __decorate([property({
+	type: Boolean,
 	reflect: true,
-	attribute: "disable-logging",
-	converter: booleanConverter(false)
+	attribute: "disable-logging"
 }), __decorateMetadata("design:type", Boolean)], ConnectedUserButton.prototype, "disableLogging", void 0);
-//#endregion
-//#region src/components/ConnectedShareDialog.ts
+// src/components/ConnectedShareDialog.ts
 var ConnectedShareDialog = class extends AbstractControlledConsumer {
 	get _path() {
 		switch (this._appState) {
@@ -7037,8 +6965,7 @@ __decorate([consume({
 	context: registryRangeToContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Number)], ConnectedShareDialog.prototype, "to", void 0);
-//#endregion
-//#region src/components/ConnectedBreadcrumb.ts
+// src/components/ConnectedBreadcrumb.ts
 var ConnectedBreadcrumb = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -7163,11 +7090,11 @@ var ConnectedBreadcrumb = class extends AbstractControlledConsumer {
             @click=${() => {
 			if (item.onClick) item.onClick();
 		}}
-            variant="text"
+            variant="default"
             icon="${item.icon}"
             iconStyle="${item.iconStyle}"
             interactive=${isInteractive ? "true" : "false"}
-            tooltip=${item.tooltip ? item.tooltip : void 0}
+            tooltip=${ifDefined(item.tooltip ? item.tooltip : void 0)}
         >
             ${item.label}
         </thermal-btn>`;
@@ -7176,11 +7103,16 @@ var ConnectedBreadcrumb = class extends AbstractControlledConsumer {
 		return html`${this.items.map(this.renderItem.bind(this))}`;
 	}
 };
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedBreadcrumb.prototype, "onFolderClick", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedBreadcrumb.prototype, "onUserClick", void 0);
+__decorate([property({
+	type: Function,
+	attribute: false
+}), __decorateMetadata("design:type", Function)], ConnectedBreadcrumb.prototype, "onFolderClick", void 0);
+__decorate([property({
+	type: Function,
+	attribute: false
+}), __decorateMetadata("design:type", Function)], ConnectedBreadcrumb.prototype, "onUserClick", void 0);
 __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedBreadcrumb.prototype, "items", void 0);
-//#endregion
-//#region src/components/selection/ConnectedFolderSelectionCheckbox.ts
+// src/components/selection/ConnectedFolderSelectionCheckbox.ts
 /** Connected folder selection checkbox component */
 var ConnectedFolderSelectionCheckbox = class extends AbstractControlledConsumer {
 	connectedCallback() {
@@ -7236,8 +7168,7 @@ var ConnectedFolderSelectionCheckbox = class extends AbstractControlledConsumer 
 	}
 };
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFolderSelectionCheckbox.prototype, "folder", void 0);
-//#endregion
-//#region src/components/selection/ConnectedFolderSelectionActions.ts
+// src/components/selection/ConnectedFolderSelectionActions.ts
 var ConnectedFolderSelectionActions = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -7439,8 +7370,7 @@ __decorate([consume({
 	context: groupObjectContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Object)], ConnectedFolderSelectionActions.prototype, "group", void 0);
-//#endregion
-//#region src/components/selection/ConnectedFileSelectionCheckbox.ts
+// src/components/selection/ConnectedFileSelectionCheckbox.ts
 /** Connected file selection checkbox component */
 var ConnectedFileSelectionCheckbox = class extends AbstractControlledConsumer {
 	connectedCallback() {
@@ -7487,8 +7417,7 @@ var ConnectedFileSelectionCheckbox = class extends AbstractControlledConsumer {
 	}
 };
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileSelectionCheckbox.prototype, "file", void 0);
-//#endregion
-//#region src/components/selection/ConnectedFileSelectionActions.ts
+// src/components/selection/ConnectedFileSelectionActions.ts
 var ConnectedFileSelectionActions = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -7787,8 +7716,7 @@ __decorate([consume({
 	context: groupObjectContext,
 	subscribe: true
 }), __decorateMetadata("design:type", Object)], ConnectedFileSelectionActions.prototype, "group", void 0);
-//#endregion
-//#region src/components/selection/move/ConnectedLocationSelector.ts
+// src/components/selection/ConnectedLocationSelector.ts
 let LocationSelectorMode = /* @__PURE__ */ function(LocationSelectorMode) {
 	LocationSelectorMode["FOLDER"] = "folder";
 	LocationSelectorMode["FILE"] = "file";
@@ -8134,8 +8062,7 @@ __decorate([state(), __decorateMetadata("design:type", Object)], ConnectedLocati
 __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedLocationSelector.prototype, "_currentSubfolders", void 0);
 __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedLocationSelector.prototype, "_userFolders", void 0);
 __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedLocationSelector.prototype, "_breadcrumb", void 0);
-//#endregion
-//#region src/components/folder/crud/ConnectedFolderMoveDialog.ts
+// src/components/folder/crud/ConnectedFolderMoveDialog.ts
 var ConnectedFolderMoveDialog = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -8173,8 +8100,7 @@ var ConnectedFolderMoveDialog = class extends AbstractControlledConsumer {
 	}
 };
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFolderMoveDialog.prototype, "folder", void 0);
-//#endregion
-//#region src/components/folder/crud/AbstractFolderDialog.ts
+// src/components/folder/crud/AbstractFolderDialog.ts
 /** A base class for all dialogs related to folder CRUD operations. */
 var AbstractFolderDialog = class extends AbstractControlledConsumer {
 	constructor(..._args) {
@@ -8260,8 +8186,7 @@ __decorate([property({
 }), __decorateMetadata("design:type", String)], AbstractFolderDialog.prototype, "label", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], AbstractFolderDialog.prototype, "closeLabel", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], AbstractFolderDialog.prototype, "dialogLabel", void 0);
-//#endregion
-//#region src/components/folder/crud/ConnectedFolderEditDialog.ts
+// src/components/folder/crud/ConnectedFolderEditDialog.ts
 var ConnectedFolderEditDialog = class extends AbstractFolderDialog {
 	constructor(..._args) {
 		super(..._args);
@@ -8394,8 +8319,7 @@ __decorate([state(), __decorateMetadata("design:type", String)], ConnectedFolder
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedFolderEditDialog.prototype, "folderDescription", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedFolderEditDialog.prototype, "errorMessage", void 0);
 __decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFolderEditDialog.prototype, "onSuccess", void 0);
-//#endregion
-//#region src/components/folder/crud/ConnectedFolderDeleteDialog.ts
+// src/components/folder/crud/ConnectedFolderDeleteDialog.ts
 var ConnectedFolderDeleteDialog = class extends AbstractFolderDialog {
 	constructor(..._args) {
 		super(..._args);
@@ -8477,8 +8401,7 @@ ${this.errorMessage ? html`<div class="error">${this.errorMessage}</div>` : ""}
 };
 __decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFolderDeleteDialog.prototype, "onSuccess", void 0);
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], ConnectedFolderDeleteDialog.prototype, "errorMessage", void 0);
-//#endregion
-//#region src/components/folder/crud/ConnectedFolderCreateDialog.ts
+// src/components/folder/crud/ConnectedFolderCreateDialog.ts
 var ConnectedFolderCreateDialog = class extends AbstractFolderDialog {
 	constructor(..._args) {
 		super(..._args);
@@ -8615,8 +8538,7 @@ __decorate([property({ type: String }), __decorateMetadata("design:type", String
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], ConnectedFolderCreateDialog.prototype, "errorMessage", void 0);
 __decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFolderCreateDialog.prototype, "onSuccess", void 0);
 __decorate([state(), __decorateMetadata("design:type", Boolean)], ConnectedFolderCreateDialog.prototype, "mayHaveFiles", void 0);
-//#endregion
-//#region src/components/folder/crud/ConnectedFolderContentModeSwitch.ts
+// src/components/folder/crud/ConnectedFolderContentModeSwitch.ts
 var ConnectedFolderContentModeSwitch = class extends AbstractControlledConsumer {
 	connectedCallback() {
 		super.connectedCallback();
@@ -8712,8 +8634,7 @@ var ConnectedFolderContentModeSwitch = class extends AbstractControlledConsumer 
 		return this.renderSwitch();
 	}
 };
-//#endregion
-//#region src/components/file/ConnectedFileThumbnail.ts
+// src/components/file/ConnectedFileThumbnail.ts
 var ConnectedFileThumbnail = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -8811,7 +8732,7 @@ var ConnectedFileThumbnail = class extends AbstractControlledConsumer {
             .file=${this.file}
             .folder=${this.folder}
             label=""
-            plain="true"
+            plain
             variant=${variant}
             size="sm"
         ></connected-file-edit-dialog>`;
@@ -8850,7 +8771,7 @@ var ConnectedFileThumbnail = class extends AbstractControlledConsumer {
             .folder=${this.folder}
             .onDelete=${this.onFileDelete}
             label=""
-            plain="true"
+            plain
             variant=${variant}
             size="sm"
         ></connected-file-delete-dialog>`;
@@ -8875,6 +8796,7 @@ var ConnectedFileThumbnail = class extends AbstractControlledConsumer {
 			const hasStoredAnalyses = this.file.analyses.length > 0;
 			let restoreLabel = void 0;
 			if (hasStoredAnalyses) restoreLabel = `Načíst uložené analýzy (${this.file.analyses.length})`;
+			const copyToAllEnabled = this.content.files ? this.content.files.length > 0 : false;
 			content = html`<div class="analyses-inner">
                 
                 <file-analysis-complex ?hide-hint=${true}>
@@ -8891,7 +8813,10 @@ var ConnectedFileThumbnail = class extends AbstractControlledConsumer {
 
                 ${this.hasDisplayedAnalysis ? html`<aside>
 
-                        <connected-file-analysis-buttons .info=${this.file} .enableCopyToAll=${this.content.files && this.content.files.length > 0}></connected-file-analysis-buttons>
+                        <connected-file-analysis-buttons 
+                            .info=${this.file} 
+                            .enableCopyToAll=${copyToAllEnabled}
+                        ></connected-file-analysis-buttons>
 
                 </aside>` : nothing}
 
@@ -9214,7 +9139,7 @@ var ConnectedFileThumbnail = class extends AbstractControlledConsumer {
     batch="true"
     autoclear="true"
     role="article"
-    autoHighlight="true"
+    autoHighlight
     ${ref(this.instanceRef)}
 >
 
@@ -9247,7 +9172,7 @@ var ConnectedFileThumbnail = class extends AbstractControlledConsumer {
 
         <file-range-propagator 
             variant="${this.compact ? "default" : "background"}"
-            .plain="true"
+            plain
             size="${this.displayMode === "asTable" ? "md" : "sm"}"
         ></file-range-propagator>
 
@@ -9262,7 +9187,7 @@ var ConnectedFileThumbnail = class extends AbstractControlledConsumer {
         <connected-file-tags
             .file=${this.file}
             .folder=${this.folder}
-            inline="true"
+            inline
             .editable="${this.editableTags}"
             size="sm"
         ></connected-file-tags>
@@ -9292,12 +9217,12 @@ __decorate([
 ], ConnectedFileThumbnail.prototype, "group", void 0);
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileThumbnail.prototype, "file", void 0);
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileThumbnail.prototype, "folder", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFileThumbnail.prototype, "onFileClick", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFileThumbnail.prototype, "onFileDelete", void 0);
+__decorate([property({ attribute: false }), __decorateMetadata("design:type", Function)], ConnectedFileThumbnail.prototype, "onFileClick", void 0);
+__decorate([property({ attribute: false }), __decorateMetadata("design:type", Function)], ConnectedFileThumbnail.prototype, "onFileDelete", void 0);
 __decorate([property({
 	type: Boolean,
 	reflect: true,
-	converter: booleanConverter(false)
+	attribute: "compact"
 }), __decorateMetadata("design:type", Boolean)], ConnectedFileThumbnail.prototype, "compact", void 0);
 __decorate([property({
 	type: String,
@@ -9305,20 +9230,17 @@ __decorate([property({
 	attribute: "display-mode"
 }), __decorateMetadata("design:type", typeof FileListDisplayMode === "undefined" ? Object : FileListDisplayMode)], ConnectedFileThumbnail.prototype, "displayMode", void 0);
 __decorate([property({
-	type: String,
+	type: Boolean,
 	reflect: true,
-	converter: booleanConverter(false),
 	attribute: "show-discussion"
 }), __decorateMetadata("design:type", Boolean)], ConnectedFileThumbnail.prototype, "showDiscussion", void 0);
 __decorate([property({
 	type: Boolean,
 	reflect: true,
-	converter: booleanConverter(false),
 	attribute: "editable-tags"
 }), __decorateMetadata("design:type", Boolean)], ConnectedFileThumbnail.prototype, "editableTags", void 0);
 __decorate([state(), __decorateMetadata("design:type", Boolean)], ConnectedFileThumbnail.prototype, "hasDisplayedAnalysis", void 0);
-//#endregion
-//#region src/components/file/ConnectedFileTags.ts
+// src/components/file/ConnectedFileTags.ts
 var ConnectedFileTags = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -9553,8 +9475,7 @@ __decorate([property({
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileTags.prototype, "file", void 0);
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileTags.prototype, "folder", void 0);
 __decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFileTags.prototype, "onChange", void 0);
-//#endregion
-//#region src/components/file/ConnectedFileMoveDialog.ts
+// src/components/file/ConnectedFileMoveDialog.ts
 var ConnectedFileMoveDialog = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -9588,8 +9509,7 @@ var ConnectedFileMoveDialog = class extends AbstractControlledConsumer {
 	}
 };
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileMoveDialog.prototype, "file", void 0);
-//#endregion
-//#region src/components/file/ConnectedFileHeader.ts
+// src/components/file/ConnectedFileHeader.ts
 var ConnectedFileHeader = class extends AbstractControlledConsumer {
 	connectedCallback() {
 		super.connectedCallback();
@@ -9774,8 +9694,7 @@ ${this.renderUpButton()}
 </section>`;
 	}
 };
-//#endregion
-//#region src/components/file/ConnectedFileEditDialog.ts
+// src/components/file/ConnectedFileEditDialog.ts
 var ConnectedFileEditDialog = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -9910,8 +9829,7 @@ __decorate([property({ type: Object }), __decorateMetadata("design:type", Object
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedFileEditDialog.prototype, "fileLabel", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedFileEditDialog.prototype, "fileDescription", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedFileEditDialog.prototype, "errorMessage", void 0);
-//#endregion
-//#region src/components/file/ConnectedFileDeleteDialog.ts
+// src/components/file/ConnectedFileDeleteDialog.ts
 var ConnectedFileDeleteDialog = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -10027,8 +9945,8 @@ var ConnectedFileDeleteDialog = class extends AbstractControlledConsumer {
 	}
 };
 __decorate([property({
-	type: String,
-	converter: booleanConverter(false)
+	type: Boolean,
+	reflect: true
 }), __decorateMetadata("design:type", Boolean)], ConnectedFileDeleteDialog.prototype, "showLabel", void 0);
 __decorate([property({ type: String }), __decorateMetadata("design:type", String)], ConnectedFileDeleteDialog.prototype, "label", void 0);
 __decorate([property({
@@ -10039,15 +9957,17 @@ __decorate([property({
 	type: String,
 	reflect: true
 }), __decorateMetadata("design:type", Object)], ConnectedFileDeleteDialog.prototype, "size", void 0);
-__decorate([property({ type: String }), __decorateMetadata("design:type", Boolean)], ConnectedFileDeleteDialog.prototype, "plain", void 0);
+__decorate([property({
+	type: Boolean,
+	reflect: true
+}), __decorateMetadata("design:type", Boolean)], ConnectedFileDeleteDialog.prototype, "plain", void 0);
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileDeleteDialog.prototype, "file", void 0);
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileDeleteDialog.prototype, "folder", void 0);
-__decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFileDeleteDialog.prototype, "onDelete", void 0);
+__decorate([property({ attribute: false }), __decorateMetadata("design:type", Function)], ConnectedFileDeleteDialog.prototype, "onDelete", void 0);
 __decorate([state(), __decorateMetadata("design:type", Boolean)], ConnectedFileDeleteDialog.prototype, "isOpen", void 0);
 __decorate([state(), __decorateMetadata("design:type", Boolean)], ConnectedFileDeleteDialog.prototype, "isDeleting", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedFileDeleteDialog.prototype, "error", void 0);
-//#endregion
-//#region src/components/file/comments/ConnectedFileComments.ts
+// src/components/file/comments/ConnectedFileComments.ts
 var ConnectedFileComments = class extends AbstractControlledConsumer {
 	static {
 		this.styles = css`
@@ -10155,8 +10075,7 @@ var ConnectedFileComments = class extends AbstractControlledConsumer {
 };
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileComments.prototype, "file", void 0);
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileComments.prototype, "folder", void 0);
-//#endregion
-//#region src/components/file/comments/ConnectedFileComment.ts
+// src/components/file/comments/ConnectedFileComment.ts
 var ConnectedFileComment = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -10319,8 +10238,7 @@ __decorate([property({ type: Object }), __decorateMetadata("design:type", Object
 __decorate([property({ type: Function }), __decorateMetadata("design:type", Function)], ConnectedFileComment.prototype, "onChange", void 0);
 __decorate([state(), __decorateMetadata("design:type", String)], ConnectedFileComment.prototype, "error", void 0);
 __decorate([state(), __decorateMetadata("design:type", Boolean)], ConnectedFileComment.prototype, "isEditing", void 0);
-//#endregion
-//#region src/components/file/analysis/ConnectedFileAnalysisButtons.ts
+// src/components/file/analysis/ConnectedFileAnalysisButtons.ts
 var ConnectedFileAnalysisButtons = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -10377,10 +10295,10 @@ var ConnectedFileAnalysisButtons = class extends AbstractControlledConsumer {
         ></thermal-btn>`;
 	}
 	renderDeleteButton() {
-		const disabled = this.analyses.length === 0 ? "true" : "false";
+		const disabled = this.analyses.length === 0;
 		return html`<thermal-btn
             tooltip="Odstranit všechny analýzy ze všech souborů ve složce"
-            disabled=${disabled}
+            ?disabled=${disabled}
             @click=${() => {
 			if (!this.file) return;
 			this.file.analysis.layers.removeAllAnalyses();
@@ -10391,9 +10309,9 @@ var ConnectedFileAnalysisButtons = class extends AbstractControlledConsumer {
 	}
 	renderServerSaveButton() {
 		let callback = void 0;
-		let disabled = "true";
+		let disabled = true;
 		if (this.hasChanged) {
-			disabled = "false";
+			disabled = false;
 			callback = async () => {
 				const request = this.client.api.routes.post.updateFile(this.info.path, this.info.fileName);
 				request.clearAnalyses();
@@ -10408,7 +10326,7 @@ var ConnectedFileAnalysisButtons = class extends AbstractControlledConsumer {
 		}
 		return html`<thermal-btn
             tooltip="Uložit současný stav analýz na server"
-            disabled=${disabled}
+            ?disabled=${disabled}
             @click=${callback}
             icon="save"
             iconStyle="micro"
@@ -10416,9 +10334,9 @@ var ConnectedFileAnalysisButtons = class extends AbstractControlledConsumer {
 	}
 	renderServerRestoreButton() {
 		let callback = void 0;
-		let disabled = "true";
+		let disabled = true;
 		if (this.hasChanged && this.info.analyses.length > 0) {
-			disabled = "false";
+			disabled = false;
 			callback = async () => {
 				this.file?.analysis.layers.removeAllAnalyses();
 				for (const analysis of this.info.analyses) {
@@ -10431,7 +10349,7 @@ var ConnectedFileAnalysisButtons = class extends AbstractControlledConsumer {
 		}
 		return html`<thermal-btn
             tooltip="Obnovit analýzy ze serveru"
-            disabled=${disabled}
+            ?disabled=${disabled}
             @click=${callback}
             icon="restore"
             iconStyle="micro"
@@ -10439,9 +10357,9 @@ var ConnectedFileAnalysisButtons = class extends AbstractControlledConsumer {
 	}
 	renderServerDeleteButton() {
 		let callback = void 0;
-		let disabled = "true";
+		let disabled = true;
 		if (this.analyses.length > 0 && this.info.analyses.length > 0) {
-			disabled = "false";
+			disabled = false;
 			callback = async () => {
 				const request = this.client.api.routes.post.updateFile(this.info.path, this.info.fileName);
 				request.clearAnalyses();
@@ -10455,7 +10373,7 @@ var ConnectedFileAnalysisButtons = class extends AbstractControlledConsumer {
 		}
 		return html`<thermal-btn
             tooltip="Smazat všechny analýzy uložené na serveru"
-            disabled=${disabled}
+            ?disabled=${disabled}
             @click=${callback}
             icon="trash"
             iconStyle="micro"
@@ -10489,7 +10407,10 @@ var ConnectedFileAnalysisButtons = class extends AbstractControlledConsumer {
 	}
 };
 __decorate([property({ type: Object }), __decorateMetadata("design:type", Object)], ConnectedFileAnalysisButtons.prototype, "info", void 0);
-__decorate([property({ type: Boolean }), __decorateMetadata("design:type", Boolean)], ConnectedFileAnalysisButtons.prototype, "enableCopyToAll", void 0);
+__decorate([property({
+	type: Boolean,
+	reflect: true
+}), __decorateMetadata("design:type", Boolean)], ConnectedFileAnalysisButtons.prototype, "enableCopyToAll", void 0);
 __decorate([state(), __decorateMetadata("design:type", Array)], ConnectedFileAnalysisButtons.prototype, "analyses", void 0);
 __decorate([state(), __decorateMetadata("design:type", Boolean)], ConnectedFileAnalysisButtons.prototype, "hasChanged", void 0);
 __decorate([
@@ -10500,8 +10421,7 @@ __decorate([
 	}),
 	__decorateMetadata("design:type", Object)
 ], ConnectedFileAnalysisButtons.prototype, "file", void 0);
-//#endregion
-//#region src/components/configuration/AbstractConfigElement.ts
+// src/components/configuration/AbstractConfigElement.ts
 var AbstractConfigElement = class extends AbstractControlledConsumer {
 	static {
 		this.styles = css`
@@ -10563,8 +10483,7 @@ var AbstractConfigElement = class extends AbstractControlledConsumer {
         `;
 	}
 };
-//#endregion
-//#region src/components/configuration/ConnectedConfigSubfolderMode.ts
+// src/components/configuration/ConnectedConfigSubfolderMode.ts
 var ConnectedConfigSubfolderMode = class extends AbstractConfigElement {
 	connectedCallback() {
 		super.connectedCallback();
@@ -10577,8 +10496,7 @@ var ConnectedConfigSubfolderMode = class extends AbstractConfigElement {
 		return items;
 	}
 };
-//#endregion
-//#region src/components/configuration/ConnectedConfigFileDisplayMode.ts
+// src/components/configuration/ConnectedConfigFileDisplayMode.ts
 var ConnectedConfigFileMode = class extends AbstractConfigElement {
 	connectedCallback() {
 		super.connectedCallback();
@@ -10594,8 +10512,7 @@ var ConnectedConfigFileMode = class extends AbstractConfigElement {
 		return items;
 	}
 };
-//#endregion
-//#region src/components/configuration/ConnectedConfigFileContentMode.ts
+// src/components/configuration/ConnectedConfigFileContentMode.ts
 var ConnectedConfigFileContentMode = class extends AbstractConfigElement {
 	connectedCallback() {
 		super.connectedCallback();
@@ -10606,8 +10523,7 @@ var ConnectedConfigFileContentMode = class extends AbstractConfigElement {
 		return [this.renderToggle("Edit tags", this.display.editTags, (value) => this.display.setEditTags(value)), this.renderToggle("Display Comments", this.display.displayComments, (value) => this.display.setDisplayComments(value))];
 	}
 };
-//#endregion
-//#region src/components/file/comments/ControlledFileCommentForm.ts
+// src/components/file/comments/ControlledFileCommentForm.ts
 var ConnectedFileCommentForm = class extends AbstractControlledConsumer {
 	constructor(..._args) {
 		super(..._args);
@@ -10789,7 +10705,6 @@ const elementsAll = {
 const isLabirthermalWebcomponent = (tag) => {
 	return tag in elementsAll;
 };
-//#endregion
 export { elementsAll, isLabirthermalWebcomponent };
 
 //# sourceMappingURL=index.export.mjs.map
