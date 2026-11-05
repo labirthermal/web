@@ -2864,7 +2864,7 @@ export declare const filePlayingContext: {
 };
 /** Exposes the current playback speed value from `FileController`. */
 export declare const filePlaybackSpeedContext: {
-  __context__: 1 | 2 | 3 | 5 | 0.5 | 10 | undefined;
+  __context__: 1 | 2 | 0.5 | 3 | 5 | 10 | undefined;
 };
 /** Exposes the current recording state from `FileController`. */
 export declare const fileRecordingContext: {
@@ -2890,7 +2890,7 @@ export declare class FileController extends AbstractHierarchyController<IElement
   get fileObject(): ThermalFileInstance | undefined;
   get failure(): ThermalFileFailure | undefined;
   get ms(): number;
-  get playbackSpeed(): 1 | 2 | 3 | 5 | 0.5 | 10;
+  get playbackSpeed(): 1 | 2 | 0.5 | 3 | 5 | 10;
   get analysis1(): string | undefined;
   get analysis2(): string | undefined;
   get analysis3(): string | undefined;
@@ -6123,20 +6123,6 @@ export declare class ThermalGroupAppElement extends AbstractApp implements IElem
   static styles: import("lit").CSSResult;
   protected render(): unknown;
 }
-type ComponentsCatalog = Record<string, CustomElementConstructor>;
-/**
- * Registers and defines all custom elements from a provided list
- *
- * @module @labirthermal/webcomponents
- *
- */
-export declare const defineAllWebcomponents: (name: string, version: string, catalog: ComponentsCatalog) => void;
-/**
- * Registers a custom element and defines it right away.
- *
- * @module @labirthermal/webcomponents
- */
-export declare const defineWebcomponent: (name: string, version: string, tag: string, cls: CustomElementConstructor) => void;
 declare enum VUNIT {
   mps = "mps",
   kph = "kph"
@@ -6192,18 +6178,6 @@ declare class FileInfoButton extends AbstractFileConsumer {
 declare global {
   interface HTMLElementTagNameMap {
     "file-info-button": FileInfoButton;
-  }
-}
-declare class FileLabelElement extends AbstractFileConsumer {
-  label?: string;
-  onInstanceCreated(): void;
-  onFailure(): void;
-  static styles: import("lit").CSSResult;
-  protected render(): unknown;
-}
-declare global {
-  interface HTMLElementTagNameMap {
-    "file-label": FileLabelElement;
   }
 }
 declare class FileTimelineElement extends AbstractFileConsumer {
@@ -6381,6 +6355,18 @@ declare global {
     "file-video-export-panel": FileVideoExportPanel;
   }
 }
+declare class FileLabelElement extends AbstractFileConsumer {
+  label?: string;
+  onInstanceCreated(): void;
+  onFailure(): void;
+  static styles: import("lit").CSSResult;
+  protected render(): unknown;
+}
+declare global {
+  interface HTMLElementTagNameMap {
+    "file-label": FileLabelElement;
+  }
+}
 declare class FileDetailElement extends AbstractFileConsumer {
   onback?: () => void;
   norender: boolean;
@@ -6399,6 +6385,20 @@ declare class FileThumbnailElement extends AbstractFileConsumer {
   static styles?: CSSResultGroup | undefined;
   protected render(): unknown;
 }
+type ComponentsCatalog = Record<string, CustomElementConstructor>;
+/**
+ * Registers and defines all custom elements from a provided list
+ *
+ * @module @labirthermal/webcomponents
+ *
+ */
+export declare const defineAllWebcomponents: (name: string, version: string, catalog: ComponentsCatalog) => void;
+/**
+ * Registers a custom element and defines it right away.
+ *
+ * @module @labirthermal/webcomponents
+ */
+export declare const defineWebcomponent: (name: string, version: string, tag: string, cls: CustomElementConstructor) => void;
 export declare const independentElements: {};
 /**
  * List of provider components
@@ -6496,5 +6496,5 @@ export declare const isLabirthermalWebcomponent: (tag: string) => boolean;
 /** Define all webcomponents from the @labirthermal/webcomponents package */
 export declare const defineBaseWebcomponents: () => void;
 declare const t: TFunction<["translation", ...string[]], undefined>;
-export { type BtnSizes, type BtnVariants, type ConfigSettings, type FileControllerCurrentFrameType, type FileControllerDurationContextType, type GroupExportSettings, type HostReactiveProperties, type IElementWithFileLoadController, type IElementWithGroupAnalysisSyncController, type IElementWithGroupController, type IElementWithGroupListingController, type IElementWithGroupLoadController, type IElementWithManagerController, type IElementWithRegistryController, type ManagerPaletteContextType, type PngExportSettings, i18webcomponents as i18nWebcomponents, icons, t };
+export { type AatAppElement, type BtnSizes, type BtnVariants, type ConfigSettings, type FileControllerCurrentFrameType, type FileControllerDurationContextType, type FileDetailElement, type FileInfoButton, type FileLabelElement, type FileThumbnailElement, type FileTimelineElement, type FileVideoExportPanel, type GroupExportSettings, type HostReactiveProperties, type IElementWithFileLoadController, type IElementWithGroupAnalysisSyncController, type IElementWithGroupController, type IElementWithGroupListingController, type IElementWithGroupLoadController, type IElementWithManagerController, type IElementWithRegistryController, type ManagerPaletteContextType, type PngExportSettings, type ThermalSlottedAppElement, i18webcomponents as i18nWebcomponents, icons, t };
 //# sourceMappingURL=index.export.d.mts.map

@@ -295,6 +295,14 @@ export { ThermalChartElement } from "./controls/file/analysis/chart/chart";
 export { ThermalFileAppElement } from "./apps/ThermalFileApp";
 export { ThermalDropinAppElement } from "./apps/ThermalDropinApp";
 export { ThermalGroupAppElement } from "./apps/ThermalGroupApp";
+export type { AatAppElement } from "./apps/AustralianApparentTemperature";
+export type { ThermalSlottedAppElement } from "./apps/ThermalSlottedApp";
+export type { FileInfoButton } from "./controls/file/FileInfoButton";
+export type { FileTimelineElement } from "./controls/file/FileTimelineElement";
+export type { FileVideoExportPanel } from "./controls/file/video/FileVideoExportPanel";
+export type { FileLabelElement } from "./controls/file/fileLabel";
+export type { FileDetailElement } from "./renderers/FileDetail";
+export type { FileThumbnailElement } from "./renderers/FileThumbnail";
 
 // Finally, expor the IIFE-related functionality
 

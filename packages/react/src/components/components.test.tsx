@@ -27,7 +27,7 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-it("forwards properties, refs, native events and slotted children through Lit's wrapper", async () => {
+it("forwards properties, refs, native events and slotted children through the React wrapper", async () => {
   class ButtonElement extends HTMLElement {
     variant = "default";
     disabled = false;

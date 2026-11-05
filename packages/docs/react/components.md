@@ -15,40 +15,50 @@ the [`@labirthermal/webcomponents` context guide](../webcomponents/guide/hierarc
 
 | React component | Webcomponent | Source and properties |
 | --- | --- | --- |
-| `ThermalDropinApp` | `thermal-dropin-app` | [ThermalDropinApp](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/apps/ThermalDropinApp.ts) |
-| `ThermalFileApp` | `thermal-file-app` | [ThermalFileApp](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/apps/ThermalFileApp.ts) |
-| `ThermalGroupApp` | `thermal-group-app` | [ThermalGroupApp](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/apps/ThermalGroupApp.ts) |
-| `ThermalSlottedApp` | `thermal-simple-app` | [ThermalSlottedApp](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/apps/ThermalSlottedApp.ts) |
-| `AatApp` | `apparent-temperature-aat` | [AustralianApparentTemperature](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/apps/AustralianApparentTemperature.ts) |
+| `ThermalDropinApp` | `thermal-dropin-app` | [ThermalDropinAppElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/apps/ThermalDropinApp.ts) |
+| `ThermalFileApp` | `thermal-file-app` | [ThermalFileAppElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/apps/ThermalFileApp.ts) |
+| `ThermalGroupApp` | `thermal-group-app` | [ThermalGroupAppElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/apps/ThermalGroupApp.ts) |
+| `ThermalSlottedApp` | `thermal-simple-app` | [ThermalSlottedAppElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/apps/ThermalSlottedApp.ts) |
+| `AatApp` | `apparent-temperature-aat` | [AatAppElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/apps/AustralianApparentTemperature.ts) |
 
 `ThermalFileApp`, `ThermalGroupApp` and `ThermalDropinApp` are self-contained
 applications; the other two wrappers expose their respective app elements.
+
+```tsx
+<LabirthermalProvider>
+  <ThermalFileApp thermal="/thermal/recording.lrc" />
+</LabirthermalProvider>
+```
 
 ## UI
 
 | React component | Webcomponent | Source and properties |
 | --- | --- | --- |
-| `ThermalApp` | `thermal-app` | [App](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/App.ts) |
-| `ThermalBar` | `thermal-bar` | [Bar](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Bar.ts) |
-| `ThermalBtn` | `thermal-btn` | [Btn](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Btn.ts) |
-| `ThermalBtnGroup` | `thermal-btn-group` | [BtnGroup](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/BtnGroup.ts) |
-| `ThermalDialog` | `thermal-dialog` | [Dialog](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Dialog.ts) |
-| `ThermalDropdown` | `thermal-dropdown` | [Dropdown](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Dropdown.ts) |
-| `ThermalDropin` | `thermal-dropin` | [Dropin](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Dropin.ts) |
-| `ThermalExpandable` | `thermal-expandable` | [Expandable](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Expandable.ts) |
-| `ThermalField` | `thermal-field` | [Field](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Field.ts) |
-| `ThermalIcon` | `thermal-icon` | [Icon](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Icon.ts) |
-| `ThermalLoading` | `thermal-loading` | [Loading](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Loading.ts) |
-| `ThermalRadio` | `thermal-radio` | [Radio](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Radio.ts) |
-| `ThermalSlot` | `thermal-slot` | [Slot](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Slot.ts) |
-| `ThermalSpinner` | `thermal-spinner` | [Spinner](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Spinner.ts) |
-| `ThermalTip` | `thermal-tip` | [Tip](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Tip.ts) |
+| `ThermalApp` | `thermal-app` | [ThermalAppElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/App.ts) |
+| `ThermalBar` | `thermal-bar` | [ThermalBarElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Bar.ts) |
+| `ThermalBtn` | `thermal-btn` | [ThermalBtnElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Btn.ts) |
+| `ThermalBtnGroup` | `thermal-btn-group` | [ThermalBtnGroupElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/BtnGroup.ts) |
+| `ThermalDialog` | `thermal-dialog` | [ThermalDialogElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Dialog.ts) |
+| `ThermalDropdown` | `thermal-dropdown` | [ThermalDropdownElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Dropdown.ts) |
+| `ThermalDropin` | `thermal-dropin` | [ThermalDropinElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Dropin.ts) |
+| `ThermalExpandable` | `thermal-expandable` | [ThermalExpandableElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Expandable.ts) |
+| `ThermalField` | `thermal-field` | [ThermalFieldElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Field.ts) |
+| `ThermalIcon` | `thermal-icon` | [ThermalIconElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Icon.ts) |
+| `ThermalLoading` | `thermal-loading` | [ThermalPosterElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Loading.ts) |
+| `ThermalRadio` | `thermal-radio` | [ThermalRadioElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Radio.ts) |
+| `ThermalSlot` | `thermal-slot` | [ThermalSlotElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Slot.ts) |
+| `ThermalSpinner` | `thermal-spinner` | [ThermalSpinnerElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Spinner.ts) |
+| `ThermalTip` | `thermal-tip` | [ThermalTipElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/ui/Tip.ts) |
+
+```tsx
+<ThermalBtn variant="primary">Open</ThermalBtn>
+```
 
 ## Manager
 
 | React component | Webcomponent | Source and properties |
 | --- | --- | --- |
-| `ManagerProvider` | `manager-provider` | [ManagerProvider](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/hierarchy/providers/ManagerProvider.ts) |
+| `ManagerProvider` | `manager-provider` | [ManagerProviderElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/hierarchy/providers/ManagerProvider.ts) |
 | `ManagerGraphSmoothSwitch` | `manager-graph-smooth-switch` | [ManagerGraphSmoothSwitch](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/manager/ManagerGraphSmoothSwitch.ts) |
 | `ManagerImageSmoothSwitch` | `manager-image-smooth-switch` | [ManagerImageSmoothSwitch](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/manager/ManagerImageSmoothSwitch.ts) |
 | `ManagerPaletteButtons` | `manager-palette-buttons` | [ManagerPaletteButtons](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/manager/ManagerPaletteButtons.ts) |
@@ -58,11 +68,19 @@ applications; the other two wrappers expose their respective app elements.
 | `ManagerUnitSwitch` | `manager-unit-switch` | [ManagerUnitSwitch](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/manager/ManagerUnitSwitch.ts) |
 | `ManagerExportPanel` (deprecated) | `manager-export-panel` | [ManagerExportPanel](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/manager/ManagerExportPanel.ts) |
 
+```tsx
+<LabirthermalProvider>
+  <ManagerProvider>
+    <ManagerPaletteDropdown />
+  </ManagerProvider>
+</LabirthermalProvider>
+```
+
 ## Registry
 
 | React component | Webcomponent | Source and properties |
 | --- | --- | --- |
-| `RegistryProvider` | `registry-provider` | [RegistryProvider](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/hierarchy/providers/RegistryProvider.ts) |
+| `RegistryProvider` | `registry-provider` | [RegistryProviderElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/hierarchy/providers/RegistryProvider.ts) |
 | `RegistryHistogram` | `registry-histogram` | [RegistryHistogram](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/registry/RegistryHistogram.ts) |
 | `RegistryOpacitySlider` | `registry-opacity-slider` | [RegistryOpacitySlider](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/registry/RegistryOpacitySlider.ts) |
 | `RegistryRangeAutoButton` | `registry-range-auto-button` | [RegistryRangeAutoButton](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/registry/RegistryRangeAutoButton.ts) |
@@ -72,11 +90,21 @@ applications; the other two wrappers expose their respective app elements.
 | `RegistryRangeSlider` | `registry-range-slider` | [RegistryRangeSlider](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/registry/RegistryRangeSlider.ts) |
 | `RegistryTicksBar` | `registry-ticks-bar` | [RegistryTicksBar](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/registry/RegistryTicksBar.ts) |
 
+```tsx
+<LabirthermalProvider>
+  <ManagerProvider>
+    <RegistryProvider>
+      <RegistryRangeSlider />
+    </RegistryProvider>
+  </ManagerProvider>
+</LabirthermalProvider>
+```
+
 ## Group
 
 | React component | Webcomponent | Source and properties |
 | --- | --- | --- |
-| `GroupProvider` | `group-provider` | [GroupProvider](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/hierarchy/providers/GroupProvider.ts) |
+| `GroupProvider` | `group-provider` | [GroupProviderElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/hierarchy/providers/GroupProvider.ts) |
 | `GroupAnalysisSyncButton` | `group-analysis-sync-button` | [GroupAnalysisSyncButton](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/group/GroupAnalysisSyncButton.ts) |
 | `GroupChart` | `group-chart` | [GroupChartElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/group/GroupChartElement.ts) |
 | `GroupDownloadButtons` | `group-download-buttons` | [GroupDownloadButtons](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/group/GroupDownloadButtons.ts) |
@@ -86,12 +114,24 @@ applications; the other two wrappers expose their respective app elements.
 | `GroupRangePropagator` | `group-range-propagator` | [GroupRangePropagatorElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/group/GroupRangePropagator.ts) |
 | `GroupTimeline` | `group-timeline` | [GroupTimelineElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/group/GroupTimeline.ts) |
 
+```tsx
+<LabirthermalProvider>
+  <ManagerProvider>
+    <RegistryProvider>
+      <GroupProvider>
+        <GroupTimeline />
+      </GroupProvider>
+    </RegistryProvider>
+  </ManagerProvider>
+</LabirthermalProvider>
+```
+
 ## File and analysis
 
 | React component | Webcomponent | Source and properties |
 | --- | --- | --- |
-| `FileProvider` | `file-provider` | [FileProvider](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/hierarchy/providers/FileProvider.ts) |
-| `FileCopy` | `file-copy` | [FileCopy](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/hierarchy/providers/FileCopy.ts) |
+| `FileProvider` | `file-provider` | [FileProviderElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/hierarchy/providers/FileProvider.ts) |
+| `FileCopy` | `file-copy` | [FileCopyElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/hierarchy/providers/FileCopy.ts) |
 | `FileCanvas` | `file-canvas` | [FileCanvasElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/file/FileCanvas.ts) |
 | `FileDownloadButton` | `file-download-dropdown` | [FileDownloadButton](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/file/FileDownloadDropdown.ts) |
 | `FileInfoButton` | `file-info-button` | [FileInfoButton](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/controls/file/FileInfoButton.ts) |
@@ -119,12 +159,28 @@ applications; the other two wrappers expose their respective app elements.
 | `FileDetail` | `file-detail` | [FileDetailElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/renderers/FileDetail.ts) |
 | `FileThumbnail` | `file-thumbnail` | [FileThumbnailElement](https://github.com/labirthermal/web/blob/main/packages/webcomponents/src/renderers/FileThumbnail.ts) |
 
+```tsx
+<LabirthermalProvider>
+  <ManagerProvider>
+    <RegistryProvider>
+      <GroupProvider>
+        <FileProvider thermal="/thermal/recording.lrc">
+          <FileCanvas />
+          <FileTimeline />
+        </FileProvider>
+      </GroupProvider>
+    </RegistryProvider>
+  </ManagerProvider>
+</LabirthermalProvider>
+```
+
 ## Wrapper implementation
 
 The wrappers use [`@lit/react`](https://lit.dev/docs/frameworks/react/) to
 bridge custom elements to React. The package resolves constructors from the
 webcomponents catalog after `LabirthermalProvider` initializes it, preserving
-browser-only loading. Each exported React component's JSDoc links to the source
-class that defines its corresponding webcomponent's properties.
+browser-only loading. Each exported React component's JSDoc links to the
+type-only imported class that defines its corresponding webcomponent's
+properties.
 
 See the [React documentation](https://react.dev/learn) for React fundamentals.

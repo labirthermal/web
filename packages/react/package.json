@@ -8,7 +8,7 @@
   "types": "./dist/lib/index.export.d.mts",
   "type": "module",
   "files": [
-    "dist",
+    "dist/lib",
     "README.md"
   ],
   "repository": {
@@ -22,7 +22,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "build": "tsdown"
+    "build": "tsdown",
+    "prepack": "npm run build"
   },
   "license": "MIT",
   "exports": {

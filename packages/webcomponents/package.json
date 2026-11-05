@@ -20,7 +20,7 @@
     "dev": "vite --config vite.config.dev.ts",
     "eslint": "eslint src",
     "test": "vitest src",
-    "build": "pnpm run build:iife && pnpm run build:lib && pnpm run build:esm",
+    "build": "pnpm run build:iife && pnpm run build:lib",
     "build:iife": "vite build --config vite.config.iife.ts",
     "build:esm": "vite build --config vite.config.esm.ts",
     "build:lib": "tsdown",

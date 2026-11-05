@@ -21,7 +21,7 @@ export type ThermalManagerOptions = {
     unit?: ThermalUnit
 }
 
-const isChromium = "chrome" in window;
+const isChromium = typeof window !== "undefined" && "chrome" in window;
 
 const options: workerpool.WorkerPoolOptions = isChromium
     ? {

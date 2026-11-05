@@ -8886,7 +8886,7 @@ var RegistriesState = class extends AbstractProperty {
 	}
 };
 // src/hierarchy/ThermalManager.ts
-const options = "chrome" in window ? { maxWorkers: 4 } : {};
+const options = typeof window !== "undefined" && "chrome" in window ? { maxWorkers: 4 } : {};
 const globalPool = workerpool.pool(options);
 var ThermalManager = class extends BaseStructureObject {
 	id;
