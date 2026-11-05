@@ -110,6 +110,7 @@ export default defineConfig({
         items: [
           { text: '@labirthermal/core', link: "/core" },
           { text: '@labirthermal/webcomponents', link: '/webcomponents' },
+          { text: '@labirthermal/react', link: '/react' },
         ]
 
       },
@@ -120,6 +121,7 @@ export default defineConfig({
     sidebar: [
       {
         text: '@labirthermal/core',
+        collapsed: true,
         items: [
           { text: 'Overview', link: '/core' },
           {
@@ -159,6 +161,7 @@ export default defineConfig({
       },
       {
         text: '@labirthermal/webcomponents',
+        collapsed: true,
         items: [
           { text: 'Overview', link: '/webcomponents' },
           { text: 'Usage in the browser', link: '/webcomponents/usage' },
@@ -207,6 +210,16 @@ export default defineConfig({
               { text: 'file-provider', link: '/webcomponents/providers/file-provider' }
             ]
           }
+        ]
+      },
+      {
+        text: '@labirthermal/react',
+        collapsed: true,
+        items: [
+          { text: 'Overview', link: '/react' },
+          { text: 'LabirthermalProvider', link: '/react/labirthermal-provider' },
+          { text: 'Components', link: '/react/components' },
+          { text: 'Next.js and SSR', link: '/react/nextjs' },
         ]
       },
     ],
