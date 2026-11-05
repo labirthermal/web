@@ -10,8 +10,8 @@ it("can import the library entry without a browser environment", async () => {
 });
 
 it("renders only the fallback on the server", async () => {
-  const { LabirProvider } = await import("./index.export");
-  const html = renderToString(createElement(LabirProvider, {
+  const { LabirthermalProvider } = await import("./index.export");
+  const html = renderToString(createElement(LabirthermalProvider, {
     fallback: createElement("p", null, "Loading"),
     children: createElement("p", null, "Browser content"),
   }));

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { loadLabirRuntime } from "./runtime";
 import type { LabirRuntime } from "./runtime";
 
-export interface LabirProviderProps {
+export interface LabirthermalProviderProps {
   children: ReactNode;
   fallback?: ReactNode;
   errorFallback?: (error: Error) => ReactNode;
@@ -16,11 +16,11 @@ type InitializationState =
 
 export const LabirContext = createContext<LabirRuntime | null>(null);
 
-export function LabirProvider({
+export function LabirthermalProvider({
   children,
   fallback = null,
   errorFallback,
-}: LabirProviderProps) {
+}: LabirthermalProviderProps) {
   const [state, setState] = useState<InitializationState>({ status: "loading" });
 
   useEffect(() => {

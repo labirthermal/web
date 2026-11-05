@@ -1,7 +1,7 @@
 import { StrictMode, useState, version } from "react";
 import { createRoot } from "react-dom/client";
 import {
-  LabirProvider, ThermalBtn, ThermalDropinApp, ThermalApp, ThermalDialog,
+  LabirthermalProvider, ThermalBtn, ThermalDropinApp, ThermalApp, ThermalDialog,
   ThermalDropdown, ManagerProvider, ManagerPaletteDropdown, ManagerToolBar,
   ManagerImageSmoothSwitch, ManagerUnitSwitch, RegistryProvider,
   RegistryRangeSlider, RegistryRangeForm, RegistryRangeAutoButton,
@@ -25,7 +25,7 @@ function Playground() {
     <main>
       <h1>LabIR React playground</h1>
       <p>React {version}</p>
-      <LabirProvider
+      <LabirthermalProvider
         fallback={<p>Loading LabIR webcomponents...</p>}
         errorFallback={(error) => <p role="alert">{error.message}</p>}
       >
@@ -85,7 +85,7 @@ function Playground() {
 
         <ThermalDropinApp>
         </ThermalDropinApp>
-      </LabirProvider>
+      </LabirthermalProvider>
       <button onClick={() => setCount((value) => value + 1)}>
         Clicks: {count}
       </button>

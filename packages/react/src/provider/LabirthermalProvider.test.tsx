@@ -6,7 +6,7 @@ import { createRoot, hydrateRoot } from "react-dom/client";
 import type { Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { LabirProvider } from "./LabirProvider";
+import { LabirthermalProvider } from "./LabirthermalProvider";
 
 const { load } = vi.hoisted(() => ({
   load: vi.fn<() => Promise<unknown>>(),
@@ -39,7 +39,7 @@ it("keeps the fallback until initialization finishes in Strict Mode", async () =
   await act(async () => {
     root?.render(
       <StrictMode>
-        <LabirProvider fallback="Loading">Ready</LabirProvider>
+        <LabirthermalProvider fallback="Loading">Ready</LabirthermalProvider>
       </StrictMode>,
     );
   });
@@ -52,7 +52,7 @@ it("keeps the fallback until initialization finishes in Strict Mode", async () =
 it("hydrates the server fallback without a recoverable hydration error", async () => {
   let resolve!: (runtime: unknown) => void;
   load.mockReturnValue(new Promise((done) => { resolve = done; }));
-  const content = <LabirProvider fallback={<p>Loading</p>}>Ready</LabirProvider>;
+  const content = <LabirthermalProvider fallback={<p>Loading</p>}>Ready</LabirthermalProvider>;
   container.innerHTML = renderToString(content);
   expect(load).not.toHaveBeenCalled();
   const onRecoverableError = vi.fn();
@@ -75,7 +75,7 @@ it("renders an explicit local error fallback", async () => {
 
   await act(async () => {
     root?.render(
-      <LabirProvider errorFallback={errorFallback}>Ready</LabirProvider>,
+      <LabirthermalProvider errorFallback={errorFallback}>Ready</LabirthermalProvider>,
     );
   });
 
@@ -98,7 +98,7 @@ it("propagates initialization errors to an error boundary by default", async () 
   const onCaughtError = vi.fn();
   root = createRoot(container, { onCaughtError });
   await act(async () => {
-    root?.render(<Boundary><LabirProvider>Ready</LabirProvider></Boundary>);
+    root?.render(<Boundary><LabirthermalProvider>Ready</LabirthermalProvider></Boundary>);
   });
 
   expect(container.textContent).toBe("Boundary error");
@@ -109,7 +109,7 @@ it("ignores initialization completion after unmounting", async () => {
   let resolve!: (runtime: unknown) => void;
   load.mockReturnValue(new Promise((done) => { resolve = done; }));
   root = createRoot(container);
-  await act(async () => root?.render(<LabirProvider>Ready</LabirProvider>));
+  await act(async () => root?.render(<LabirthermalProvider>Ready</LabirthermalProvider>));
   await act(async () => root?.unmount());
   root = undefined;
   await act(async () => resolve({}));

@@ -2,7 +2,7 @@ import React, { useContext, useMemo } from "react";
 import { createComponent } from "@lit/react";
 import type { ReactWebComponent } from "@lit/react";
 import type { LabirRuntime } from "../provider/runtime";
-import { LabirContext } from "../provider/LabirProvider";
+import { LabirContext } from "../provider/LabirthermalProvider";
 
 type Catalog = LabirRuntime["elementsAll"];
 
@@ -14,6 +14,14 @@ export type LabirComponent<Tag extends keyof Catalog> = (
   props: React.ComponentProps<ReactWebComponent<InstanceType<Catalog[Tag]>>>,
 ) => React.ReactNode;
 
+/**
+ * Creates a typed React wrapper for a webcomponent in the runtime catalog.
+ *
+ * The element constructor is resolved after LabirthermalProvider loads the
+ * browser runtime, avoiding a static webcomponents import during SSR.
+ *
+ * @param tagName Custom element tag registered in the runtime catalog.
+ */
 export function createLabirComponent<Tag extends keyof Catalog>(
   tagName: Tag,
 ): LabirComponent<Tag> {
@@ -39,7 +47,7 @@ export function createLabirComponent<Tag extends keyof Catalog>(
     }, [runtime]);
 
     if (!Wrapped) {
-      throw new Error(`<${tagName}> must be rendered inside LabirProvider.`);
+      throw new Error(`<${tagName}> must be rendered inside LabirthermalProvider.`);
     }
 
     return <Wrapped {...props} />;

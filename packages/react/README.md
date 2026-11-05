@@ -1,115 +1,313 @@
 # @labirthermal/react
 
-React integration for `@labirthermal/webcomponents`. The package exports
-`LabirProvider` and React wrappers for every element in the webcomponents catalog.
-Raw custom-element JSX declarations are not implemented yet.
+**A fully client-side React package for viewing and analyzing thermal images and
+sequences.** It wraps `@labirthermal/webcomponents` with typed React components.
+File loading, parsing, rendering, analysis and playback run in the browser; no
+LabIR backend or server-side thermal processing is required.
 
-Requires React and React DOM 19.3.1 or later within React 19.
+**Render all LabIR components inside `LabirthermalProvider`.** The provider
+initializes the browser runtime before mounting its children.
 
-## Provider
+## Installation
+
+```sh
+npm install @labirthermal/react
+```
+
+Requires React and React DOM `^19.3.1` in the host application. Core,
+webcomponents and Lit dependencies are installed automatically. No IIFE script
+or separate stylesheet import is needed.
+
+## Applications
+
+Start with the self-contained applications. Each creates its own manager,
+registry, group and file contexts; only `LabirthermalProvider` is needed around
+it.
+
+### Single thermal file
 
 ```tsx
-'use client';
+import { LabirthermalProvider, ThermalFileApp } from '@labirthermal/react';
 
-import { LabirProvider } from '@labirthermal/react';
-
-export function ThermalPanel() {
+export function ThermalViewer() {
   return (
-    <LabirProvider fallback={<p>Loading thermal tools...</p>}>
-      <p>LabIR is ready.</p>
-    </LabirProvider>
+    <LabirthermalProvider fallback={<p>Loading thermal tools...</p>}>
+      <ThermalFileApp
+        label="Recording"
+        thermal="/thermal/recording.lrc"
+        style={{ width: '100%' }}
+      />
+    </LabirthermalProvider>
   );
 }
 ```
 
-The server and the first client render show the same `fallback` (default: `null`).
-After mounting, the provider dynamically imports the webcomponents, waits for
-their existing i18n initialization, adds global styles, attaches a document-level
-Lit `ContextRoot`, and registers the custom elements before rendering children.
-No IIFE script or `next/dynamic` is required.
+See the [thermal-file-app reference](https://labirthermal.github.io/web/webcomponents/applications/thermal-file-app)
+for configuration, visible-image overlays, analysis and playback options.
 
-Initialization is shared by all providers, including Strict Mode remounts.
-Global styles, translations, registrations and the Lit context stay available
-after unmounting. Existing registrations from a different runtime cause an error;
-do not combine this integration with an independently loaded IIFE.
-The provider does not replace the manager/registry/group/file provider hierarchy.
-It does not upload files or add a server-side thermal processing service.
+### A group of thermal files
 
-## Components
+```tsx
+import { LabirthermalProvider, ThermalGroupApp } from '@labirthermal/react';
 
-All wrappers are exported from `@labirthermal/react`, grouped in the source files
-`components/ui.tsx`, `apps.tsx`, `manager.tsx`, `registry.tsx`, `group.tsx` and
-`file.tsx`. Their props and refs are inferred from the corresponding catalog
-classes using `@lit/react`. React wrappers must be rendered inside `LabirProvider`;
-using them outside it throws an explicit error.
+export function ThermalCollection() {
+  return (
+    <LabirthermalProvider fallback={<p>Loading thermal tools...</p>}>
+      <ThermalGroupApp
+        filesString={
+          'thermal~/thermal/before.lrc|label~Before;' +
+          'thermal~/thermal/after.lrc|label~After'
+        }
+      />
+    </LabirthermalProvider>
+  );
+}
+```
 
-The shared wrapper factory imports element types only. It creates the actual
-Lit/React wrapper from the provider's loaded runtime, so importing the React
-package does not evaluate browser-only webcomponent modules on the server.
-Properties, refs, native events and named slots are forwarded by `@lit/react`.
-Custom DOM events do not yet have explicit React callback mappings.
+`filesString` is the JavaScript property corresponding to the `group-files`
+attribute. See the [thermal-group-app reference](https://labirthermal.github.io/web/webcomponents/applications/thermal-group-app)
+for file-list syntax, layout and shared controls.
+
+### Local files and drag-and-drop
+
+```tsx
+import { LabirthermalProvider, ThermalDropinApp } from '@labirthermal/react';
+
+export function ThermalWorkspace() {
+  return (
+    <LabirthermalProvider fallback={<p>Loading thermal tools...</p>}>
+      <ThermalDropinApp />
+    </LabirthermalProvider>
+  );
+}
+```
+
+Users select or drop local files for in-browser processing. See the
+[thermal-dropin-app reference](https://labirthermal.github.io/web/webcomponents/applications/thermal-dropin-app).
+
+For URL-based examples, serve the files from your application's static assets
+or another HTTP server. Cross-origin URLs require suitable CORS headers.
+
+## Component API
+
+**React component parameters are the same as the underlying webcomponents'
+JavaScript properties.** Use camelCase property names rather than HTML attribute
+names: for example, `filesString`, `managerSlug`, `showFullscreen` and
+`prefersGpu`. Pass booleans, arrays and objects as JavaScript values.
+
+The [webcomponents reference](https://labirthermal.github.io/web/webcomponents/)
+documents the underlying behavior, provider requirements, slots and configuration.
+Props and refs are typed from the original element classes through `@lit/react`.
+Use the exported React components rather than raw custom-element JSX tags.
+
+Standard React DOM handlers such as `onClick` are supported. Custom DOM events
+are not automatically mapped to React callback props; subscribe with
+`addEventListener` through the element ref and remove listeners on cleanup.
+Named slots use the usual `slot` prop on the child.
+
+## LabirthermalProvider
+
+`LabirthermalProvider` is the initialization boundary for every LabIR React
+component. It:
+
+1. Renders `fallback` during the initial render while initialization is pending.
+2. Dynamically imports the webcomponents runtime after mounting in the browser.
+3. Waits for the existing i18n initialization, inserts global styles and attaches
+   a document-level Lit `ContextRoot`.
+4. Registers **all** custom elements from the catalog, including dependencies
+   used internally by the applications.
+5. Provides the loaded runtime to React wrappers and mounts its children.
+
+Initialization is shared across provider instances and React Strict Mode
+remounts. Styles, translations, custom-element registrations and the Lit context
+remain available after unmounting. Do not combine this integration with an
+independently loaded IIFE: conflicting element registrations are rejected.
+
+| Prop | Meaning |
+| --- | --- |
+| `children` | LabIR components and application content, mounted after initialization. |
+| `fallback` | Content shown while initializing. Defaults to `null`. |
+| `errorFallback` | Optional `(error: Error) => ReactNode` renderer for initialization failures. |
+
+```tsx
+<LabirthermalProvider
+  fallback={<p>Loading thermal tools...</p>}
+  errorFallback={(error) => <p role="alert">{error.message}</p>}
+>
+  <ThermalDropinApp />
+</LabirthermalProvider>
+```
+
+Without `errorFallback`, initialization errors are thrown during rendering for
+an application error boundary to handle. Remounting allows another initialization
+attempt after a failure; successful initialization is reused. Readiness means
+the runtime is initialized, not that every file has finished loading.
+
+Wrappers rendered outside `LabirthermalProvider` throw an explicit error. The
+global registration of HTML tags does not replace the React provider context.
+
+## Next.js
+
+The package can be embedded in a server-rendered application, but its main entry
+must be loaded **only in the browser**. Its core runtime reexports access
+`window` during module evaluation. `'use client'` alone is not sufficient:
+Next.js also prerenders Client Components on the server.
+
+In the App Router, define the viewer in its own client module:
+
+```tsx
+// app/components/ThermalViewer.tsx
+'use client';
+
+import { LabirthermalProvider, ThermalFileApp } from '@labirthermal/react';
+
+export default function ThermalViewer({ thermal }: { thermal: string }) {
+  return (
+    <LabirthermalProvider fallback={<p>Loading thermal tools...</p>}>
+      <ThermalFileApp thermal={thermal} />
+    </LabirthermalProvider>
+  );
+}
+```
+
+Load that module through a separate Client Component with SSR disabled:
+
+```tsx
+// app/components/ClientThermalViewer.tsx
+'use client';
+
+import dynamic from 'next/dynamic';
+
+const ThermalViewer = dynamic(() => import('./ThermalViewer'), {
+  ssr: false,
+  loading: () => <p>Loading thermal viewer...</p>,
+});
+
+export default ThermalViewer;
+```
+
+The loader module must not statically import values from `@labirthermal/react`.
+`ssr: false` must be declared in a Client Component, not a Server Component.
+Render the loader from the server page:
+
+```tsx
+// app/page.tsx
+import ClientThermalViewer from './components/ClientThermalViewer';
+
+export default function Page() {
+  return <ClientThermalViewer thermal="/thermal/recording.lrc" />;
+}
+```
+
+Place the example file at `public/thermal/recording.lrc`. Pass serializable props
+across the server/client boundary; define callbacks and instantiate thermal
+objects on the client.
+
+The dynamic loader supplies the server-rendered loading placeholder.
+`LabirthermalProvider` then handles webcomponent initialization after the viewer
+mounts in the browser. Neither the thermal UI nor its internal shadow DOM is
+server-rendered. No `next/script` or IIFE loading is needed.
+
+## Composing a custom interface
+
+For a custom UI, use the hierarchy providers instead of a self-contained
+application:
 
 ```tsx
 import {
-  LabirProvider, ManagerProvider, RegistryProvider, GroupProvider,
-  FileProvider, FileCanvas, FileTimeline, RegistryRangeSlider,
+  LabirthermalProvider,
+  ManagerProvider,
+  RegistryProvider,
+  GroupProvider,
+  FileProvider,
+  FileCanvas,
+  FileTimeline,
+  RegistryRangeSlider,
 } from '@labirthermal/react';
 
-export function Viewer() {
+export function CustomViewer() {
   return (
-    <LabirProvider fallback={<p>Loading...</p>}>
+    <LabirthermalProvider fallback={<p>Loading thermal tools...</p>}>
       <ManagerProvider>
         <RegistryProvider>
           <RegistryRangeSlider />
           <GroupProvider>
-            <FileProvider thermal="/lrc/sequence_uint16_small_short.lrc">
+            <FileProvider thermal="/thermal/recording.lrc">
               <FileCanvas />
               <FileTimeline />
             </FileProvider>
           </GroupProvider>
         </RegistryProvider>
       </ManagerProvider>
-    </LabirProvider>
+    </LabirthermalProvider>
   );
 }
 ```
 
-Core classes and types are not re-exported. Import them directly from
-`@labirthermal/core` for now.
+`ManagerProvider` shares palettes, units and tools; `RegistryProvider` shares the
+temperature range; `GroupProvider` groups files; `FileProvider` loads a file and
+provides its state to canvas, analysis and playback components.
+`LabirthermalProvider` initializes the runtime but does not replace this hierarchy.
 
-By default, initialization errors are thrown during rendering so an application
-error boundary can handle them. To render an explicit local error message, pass
-`errorFallback={(error) => <p role="alert">{error.message}</p>}` from a client
-component. A failed initialization can be attempted again by remounting the
-provider; successful initialization is reused.
+## Complete component list
+
+All components below are exported from `@labirthermal/react`.
+
+### Applications
+
+`ThermalFileApp`, `ThermalGroupApp`, `ThermalDropinApp`, `ThermalSlottedApp`,
+`AatApp`.
+
+### UI
+
+`ThermalApp`, `ThermalBar`, `ThermalBtn`, `ThermalBtnGroup`, `ThermalDialog`,
+`ThermalDropdown`, `ThermalDropin`, `ThermalExpandable`, `ThermalField`,
+`ThermalIcon`, `ThermalLoading`, `ThermalRadio`, `ThermalSlot`, `ThermalSpinner`,
+`ThermalTip`.
+
+### Manager
+
+`ManagerProvider`, `ManagerGraphSmoothSwitch`, `ManagerImageSmoothSwitch`,
+`ManagerPaletteButtons`, `ManagerPaletteDropdown`, `ManagerToolBar`,
+`ManagerAdvancedPaletteSwitch`, `ManagerUnitSwitch`, `ManagerExportPanel`
+(deprecated; prefer file download and video export controls).
+
+### Registry
+
+`RegistryProvider`, `RegistryHistogram`, `RegistryOpacitySlider`,
+`RegistryRangeAutoButton`, `RegistryRangeFullButton`, `RegistryRangeDisplay`,
+`RegistryRangeForm`, `RegistryRangeSlider`, `RegistryTicksBar`.
+
+### Group
+
+`GroupProvider`, `GroupAnalysisSyncButton`, `GroupChart`, `GroupDownloadButtons`,
+`GroupDownloadDropdown`, `GroupDropin`, `GroupDropinInput`, `GroupRangePropagator`,
+`GroupTimeline`.
+
+### File
+
+`FileProvider`, `FileCopy`, `FileCanvas`, `FileDownloadButton`, `FileInfoButton`,
+`FilePlaybackSpeedDropdown`, `FileTimeline`, `FileVideoExportButton`,
+`FileVideoExportPanel`, `FileLabel`, `FileButton`, `FileDropdown`, `FileLrcButton`,
+`FilePngButton`, `FileRangePropagator`, `FileAnalysisComplex`,
+`FileAnalysisDisplay`, `FileAnalysisEditDialog`, `FileAnalysisGraph`,
+`FileAnalysisRow`, `FileAnalysisTable`, `AnalysisColorDropdown`,
+`AnalysisNameInput`, `AreaEditTable`, `EditpointTable`, `ThermalChart`,
+`FileDetail`, `FileThumbnail`.
 
 ## Development
 
-Run these commands from the repository root:
+From the monorepo root:
 
 ```sh
 pnpm --filter @labirthermal/react dev
 pnpm --filter @labirthermal/react typecheck
+pnpm --filter @labirthermal/react lint
+pnpm --filter @labirthermal/react test
 pnpm --filter @labirthermal/react build
 ```
 
-The development command starts a Vite server for the React playground. It is not
-a production server and is not required by applications consuming the library.
-The playground resolves `@labirthermal/react` to the local source entry.
-It serves the repository's `public` directory and demonstrates a static LRC and
-an LRC sequence with shared registry/group controls, palettes, analyses, playback
-and downloads.
-
-## Library build
-
-`tsdown.config.ts` builds the source entry into ESM, CommonJS, source maps and
-TypeScript declarations in `dist/lib`. React, React DOM, Lit's React adapter and
-LabIR dependencies stay external. No IIFE build is needed for this package.
-
-`tsconfig.json` checks source, playground and build configurations.
-`tsconfig.lib.json` limits declaration generation to library source.
-`vite.config.dev.ts` configures only the playground, not the library build.
-
-The library build adds a `'use client'` directive for Next.js. This directive
-does not disable server prerendering: browser-only webcomponent imports must
-still be deferred until client mounting, as implemented by `LabirProvider`.
+Vite serves a local React playground with thermal samples from the repository's
+`public` directory. This is a development server, not a production dependency.
+The library build uses tsdown to produce ESM, CommonJS, source maps and TypeScript
+declarations in `dist/lib`. React and LabIR dependencies remain external.

@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import type { Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { LabirProvider, ThermalBtn, FileProvider, RegistryRangeSlider } from "../index.export";
+import { LabirthermalProvider, ThermalBtn, FileProvider, RegistryRangeSlider } from "../index.export";
 
 const mocks = vi.hoisted(() => ({ load: vi.fn<() => Promise<unknown>>() }));
 vi.mock("../provider/runtime", () => ({ loadLabirRuntime: mocks.load }));
@@ -42,11 +42,11 @@ it("forwards properties, refs, native events and slotted children through Lit's 
 
   await act(async () => {
     root?.render(
-      <LabirProvider>
+      <LabirthermalProvider>
         <ThermalBtn ref={ref} variant="primary" disabled onClick={onClick}>
           <span slot="label">Hello</span>
         </ThermalBtn>
-      </LabirProvider>,
+      </LabirthermalProvider>,
     );
   });
 
@@ -60,7 +60,7 @@ it("forwards properties, refs, native events and slotted children through Lit's 
   expect(onClick).toHaveBeenCalledTimes(1);
 
   await act(async () => {
-    root?.render(<LabirProvider><ThermalBtn ref={ref} variant="background" disabled={false} /></LabirProvider>);
+    root?.render(<LabirthermalProvider><ThermalBtn ref={ref} variant="background" disabled={false} /></LabirthermalProvider>);
   });
   expect(ref.current).toBe(button);
   expect(button?.variant).toBe("background");
@@ -69,7 +69,7 @@ it("forwards properties, refs, native events and slotted children through Lit's 
 
 it("reports use outside the provider", () => {
   expect(() => renderToString(<RegistryRangeSlider />)).toThrow(
-    "<registry-range-slider> must be rendered inside LabirProvider.",
+    "<registry-range-slider> must be rendered inside LabirthermalProvider.",
   );
 });
 
