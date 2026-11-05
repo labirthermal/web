@@ -1,34 +1,35 @@
-import { booleanConverter, icons } from "@labirthermal/webcomponents";
-import type { CSSResultGroup, TemplateResult } from "lit";
+import type { CSSResultGroup } from "lit";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { css, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
-import type { FileInfo } from "../../../client/responseEntities";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
+import type { FileInfo } from "../../../client/responseEntities";
 import type { FileListDisplayMode } from "../../../controllers/DisplayController";
+import { icons } from "@labirthermal/webcomponents";
 
 export class ConnectedFileList extends AbstractControlledConsumer {
 
     @property({
-        type: Function
+        attribute: false
     })
     public onFileClick: (file: FileInfo) => void = () => { };
 
     @property({
-        type: Function
+        attribute: false
     })
     public onChange?: (file: FileInfo) => void = () => { };
 
     @property({
-        type: Function
+        attribute: false
     })
     public onFileDelete?: (file: FileInfo) => void = () => { };
 
     protected icon = icons.image.outline("icon");
 
     @property({
-        type: String,
+        type: Boolean,
         reflect: true,
-        converter: booleanConverter(false)
+        attribute: "compact"
     })
     public compact: boolean = false;
 
@@ -41,9 +42,8 @@ export class ConnectedFileList extends AbstractControlledConsumer {
 
 
     @property({
-        type: String,
+        type: Boolean,
         reflect: true,
-        converter: booleanConverter(false),
         attribute: "show-discussion"
     })
     public showDiscussion: boolean = false;
@@ -51,7 +51,6 @@ export class ConnectedFileList extends AbstractControlledConsumer {
     @property({
         type: Boolean,
         reflect: true,
-        converter: booleanConverter(false),
         attribute: "editable-tags"
     })
     public editableTags: boolean = false;
@@ -94,11 +93,15 @@ export class ConnectedFileList extends AbstractControlledConsumer {
     }
 
 
-    protected renderFile(file: FileInfo): TemplateResult {
+    protected renderFile(file: FileInfo): unknown {
+
+        if ( ! this.content.folder ) {
+            return nothing;
+        }
 
         const callback = this.onFileClick !== undefined
             ? () => this.onFileClick(file)
-            : undefined;
+            : () => {};
 
         return html`<connected-file-thumbnail
     .file=${file}
@@ -106,9 +109,9 @@ export class ConnectedFileList extends AbstractControlledConsumer {
     .onFileDelete=${this.onFileDelete}
     .onFileClick=${callback}
     display-mode=${this.displayMode}
-    compact=${this.compact ? "true" : "false"}
-    show-discussion=${this.showDiscussion ? "true" : "false"}
-    editable-tags=${this.editableTags ? "true" : "false"}
+    ?compact=${this.compact}
+    ?show-discussion=${this.showDiscussion}
+    ?editable-tags=${this.editableTags}
 ></connected-file-thumbnail>`;
 
     }

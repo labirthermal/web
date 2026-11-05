@@ -115,7 +115,7 @@ export class ConnectedFolderHeader extends AbstractControlledConsumer {
             return nothing;
         }
 
-        const callback = this.onParentClick || (() => { });
+        const callback = this.onParentClick || (() => {});
 
         return html`
             <thermal-btn 

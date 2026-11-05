@@ -9,10 +9,10 @@ export class AbstractFolderThumbnail extends AbstractControlledConsumer {
     @property({ type: Object })
     public folder!: FolderInfo;
 
-    @property({ type: Function })
+    @property({ attribute: false })
     onClick?: (folder: FolderInfo) => void;
 
-    @property({ type: Function })
+    @property({ attribute: false })
     onUpdate?: (folder: FolderInfo) => void;
 
     @property({ type: Number })
@@ -208,19 +208,16 @@ export class AbstractFolderThumbnail extends AbstractControlledConsumer {
         thermalUrl: string
     ) {
         return html`<registry-provider
-            autoclear="true"
-            batch="true"
-            slug="${this.internalSlug}"
+            registry-slug="${this.internalSlug}"
+            autoclear
         >
             <group-provider 
-                slug="${this.internalSlug}"
-                autoclear="true"
-                batch="true"
+                group-slug="${this.internalSlug}"
+                autoclear
             >
                 <file-provider
                     thermal="${thermalUrl}"
-                    batch="true"
-                    autoclear="true"
+                    autoclear
                 >
                     <file-canvas></file-canvas>
                 </file-provider>

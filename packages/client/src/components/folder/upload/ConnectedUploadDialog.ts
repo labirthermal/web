@@ -1,6 +1,6 @@
-import { booleanConverter, t } from "@labirthermal/webcomponents";
-import type { CSSResultGroup } from "lit";
 import type { BtnVariants } from "@labirthermal/webcomponents";
+import { t } from "@labirthermal/webcomponents";
+import type { CSSResultGroup } from "lit";
 import { css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
@@ -35,7 +35,7 @@ export class ConnectedUploadDialog extends AbstractControlledConsumer {
     @state()
     private errorMessage: string = "";
 
-    @property({ type: String, converter: booleanConverter(false) })
+    @property({ type: Boolean, attribute: "plain", reflect: true })
     private plain: boolean = false;
 
     @property({ type: String })
@@ -56,7 +56,7 @@ export class ConnectedUploadDialog extends AbstractControlledConsumer {
     @state()
     private infoMessage: string = "";
 
-    @property({ type: Function })
+    @property({ attribute: false })
     public onSuccess?: (files: File[]) => void;
 
     public static styles?: CSSResultGroup = css`
@@ -124,9 +124,6 @@ export class ConnectedUploadDialog extends AbstractControlledConsumer {
         }
         .paired-files-table td:not(:first-child) { 
             width: calc(100% / 3); 
-        }
-
-        .paired-file-group {
         }
 
         .paired-file-group__header td { 
@@ -621,7 +618,7 @@ export class ConnectedUploadDialog extends AbstractControlledConsumer {
             <thermal-expandable
                 label="${title}"
                 variantExpanded="foreground"
-                closeIcon="true"
+                ?closeIcon=${true}
                 icon="info"
                 iconStyle="outline"
                 tooltip="Obrázky PNG, které se nám dle jejich jména nepodařilo spárovat s žádným LRC souborem"

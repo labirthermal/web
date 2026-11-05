@@ -75,7 +75,7 @@ class ConnectedFolderGridDirective extends AbstractFolderLayoutDirective {
 
         const content = [
             html`<connected-subfolders-grid
-            .onFolderClick=${(folder: BreadcrumbItem) => {
+            .onFolderClick=${(folder: FolderInfo) => {
                     app.display.navigateToFolderAndLoad(folder.path);
                 }}
             .onFileClick=${(  

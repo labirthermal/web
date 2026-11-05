@@ -15,7 +15,7 @@ import { ConnectedFolderSelectionCheckbox } from "./components/selection/Connect
 import { ConnectedFolderSelectionActions } from "./components/selection/ConnectedFolderSelectionActions";
 import { ConnectedFileSelectionCheckbox } from "./components/selection/ConnectedFileSelectionCheckbox";
 import { ConnectedFileSelectionActions } from "./components/selection/ConnectedFileSelectionActions";
-import { ConnectedLocationSelector } from "./components/selection/move/ConnectedLocationSelector";
+import { ConnectedLocationSelector } from "./components/selection/ConnectedLocationSelector";
 import { ConnectedFolderMoveDialog } from "./components/folder/crud/ConnectedFolderMoveDialog";
 import { ConnectedFolderEditDialog } from "./components/folder/crud/ConnectedFolderEditDialog";
 import { ConnectedFolderDeleteDialog } from "./components/folder/crud/ConnectedFolderDeleteDialog";

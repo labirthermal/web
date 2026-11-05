@@ -108,10 +108,10 @@ class ConnectedFolderFilesDirective extends AbstractFolderLayoutDirective {
 
         if (hasFiles) {
             content.push(html`<connected-file-list
-                compact=${app.display.fileDisplayCompact}
+                .compact=${app.display.fileDisplayCompact}
                 display-mode=${app.display.fileDisplayMode}
-                editable-tags=${app.display.editTags}
-                show-discussion=${app.display.displayComments}
+                .editableTags=${app.display.editTags}
+                .showDiscussion=${app.display.displayComments}
                 
                 .onFileClick=${(file: FileInfo) => app.display.navigateToFileAndLoad(file.path, file.fileName)}
             ></connected-file-list>` );

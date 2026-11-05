@@ -7,6 +7,7 @@ import { AbstractControlledConsumer } from "../abstraction/AbstractControlledCon
 import type { BreadcrumbItem } from "../client/responseEntities";
 import { DisplayState } from "../controllers/DisplayController";
 import { T } from "../translations/Languages";
+import { ifDefined } from "lit/directives/if-defined.js";
 
 
 
@@ -21,10 +22,10 @@ type BreadcrumbItemInternal = {
 
 export class ConnectedBreadcrumb extends AbstractControlledConsumer {
 
-    @property({ type: Function })
+    @property({ type: Function, attribute: false })
     public onFolderClick?: (folder: BreadcrumbItem) => void;
 
-    @property({ type: Function })
+    @property({ type: Function, attribute: false })
     public onUserClick?: () => void;
 
     @state()
@@ -217,11 +218,11 @@ export class ConnectedBreadcrumb extends AbstractControlledConsumer {
                     item.onClick();
                 }
             }}
-            variant="text"
+            variant="default"
             icon="${item.icon}"
             iconStyle="${item.iconStyle}"
             interactive=${isInteractive ? "true" : "false"}
-            tooltip=${item.tooltip ? item.tooltip : undefined}
+            tooltip=${ifDefined( item.tooltip ? item.tooltip : undefined )}
         >
             ${item.label}
         </thermal-btn>`;

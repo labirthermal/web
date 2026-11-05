@@ -1,7 +1,7 @@
 import { html, nothing } from "lit";
 import { directive } from "lit/directive.js";
 import type { AbstractConnectedApp } from "../../abstraction/AbstractConnectedApp";
-import type { FolderInfo } from "../../client/responseEntities";
+import type { BreadcrumbItem, FolderInfo } from "../../client/responseEntities";
 import { DirectiveHelpers } from "../DirectiveHelpers";
 import { slotOrNothing } from "../SlotOrNothing";
 import { AbstractLayoutDirective } from "./AbstractLayoutDirective";
@@ -13,7 +13,7 @@ class ConnectedFileDetail extends AbstractLayoutDirective {
         app: AbstractConnectedApp
     ): unknown {
 
-        if (app.content.folder === undefined) {
+        if (app.content.folder === undefined || app.content.file === undefined) {
             return nothing;
         }
 
@@ -32,7 +32,7 @@ class ConnectedFileDetail extends AbstractLayoutDirective {
                 .file=${app.content.file}
                 .folder=${app.content.folder}
                 size="md"
-                .label=${undefined}
+                .label=${""}
                 ></connected-file-delete-dialog>` );
         }
 
@@ -79,12 +79,17 @@ class ConnectedFileDetail extends AbstractLayoutDirective {
             )
         );
 
-        slots.push(
-            html`<connected-file-analysis-buttons .info=${app.content.file}></connected-file-analysis-buttons>`
-        );
+
+        if (app.content.file !== undefined) {
+            slots.push(
+                html`<connected-file-analysis-buttons .info=${app.content.file}></connected-file-analysis-buttons>`
+            );
+        }
 
         if (
-            app.content.file !== undefined
+
+            app.content.folder !== undefined
+            && app.content.file !== undefined
             && app.content.file!.tags.length > 0
         ) {
 
@@ -93,8 +98,8 @@ class ConnectedFileDetail extends AbstractLayoutDirective {
                 html`<connected-file-tags
                 .file=${app.content.file}
                 .folder=${app.content.folder}
-                editable=${app.display.editTags ? "true" : "false"}
-                inline=${true}
+                .editable=${app.display.editTags}
+                inline
                 size="sm"
             ></connected-file-tags>`
             );
@@ -107,7 +112,7 @@ class ConnectedFileDetail extends AbstractLayoutDirective {
             this.renderBreadcrumb(app),
 
             html`<connected-folder-header
-                .onParentClick=${(folder: FolderInfo) => app.display.navigateToFolderAndLoad(folder.path)}
+                .onParentClick=${(folder: BreadcrumbItem) => app.display.navigateToFolderAndLoad(folder.path)}
             ></connected-folder-header>`,
 
             html`<connected-file-header>
@@ -123,6 +128,10 @@ class ConnectedFileDetail extends AbstractLayoutDirective {
     private renderFileDetailContent(
         app: AbstractConnectedApp
     ): unknown {
+
+        if (app.content.folder === undefined || app.content.file === undefined) {
+            return nothing;
+        }
 
         const content: unknown[] = [
 

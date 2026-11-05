@@ -1,17 +1,20 @@
 import type { ThermalDialogElement } from "@labirthermal/webcomponents";
-import { booleanConverter } from "@labirthermal/webcomponents";
 import type { CSSResultGroup, TemplateResult } from "lit";
 import { css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
-import { T } from "../../translations/Languages";
 import { AbstractControlledConsumer } from "../../abstraction/AbstractControlledConsumer";
+import { T } from "../../translations/Languages";
 
 export class ConnectedUserButton extends AbstractControlledConsumer {
 
     @state()
     protected message?: string;
 
-    @property({ reflect: true, attribute: "disable-logging", converter: booleanConverter(false) })
+    @property({ 
+        type: Boolean,
+        reflect: true, 
+        attribute: "disable-logging"
+    })
     public disableLogging: boolean = false;
 
     connectedCallback(): void {
@@ -19,7 +22,6 @@ export class ConnectedUserButton extends AbstractControlledConsumer {
 
         this.client.subscribeToIdentityChanges(this);
         this.client.subscribeToLoadingChanges(this);
-
 
         this.client.api.auth.onIdentity.set(this.UUID, () => {
             this.message = undefined;

@@ -60,9 +60,6 @@ export abstract class AbstractLayoutDirective extends AbstractConnectedDirective
             grid-template-rows: auto;
 
             dl {
-                dt {
-                    
-                }
                 dd {
                     margin-left: 0;
                     font-weight: bold;

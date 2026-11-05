@@ -1,12 +1,11 @@
 
 import type { ThermalBtnElement } from "@labirthermal/webcomponents";
-import { booleanConverter } from "@labirthermal/webcomponents";
 import type { CSSResultGroup } from "lit";
 import { css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
+import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 import type { FolderInfo } from "../../../client/responseEntities";
 import { T } from "../../../translations/Languages";
-import { AbstractControlledConsumer } from "../../../abstraction/AbstractControlledConsumer";
 
 interface PairedFiles {
     lrc: File;
@@ -39,7 +38,7 @@ export class ConnectedUploadForm extends AbstractControlledConsumer {
     @state()
     private errorMessage: string = "";
 
-    @property({ type: String, converter: booleanConverter(false) })
+    @property({ type: Boolean, attribute: "plain", reflect: true })
     private plain: boolean = false;
 
     @property({ type: String })
@@ -60,7 +59,7 @@ export class ConnectedUploadForm extends AbstractControlledConsumer {
     @state()
     private infoMessage: string = "";
 
-    @property({ type: Function })
+    @property({ attribute: false })
     public onSuccess?: (files: File[]) => void;
 
     public static styles?: CSSResultGroup = css`
@@ -807,8 +806,8 @@ export class ConnectedUploadForm extends AbstractControlledConsumer {
                 tooltip="Odstranit" 
                 icon="close"
                 iconStyle="micro"
-                plain="true"
-                .variant="breadcrumb"
+                plain
+                variant="breadcrumb"
                 @click=${() => this.removePairedFile(file)}></thermal-btn>`
             : nothing;
 
@@ -869,7 +868,7 @@ export class ConnectedUploadForm extends AbstractControlledConsumer {
         return html`
 <div class="paired-files">
 
-<h3 class="stage-label">Soubory k uploadu <small>${titleSuffix}</h3>
+<h3 class="stage-label">Soubory k uploadu <small>${titleSuffix}</small></h3>
 
 <table class="paired-files-table">
 <tbody>
@@ -899,7 +898,7 @@ ${this.pairedFiles.map((pair, index) => this.renderPairedFileRow(pair, index))}
         icon="info"
         iconStyle="outline"
         variantExpanded="foreground"
-        closeIcon="true"
+        ?closeIcon=${true}
     >
 
         <div class="unmatched-files__list">

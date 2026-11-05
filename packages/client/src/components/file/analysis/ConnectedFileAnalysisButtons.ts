@@ -20,7 +20,7 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
     @property({ type: Object })
     public info!: FileInfo;
 
-    @property({ type: Boolean })
+    @property({ type: Boolean, reflect: true })
     public enableCopyToAll: boolean = false;
 
 
@@ -32,7 +32,7 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
 
     @state()
     @consume({ context: fileContext, subscribe: true })
-    private file?: ThermalFileInstance;
+    public file?: ThermalFileInstance;
 
     connectedCallback(): void {
         super.connectedCallback();
@@ -41,7 +41,7 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
         }
     }
 
-    updated(_changedProperties: PropertyValues): void {
+    updated(_changedProperties: PropertyValues<this>): void {
         super.updated(_changedProperties);
 
         if (_changedProperties.has("file") && this.file) {
@@ -129,13 +129,11 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
 
     private renderDeleteButton(): unknown {
 
-        const disabled = this.analyses.length === 0
-            ? "true"
-            : "false";
+        const disabled = this.analyses.length === 0;
 
         return html`<thermal-btn
             tooltip="Odstranit všechny analýzy ze všech souborů ve složce"
-            disabled=${disabled}
+            ?disabled=${disabled}
             @click=${() => {
                 if (!this.file) {
                     return;
@@ -150,10 +148,10 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
     private renderServerSaveButton(): unknown {
 
         let callback: undefined | (() => Promise<void>) = undefined;
-        let disabled: string = "true";
+        let disabled: boolean = true;
 
         if (this.hasChanged) {
-            disabled = "false";
+            disabled = false;
             callback = async () => {
 
                 const request = this.client.api.routes.post.updateFile(
@@ -183,7 +181,7 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
 
         return html`<thermal-btn
             tooltip="Uložit současný stav analýz na server"
-            disabled=${disabled}
+            ?disabled=${disabled}
             @click=${callback}
             icon="save"
             iconStyle="micro"
@@ -193,10 +191,10 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
     private renderServerRestoreButton(): unknown {
 
         let callback: undefined | (() => Promise<void>) = undefined;
-        let disabled: string = "true";
+        let disabled: boolean = true;
 
         if (this.hasChanged && this.info.analyses.length > 0) {
-            disabled = "false";
+            disabled = false;
             callback = async () => {
 
                 this.file?.analysis.layers.removeAllAnalyses();
@@ -214,7 +212,7 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
 
         return html`<thermal-btn
             tooltip="Obnovit analýzy ze serveru"
-            disabled=${disabled}
+            ?disabled=${disabled}
             @click=${callback}
             icon="restore"
             iconStyle="micro"
@@ -226,10 +224,10 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
 
 
         let callback: undefined | (() => Promise<void>) = undefined;
-        let disabled: string = "true";
+        let disabled: boolean = true;
 
         if (this.analyses.length > 0 && this.info.analyses.length > 0) {
-            disabled = "false";
+            disabled = false;
             callback = async () => {
                 const request = this.client.api.routes.post.updateFile(
                     this.info.path,
@@ -248,7 +246,7 @@ export class ConnectedFileAnalysisButtons extends AbstractControlledConsumer {
 
         return html`<thermal-btn
             tooltip="Smazat všechny analýzy uložené na serveru"
-            disabled=${disabled}
+            ?disabled=${disabled}
             @click=${callback}
             icon="trash"
             iconStyle="micro"

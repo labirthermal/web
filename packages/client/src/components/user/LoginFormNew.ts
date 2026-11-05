@@ -20,7 +20,7 @@ export class ConnectedLoginForm extends AbstractControlledConsumer {
     @state()
     protected isLoggingIn: boolean = false;
 
-    @property({ type: Function })
+    @property({ type: Function, attribute: false })
     public onLoginSuccess?: (
         identity: Identity
     ) => void;

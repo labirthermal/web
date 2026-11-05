@@ -1,5 +1,5 @@
 import type { BtnSizes, BtnVariants } from "@labirthermal/webcomponents";
-import { booleanConverter, t } from "@labirthermal/webcomponents";
+import { t } from "@labirthermal/webcomponents";
 import type { CSSResultGroup } from "lit";
 import { css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
@@ -10,7 +10,7 @@ import { T } from "../../translations/Languages";
 
 export class ConnectedFileDeleteDialog extends AbstractControlledConsumer {
 
-    @property({ type: String, converter: booleanConverter(false) })
+    @property({ type: Boolean, reflect: true })
     public showLabel: boolean = false;
 
     @property({ type: String })
@@ -22,7 +22,7 @@ export class ConnectedFileDeleteDialog extends AbstractControlledConsumer {
     @property({ type: String, reflect: true })
     public size: BtnSizes = "sm";
 
-    @property({ type: String })
+    @property({ type: Boolean, reflect: true })
     public plain: boolean = false;
 
     @property({ type: Object })
@@ -31,7 +31,7 @@ export class ConnectedFileDeleteDialog extends AbstractControlledConsumer {
     @property({ type: Object })
     public folder!: FolderInfo;
 
-    @property({ type: Function })
+    @property({ attribute: false })
     public onDelete?: (file: FileInfo) => void = () => { };
 
     @state()

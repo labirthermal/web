@@ -17,7 +17,7 @@ import { FileSelectionController } from "../controllers/FileSelectionController"
 import type { AppWithFolderSelectionController} from "../controllers/FolderSelectionController";
 import { FolderSelectionController } from "../controllers/FolderSelectionController";
 import type { BtnVariants } from "@labirthermal/webcomponents";
-import { AbstractApp, booleanConverter } from "@labirthermal/webcomponents";
+import { AbstractApp } from "@labirthermal/webcomponents";
 import { ApiClient } from "../client/ApiClient";
 import { ControlledClientContext, ControlledContentContext, DisplayControllerContext, FileSelectionControllerContext, FolderSelectionControllerContext } from "../controllers/controllersContexts";
 
@@ -138,15 +138,13 @@ export abstract class AbstractConnectedApp extends AbstractApp
     @property({
         type: Boolean,
         attribute: "files-compact",
-        reflect: true,
-        converter: booleanConverter(false)
+        reflect: true
     })
     public fileDisplayCompact: boolean = false;
 
     @property({
         type: Boolean,
         attribute: "edit-tags",
-        converter: booleanConverter(false),
         reflect: true
     })
     public editTags: boolean = false;
@@ -154,7 +152,6 @@ export abstract class AbstractConnectedApp extends AbstractApp
     @property({
         type: Boolean,
         attribute: "display-comments",
-        converter: booleanConverter(true),
         reflect: true
     })
     public displayComments: boolean = false;

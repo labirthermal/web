@@ -1,7 +1,7 @@
 import type { ThermalGroup } from "@labirthermal/core";
 import { TimeFormat } from "@labirthermal/core";
 import type { FileProviderElement } from "@labirthermal/webcomponents";
-import { booleanConverter, groupObjectContext, icons, t } from "@labirthermal/webcomponents";
+import { groupObjectContext, icons, t } from "@labirthermal/webcomponents";
 import { consume } from "@lit/context";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
 import { css, html, nothing } from "lit";
@@ -34,19 +34,19 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
     public folder!: FolderInfo;
 
     @property({
-        type: Function
+        attribute: false
     })
     public onFileClick: (file: FileInfo) => void = () => { };
 
     @property({
-        type: Function
+        attribute: false
     })
     public onFileDelete?: (file: FileInfo) => void = () => { };
 
     @property({
         type: Boolean,
         reflect: true,
-        converter: booleanConverter(false)
+        attribute: "compact"
     })
     public compact: boolean = false;
 
@@ -59,9 +59,8 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
 
 
     @property({
-        type: String,
+        type: Boolean,
         reflect: true,
-        converter: booleanConverter(false),
         attribute: "show-discussion"
     })
     public showDiscussion: boolean = false;
@@ -69,7 +68,6 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
     @property({
         type: Boolean,
         reflect: true,
-        converter: booleanConverter(false),
         attribute: "editable-tags"
     })
     public editableTags: boolean = false;
@@ -222,7 +220,7 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
             .file=${this.file}
             .folder=${this.folder}
             label=""
-            plain="true"
+            plain
             variant=${variant}
             size="sm"
         ></connected-file-edit-dialog>`;
@@ -275,7 +273,7 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
             .folder=${this.folder}
             .onDelete=${this.onFileDelete}
             label=""
-            plain="true"
+            plain
             variant=${variant}
             size="sm"
         ></connected-file-delete-dialog>`;
@@ -327,6 +325,7 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
                 restoreLabel = `Načíst uložené analýzy (${this.file.analyses.length})`;
             }
 
+            const copyToAllEnabled = this.content.files ? this.content.files.length > 0 : false;
 
             content = html`<div class="analyses-inner">
                 
@@ -345,7 +344,10 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
                 ${this.hasDisplayedAnalysis
                     ? html`<aside>
 
-                        <connected-file-analysis-buttons .info=${this.file} .enableCopyToAll=${this.content.files && this.content.files.length > 0}></connected-file-analysis-buttons>
+                        <connected-file-analysis-buttons 
+                            .info=${this.file} 
+                            .enableCopyToAll=${ copyToAllEnabled }
+                        ></connected-file-analysis-buttons>
 
                 </aside>`
                     : nothing}
@@ -684,7 +686,7 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
     batch="true"
     autoclear="true"
     role="article"
-    autoHighlight="true"
+    autoHighlight
     ${ref(this.instanceRef)}
 >
 
@@ -717,7 +719,7 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
 
         <file-range-propagator 
             variant="${this.compact ? "default" : "background"}"
-            .plain="true"
+            plain
             size="${this.displayMode === FileListDisplayMode.TABLE ? "md" : "sm"}"
         ></file-range-propagator>
 
@@ -732,7 +734,7 @@ export class ConnectedFileThumbnail extends AbstractControlledConsumer {
         <connected-file-tags
             .file=${this.file}
             .folder=${this.folder}
-            inline="true"
+            inline
             .editable="${this.editableTags}"
             size="sm"
         ></connected-file-tags>
