@@ -41,18 +41,12 @@ Limitations of the FLIR support:
 - Sequences (`.seq`, `.csq`), the embedded visible photo, MSX/PiP
   composition and measurement objects defined in the camera are not read.
 
-## Pixel updates and WebGL playback
+## Documentation
 
-Use `setPixels()` to publish pixel changes, including changes to a reused array.
-The read-only `pixelsVersion` advances on each call before update side effects run.
-The WebGL renderer currently uploads the latest pixels before every draw.
-The version guard is temporarily commented out to diagnose playback updates;
-palette and range redraws also upload the pixel texture in this mode. This does
-not add draw calls or change playback timing, but can increase upload work.
-
-Web components import this package from `dist/index.mjs`, not directly from
-its source. After core changes, run `pnpm --dir packages/core build` from the
-repository root and reload the embedding application to use the updated code.
+- [Standalone usage](https://labirthermal.github.io/web/core/standalone) – load files and build a UI directly with the core API.
+- [Core class reference](https://labirthermal.github.io/web/core/) – overview of the class hierarchy and links to individual classes.
+- [Supported file formats](https://labirthermal.github.io/web/core/supported-files/) – format details and custom parser guidance.
+- [Webcomponents documentation](https://labirthermal.github.io/web/webcomponents/) – use the core functionality through ready-made components.
 
 ## Framework agnostic
 
