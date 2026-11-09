@@ -5,7 +5,8 @@ import { CallbacksManager } from "../../callbacksManager";
 import { AnalysisGraphsStorage } from "./graphs/AnalysisGraphsStorage";
 
 type HeaderRow = string[];
-export type ValueRow = [Date, ...number[]];
+/** Elapsed time and Celsius values; null denotes a pending or missing series value. */
+export type ValueRow = [Date, ...(number | null)[]];
 
 type DataType = [HeaderRow, ...ValueRow[]];
 

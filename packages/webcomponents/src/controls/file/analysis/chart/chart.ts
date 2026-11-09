@@ -693,16 +693,20 @@ export class ThermalChartElement extends LitElement {
       dataPromise = Promise.resolve(data);
     }
 
-    dataPromise.then(dataTable).then(converted => {
+    dataPromise.then(resolved => {
       if (version === this.dataVersion && this.data === data) {
+        return dataTable(resolved);
+      }
+    }).then(converted => {
+      if (converted && version === this.dataVersion && this.data === data) {
         this.dataPending = false;
         const unchanged = this._data === converted;
         this._data = converted;
         if (unchanged) this.redraw();
       }
     }).catch((reason: unknown) => {
-      console.error('Failed to prepare chart data:', reason);
       if (version === this.dataVersion && this.data === data) {
+        console.error('Failed to prepare chart data:', reason);
         this.dataPending = false;
         this._data = undefined;
         const chart = this.shadowRoot?.getElementById('chartdiv');

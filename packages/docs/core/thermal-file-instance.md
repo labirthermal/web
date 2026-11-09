@@ -306,6 +306,14 @@ The example below shows an implementation of <code>AnalysisDrive</code> using th
 
 Time-series data of the analyses across the frames of a sequence, used by graphs and exports. The value holds the graph data of all analyses with active graphs.
 
+`analysisData.value.values` contains a header followed by rows of
+`[Date, ...(number | null)[]]`. The date represents elapsed milliseconds from the
+first frame and temperatures are in Celsius. Rows are joined by elapsed time and
+sorted chronologically. Every active series keeps its column while its data are
+loading; pending or missing values are `null`, not zero. Each published row has
+the same number of columns as the header, even when analyses finish at different
+times. Consumers converting temperatures must preserve these gaps.
+
 ### Setter methods
 
 - `analysisData.refreshAllAnalysesValues()` – recalculate the current values of all analyses (synchronous, current frame only).

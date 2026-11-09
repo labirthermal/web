@@ -253,6 +253,11 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
         }
 
         const [headers, ...rows] = this.graphs.values;
+        rows.forEach((row, index) => {
+            if (row.length !== headers.length) {
+                throw new Error(`Analysis graph row ${index + 1} has ${row.length} columns, but must have ${headers.length}`);
+            }
+        });
         // Without a manager (e.g. outside the hierarchy) values stay in Celsius
         const unit = this.managerObject?.unit;
 
@@ -272,6 +277,9 @@ export class FileAnalysisGraphElement extends AbstractFileConsumer {
                 return [
                     relativeTime,
                     ...row.slice(1).flatMap((value, index) => {
+                        if (value === null) {
+                            return [null, null];
+                        }
                         // Missing values (gaps in the series) are passed through unchanged
                         const isNumber = typeof value === "number" && Number.isFinite(value);
                         const converted = isNumber && unit

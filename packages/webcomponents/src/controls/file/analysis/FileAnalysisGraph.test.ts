@@ -22,6 +22,10 @@ class TestGraph extends FileAnalysisGraphElement {
     public get data() {
         return this.graphs;
     }
+
+    public setData(value: AnalysisDataStateValue) {
+        this.graphs = value;
+    }
 }
 
 customElements.define("test-standalone-analysis-graph", TestGraph);
@@ -99,6 +103,46 @@ afterEach(() => {
 });
 
 describe("Standalone analysis graph", () => {
+    it("keeps pending series and their tooltips null until their data arrive", async () => {
+        const component = new TestGraph();
+        Object.assign(component, { file: fixture(true).file });
+        document.body.append(component);
+        await component.updateComplete;
+        component.setData({
+            values: [["Time", "A MAX", "A AVG", "B MAX", "B AVG"], [new Date(0), null, null, 31, 30]],
+            colors: ["red", "red", "blue", "blue"],
+        });
+        await component.updateComplete;
+        const chart = component.graphRef.value;
+        if (!chart) throw new Error("Missing file analysis chart");
+        const data = chart.data as unknown[][];
+        expect(data[0]).toHaveLength(9);
+        expect(data[1]).toHaveLength(9);
+        expect(data[1].slice(0, 6)).toEqual([0, null, null, null, null, 31]);
+        expect(data[1][6]).toContain("B MAX");
+        expect(data[1][7]).toBe(30);
+        expect(data[1][8]).toContain("B AVG");
+
+        component.setData({
+            values: [["Time", "A MAX", "A AVG", "B MAX", "B AVG"], [new Date(0), 11, 10, 31, 30]],
+            colors: ["red", "red", "blue", "blue"],
+        });
+        await component.updateComplete;
+        expect((chart.data as unknown[][])[1].filter(value => typeof value === "number")).toEqual([0, 11, 10, 31, 30]);
+    });
+
+    it("rejects malformed rows before converting them for Google Charts", async () => {
+        const component = new TestGraph();
+        Object.assign(component, { file: fixture(true).file });
+        document.body.append(component);
+        await component.updateComplete;
+        component.setData({
+            values: [["Time", "A", "B"], [new Date(0), 10]],
+            colors: ["red", "blue"],
+        });
+        await expect(component.updateComplete).rejects.toThrow("Analysis graph row 1 has 2 columns, but must have 3");
+    });
+
     it("uses boolean presence semantics for the standalone attribute", async () => {
         const component = new TestGraph();
         document.body.append(component);

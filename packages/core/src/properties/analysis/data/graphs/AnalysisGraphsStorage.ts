@@ -98,46 +98,38 @@ export class AnalysisGraphsStorage {
             colors: []
         }
 
-        // Push names and colors of active graphs
-        this.graphs.forEach((graph) => {
-
-            // Push labels
-            output.values[0].push(...graph.getGraphLabels());
-
+        const series = Array.from(this.graphs.values()).map(graph => {
+            const labels = graph.getGraphLabels();
+            const offset = output.values[0].length;
+            output.values[0].push(...labels);
             output.colors.push(...graph.getGraphColors());
-
+            return { graph, offset, width: labels.length };
         });
 
-        // Push values
-        this.graphs.forEach((graph) => {
+        const rows = new Map<number, ValueRow>();
 
-            if (graph.hasDataToPrint()) {
-
-                if (graph.value) {
-
-                    Object.keys(graph.value).forEach((key, index) => {
-
-                        let row = output.values[index + 1];
-
-                        if (row === undefined) {
-                            const date = new Date();
-                            date.setTime( parseInt( key ) );
-                            row = [date];
-                            output.values[index + 1] = row;
-                        }
-
-                        const array = row as ValueRow;
-
-                        array.push(...graph.getDtaAtTime(parseInt(key)));
-
-                    });
-
-
-                }
-
+        for (const { graph, offset, width } of series) {
+            if (width === 0 || !graph.value) {
+                continue;
             }
 
-        });
+            for (const key of Object.keys(graph.value)) {
+                const timestamp = Number(key);
+                let row = rows.get(timestamp);
+                if (!row) {
+                    row = [new Date(timestamp), ...Array<number | null>(output.values[0].length - 1).fill(null)];
+                    rows.set(timestamp, row);
+                }
+
+                graph.getDtaAtTime(timestamp).forEach((value, index) => {
+                    row[offset + index] = value;
+                });
+            }
+        }
+
+        for (const [, row] of Array.from(rows.entries()).sort(([a], [b]) => a - b)) {
+            output.values.push(row);
+        }
 
         this.output = output;
         return output;

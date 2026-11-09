@@ -254,4 +254,41 @@ describe("GroupChartElement units", () => {
         expect(wrapper.setDataTable).toHaveBeenLastCalledWith({ source: chart().data });
         expect(wrapper.draw).toHaveBeenCalled();
     });
+
+    it("does not convert a stale response after newer data have arrived", async () => {
+        Object.assign(group.groupObject.analysisGraph, { value: graph() });
+        await settle();
+        let resolveResponse!: (response: Response) => void;
+        vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(resolve => { resolveResponse = resolve; })));
+        const convert = vi.fn(async (data: unknown) => ({ source: data }));
+        loadData = convert;
+        const rendered = chart();
+        rendered.data = "/old-chart.json";
+        await settle();
+        const newest = graph().data;
+        rendered.data = newest;
+        await settle();
+
+        const stale = [["Time", "A", "B"], [firstTime, 10]];
+        resolveResponse(Response.json(stale));
+        await settle();
+        expect(convert).toHaveBeenCalledTimes(1);
+        expect(convert).toHaveBeenCalledWith(newest);
+        expect(wrapper.setDataTable).toHaveBeenLastCalledWith({ source: newest });
+    });
+
+    it("ignores failures of superseded conversions", async () => {
+        let rejectOld!: (reason: Error) => void;
+        loadData = () => new Promise((_, reject) => { rejectOld = reject; });
+        Object.assign(group.groupObject.analysisGraph, { value: graph() });
+        await settle();
+        loadData = async data => ({ source: data });
+        manager.setAttribute("unit", "F");
+        await settle();
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        rejectOld(new Error("Obsolete snapshot"));
+        await settle();
+        expect(error).not.toHaveBeenCalled();
+        expect(wrapper.setDataTable).toHaveBeenLastCalledWith({ source: chart().data });
+    });
 });
