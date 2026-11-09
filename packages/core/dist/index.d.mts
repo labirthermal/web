@@ -2641,7 +2641,8 @@ declare class AnalysisGraphsStorage {
   };
 }
 type HeaderRow = string[];
-type ValueRow = [Date, ...number[]];
+/** Elapsed time and Celsius values; null denotes a pending or missing series value. */
+type ValueRow = [Date, ...(number | null)[]];
 type DataType = [HeaderRow, ...ValueRow[]];
 type AnalysisDataStateValue = {
   values: DataType;

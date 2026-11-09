@@ -15446,6 +15446,9 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 	getChartData() {
 		if (this.chartDataSource === this.graphs && this.chartDataUnit === this.unit && this.chartDataCache) return this.chartDataCache;
 		const [headers, ...rows] = this.graphs.values;
+		rows.forEach((row, index) => {
+			if (row.length !== headers.length) throw new Error(`Analysis graph row ${index + 1} has ${row.length} columns, but must have ${headers.length}`);
+		});
 		const unit = this.managerObject?.unit;
 		this.chartDataSource = this.graphs;
 		this.chartDataUnit = this.unit;
@@ -15462,6 +15465,7 @@ var FileAnalysisGraphElement = class extends AbstractFileConsumer {
 		}])], ...rows.map((row) => {
 			const relativeTime = row[0].getTime();
 			return [relativeTime, ...row.slice(1).flatMap((value, index) => {
+				if (value === null) return [null, null];
 				const isNumber = typeof value === "number" && Number.isFinite(value);
 				const converted = isNumber && unit ? unit.celsiusToCurrent(value) : value;
 				const formatted = !isNumber ? String(value) : unit ? unit.formatSingle(converted) : `${value} °C`;
@@ -17102,16 +17106,18 @@ var ThermalChartElement = class extends lit.LitElement {
 				dataPromise = fetch(dataString).then((response) => response.json());
 			}
 		} else dataPromise = Promise.resolve(data);
-		dataPromise.then(dataTable).then((converted) => {
-			if (version === this.dataVersion && this.data === data) {
+		dataPromise.then((resolved) => {
+			if (version === this.dataVersion && this.data === data) return dataTable(resolved);
+		}).then((converted) => {
+			if (converted && version === this.dataVersion && this.data === data) {
 				this.dataPending = false;
 				const unchanged = this._data === converted;
 				this._data = converted;
 				if (unchanged) this.redraw();
 			}
 		}).catch((reason) => {
-			console.error("Failed to prepare chart data:", reason);
 			if (version === this.dataVersion && this.data === data) {
+				console.error("Failed to prepare chart data:", reason);
 				this.dataPending = false;
 				this._data = void 0;
 				const chart = this.shadowRoot?.getElementById("chartdiv");
