@@ -4,6 +4,14 @@ Provides framework-agnostic TypeScript classes for work with thermal images in t
 - loading and reading of files
 - core classes that enable processing of multiple IR images at once
 
+## Installation
+
+Install [`@labirthermal/core` from npm](https://www.npmjs.com/package/@labirthermal/core):
+
+```sh
+npm install @labirthermal/core
+```
+
 ## Usage
 
 The core library can be used:

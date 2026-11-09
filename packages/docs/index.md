@@ -63,7 +63,7 @@ const features = [
 ```html
 
 <!-- Import the IIFE build of the library-->
- <script src="/lib/embed.iife.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/@labirthermal/webcomponents@2.0.4/dist/iife/embed.iife.js"></script>
 
 <!-- Use the webcomponents anywhere in your DOM -->
  <thermal-file-app

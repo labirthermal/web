@@ -6,7 +6,7 @@ inside [`LabirthermalProvider`](./labirthermal-provider).
 
 ## Usage
 
-Install the package in a React 19 application:
+Install [`@labirthermal/react` from npm](https://www.npmjs.com/package/@labirthermal/react) in a React 19 application:
 
 ```sh
 npm install @labirthermal/react

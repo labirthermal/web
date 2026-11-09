@@ -2,7 +2,15 @@
 
 A Lit-based web component library for thermal images and thermal-analysis UIs in the browser.
 
-[![A showcase of the simple application](docs/images/thermal-file-analyser.png)](https://edu.labir.cz/experiment/sul-jedla-soda-a-voda/)
+[![A showcase of the simple application](docs/images/thermal-file-analyser.png)](https://labirthermal.github.io/web/webcomponents/applications/thermal-file-app)
+
+## Installation
+
+Install [`@labirthermal/webcomponents` from npm](https://www.npmjs.com/package/@labirthermal/webcomponents):
+
+```bash
+npm install @labirthermal/webcomponents
+```
 
 ## Build stack and package intent
 
@@ -37,11 +45,11 @@ The library exports the component classes and controller abstractions from `src/
 ## Direct browser consumption (IIFE)
 
 ```html
-<script src="./dist/iife/embed.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@labirthermal/webcomponents@2.0.4/dist/iife/embed.iife.js"></script>
 <thermal-dropin-app locale="en"></thermal-dropin-app>
 ```
 
-The IIFE bundle registers all included custom elements immediately after load, and adds the default styles. This is the mode used by the WordPress integration package in `packages/thermal-display`.
+The IIFE bundle registers all included custom elements immediately after load and adds the default styles. You can also use a locally built bundle at `dist/iife/embed.iife.js`. This is the mode used by the WordPress integration package in `packages/thermal-display`.
 
 ## React / Next.js usage
 
@@ -76,14 +84,14 @@ In TypeScript, you normally need a declaration for the custom element tag names 
 
 ## Demos
 
-- [An advanced view with predefined analyses](https://edu.labir.cz/experiment/sul-jedla-soda-a-voda/)
-- [A custom implementation integrated into other HTML content](https://edu.labir.cz/obsah/navody/nastaveni-a-funkce/teplotni-rozsah/)
+- [Thermal file app](https://labirthermal.github.io/web/webcomponents/applications/thermal-file-app) – a ready-to-use viewer with analysis tools.
+- [Context providers and consumers](https://labirthermal.github.io/web/webcomponents/guide/hierarchy) – build a custom implementation.
 
 ## Overview
 
-The purpose of this library is to enable in-browser display and furher work with LRC files produced by [IR cameras TIMI Edu](https://edu.labir.cz/en/ir-camera/properties-of-our-ir-cameras/). Main usage is currently in STEM education. There is a work-in-progress [Wordpress plugin](/packages/thermal-display) that uses `@labir/embed` for its easy-to-use user interface.
+The purpose of this library is to enable in-browser display and further work with LRC files produced by IR cameras such as TIMI Edu cameras. Main usage is currently in STEM education. There is a work-in-progress [WordPress plugin](../thermal-display) that uses these webcomponents for its easy-to-use user interface.
 
-This frontend library is a webcomponents implementation of [@labir/core](/packages/core) which handles all the underlying functionality. The UI is implemented here using [Lit.js](https://lit.dev/).
+This frontend library is a webcomponents implementation of [@labirthermal/core](../core/README.md), which handles all the underlying functionality. The UI is implemented here using [Lit.js](https://lit.dev/).
 
 ### Main functions
 
@@ -282,13 +290,10 @@ ownership of the same host's `analysis1` through `analysis7`.
 
 ### 1. Include the library
 
-Include the scripts in the `dist` folder which contains the latest build.
-
-Recommended - use jsdelvr.net. The following code will use the latest production version.
+For direct browser use, load the IIFE build from jsDelivr:
 
 ```html
-<script src=" https://cdn.jsdelivr.net/npm/@labir/embed/dist/embed.min.js "></script>
-<link href=" https://cdn.jsdelivr.net/npm/@labir/embed/dist/embed.min.css " rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@labirthermal/webcomponents@2.0.4/dist/iife/embed.iife.js"></script>
 ```
 
 ### 2. Use our webcomponents anywhere in the page

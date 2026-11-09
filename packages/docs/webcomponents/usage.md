@@ -1,19 +1,20 @@
 # Usage in the browser
 
-In case you want to use the webcomponents directly in the browser, you need to use the **IIFE build** which registers the webcomponents immadiately after the script arrives to the browser. 
+To use the webcomponents directly in the browser, load the **IIFE build**. It
+registers the webcomponents as soon as the script loads. The published package
+is available through jsDelivr:
 
 ```html
-<!-- Load the IIFE build anywhere in your html -->
-<script src="/labirthermal.ifee.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@labirthermal/webcomponents@2.0.4/dist/iife/embed.iife.js"></script>
 
-<!-- This webcomponent will be rendered right after the script is loaded -->
 <thermal-file-app thermal="... path to your LRC file ..."></thermal-file-app>
 ```
 
 <blockquote>IIFE = Instantly invoked function expression</blockquote>
 
-## Where to get the IIFE build?
+For applications using a bundler, install
+[`@labirthermal/webcomponents` from npm](https://www.npmjs.com/package/@labirthermal/webcomponents):
 
-Download the current build from GitHub repository.
-
-[packages/webcomponents/dist/iife/embed.iife.js](https://github.com/labirthermal/web/blob/main/packages/webcomponents/dist/iife/embed.iife.js)
+```sh
+npm install @labirthermal/webcomponents
+```

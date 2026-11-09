@@ -2,12 +2,22 @@
 
 Framework-independent webcomponents for displaying and analysing thermal images in the browser. They are built with [Lit](https://lit.dev) on top of [@labirthermal/core](../core/).
 
+## Installation
+
+Install [`@labirthermal/webcomponents` from npm](https://www.npmjs.com/package/@labirthermal/webcomponents):
+
+```sh
+npm install @labirthermal/webcomponents
+```
+
 ## Usage
 
-Load the IIFE build with a single `<script>` tag and use the elements anywhere in your HTML – see [Usage in the browser](./usage).
+For direct browser use, load the IIFE build with a single `<script>` tag. For
+installation through npm, see the command above. More details are in
+[Usage in the browser](./usage).
 
 ```html
-<script src="/lib/embed.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@labirthermal/webcomponents@2.0.4/dist/iife/embed.iife.js"></script>
 
 <thermal-file-app thermal="/files/sequence.lrc"></thermal-file-app>
 ```

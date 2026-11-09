@@ -2,6 +2,14 @@
 
 Clinet side classes for work with thermal images.
 
+## Installation
+
+Install [`@labirthermal/core` from npm](https://www.npmjs.com/package/@labirthermal/core):
+
+```bash
+npm install @labirthermal/core
+```
+
 ## Core functionality
 
 - reading files using web-workers

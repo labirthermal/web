@@ -18,6 +18,19 @@ Set of JS/TS packages for work with recordings from thermal cameras:
 - optional integration to our server storage system
 - a WordPress plugin that brings the webcomponents to the publishing platform
 
+## Use the published packages
+
+Install the package you need from npm:
+
+```bash
+npm install @labirthermal/core
+npm install @labirthermal/webcomponents
+```
+
+See [`@labirthermal/core` on npm](https://www.npmjs.com/package/@labirthermal/core) and
+[`@labirthermal/webcomponents` on npm](https://www.npmjs.com/package/@labirthermal/webcomponents).
+The WordPress plugin is not an npm package; see the [plugin README](./packages/thermal-display/readme.txt).
+
 ## Development
 
 Use **PNPM** package manager - this monorepo relies on its workspaces functionality.
