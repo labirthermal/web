@@ -2,11 +2,15 @@
 
 Documentation and examples at [https://labirthermal.github.io/web/](https://labirthermal.github.io/web/).
 
-Set of JS/TS packages for work with recordings from thermal cameras:
+TypeScript packages for working with thermal-camera recordings:
 
 - `@labirthermal/core` - the core functionality in pure TS
 - `@labirthermal/webcomponents` - webcomponents on top of `@labirthermal/core`
-- `thermal-display` - a Wordpress plugin using `@labirthermal/webcomponents`
+- `@labirthermal/react` - React wrappers for `@labirthermal/webcomponents`
+
+Other integrations:
+
+- `thermal-display` - a WordPress plugin using `@labirthermal/webcomponents` (see the [plugin README](./packages/thermal-display/readme.txt))
 
 ## Features
 
@@ -25,11 +29,12 @@ Install the package you need from npm:
 ```bash
 npm install @labirthermal/core
 npm install @labirthermal/webcomponents
+npm install @labirthermal/react
 ```
 
 See [`@labirthermal/core` on npm](https://www.npmjs.com/package/@labirthermal/core) and
-[`@labirthermal/webcomponents` on npm](https://www.npmjs.com/package/@labirthermal/webcomponents).
-The WordPress plugin is not an npm package; see the [plugin README](./packages/thermal-display/readme.txt).
+[`@labirthermal/webcomponents`](https://www.npmjs.com/package/@labirthermal/webcomponents) and
+[`@labirthermal/react`](https://www.npmjs.com/package/@labirthermal/react) on npm.
 
 ## Development
 

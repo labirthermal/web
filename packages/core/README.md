@@ -56,9 +56,16 @@ repository root and reload the embedding application to use the updated code.
 
 ## Framework agnostic
 
-This package is intentionally written independently on any frontend framework. It might be implemented in any one. So far, we have been working on those integrations:
+This package is framework-agnostic and can be used directly or through the
+integrations maintained in this repository:
 
-- React: `@labir/react-bridge` (work in progress)
-- Vue 3: `@labir/vue` (experimental)
-- Web components: `@labir/embed`
-- Wordpress plugin built on top of `@labir/embed`
+- [Web components](https://www.npmjs.com/package/@labirthermal/webcomponents)
+  ([documentation](https://labirthermal.github.io/web/webcomponents/),
+  [source](https://github.com/labirthermal/web/tree/main/packages/webcomponents))
+- [React wrappers](https://www.npmjs.com/package/@labirthermal/react)
+  ([documentation](https://labirthermal.github.io/web/react/),
+  [source](https://github.com/labirthermal/web/tree/main/packages/react))
+
+The [WordPress plugin](https://github.com/labirthermal/web/tree/main/packages/thermal-display)
+is a separate integration built on the web components, not a TypeScript or npm
+package. See its [README](../thermal-display/readme.txt).

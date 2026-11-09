@@ -5,6 +5,37 @@ during server rendering. In the App Router, `'use client'` alone is not enough:
 Next.js can still prerender Client Components on the server. Load the component
 that imports the package through `next/dynamic` with `ssr: false`.
 
+## Webpack configuration
+
+The core uses `workerpool` to run CPU-heavy work in browser Web Workers.
+For the client bundle, configure Next.js to ignore `workerpool`'s Node-only
+backends so Webpack can build without resolving `worker_threads`,
+`child_process` or `os`. Merge these aliases into the existing
+`webpack` callback in `next.config.mjs`:
+
+```js
+const nextConfig = {
+  webpack(config, { isServer }) {
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        worker_threads: false,
+        child_process: false,
+        os: false,
+      };
+    }
+
+    return config;
+  },
+};
+
+export default nextConfig;
+```
+
+Do not disable or alias `workerpool` itself: its browser entry is needed for
+Web Workers. If the project already defines a Webpack callback, merge these
+aliases into it rather than replacing it.
+
 Define the viewer in a client module:
 
 ```tsx

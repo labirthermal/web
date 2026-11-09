@@ -153,6 +153,37 @@ must be loaded **only in the browser**. Its core runtime reexports access
 `window` during module evaluation. `'use client'` alone is not sufficient:
 Next.js also prerenders Client Components on the server.
 
+### Webpack configuration
+
+The core uses `workerpool` to run CPU-heavy work in browser Web Workers.
+In the client bundle, Next.js must use `workerpool`'s browser entry and ignore
+its Node-only backends. Add these aliases to the existing `webpack` callback
+in `next.config.mjs`:
+
+```js
+const nextConfig = {
+  webpack(config, { isServer }) {
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        worker_threads: false,
+        child_process: false,
+        os: false,
+      };
+    }
+
+    return config;
+  },
+};
+
+export default nextConfig;
+```
+
+Keep the `workerpool` dependency enabled; its browser build is required for
+Web Workers. These aliases only exclude the Node-specific modules from the
+browser bundle. If your config already has a `webpack` callback, merge these
+aliases into it rather than replacing the callback.
+
 In the App Router, define the viewer in its own client module:
 
 ```tsx
