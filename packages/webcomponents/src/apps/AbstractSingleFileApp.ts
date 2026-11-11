@@ -46,7 +46,7 @@ implements
         managerSlug!: string;
         managerObject!: ThermalManager;
         managerController: ManagerController = new ManagerController(this);
-        palette: AvailableThermalPalette = "jet";
+        palette!: AvailableThermalPalette;
         advancedPalettes: boolean = false;
         smoothThermograms: boolean = false;
         smoothGraph: boolean = false;

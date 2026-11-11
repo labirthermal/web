@@ -1,1 +1,61 @@
-.file-editor-layout{display:grid;gap:20px;grid-template-columns:1fr 1fr}.file-editor-stack{display:flex;gap:5px}.gap-bottom{margin-bottom:20px}.file-editor-tab{margin-top:20px}.notations-table{border-collapse:collapse;margin-bottom:20px;width:100%}.notations-table thead{background:var(--thermal-slate-light);font-weight:400;text-align:left}.notations-table td,.notations-table th{padding:5px 7px}.notations-table td{border-bottom:1px solid var(--thermal-slate-light)}.notation-image{box-shadow:0 0 5px rgba(0,0,10,.2);cursor:pointer;height:auto;max-width:100px;width:100%}.notation-image:hover{box-shadow:0 0 10px var(--wp-admin-theme-color)}.file-upload-cell{vertical-align:center}
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ../../node_modules/.pnpm/css-loader@6.11.0_webpack@5.111.1/node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!../../node_modules/.pnpm/postcss-loader@6.2.1_postcss@8.5.30_webpack@5.111.1/node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!../../node_modules/.pnpm/sass-loader@16.0.6_sass@1.95.1_webpack@5.111.1/node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/app/style.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+.file-editor-layout {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.file-editor-stack {
+  display: flex;
+  gap: 5px;
+}
+
+.gap-bottom {
+  margin-bottom: 20px;
+}
+
+.file-editor-tab {
+  margin-top: 20px;
+}
+
+.notations-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+.notations-table thead {
+  background: var(--thermal-slate-light);
+  font-weight: normal;
+  text-align: left;
+}
+.notations-table td, .notations-table th {
+  padding: 5px 7px;
+}
+.notations-table td {
+  border-bottom: 1px solid var(--thermal-slate-light);
+}
+
+.notation-image {
+  width: 100%;
+  height: auto;
+  max-width: 100px;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(0, 0, 10, 0.2);
+}
+.notation-image:hover {
+  box-shadow: 0 0 10px var(--wp-admin-theme-color);
+}
+
+.file-upload-cell {
+  vertical-align: center;
+}
+
+/*# sourceMappingURL=style-index.css.map*/

@@ -15,7 +15,7 @@ export abstract class AbstractPaletteSwitch extends AbstractManagerConsumer {
 
     @consume({ context: managerAdvancedPalettesContext, subscribe: true })
     @state()
-    protected advancedPalettesContext: boolean = false;
+    public advancedPalettesContext: boolean = false;
 
     @property({ type: Boolean, attribute: "advanced-palettes" })
     public advancedPalettesProperty?: boolean;
@@ -25,9 +25,9 @@ export abstract class AbstractPaletteSwitch extends AbstractManagerConsumer {
 
     @consume({ context: managerPaletteContext, subscribe: true })
     @state()
-    protected value!: ManagerPaletteContextType;
+    public value!: ManagerPaletteContextType;
 
-    willUpdate(changedProperties: PropertyValues): void {
+    willUpdate(changedProperties: PropertyValues<this>): void {
         super.willUpdate(changedProperties);
 
         const showAdvancedPalettes = this.advancedPalettesProperty ?? this.advancedPalettesContext;

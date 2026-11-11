@@ -3886,7 +3886,7 @@ window.i18next = instance;
 const i18webcomponents = instance;
 // package.json
 var name = "@labirthermal/webcomponents";
-var version$1 = "2.0.3";
+var version$1 = "2.0.4";
 window.matchMedia("(prefers-color-scheme: dark)");
 const DARK_MODE_CLASS = "thermal-dark-mode";
 // src/styles/defaultStyles.ts
@@ -6700,6 +6700,7 @@ var ManagerController = class extends AbstractHierarchyController {
 	}
 	constructor(host) {
 		super(host);
+		this.onAdvancedPalettesChange = new _labirthermal_core.CallbacksManager();
 		this.onInternalObject = new _labirthermal_core.CallbacksManager();
 		this._UUID = host.UUID + "_manager-controller";
 		this.managerControllerContextProvider = new _lit_context.ContextProvider(this.host, {
@@ -6773,7 +6774,10 @@ var ManagerController = class extends AbstractHierarchyController {
 	* This is the recommended way to set the advanced palettes flag - updates the value in the context provider and the host element. All updates are performed only when the new value differs from the current one. 
 	*/
 	setAdvancedPalettes(value) {
-		if (this.host.advancedPalettes !== value) this.host.advancedPalettes = value;
+		if (this.host.advancedPalettes !== value) {
+			this.host.advancedPalettes = value;
+			this.onAdvancedPalettesChange.call(value);
+		}
 		if (this.advancedPalettesContextProvider.value !== value) this.advancedPalettesContextProvider.setValue(value);
 	}
 	/** 

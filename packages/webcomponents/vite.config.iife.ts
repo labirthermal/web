@@ -24,7 +24,7 @@ export default defineConfig({
         rollupOptions: {
 
             input: {
-                embed: path.resolve("./src/index.iife.ts"),
+                labirthermal: path.resolve("./src/index.iife.ts"),
             },
 
             output: {
@@ -65,16 +65,16 @@ export default defineConfig({
                         /** Job 1: Copy IIFE into WP package */
 
                         fs.copyFileSync(
-                            path.resolve("./dist/iife/embed.iife.js"),
-                            path.resolve("../thermal-display/assets/embed.iife.js")
+                            path.resolve("./dist/iife/labirthermal.iife.js"),
+                            path.resolve("../thermal-display/assets/labirthermal.iife.js")
                         );
 
                         console.log("IIFE build: @labirthermal/webcomponents build copied into @labir/wordpress");
 
-                        /** Job 2: Copy IIFE into Server package */
+                        /** Job 2: Copy IIFE into documentation package */
 
                         fs.copyFileSync(
-                            path.resolve("./dist/iife/embed.iife.js"),
+                            path.resolve("./dist/iife/labirthermal.iife.js"),
                             path.resolve("../docs/public/lib/labirthermal.iife.js")
                         );
 

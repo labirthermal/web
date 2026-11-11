@@ -77,7 +77,7 @@ In sake of simplicity, the thermal palettes shown by default are only the most u
 - `white_hot`
 - `black_hot`
 
-After the `advanced-palettes` attribute is set to `true`, the following palettes becomes available:
+When the `advanced-palettes` attribute is present, the following palettes become available:
 
 - `arctic`
 - `lava`
@@ -91,6 +91,16 @@ If you want to have a particular setting by default, you can provide `palette` a
 ```html
 <manager-provider palette="lava" advanced-palettes></manager-provider>
 ```
+
+The `advanced-palettes` attribute is boolean: omit it to disable advanced choices.
+The value `advanced-palettes="false"` still enables them because the attribute is present.
+
+Providers using the same `manager-slug` share the selected palette. When a provider
+connects without `palette`, it keeps the shared manager's current palette; a new
+manager defaults to `jet`. An explicitly supplied palette changes the shared value.
+The `advanced-palettes` setting belongs to each provider, so set it on each provider
+whose controls should offer advanced choices. A palette control in basic mode resets
+a shared advanced selection to `iron`.
 
 These attributes are also supported by the following applications:
 

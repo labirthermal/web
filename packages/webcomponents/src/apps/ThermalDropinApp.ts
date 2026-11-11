@@ -50,7 +50,7 @@ export class ThermalDropinAppElement
 
     managerSlug!: string;
     managerObject!: ThermalManager;
-    palette: AvailableThermalPalette = "jet";
+    palette!: AvailableThermalPalette;
     advancedPalettes: boolean = false;
     smoothThermograms: boolean = false;
     smoothGraph: boolean = false;

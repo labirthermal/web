@@ -69,6 +69,8 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
 
     private _UUID: string;
 
+    private lastAppliedPalette?: AvailableThermalPalette;
+
     public get UUID(): string {
         return this._UUID;
     }
@@ -107,6 +109,9 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
 
 
     public readonly advancedPalettesContextProvider: ContextProvider<typeof managerAdvancedPalettesContext, IElementWithManagerController>;
+
+    /** Listen to the advanced palettes change - the callback is here because this attribute is not managed by the `@labirthermal/core`. */
+    public readonly onAdvancedPalettesChange = new CallbacksManager< (advancedPalettes: boolean) => void >();
 
 
     /** Smooth thermograms flag accessed from the host element */
@@ -200,12 +205,15 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
         const slug = this._getDefaultSlugFromHost("manager-slug");
         this.host.managerSlug = slug;
 
-        // Values requested by the host; `undefined` unit means "not set by the host"
-        const requestedUnit = parseThermalUnit(this.host.unit);
-        const requestedPalette = paletteConverter.fromAttribute(this.host.palette);
-
         // A manager with the same slug may already exist (shared by more providers)
         const managerExisted = window.Thermal.managers.has(slug);
+
+        // A missing palette, or an unchanged palette on reconnection, adopts the shared manager's value.
+        const requestedUnit = parseThermalUnit(this.host.unit);
+        const requestedPalette = this.host.palette === undefined
+            || (managerExisted && this.host.palette === this.lastAppliedPalette)
+            ? undefined
+            : paletteConverter.fromAttribute(this.host.palette);
 
         // Create or get the manager object and set it in the context provider.
         // A new manager is created directly with the host's values, so it never exists with defaults.
@@ -238,8 +246,8 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
 
         // Palette
 
-        // Set the initial palette value
-        this.setPalette(requestedPalette);
+        // An explicit request wins; otherwise keep the existing manager's palette or its default.
+        this.setPalette(requestedPalette ?? this.managerObject.palette.value);
 
         // Add the palette listeners
         this.managerObject.palette.addListener(this.UUID, this.setPalette.bind(this));
@@ -360,19 +368,25 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
     }
 
 
-    /** 
-     * This is the recommended way to set the advanced palettes flag - updates the value in the context provider and the host element. All updates are performed only when the new value differs from the current one. 
+    /**
+     * Update the host and local context. Notify listeners once when an initialized value changes,
+     * including changes made through the host property or attribute.
      */
     public setAdvancedPalettes(
         value: boolean
     ): void {
 
+        const previousValue = this.advancedPalettesContextProvider.value;
+
         if (this.host.advancedPalettes !== value) {
             this.host.advancedPalettes = value;
         }
 
-        if (this.advancedPalettesContextProvider.value !== value) {
+        if (previousValue !== value) {
             this.advancedPalettesContextProvider.setValue(value);
+            if (previousValue !== undefined) {
+                this.onAdvancedPalettesChange.call(value);
+            }
         }
 
     }
@@ -386,6 +400,7 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
     ): void {
 
         const sanitizedValue = paletteConverter.fromAttribute(value);
+        this.lastAppliedPalette = sanitizedValue;
 
         // If the internal value differs, set it
         if (this.managerObject.palette.value !== sanitizedValue) {
@@ -572,6 +587,5 @@ export class ManagerController extends AbstractHierarchyController<IElementWithM
     }
 
 }
-
 
 

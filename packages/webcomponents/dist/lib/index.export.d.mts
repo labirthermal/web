@@ -2549,6 +2549,8 @@ export declare class ManagerController extends AbstractHierarchyController<IElem
   get palette(): AvailableThermalPalette;
   private readonly paletteContextProvider;
   readonly advancedPalettesContextProvider: ContextProvider<typeof managerAdvancedPalettesContext, IElementWithManagerController>;
+  /** Listen to the advanced palettes change - the callback is here because this attribute is not managed by the `@labirthermal/core`. */
+  readonly onAdvancedPalettesChange: CallbacksManager<(advancedPalettes: boolean) => void>;
   /** Smooth thermograms flag accessed from the host element */
   get smoothThermograms(): boolean;
   private readonly smoothThermogramsContextProvider;
@@ -4273,11 +4275,11 @@ declare global {
 }
 declare abstract class AbstractPaletteSwitch extends AbstractManagerConsumer {
   protected static BASIC_PALETTES: string[];
-  protected advancedPalettesContext: boolean;
+  advancedPalettesContext: boolean;
   advancedPalettesProperty?: boolean;
   protected palettes: ThermalPaletteType[];
-  protected value: ManagerPaletteContextType;
-  willUpdate(changedProperties: PropertyValues): void;
+  value: ManagerPaletteContextType;
+  willUpdate(changedProperties: PropertyValues<this>): void;
   /** Handle user input events */
   protected onSelect(palette: AvailableThermalPalette): void;
 }

@@ -26,8 +26,6 @@ export const useAnalysis = (
 
         map.set( analysis.key, analysis.serialized );
 
-        console.log( map );
-
         analysis.onSerialize.set( "___spying___", value => {
             map.set( analysis.key, value );
             console.log( map, value );

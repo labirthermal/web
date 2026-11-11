@@ -5,7 +5,8 @@
 		'wp-blocks',
 		'wp-components',
 		'wp-element',
-		'wp-i18n'
+		'wp-i18n',
+		'wp-primitives'
 	),
-	'version' => 'cb6abc8e70c6fdfe14c9'
+	'version' => 'ffb90c115f25c902aaf3'
 );

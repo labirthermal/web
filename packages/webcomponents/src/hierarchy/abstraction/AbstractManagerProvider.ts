@@ -15,7 +15,7 @@ export abstract class AbstractManagerProvider extends AbstractThermalElement imp
     public managerObject!: ThermalManager;
     public managerController: ManagerController = new ManagerController(this);
 
-    public palette: AvailableThermalPalette = "jet";
+    public palette!: AvailableThermalPalette;
 
     public advancedPalettes: boolean = false;
 
