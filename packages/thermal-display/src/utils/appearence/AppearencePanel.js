@@ -1,14 +1,5 @@
 import {
-    Button,
-    PanelBody,
-    Placeholder,
-    SelectControl,
-    TextControl,
-    Tooltip,
-    RangeControl,
-    PanelHeader,
-    CheckboxControl,
-    ButtonGroup
+    SelectControl
 } from '@wordpress/components';
 
 export const AppearencePanel = ({ skin, lines, corners, setter }) => {

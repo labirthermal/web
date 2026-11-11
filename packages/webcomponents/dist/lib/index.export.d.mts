@@ -2537,6 +2537,7 @@ export declare const managerInteractiveAnalysesContext: {
 };
 export declare class ManagerController extends AbstractHierarchyController<IElementWithManagerController> {
   private _UUID;
+  private lastAppliedPalette?;
   get UUID(): string;
   static readonly HOST_PROPERTIES: HostReactiveProperties<IHostProperties$7>;
   /** Accessor to the manageer slug from the host */
@@ -2576,7 +2577,8 @@ export declare class ManagerController extends AbstractHierarchyController<IElem
   createRegistry(slug: string): ThermalRegistry;
   private _paletteStringToContextValue;
   /**
-   * This is the recommended way to set the advanced palettes flag - updates the value in the context provider and the host element. All updates are performed only when the new value differs from the current one.
+   * Update the host and local context. Notify listeners once when an initialized value changes,
+   * including changes made through the host property or attribute.
    */
   setAdvancedPalettes(value: boolean): void;
   /**
@@ -4671,6 +4673,14 @@ export declare class RegistryRangeSlider extends AbstractRegistryConsumer {
   private activeHandle;
   /** Active pointer capture and the Celsius values at the beginning of the drag. */
   private drag?;
+  /** Registry and controller currently supplying the slider's values. */
+  private subscribedRegistry?;
+  private subscribedController?;
+  constructor();
+  /** Hydrates the core registry and follows changes even if its provider contexts start empty. */
+  private bindRegistry;
+  private unbindRegistry;
+  private readonly syncRegistry;
   protected getClassName(): string;
   /** Discards previews and releases pointer capture before leaving the document. */
   disconnectedCallback(): void;
@@ -6401,6 +6411,14 @@ export declare const defineAllWebcomponents: (name: string, version: string, cat
  * @module @labirthermal/webcomponents
  */
 export declare const defineWebcomponent: (name: string, version: string, tag: string, cls: CustomElementConstructor) => void;
+declare class ManagerUnitDropdownElement extends AbstractManagerConsumer {
+  activeVariant: BtnVariants;
+  defaultVariant: BtnVariants;
+  protected unit: ThermalUnit;
+  private getUnit;
+  private renderUnit;
+  render(): import("lit").TemplateResult<1>;
+}
 export declare const independentElements: {};
 /**
  * List of provider components
@@ -6471,6 +6489,7 @@ export declare const elementsAll: {
   readonly "manager-palette-buttons": typeof ManagerPaletteButtons;
   readonly "manager-tool-bar": typeof ManagerToolBar;
   readonly "manager-unit-switch": typeof ManagerUnitSwitch;
+  readonly "manager-unit-dropdown": typeof ManagerUnitDropdownElement;
   /** @deprecated This sort of export should never be used. Please, do export thermal images only through the LIT components instead of the `@labirthermal/core` export. */
   readonly "manager-export-panel": typeof ManagerExportPanel;
   readonly "thermal-app": typeof ThermalAppElement;

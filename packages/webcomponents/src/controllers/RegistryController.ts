@@ -269,6 +269,12 @@ export class RegistryController extends AbstractHierarchyController<IElementWith
 
         // Range
 
+        // If the internal object already has a range, set the initial range values
+        const initialRange = this.registryObject.range.value;
+        if (initialRange) {
+            this.setRange(initialRange.from, initialRange.to);
+        }
+
         // Add the range listener
         this.registryObject.range.addListener(
             this.UUID,

@@ -4,7 +4,7 @@ import { addDays, addHours, addMonths, addYears, endOfDay, endOfHour, endOfMonth
 import domtoimage from "dom-to-image";
 import { downloadZip } from "client-zip";
 // package.json
-var version = "2.0.3";
+var version = "2.0.4";
 // src/properties/callbacksManager.ts
 /**
 * Manage callbacks on optional property values. All callbacks are registered with a unique key. This class extends the built-in `Map` class.
@@ -4250,6 +4250,11 @@ var TimelineDrive = class extends AbstractProperty {
 		percent = Math.max(Math.min(percent, 100), 0);
 		const convertedToRelativeTime = this._convertPercenttRelative(percent);
 		return await this.setRelativeTime(convertedToRelativeTime);
+	}
+	async setFrameByIndex(index) {
+		if (index < 0 || index >= this.steps.length) throw new Error("Frame index out of bounds");
+		const step = this.steps[index];
+		return await this.setRelativeTime(step.relative);
 	}
 	/** This is the main play method */
 	createNextStepTimer() {

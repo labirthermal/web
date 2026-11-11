@@ -328,6 +328,19 @@ export class TimelineDrive extends AbstractProperty<number, ThermalFileInstance>
         return await this.setRelativeTime( convertedToRelativeTime );
     }
 
+    public async setFrameByIndex(index: number) {
+
+        // Check if the index is within the valid range
+        if (index < 0 || index >= this.steps.length) {
+            throw new Error("Frame index out of bounds");
+        }
+
+        const step = this.steps[index];
+
+        return await this.setRelativeTime(step.relative);
+
+    }
+
 
     /** This is the main play method */
     protected createNextStepTimer() {

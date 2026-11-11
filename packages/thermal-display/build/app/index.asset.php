@@ -1,5 +1,6 @@
 <?php return array(
 	'dependencies' => array(
+		'react',
 		'react-jsx-runtime',
 		'wp-block-editor',
 		'wp-blocks',
@@ -8,5 +9,5 @@
 		'wp-i18n',
 		'wp-primitives'
 	),
-	'version' => 'ffb90c115f25c902aaf3'
+	'version' => 'cdcf47182d55f4565720'
 );

@@ -1,5 +1,5 @@
 import { useCallback, useState } from '@wordpress/element';
-import { useWebComponent } from '../../utils/useWebComponent';
+import { useWebcomponent } from '../hooks/useWebcomponent';
 
 import {
     __experimentalItemGroup as ItemGroup
@@ -28,9 +28,11 @@ export default function Thumbnail({
     ID,
     thermal,
     palette,
-    advancedPalettes, 
     from,
-    to
+    to,
+    ms,
+    setIsSequence,
+    unit
 }) {
 
     const [fileName, setFileName] = useState();
@@ -39,7 +41,9 @@ export default function Thumbnail({
     const [fileType, setFileType] = useState();
 
     const onReady = useCallback(node => {
+
         const controller = node.fileController;
+
         const onSuccess = instance => {
             setFileName(instance.fileName);
             setFileType(instance.reader.parser.name);
@@ -48,6 +52,9 @@ export default function Thumbnail({
                 const formattedDuration = new Date(instance.duration).toISOString().substr(11, 8);
                 const numFrames = instance.timeline.steps.length + " frames";
                 setDuration(formattedDuration + " (" + numFrames + ")");
+                setIsSequence(instance.timeline.isSequence);
+            } else {
+                setIsSequence(false);
             }
 
             const fileSizeInMB = (instance.meta.current.bytesize / (1024 * 1024)).toFixed(2) + " MB";
@@ -59,11 +66,12 @@ export default function Thumbnail({
         return () => controller.onSuccess.delete("thumbnail");
     }, []);
 
-    const filePreviewCallback = useWebComponent('file-provider', onReady);
+    const fileProviderRef = useWebcomponent(onReady);
 
     return <manager-provider
         palette={palette}
-        advanced-palettes={advancedPalettes ? '' : undefined}
+        advanced-palettes
+        unit={unit}
         manager-slug={ID}
     >
         <registry-provider
@@ -74,7 +82,8 @@ export default function Thumbnail({
             <group-provider>
                 <file-provider
                     thermal={thermal}
-                    ref={filePreviewCallback}
+                    ref={fileProviderRef}
+                    ms={ms}
                 >
                     <file-canvas />
                     <ItemGroup>

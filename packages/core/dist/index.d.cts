@@ -2293,6 +2293,7 @@ declare class TimelineDrive extends AbstractProperty<number, ThermalFileInstance
   findNextRelative(relativeTimeInMs: number): false | ParsedTimelineFrame;
   setRelativeTime(relativeTimeInMs: number): Promise<TimelineChangedStatusType>;
   setValueByPercent(percent: number): Promise<TimelineChangedStatusType>;
+  setFrameByIndex(index: number): Promise<TimelineChangedStatusType>;
   /** This is the main play method */
   protected createNextStepTimer(): void;
   play(): void;

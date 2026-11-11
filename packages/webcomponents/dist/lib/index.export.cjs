@@ -6489,6 +6489,8 @@ var RegistryController = class extends AbstractHierarchyController {
 				if (value.max !== this.maxContextProvider.value) this.maxContextProvider.setValue(value.max);
 			}
 		});
+		const initialRange = this.registryObject.range.value;
+		if (initialRange) this.setRange(initialRange.from, initialRange.to);
 		this.registryObject.range.addListener(this.UUID, this._rangeListener.bind(this));
 		this.host.managerController.managerObject.unit.addListener(this.UUID, this._unitListener.bind(this));
 		this.registryObject.loading.addListener(this.UUID, this._loadingListener.bind(this));
@@ -6718,9 +6720,9 @@ var ManagerController = class extends AbstractHierarchyController {
 	hostConnected() {
 		const slug = this._getDefaultSlugFromHost("manager-slug");
 		this.host.managerSlug = slug;
-		const requestedUnit = parseThermalUnit(this.host.unit);
-		const requestedPalette = paletteConverter.fromAttribute(this.host.palette);
 		const managerExisted = window.Thermal.managers.has(slug);
+		const requestedUnit = parseThermalUnit(this.host.unit);
+		const requestedPalette = this.host.palette === void 0 || managerExisted && this.host.palette === this.lastAppliedPalette ? void 0 : paletteConverter.fromAttribute(this.host.palette);
 		this.host.managerObject = createOrGetManager(slug, {
 			unit: requestedUnit ?? _labirthermal_core.ThermalUnit.C,
 			palette: requestedPalette
@@ -6730,7 +6732,7 @@ var ManagerController = class extends AbstractHierarchyController {
 		const initialUnit = requestedUnit ?? (managerExisted ? this.managerObject.unit.value : _labirthermal_core.ThermalUnit.C);
 		this.setUnit(initialUnit);
 		this.managerObject.unit.addListener(this.UUID, this.setUnit.bind(this));
-		this.setPalette(requestedPalette);
+		this.setPalette(requestedPalette ?? this.managerObject.palette.value);
 		this.managerObject.palette.addListener(this.UUID, this.setPalette.bind(this));
 		this.setAdvancedPalettes(this.host.advancedPalettes);
 		this.setSmoothThermograms(this.host.smoothThermograms);
@@ -6770,21 +6772,24 @@ var ManagerController = class extends AbstractHierarchyController {
 			data: _labirthermal_core.ThermalPalettes[palette]
 		};
 	}
-	/** 
-	* This is the recommended way to set the advanced palettes flag - updates the value in the context provider and the host element. All updates are performed only when the new value differs from the current one. 
+	/**
+	* Update the host and local context. Notify listeners once when an initialized value changes,
+	* including changes made through the host property or attribute.
 	*/
 	setAdvancedPalettes(value) {
-		if (this.host.advancedPalettes !== value) {
-			this.host.advancedPalettes = value;
-			this.onAdvancedPalettesChange.call(value);
+		const previousValue = this.advancedPalettesContextProvider.value;
+		if (this.host.advancedPalettes !== value) this.host.advancedPalettes = value;
+		if (previousValue !== value) {
+			this.advancedPalettesContextProvider.setValue(value);
+			if (previousValue !== void 0) this.onAdvancedPalettesChange.call(value);
 		}
-		if (this.advancedPalettesContextProvider.value !== value) this.advancedPalettesContextProvider.setValue(value);
 	}
 	/** 
 	* This is the recommended way to set the palette - updates the value in the core manager object, the context provider, and the host element. All updates are performed only when the new value differs from the current one. 
 	*/
 	setPalette(value) {
 		const sanitizedValue = paletteConverter.fromAttribute(value);
+		this.lastAppliedPalette = sanitizedValue;
 		if (this.managerObject.palette.value !== sanitizedValue) this.managerObject.palette.setPalette(sanitizedValue);
 		if (!this.paletteContextProvider.value) this.paletteContextProvider.setValue(this._paletteStringToContextValue(sanitizedValue));
 		else if (this.paletteContextProvider.value.key !== sanitizedValue) this.paletteContextProvider.setValue(this._paletteStringToContextValue(sanitizedValue));
@@ -9575,7 +9580,6 @@ var AbstractManagerProvider = class extends AbstractThermalElement {
 	constructor(..._args) {
 		super(..._args);
 		this.managerController = new ManagerController(this);
-		this.palette = "jet";
 		this.advancedPalettes = false;
 		this.smoothThermograms = false;
 		this.smoothGraph = false;
@@ -11680,12 +11684,52 @@ __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Ar
 * Handles stop at the registry bounds and cannot cross each other.
 */
 var RegistryRangeSlider = class extends AbstractRegistryConsumer {
-	constructor(..._args) {
-		super(..._args);
+	constructor() {
+		super();
 		this.height = null;
 		this.heightStyle = null;
 		this.loading = false;
 		this.activeHandle = "from";
+		this.syncRegistry = () => {
+			const registry = this.subscribedRegistry;
+			if (!registry) return;
+			this.min = registry.minmax.value?.min;
+			this.max = registry.minmax.value?.max;
+			this.from = registry.range.value?.from;
+			this.to = registry.range.value?.to;
+			this.loading = registry.loading.value;
+		};
+		this.addController({
+			hostConnected: () => this.bindRegistry(),
+			hostUpdate: () => {
+				const controller = this.registryController;
+				if (controller !== this.subscribedController || controller?.registryObject !== this.subscribedRegistry) queueMicrotask(() => this.bindRegistry());
+			},
+			hostDisconnected: () => this.unbindRegistry()
+		});
+	}
+	/** Hydrates the core registry and follows changes even if its provider contexts start empty. */
+	bindRegistry() {
+		if (!this.isConnected) return;
+		const controller = this.registryController;
+		const registry = controller?.registryObject;
+		if (controller === this.subscribedController && registry === this.subscribedRegistry) return;
+		this.cancelDrag();
+		this.unbindRegistry();
+		this.subscribedController = controller;
+		this.subscribedRegistry = registry;
+		if (!registry) return;
+		registry.minmax.addListener(this.UUID, this.syncRegistry);
+		registry.range.addListener(this.UUID, this.syncRegistry);
+		registry.loading.addListener(this.UUID, this.syncRegistry);
+		this.syncRegistry();
+	}
+	unbindRegistry() {
+		this.subscribedRegistry?.minmax.removeListener(this.UUID);
+		this.subscribedRegistry?.range.removeListener(this.UUID);
+		this.subscribedRegistry?.loading.removeListener(this.UUID);
+		this.subscribedRegistry = void 0;
+		this.subscribedController = void 0;
 	}
 	getClassName() {
 		return "RangeSliderElement";
@@ -17186,7 +17230,6 @@ var AbstractSingleFileAppElement = class extends AbstractApp {
 		super(..._args);
 		this.interactiveAnalysis = true;
 		this.managerController = new ManagerController(this);
-		this.palette = "jet";
 		this.advancedPalettes = false;
 		this.smoothThermograms = false;
 		this.smoothGraph = false;
@@ -17339,7 +17382,6 @@ var ThermalFileAppElement = class extends AbstractSingleFileAppElement {
 var ThermalDropinAppElement = class extends AbstractApp {
 	constructor(..._args) {
 		super(..._args);
-		this.palette = "jet";
 		this.advancedPalettes = false;
 		this.smoothThermograms = false;
 		this.smoothGraph = false;
@@ -17558,7 +17600,6 @@ var ThermalGroupAppElement = class extends AbstractApp {
 	constructor(..._args) {
 		super(..._args);
 		this.managerController = new ManagerController(this);
-		this.palette = "jet";
 		this.advancedPalettes = false;
 		this.smoothThermograms = false;
 		this.smoothGraph = false;
@@ -20475,6 +20516,51 @@ var FileVideoExportPanel = class extends AbstractSingleVideoExport {
 };
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], FileVideoExportPanel.prototype, "exportRealWidth", void 0);
 __decorate([(0, lit_decorators_js.state)(), __decorateMetadata("design:type", Number)], FileVideoExportPanel.prototype, "exportRealHeight", void 0);
+// src/controls/manager/ManagerUnitDropdown.ts
+var ManagerUnitDropdownElement = class extends AbstractManagerConsumer {
+	constructor(..._args) {
+		super(..._args);
+		this.activeVariant = "foreground";
+		this.defaultVariant = "default";
+	}
+	getUnit() {
+		return this.managerObject.unit;
+	}
+	renderUnit(definition) {
+		const active = definition.key === this.getUnit().value;
+		const variant = active ? this.activeVariant : this.defaultVariant;
+		return lit.html`<thermal-btn
+            slot="option"
+            variant=${variant}
+            ?non-interactive=${active}
+            align="left"
+            tooltip=${definition.symbol}
+            tooltip-placement="left"
+            @click=${() => this.getUnit().set(definition.key)}
+        >${definition.name}</thermal-btn>`;
+	}
+	render() {
+		const units = Object.values(this.getUnit().getUnits()).map((unit) => this.renderUnit(unit));
+		return lit.html`<thermal-dropdown>
+            <span slot="invoker">${this.getUnit().current.name}</span>
+            ${units}
+        </thermal-dropdown>`;
+	}
+};
+__decorate([(0, lit_decorators_property_js.property)({
+	type: String,
+	reflect: true,
+	attribute: "active-variant"
+}), __decorateMetadata("design:type", Object)], ManagerUnitDropdownElement.prototype, "activeVariant", void 0);
+__decorate([(0, lit_decorators_property_js.property)({
+	type: String,
+	reflect: true,
+	attribute: "default-variant"
+}), __decorateMetadata("design:type", Object)], ManagerUnitDropdownElement.prototype, "defaultVariant", void 0);
+__decorate([(0, _lit_context.consume)({
+	context: managerUnitContext,
+	subscribe: true
+}), __decorateMetadata("design:type", Object)], ManagerUnitDropdownElement.prototype, "unit", void 0);
 // src/renderers/FileDetail.ts
 var FileDetailElement = class extends AbstractFileConsumer {
 	constructor(..._args) {
@@ -20685,6 +20771,7 @@ const elementsManagerControls = {
 	"manager-palette-buttons": ManagerPaletteButtons,
 	"manager-tool-bar": ManagerToolBar,
 	"manager-unit-switch": ManagerUnitSwitch,
+	"manager-unit-dropdown": ManagerUnitDropdownElement,
 	/** @deprecated This sort of export should never be used. Please, do export thermal images only through the LIT components instead of the `@labirthermal/core` export. */
 	"manager-export-panel": ManagerExportPanel
 };

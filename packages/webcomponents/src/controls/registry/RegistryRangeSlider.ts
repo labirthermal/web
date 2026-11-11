@@ -1,4 +1,4 @@
-import type { ThermalUnit } from "@labirthermal/core";
+import type { ThermalRegistry, ThermalUnit } from "@labirthermal/core";
 import { consume } from "@lit/context";
 import type { PropertyValues } from "lit";
 import { css, html } from "lit";
@@ -116,7 +116,73 @@ export class RegistryRangeSlider extends AbstractRegistryConsumer {
     /** Active pointer capture and the Celsius values at the beginning of the drag. */
     private drag?: DragSession;
 
+    /** Registry and controller currently supplying the slider's values. */
+    private subscribedRegistry?: ThermalRegistry;
+    private subscribedController?: RegistryController;
+
     // Lifecycle and layout
+
+    constructor() {
+        super();
+        this.addController({
+            hostConnected: () => this.bindRegistry(),
+            hostUpdate: () => {
+                const controller = this.registryController;
+                if (controller !== this.subscribedController || controller?.registryObject !== this.subscribedRegistry) {
+                    // Rebind after this update so the hydrated values pass through willUpdate.
+                    queueMicrotask(() => this.bindRegistry());
+                }
+            },
+            hostDisconnected: () => this.unbindRegistry(),
+        });
+    }
+
+    /** Hydrates the core registry and follows changes even if its provider contexts start empty. */
+    private bindRegistry(): void {
+        if (!this.isConnected) {
+            return;
+        }
+
+        const controller = this.registryController;
+        const registry = controller?.registryObject;
+        if (controller === this.subscribedController && registry === this.subscribedRegistry) {
+            return;
+        }
+
+        this.cancelDrag();
+        this.unbindRegistry();
+        this.subscribedController = controller;
+        this.subscribedRegistry = registry;
+        if (!registry) {
+            return;
+        }
+
+        registry.minmax.addListener(this.UUID, this.syncRegistry);
+        registry.range.addListener(this.UUID, this.syncRegistry);
+        registry.loading.addListener(this.UUID, this.syncRegistry);
+        this.syncRegistry();
+    }
+
+    private unbindRegistry(): void {
+        this.subscribedRegistry?.minmax.removeListener(this.UUID);
+        this.subscribedRegistry?.range.removeListener(this.UUID);
+        this.subscribedRegistry?.loading.removeListener(this.UUID);
+        this.subscribedRegistry = undefined;
+        this.subscribedController = undefined;
+    }
+
+    private readonly syncRegistry = (): void => {
+        const registry = this.subscribedRegistry;
+        if (!registry) {
+            return;
+        }
+
+        this.min = registry.minmax.value?.min;
+        this.max = registry.minmax.value?.max;
+        this.from = registry.range.value?.from;
+        this.to = registry.range.value?.to;
+        this.loading = registry.loading.value;
+    };
 
     protected getClassName(): string {
         return "RangeSliderElement";

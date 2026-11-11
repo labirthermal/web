@@ -142,6 +142,14 @@
 		"corners": {
 			"type":"string",
 			"default": "default"
+		},
+		"ms": {
+			"type": "number",
+			"default": 0
+		},
+		"unit": {
+			"type": "string",
+			"default": "C"
 		}
 
 		

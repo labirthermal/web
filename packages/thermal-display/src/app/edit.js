@@ -31,7 +31,10 @@ import Preview from './components/preview';
 import Thumbnail from './components/thumbnail';
 import Range from './components/range';
 import Palettes from './components/palette';
-import AdvancedPalette from './components/advancedPalette';
+import { Unit } from './components/unit';
+import Field from './components/field';
+import Speed from './components/speed';
+import Ms from './components/ms';
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -67,6 +70,7 @@ export default function Edit({ attributes, setAttributes }) {
 		analysis5,
 		analysis6,
 		analysis7,
+		ms,
 		speed,
 		showabout,
 		showhistogram,
@@ -74,10 +78,13 @@ export default function Edit({ attributes, setAttributes }) {
 		showlayout,
 		interactiveanalysis,
 		notations,
-		advancedpalettes
+		advancedpalettes,
+		unit
 	} = attributes;
 
 	const [hasEditor, setHasEditor] = useState(false);
+
+	const [isSequence, setIsSequence] = useState(false);
 
 
 
@@ -119,28 +126,28 @@ export default function Edit({ attributes, setAttributes }) {
 
 			node.fileController.onSuccess.set(ID + "___sth", instance => {
 
-					setPreviewFile(instance);
+				setPreviewFile(instance);
 
-					if (instance.moutedBaseLayers) {
-						instance.unmountFromDom();
-					}
+				if (instance.moutedBaseLayers) {
+					instance.unmountFromDom();
+				}
 
-					setDuration(instance.timeline.duration);
+				setDuration(instance.timeline.duration);
 
-					instance.draw();
+				instance.draw();
 
-				});
+			});
 
 			node.registryController.onInternalObject.set(ID + "___sth", registry => {
 				// Handle the internal registry object
 
-				registry.range.addListener( ID, value => {
+				registry.range.addListener(ID, value => {
 					if (value instanceof Object) {
 						setAttributes(value);
 					} else {
 						setAttributes({ from: undefined, to: undefined });
 					}
-				} );
+				});
 			});
 
 		}
@@ -153,13 +160,13 @@ export default function Edit({ attributes, setAttributes }) {
 
 			node.registryController.onInternalObject.set(ID + "___sth", registry => {
 				// Handle the internal registry object
-				registry.range.addListener( ID, value => {
+				registry.range.addListener(ID, value => {
 					if (value instanceof Object) {
 						setAttributes(value);
 					} else {
 						setAttributes({ from: undefined, to: undefined });
 					}
-				} );
+				});
 			});
 
 
@@ -196,13 +203,15 @@ export default function Edit({ attributes, setAttributes }) {
 
 					<PanelBody title="Thermal file">
 
-						{thermal && <Thumbnail 
+						{thermal && <Thumbnail
 							ID={ID}
 							thermal={thermal}
 							palette={palette}
-							advancedPalettes={advancedpalettes}
 							from={from}
 							to={to}
+							setIsSequence={setIsSequence}
+							ms={ms}
+							unit={unit}
 						/>}
 
 						<div style={{ marginBottom: "1rem", marginTop: thermal ? "1rem" : "0" }}>
@@ -330,165 +339,59 @@ export default function Edit({ attributes, setAttributes }) {
 
 					</PanelBody>
 
-					<PanelBody title="Display settings" initialOpen={false}>
+					<PanelBody title="Thermal display settings" initialOpen={false}>
 
-						<Range
-							ID={ID}
-							setAttributes={setAttributes}
-						/>
-
-						<Palettes
-							ID={ID}
-							palette={palette}
-							advancedPalettes={advancedpalettes}
-							setAttributes={setAttributes}
-						/>
-
-						<AdvancedPalette
-							ID={ID}
-							advancedPalettes={advancedpalettes}
-							setAttributes={setAttributes}
-						/>
-
-						<manager-provider
-							// manager-slug={ID}
-							palette={palette}
-							autoclear="true"
+						<Field
+							label="Thermal range"
+							description="Adjust the default thermal range."
 						>
-							<registry-provider
-								from={from}
-								to={to}
-								ref={displaySettingsCallback}
-							>
-								<group-provider>
-									<file-provider thermal={thermal}>
+							<Range
+								ID={ID}
+								unit={unit}
+								setAttributes={setAttributes}
+							/>
+						</Field>
 
-										<CheckboxControl
-											__nextHasNoMarginBottom
-											checked={advancedpalettes}
-											label="Enable advanced palettes"
-											onChange={(value) => { setAttributes({ advancedpalettes: value }) }}
-										/>
-
-										<SelectControl
-											label="Palette"
-											value={palette}
-											options={[
-												{
-													label: "Iron",
-													value: "iron"
-												},
-												{
-													label: "Jet",
-													value: "jet"
-												},
-												{
-													label: "White hot",
-													value: "white_hot"
-												},
-												{
-													label: "Black hot",
-													value: "black_hot"
-												},
-												{
-													label: "Lava",
-													value: "lava"
-												},
-												{
-													label: "Rainbow",
-													value: "rainbow"
-												},
-												{
-													label: "Rainbow HC",
-													value: "rainbow_hc"
-												}
-											]}
-
-											onChange={(value) => setAttributes({ palette: value })}
-										/>
-
-										<div style={{ paddingBottom: "1rem" }}>
-
-											<registry-range-slider></registry-range-slider>
-											<registry-ticks-bar></registry-ticks-bar>
-
-											<registry-range-display></registry-range-display>
-
-										</div>
-
-										{(previewFile && previewFile.timeline.isSequence) && <SelectControl
-											label="Playback Speed"
-											value={speed}
-											options={[
-												{
-													label: "0.5x",
-													value: 0.5
-												},
-												{
-													label: "1x",
-													value: 1
-												},
-												{
-													label: "2x",
-													value: 2
-												},
-												{
-													label: "3x",
-													value: 3
-												},
-												{
-													label: "5x",
-													value: 5
-												},
-												{
-													label: "10x",
-													value: 10
-												},
-											]}
-
-											onChange={(value) => setAttributes({ speed: value })}
-										/>}
-
-										<CheckboxControl
-											__nextHasNoMarginBottom
-											checked={showhistogram}
-											label="Show histogram"
-											hint="Enable histogram display in the thermal scale?"
-											onChange={(value) => { setAttributes({ showhistogram: value }) }}
-										/>
-
-										<CheckboxControl
-											__nextHasNoMarginBottom
-											checked={showshare}
-											label="Show share button"
-											help="Display a button with instruction on embedding this file to other websites?"
-											onChange={(value) => { setAttributes({ showshare: value }) }}
-										/>
-
-										<CheckboxControl
-											__nextHasNoMarginBottom
-											checked={showlayout}
-											label="Show layout button"
-											help="Enable the user to change the application layout?"
-											onChange={(value) => { setAttributes({ showlayout: value }) }}
-										/>
-
-										<CheckboxControl
-											__nextHasNoMarginBottom
-											checked={interactiveanalysis}
-											label="Interactive analysis"
-											help="Should the visitor be able to edit analysis?"
-											onChange={(value) => { setAttributes({ interactiveanalysis: value }) }}
-										/>
-
-										<AppearencePanel {...attributes} setter={setAttributes} />
+						<Field
+							label="Colour palette"
+							description="Select the colour palette for the thermal display."
+						>
+							<Palettes
+								ID={ID}
+								palette={palette}
+								unit={unit}
+								setAttributes={setAttributes}
+							/>
+						</Field>
 
 
-									</file-provider>
-								</group-provider>
-							</registry-provider>
-						</manager-provider>
+						<Field
+							label="Thermal Unit"
+							description="Select the unit for the thermal display."
+						>
+							<Unit
+								ID={ID}
+								unit={unit}
+								setAttributes={setAttributes}
+							/>
+						</Field>
 
+					</PanelBody>
+
+					{isSequence && <PanelBody title="Playback settings" initialOpen={false}>
+						<Ms
+							ID={ID}
+							attributes={attributes}
+							setAttributes={setAttributes}
+						/>
+						<Speed
+							speed={speed}
+							setAttributes={setAttributes}
+						/>
+					</PanelBody>}
+
+					<PanelBody title="Appearance settings" initialOpen={false}>
+						<AppearencePanel {...attributes} setter={setAttributes} />
 					</PanelBody>
 
 				</InspectorControls>
@@ -504,6 +407,7 @@ export default function Edit({ attributes, setAttributes }) {
 				{thermal
 					? <Preview
 						attributes={attributes}
+						ID={ID}
 					/>
 					: <Empty
 						startUploadingThermalFile={startUploadingThermalFile}

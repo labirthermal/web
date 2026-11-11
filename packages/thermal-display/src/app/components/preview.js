@@ -3,12 +3,15 @@ import {
     Tooltip
 } from '@wordpress/components';
 
+
 /**
  * Preview of the webcomponent used when a file is provided.
  */
 export default function Preview({
+    ID,
     attributes
 }) {
+
 
     const {
         variant,
@@ -36,7 +39,12 @@ export default function Preview({
         showlayout,
         interactiveanalysis,
         notations,
-        advancedpalettes
+        advancedpalettes,
+        skin,
+        lines,
+        corners,
+        ms,
+        unit
     } = attributes;
 
     return <Tooltip
@@ -49,6 +57,7 @@ export default function Preview({
                 <div>
 
                     <thermal-file-app
+                        manager-slug={ID}
                         thermal={thermal}
                         visible={visible}
                         palette={palette}
@@ -66,8 +75,13 @@ export default function Preview({
                         analysis5={analysis5}
                         analysis6={analysis6}
                         analysis7={analysis7}
+                        ms={ms}
                         speed={speed}
-                        advanced-palettes={advancedpalettes ? '' : undefined}
+                        advanced-palettes
+                        unit={unit}
+                        skin={skin}
+                        lines={lines}
+                        corners={corners}
                     ></thermal-file-app>
                 </div>
 
