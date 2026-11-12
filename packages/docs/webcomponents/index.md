@@ -17,7 +17,7 @@ installation through npm, see the command above. More details are in
 [Usage in the browser](./usage).
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@labirthermal/webcomponents@2.0.4/dist/iife/embed.iife.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@labirthermal/webcomponents@2.0.4/dist/iife/embed.iife.js"></script>
 
 <thermal-file-app thermal="/files/sequence.lrc"></thermal-file-app>
 ```

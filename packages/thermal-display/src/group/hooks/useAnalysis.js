@@ -1,4 +1,4 @@
-import { useState, useMemo, createPortal, useRef, useEffect, useCallback } from '@wordpress/element';
+import { useCallback, useMemo } from '@wordpress/element';
 
 export const useAnalysis = (
     attributes,
@@ -34,41 +34,6 @@ export const useAnalysis = (
         } );
 
     }, [ map ] );
-
-    const updateAnalysis = useCallback( (
-        key,
-        value
-    ) => {
-        map.set( key, value );
-
-        if ( instance ) {
-            const analysis = instance.analysis.layers.get( key );
-            analysis.recieveSerialized( value );
-        }
-
-    }, [
-        attributes,
-        setAttributes,
-        instance,
-        map
-    ] );
-
-
-    const nextFreeKey = useMemo( () => {
-
-		for (let i = 1; i <= 7; i++) {
-			const key = `analysis${i}`;
-			const currentValue = attributes[key];
-			if (currentValue !== undefined || currentValue !== "") {
-				return key;
-			}
-		}
-
-		return undefined;
-
-	}, [
-		attributes
-	] );
 
     return {
         map,

@@ -1,6 +1,4 @@
-import {
-    SelectControl
-} from '@wordpress/components';
+import { SelectControl } from '@wordpress/components';
 
 export const AppearencePanel = ({ skin, lines, corners, setter }) => {
 

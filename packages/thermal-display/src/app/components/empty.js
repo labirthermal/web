@@ -1,20 +1,33 @@
 import { MediaUpload } from '@wordpress/block-editor';
-
 import {
     Button,
     Placeholder
 } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+import { useFileUpload } from '../hooks/useFileUpload';
 
 /**
  * Placeholder for the thermal file when no file is present.
  */
 export default function Empty({
-    startUploadingThermalFile,
-    successfullyUploadedThermalFile
+    attributes,
+    setAttributes
 }) {
+
+    const {
+        start,
+        cancel,
+        success,
+        types
+    } = useFileUpload(
+        attributes.thermal,
+        file => setAttributes({ thermal: file })
+    );
+
+
     return <Placeholder
-        label="IR image"
-        instructions="Upload or select a thermal file to see an advanced analyser application here."
+        label={__("IR image", "thermal-display")}
+        instructions={__("Upload or select a thermal file to see an advanced analyser application here.", "thermal-display")}
         icon={<svg id="Vrstva_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <defs>
                 <linearGradient id="Nepojmenovaný_přechod_12" data-name="Nepojmenovaný přechod 12" x1="452.4" y1="7.95" x2="-8.33" y2="364.12" gradientUnits="userSpaceOnUse">
@@ -47,19 +60,18 @@ export default function Empty({
         </svg>}
     >
         <MediaUpload
-            allowedTypes={['application/octet-stream']}
-            onSelect={result => {
-                successfullyUploadedThermalFile(result.url);
-            }}
+            allowedTypes={types}
+            onSelect={success}
+            onClose={cancel}
             render={({ open }) => (
                 <Button
                     onClick={() => {
-                        startUploadingThermalFile();
+                        start();
                         open();
                     }}
                     variant="primary"
                 >
-                    {thermal ? "Change file" : "Upload or select a radiometric file (LRC / FLIR JPEG)"}
+                    {__("Upload or select a radiometric file (LRC / FLIR JPEG)", "thermal-display")}
                 </Button>
             )}
         />

@@ -1,6 +1,4 @@
-import {
-    Button
-} from '@wordpress/components';
+import { Button } from '@wordpress/components';
 
 export const AnalysisEditorTrigger = ({
     setOpen

@@ -1,17 +1,13 @@
 import {
-    Button,
+    CheckboxControl,
+    Modal,
     Panel,
     PanelBody,
-    Placeholder,
-    SelectControl,
-    TextControl,
-    Tooltip,
+    PanelRow,
     RangeControl,
-    PanelHeader,
-    CheckboxControl,
+    SelectControl,
     TabPanel,
-    Modal,
-    PanelRow
+    TextControl
 } from '@wordpress/components';
 import { useCallback, useMemo, useState } from '@wordpress/element';
 
@@ -337,54 +333,54 @@ export const EditorModal = ({
                         batch={true}
                     >
 
-                            {Object.values(notations).length > 0 && Object.values(notations).map(notation => <notation-entry 
-                                label={notation.label} 
-                                slot="notation" 
-                                from={notation.from} 
-                                to={notation.to} 
-                            />)}
+                        {Object.values(notations).length > 0 && Object.values(notations).map(notation => <notation-entry
+                            label={notation.label}
+                            slot="notation"
+                            from={notation.from}
+                            to={notation.to}
+                        />)}
 
-                            <main class="file-editor-layout">
+                        <main class="file-editor-layout">
 
-                                <section>
-                                    <div class="file-editor-stack gap-bottom">
-                                        <registry-palette-dropdown />
-                                        <registry-range-full-button />
-                                        <registry-range-auto-button />
-                                        <file-info-button />
+                            <section>
+                                <div class="file-editor-stack gap-bottom">
+                                    <registry-palette-dropdown />
+                                    <registry-range-full-button />
+                                    <registry-range-auto-button />
+                                    <file-info-button />
+                                </div>
+
+                                <div class="">
+                                    <registry-histogram />
+                                    <registry-range-slider />
+                                    <registry-ticks-bar />
+                                </div>
+
+                                <file-canvas />
+                                <file-timeline />
+
+                            </section>
+
+                            <section>
+                                <TabPanel
+                                    className="my-tab-panel"
+                                    onSelect={setTab}
+                                    tabs={tabs}
+                                >
+                                    {(tab) => <div className="file-editor-tab">
+                                        <Panel header={tab.title}>
+                                            <React.Fragment key=".0">
+                                                <PanelBody>
+                                                    {tab.children}
+                                                </PanelBody>
+                                            </React.Fragment>
+                                        </Panel>
                                     </div>
+                                    }
+                                </TabPanel>
+                            </section>
 
-                                    <div class="">
-                                        <registry-histogram />
-                                        <registry-range-slider />
-                                        <registry-ticks-bar />
-                                    </div>
-
-                                    <file-canvas />
-                                    <file-timeline />
-
-                                </section>
-
-                                <section>
-                                    <TabPanel
-                                        className="my-tab-panel"
-                                        onSelect={setTab}
-                                        tabs={tabs}
-                                    >
-                                        {(tab) => <div className="file-editor-tab">
-                                            <Panel header={tab.title}>
-                                                <React.Fragment key=".0">
-                                                    <PanelBody>
-                                                        {tab.children}
-                                                    </PanelBody>
-                                                </React.Fragment>
-                                            </Panel>
-                                        </div>
-                                        }
-                                    </TabPanel>
-                                </section>
-
-                            </main>
+                        </main>
 
                     </file-provider>
                 </group-provider>

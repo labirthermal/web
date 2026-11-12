@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
+import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
 
 
 /**
@@ -29,19 +29,19 @@ const formatEntry = (key, value) => {
 }
 
 /**
-             * 
-             * @param {string} str 
-             * @param {string} separator 
-             * @returns 
-             */
+ * 
+ * @param {string} str 
+ * @param {string} separator 
+ * @returns 
+ */
 const splitBy = (str, separator) => {
     return str.split(separator).map(s => s.trim());
 }
 
 /**
-     * 
-     * @param {string} value 
-     */
+ * 
+ * @param {string} value 
+ */
 const parseString = (
     value
 ) => {
@@ -85,14 +85,14 @@ export const useFiles = (
 
     const initial = useMemo(() => initialValue, []);
 
-    const initialFiles = useMemo( () => {
+    const initialFiles = useMemo(() => {
 
-        if ( initialValue === undefined ) {
+        if (initialValue === undefined) {
             return {};
         }
         const parsedFiles = parseString(initialValue);
         return parsedFiles;
-    }, [] );
+    }, []);
 
     const [
         files,
@@ -233,7 +233,7 @@ export const useFiles = (
             urls.forEach(url => {
 
                 if (!keys.includes(url)) {
-                    console.log( "added", url );
+                    console.log("added", url);
                     f[url] = {
                         thermal: url
                     }
@@ -245,7 +245,7 @@ export const useFiles = (
             keys.forEach(url => {
 
                 if (!urls.includes(url)) {
-                    console.log( "removing", url );
+                    console.log("removing", url);
                     delete f[url]
                 }
             });
@@ -298,7 +298,7 @@ export const useFiles = (
             label
         ) => {
 
-            console.log( url, label );
+            console.log(url, label);
 
             if (Object.keys(files).includes(url)) {
                 const f = { ...files };
@@ -345,8 +345,5 @@ export const useFiles = (
         updateFileUrl,
         updateFileNote,
     }
-
-
-
 
 }

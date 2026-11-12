@@ -1,4 +1,4 @@
-import { useCallback, useRef } from '@wordpress/element';
+import { useCallback } from '@wordpress/element';
 
 /**
  * Creates a React ref callback for a webcomponent
@@ -9,12 +9,12 @@ export const useWebcomponent = (
     onReady
 ) => {
 
-    return useCallback( element => {
+    return useCallback(element => {
 
         if (!element) return;
 
         onReady(element);
 
-    }, [onReady] );
+    }, [onReady]);
 
 }

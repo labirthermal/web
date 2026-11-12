@@ -1,7 +1,5 @@
-
-import {
-    Tooltip
-} from '@wordpress/components';
+import { Tooltip } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 
 /**
@@ -12,9 +10,7 @@ export default function Preview({
     attributes
 }) {
 
-
     const {
-        variant,
         palette,
         thermal,
         opacity,
@@ -33,13 +29,6 @@ export default function Preview({
         analysis6,
         analysis7,
         speed,
-        showabout,
-        showhistogram,
-        showshare,
-        showlayout,
-        interactiveanalysis,
-        notations,
-        advancedpalettes,
         skin,
         lines,
         corners,
@@ -48,7 +37,7 @@ export default function Preview({
     } = attributes;
 
     return <Tooltip
-        text="Click to edit"
+        text={__("Click to edit", "thermal-display")}
         delay={300}
         hideOnClick={false}
     >
@@ -86,7 +75,7 @@ export default function Preview({
                 </div>
 
                 <div className="thermal__content-editor__wrapper">
-                    <div>Edit parameters in the sidebar.</div>
+                    <div>{__("Edit parameters in the sidebar.", "thermal-display")}</div>
                 </div>
             </div>
         </div>

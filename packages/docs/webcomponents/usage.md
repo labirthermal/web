@@ -5,7 +5,7 @@ registers the webcomponents as soon as the script loads. The published package
 is available through jsDelivr:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@labirthermal/webcomponents@2.0.4/dist/iife/embed.iife.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@labirthermal/webcomponents@2.0.4/dist/iife/embed.iife.js"></script>
 
 <thermal-file-app thermal="... path to your LRC file ..."></thermal-file-app>
 ```

@@ -8,13 +8,13 @@ export default function Range({
     const onReady = useCallback(node => {
 
         const range = node.registryController.registryObject.range;
-        
+
         const listenerKey = ID + "_range";
-        
+
         range.addListener(listenerKey, value => {
             if (value) setAttributes({ from: value.from, to: value.to });
         });
-        
+
         return () => range.removeListener(listenerKey);
 
     }, [ID, setAttributes]);

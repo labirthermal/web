@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-03-17 16:15+0100\n"
+"POT-Creation-Date: 2026-11-12 12:36+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.10\n"
 "X-Poedit-KeywordsList: __\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: lib\n"
@@ -17,56 +17,191 @@ msgstr ""
 "X-Poedit-SearchPath-2: src\n"
 "X-Poedit-SearchPathExcluded-0: build\n"
 
-#: src/app/edit.js:274 src/group/edit.js:280
-msgid "Author"
-msgstr "Autor"
+#: src/app/components/change.js:36 src/app/components/visible.js:45
+msgid "Change file"
+msgstr "Změnit soubor"
 
-#: src/app/edit.js:285 src/group/edit.js:291
-msgid "License"
-msgstr "Licence"
+#: src/app/components/change.js:36
+msgid "Upload or select a radiometric file"
+msgstr "Nahrát či vybrat radiometrický soubor"
 
-#: src/app/edit.js:296 src/group/edit.js:302
+#: src/app/components/empty.js:28
+msgid "IR image"
+msgstr "IR soubor"
+
+#: src/app/components/empty.js:29
+msgid ""
+"Upload or select a thermal file to see an advanced analyser application here."
+msgstr ""
+"Nahrajte či vyberte radiometrický soubor a zde uvidíte pokročilé analytické "
+"rozhraní."
+
+#: src/app/components/empty.js:73
+msgid "Upload or select a radiometric file (LRC / FLIR JPEG)"
+msgstr "Nahrajte či zvolte radiometrický soubor (LRC / FLIR JPEG)"
+
+#: src/app/components/ms.js:133
+msgid "Time in MS"
+msgstr "Čas v MS"
+
+#: src/app/components/ms.js:144
+msgid "Frame number"
+msgstr "Číslo snímku"
+
+#: src/app/components/ms.js:176
+msgid "Enter the frame number from 1 to"
+msgstr "Udejte číslo snímku od 1 do"
+
+#: src/app/components/preview.js:80
+msgid "Edit parameters in the sidebar."
+msgstr "Upravte parametry v sidebaru."
+
+#: src/app/components/speed.js:8
+msgid "Playback Speed"
+msgstr "Rychlost přehrávání"
+
+#: src/app/components/visible.js:45
+msgid "Upload or select a visible image"
+msgstr "Nahrajte či zvolte obrázek ve viditelném spektru"
+
+#: src/app/components/visible.js:50
+msgid "Remove"
+msgstr "Odstranit"
+
+#: src/app/edit.js:93
+msgid "Thermal file"
+msgstr "Radiometrický soubor"
+
+#: src/app/edit.js:122
+msgid "Editor"
+msgstr "Editor"
+
+#: src/app/edit.js:132
+msgid "Visible file"
+msgstr "Obrázek ve viditelném spektru"
+
+#: src/app/edit.js:151
+msgid "IR image opacity"
+msgstr "Průhlednost termogramu"
+
+#: src/app/edit.js:152
+msgid ""
+"If a visible file is provided, you can set the initial transparency of the "
+"thermal file."
+msgstr ""
+"Pokud jste nahrálo obrázek ve viditelném spektru, můžete zde nastavit "
+"výchozí průhlednost termogramu."
+
+#: src/app/edit.js:165
+msgid "Information"
+msgstr "Informace"
+
+#: src/app/edit.js:171 src/group/edit.js:303
+#: src/utils/editor/EditorModal.js:283
 msgid "Label"
 msgstr "Popiska"
 
-#: src/dropin/render.php:45 src/dropin/render.php:46
+#: src/app/edit.js:174
+msgid "Label appears on the black button on top & left of the app."
+msgstr "Popiska se objeví v černém tlačítku v levém horním okraji aplikace."
+
+#: src/app/edit.js:183
+msgid "Label tooltip"
+msgstr "Tooltip popisky"
+
+#: src/app/edit.js:187
+msgid ""
+"Label tooltip appears when the user hovers the top-left button containing "
+"the label"
+msgstr ""
+"Tooltip se zobrazí, když návštěvník webu najede myší na černé tlačítko s "
+"popiskou"
+
+#: src/app/edit.js:196 src/group/edit.js:281
+#: src/utils/editor/EditorModal.js:261
+msgid "Author"
+msgstr "Autor"
+
+#: src/app/edit.js:207 src/group/edit.js:292
+#: src/utils/editor/EditorModal.js:272
+msgid "License"
+msgstr "Licence"
+
+#: src/app/edit.js:219
+msgid "Thermal display settings"
+msgstr "Statistiky používání"
+
+#: src/app/edit.js:224
+msgid "Thermal range"
+msgstr "Teplotní škála"
+
+#: src/app/edit.js:225
+msgid "Adjust the default thermal range."
+msgstr "Upravte teplotní škálu."
+
+#: src/app/edit.js:235
+msgid "Colour palette"
+msgstr "Barevná paleta"
+
+#: src/app/edit.js:236
+msgid "Select the colour palette for the thermal display."
+msgstr "Zvolte barevnou paletu termografického zobrazení."
+
+#: src/app/edit.js:248
+msgid "Thermal Unit"
+msgstr "Teplotní jednotka"
+
+#: src/app/edit.js:249
+msgid "Select the unit for the thermal display."
+msgstr "Zvolte teplotní jednotku termografického zobrazení."
+
+#: src/app/edit.js:261
+msgid "Playback settings"
+msgstr "NAstavení přehrávání"
+
+#: src/app/edit.js:276
+msgid "Appearance settings"
+msgstr "Nastavení vzhledu"
+
+#: src/dropin/render.php:51 src/dropin/render.php:52
 msgid "Privacy"
 msgstr "Soukromí"
 
-#: src/dropin/render.php:48
+#: src/dropin/render.php:54
 msgid "This module stores anonymised usage data."
 msgstr "Tento modul ukládá anonymizovaná uživatelská data."
 
-#: src/dropin/render.php:49
+#: src/dropin/render.php:55
 msgid "Why do we store the data?"
 msgstr "Proč data uchováváme?"
 
-#: src/dropin/render.php:51
+#: src/dropin/render.php:57
 msgid "to know what browsers do our users use to access our app"
 msgstr ""
 "abychom věděli, z jakých prohlížečů k naší aplikaci přistupují naši uživatelé"
 
-#: src/dropin/render.php:52
+#: src/dropin/render.php:58
 msgid "to know what kind of files do our users work with"
 msgstr "abychom věděli, s jakými druhy souborů naši uživatelé pracují"
 
-#: src/dropin/render.php:53
+#: src/dropin/render.php:59
 msgid "from which locations do our users access our app"
 msgstr "z jakých lokalit naši uživatelé aplikaci používají"
 
-#: src/dropin/render.php:55
+#: src/dropin/render.php:61
 msgid ""
 "These information help us develop the <code>thermal-dropin-app</code> "
-"webcomponent and other parts of the <code>@labir/embed</code> library."
+"webcomponent and other parts of the <code>@labirthermal/webcomponents</code> "
+"library."
 msgstr ""
 "Tyto informace nám pomáhají vyvíjet webkomponentu <code>thermal-dropin-app</"
 "code> a další části knihovny <code>@labir/embed</code>."
 
-#: src/dropin/render.php:56
+#: src/dropin/render.php:62
 msgid "Where are the data stored?"
 msgstr "Kde data uchováváme?"
 
-#: src/dropin/render.php:57
+#: src/dropin/render.php:63
 #, php-format
 msgid ""
 "The data are stored on the domain <a href=\"%1$s\" target=\"_blank\">%1$s</"
@@ -75,51 +210,51 @@ msgstr ""
 "Data jsou uchovávána na doméně <a href=\"%1$s\" target=\"_blank\">%1$s</a> a "
 "jsou nahlížena pouze administrátory této konkrétní webové stránky."
 
-#: src/dropin/render.php:58
+#: src/dropin/render.php:64
 msgid "What data are being stored?"
 msgstr "Jaká data uchováváme?"
 
-#: src/dropin/render.php:60
+#: src/dropin/render.php:66
 msgid "Time when you upload a file"
 msgstr "Čas, kdy nahrajete soubor"
 
-#: src/dropin/render.php:61 thermal-display.php:217
+#: src/dropin/render.php:67 thermal-display.php:228
 msgid "File name"
 msgstr "Název souboru"
 
-#: src/dropin/render.php:62
+#: src/dropin/render.php:68
 msgid "File resolution"
 msgstr "Rozlišení souboru"
 
-#: src/dropin/render.php:63
+#: src/dropin/render.php:69
 msgid "File timestamp"
 msgstr "Časová značka souboru"
 
-#: src/dropin/render.php:64
+#: src/dropin/render.php:70
 msgid "File bytesize"
 msgstr "Velikost souboru v bytech"
 
-#: src/dropin/render.php:65
+#: src/dropin/render.php:71
 msgid "File frame count"
 msgstr "Počet snímků v souboru"
 
-#: src/dropin/render.php:66
+#: src/dropin/render.php:72
 msgid "Yor current browser parameters (`userAgent`)"
 msgstr "Parametry Vašeho prohlížeče (`userAgent`)"
 
-#: src/dropin/render.php:67
+#: src/dropin/render.php:73
 msgid "Your current browser size"
 msgstr "Rozlišení Vašeho prohlížeče"
 
-#: src/dropin/render.php:68
+#: src/dropin/render.php:74
 msgid "Your current IP address"
 msgstr "Vaše současná IP adresa"
 
-#: src/dropin/render.php:70
+#: src/dropin/render.php:76
 msgid "What we do not do?"
 msgstr "Co určitě neděláme?"
 
-#: src/dropin/render.php:71
+#: src/dropin/render.php:77
 msgid ""
 "We do not store the files you use here (we only store their parameters sucha "
 "as bytesize, framecount, resolution)."
@@ -127,7 +262,7 @@ msgstr ""
 "Neukládáme soubory, které zde používáte (uchováváme pouze některé jejich "
 "parametry - bytovou velikost, rozlišení, počet snímků)"
 
-#: src/dropin/render.php:72
+#: src/dropin/render.php:78
 msgid ""
 "We do not store any information that could lead to your identification (all "
 "data are stored in an anonymised form)."
@@ -135,47 +270,47 @@ msgstr ""
 "Data neukládáme tak, aby vedly k identifikaci Vaší osoby (všechna data "
 "ukládáme pouze v anonymizované podobě)."
 
-#: thermal-display.php:188 thermal-display.php:209
+#: thermal-display.php:199 thermal-display.php:220
 msgid "Thermal display usage"
 msgstr "Statistiky používání termálního zobrazení"
 
-#: thermal-display.php:189
+#: thermal-display.php:200
 msgid "Thermal Display"
 msgstr "Thermal Display"
 
-#: thermal-display.php:210
+#: thermal-display.php:221
 msgid "Download CSV"
 msgstr "Stáhnout CSV"
 
-#: thermal-display.php:214
+#: thermal-display.php:225
 msgid "Time"
 msgstr "Čas"
 
-#: thermal-display.php:215
+#: thermal-display.php:226
 msgid "URL"
 msgstr "URL"
 
-#: thermal-display.php:216
+#: thermal-display.php:227
 msgid "IP"
 msgstr "IP"
 
-#: thermal-display.php:218
+#: thermal-display.php:229
 msgid "File size (MB)"
 msgstr "Velikost souboru v bytech"
 
-#: thermal-display.php:219
+#: thermal-display.php:230
 msgid "Frames"
 msgstr "Snímků"
 
-#: thermal-display.php:220
+#: thermal-display.php:231
 msgid "Resolution"
 msgstr "Rozlišení souboru"
 
-#: thermal-display.php:221
+#: thermal-display.php:232
 msgid "File recorded at"
 msgstr "Soubor zaznamenán"
 
-#: thermal-display.php:222
+#: thermal-display.php:233
 msgid "Browser"
 msgstr "Prohlížeč"
 

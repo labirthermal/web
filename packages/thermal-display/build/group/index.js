@@ -418,19 +418,19 @@ const formatEntry = (key, value) => {
 };
 
 /**
-             * 
-             * @param {string} str 
-             * @param {string} separator 
-             * @returns 
-             */
+ * 
+ * @param {string} str 
+ * @param {string} separator 
+ * @returns 
+ */
 const splitBy = (str, separator) => {
   return str.split(separator).map(s => s.trim());
 };
 
 /**
-     * 
-     * @param {string} value 
-     */
+ * 
+ * @param {string} value 
+ */
 const parseString = value => {
   const filesStrings = splitBy(value, ";");
   const filesRecords = filesStrings.map(file => {

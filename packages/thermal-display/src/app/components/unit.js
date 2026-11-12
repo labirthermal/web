@@ -2,11 +2,11 @@ import { useCallback, useMemo } from '@wordpress/element';
 import { useWebcomponent } from '../hooks/useWebcomponent';
 
 
-export function Unit({
+export default function Unit({
     ID,
     unit,
     setAttributes
-}){
+}) {
 
     const slug = useMemo(() => ID + "__unit", [ID]);
 
@@ -16,7 +16,7 @@ export function Unit({
 
         provider.managerObject.unit.addListener(
             slug,
-            value => setAttributes({unit: value})
+            value => setAttributes({ unit: value })
         );
 
     }, [slug, setAttributes, slug]);
@@ -32,6 +32,6 @@ export function Unit({
         <manager-unit-dropdown></manager-unit-dropdown>
     </manager-provider>
 
-    
+
 
 }

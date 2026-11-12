@@ -53,7 +53,10 @@ if (! function_exists("thermal_display_register_assets")) {
             $script_name_iife,
             plugin_dir_url(__DIR__) . 'assets/labirthermal.iife.js?v=' . $version,
             array(),
-            time()
+            time(),
+            [
+                "strategy" => "defer"
+            ]
         );
 
 

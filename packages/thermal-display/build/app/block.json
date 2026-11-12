@@ -41,33 +41,9 @@
         "type": "constrained"
       }
     },
-    "variant": {
-      "type": "string",
-      "default": "advanced"
-    },
-    "showabout": {
-      "type": "boolean",
-      "default": true
-    },
     "advancedpalettes": {
       "type": "boolean",
       "default": false
-    },
-    "showhistogram": {
-      "type": "boolean",
-      "default": true
-    },
-    "showshare": {
-      "type": "boolean",
-      "default": false
-    },
-    "showlayout": {
-      "type": "boolean",
-      "default": false
-    },
-    "interactiveanalysis": {
-      "type": "boolean",
-      "default": true
     },
     "thermal": {
       "type": "string"
@@ -94,6 +70,10 @@
       "default": 1
     },
     "label": {
+      "type": "string",
+      "default": "IR file"
+    },
+    "labeltooltip": {
       "type": "string"
     },
     "author": {
@@ -102,9 +82,6 @@
     "license": {
       "type": "string",
       "default": "CC BY-SA 4.0"
-    },
-    "description": {
-      "type": "string"
     },
     "analysis1": {
       "type": "string"
@@ -126,10 +103,6 @@
     },
     "analysis7": {
       "type": "string"
-    },
-    "notations": {
-      "type": "object",
-      "default": {}
     },
     "skin": {
       "type": "string",

@@ -1,7 +1,8 @@
-import { React, useCallback, useMemo } from '@wordpress/element';
+import { useCallback, useMemo } from '@wordpress/element';
 
 import {
-    Modal, Button, Notice
+    Button,
+    Modal
 } from '@wordpress/components';
 
 export const AnalysisEditorModal = ({

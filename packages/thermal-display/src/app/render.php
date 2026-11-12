@@ -20,10 +20,10 @@ if ( !function_exists( "analysis_is_set" ) ) {
 			thermal="<?= $attributes["thermal"]?>" 
 			<?php if (analysis_is_set( $attributes["visible"] ) ) { echo 'visible="'.$attributes["visible"].'"'; } ?>
 			palette=<?= $attributes["palette"]; ?> 
-			author="<?= $attributes["author"] ?>" 
-			license="<?= $attributes["license"] ?>"
-			label="<?= $attributes["label"] ?>"
-			description="<?= $attributes["description"] ?>"
+			<?php if (analysis_is_set( $attributes["author"] ) ): ?>author="<?= $attributes["author"] ?>"<?php endif; ?>
+			<?php if (analysis_is_set( $attributes["license"] ) ): ?>license="<?= $attributes["license"] ?>"<?php endif; ?>
+			<?php if (analysis_is_set( $attributes["label"] ) ): ?>label="<?= $attributes["label"] ?>"<?php endif; ?>
+			<?php if (analysis_is_set( $attributes["description"] ) ): ?>description="<?= $attributes["description"] ?>"<?php endif; ?>
 			<?php if ( $attributes["from"] && $attributes["to"] ): ?>
 				from="<?= $attributes["from"] ?>"
 				to="<?= $attributes["to"]; ?>"

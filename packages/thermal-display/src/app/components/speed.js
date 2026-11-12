@@ -1,13 +1,12 @@
-import {
-    SelectControl
-} from '@wordpress/components';
+import { SelectControl } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 export default function Speed({
     speed,
     setAttributes
-}){
+}) {
     return <SelectControl
-        label="Playback Speed"
+        label={__("Playback Speed", "thermal-display")}
         value={speed}
         options={[
             { label: "0.5x", value: 0.5 },

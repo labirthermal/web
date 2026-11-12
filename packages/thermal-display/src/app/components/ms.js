@@ -1,12 +1,7 @@
-"use client";
-
-import {
-    RangeControl
-} from '@wordpress/components';
-
-import { InputControl } from '@wordpress/ui';
-
+import { RangeControl } from '@wordpress/components';
 import { useCallback, useEffect, useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
+import { InputControl } from '@wordpress/ui';
 import { useWebcomponent } from '../hooks/useWebcomponent';
 
 
@@ -91,7 +86,7 @@ export default function Ms({
 
         console.log(element.managerObject.registries);
 
-        element.managerObject.registries.forEveryInstance( instance => {
+        element.managerObject.registries.forEveryInstance(instance => {
             setFile(instance);
         });
 
@@ -136,7 +131,7 @@ export default function Ms({
         <Row>{formattedDuration}</Row>
         <br />
         <RangeControl
-            label="Time in MS"
+            label={__("Time in MS", "thermal-display")}
             value={value}
             unit="ms"
             min={0}
@@ -147,7 +142,7 @@ export default function Ms({
             }}
         />
         <InputControl
-            label="Frame number"
+            label={__("Frame number", "thermal-display")}
             value={frameInput ?? (frame === undefined ? undefined : frame + 1)}
             type="number"
             min={1}
@@ -179,10 +174,10 @@ export default function Ms({
                     }
                 }
             }}
-            help={`Enter the frame number from 1 to ${numFrames ?? 1} `}
+            help={__("Enter the frame number from 1 to", "thermal-display") + ` ${numFrames ?? 1} `}
         />
         <br />
-        
+
     </manager-provider>;
 
 }

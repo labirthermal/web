@@ -1,40 +1,34 @@
-import Empty from './components/empty';
-import { __ } from '@wordpress/i18n';
-
-import { useCallback, useMemo, useState } from '@wordpress/element';
-
-import { useAnalysisEditor } from '../utils/analysisEditor/useAnalysisEditor';
-
-import { InspectorControls, MediaUpload, MediaUploadCheck, useBlockProps } from '@wordpress/block-editor';
+import {
+	InspectorControls,
+	MediaUploadCheck,
+	useBlockProps
+} from '@wordpress/block-editor';
 import {
 	Button,
+	ButtonGroup,
 	PanelBody,
-	Placeholder,
-	SelectControl,
-	TextControl,
-	Tooltip,
 	RangeControl,
-	PanelHeader,
-	CheckboxControl,
-	ButtonGroup
+	TextControl
 } from '@wordpress/components';
-
-import './editor.scss';
-import { useRegisterIframeScript } from '../utils/useRegisterIframeScript';
-
+import { useMemo, useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import { AnalysisEditorModal } from '../utils/analysisEditor/AnalysisEditorModal';
-import { AnalysisEditorTrigger } from '../utils/analysisEditor/AnalysisEditorTrigger';
-import { useNotations } from '../utils/notationEditor/useNotations';
-import { EditorModal } from '../utils/editor/EditorModal';
+import { useAnalysisEditor } from '../utils/analysisEditor/useAnalysisEditor';
 import { AppearencePanel } from '../utils/appearence/AppearencePanel';
-import Preview from './components/preview';
-import Thumbnail from './components/thumbnail';
-import Range from './components/range';
-import Palettes from './components/palette';
-import { Unit } from './components/unit';
+import { EditorModal } from '../utils/editor/EditorModal';
+import { useRegisterIframeScript } from '../utils/useRegisterIframeScript';
+import Change from './components/change';
+import Empty from './components/empty';
 import Field from './components/field';
-import Speed from './components/speed';
 import Ms from './components/ms';
+import Palettes from './components/palette';
+import Preview from './components/preview';
+import Range from './components/range';
+import Speed from './components/speed';
+import Thumbnail from './components/thumbnail';
+import Unit from './components/unit';
+import Visible from './components/visible';
+import './editor.scss';
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -52,134 +46,28 @@ export default function Edit({ attributes, setAttributes }) {
 	useRegisterIframeScript();
 
 	const {
-		variant,
 		palette,
 		thermal,
 		opacity,
 		visible,
 		label,
-		description,
+		labeltooltip,
 		author,
 		license,
 		from,
 		to,
-		analysis1,
-		analysis2,
-		analysis3,
-		analysis4,
-		analysis5,
-		analysis6,
-		analysis7,
 		ms,
 		speed,
-		showabout,
-		showhistogram,
-		showshare,
-		showlayout,
-		interactiveanalysis,
-		notations,
-		advancedpalettes,
 		unit
 	} = attributes;
 
 	const [hasEditor, setHasEditor] = useState(false);
-
 	const [isSequence, setIsSequence] = useState(false);
-
-
-
-	const [thermalBackup, setThermalBackup] = useState(thermal);
-
-	const [previewFile, setPreviewFile] = useState();
-
-	const [duration, setDuration] = useState(0);
 
 	const { open, setOpen } = useAnalysisEditor();
 
-	const startUploadingThermalFile = () => {
-		const backup = thermal;
-		setThermalBackup(backup);
-		setAttributes({ thermal: thermal });
-	}
-
-	const calcelUploadingThermalFile = () => {
-		setAttributes({ thermal: thermalBackup });
-	}
-
-	const successfullyUploadedThermalFile = (file) => {
-		setAttributes({ thermal: file });
-		setThermalBackup(undefined);
-	}
-
-	const startUploadingVisibleFile = () => {
-
-	}
-
-	const successfullyUploadedVisibleFile = (file) => {
-		setAttributes({ visible: file });
-	}
-
-	const filePreviewCallback = useCallback(node => {
-
-		if (node) {
-
-
-			node.fileController.onSuccess.set(ID + "___sth", instance => {
-
-				setPreviewFile(instance);
-
-				if (instance.moutedBaseLayers) {
-					instance.unmountFromDom();
-				}
-
-				setDuration(instance.timeline.duration);
-
-				instance.draw();
-
-			});
-
-			node.registryController.onInternalObject.set(ID + "___sth", registry => {
-				// Handle the internal registry object
-
-				registry.range.addListener(ID, value => {
-					if (value instanceof Object) {
-						setAttributes(value);
-					} else {
-						setAttributes({ from: undefined, to: undefined });
-					}
-				});
-			});
-
-		}
-
-	}, []);
-
-	const displaySettingsCallback = useCallback(node => {
-
-		if (node) {
-
-			node.registryController.onInternalObject.set(ID + "___sth", registry => {
-				// Handle the internal registry object
-				registry.range.addListener(ID, value => {
-					if (value instanceof Object) {
-						setAttributes(value);
-					} else {
-						setAttributes({ from: undefined, to: undefined });
-					}
-				});
-			});
-
-
-		}
-
-	}, []);
-
-
-
-
 	return (
 		<>
-
 
 			{hasEditor === true &&
 				<EditorModal
@@ -201,7 +89,10 @@ export default function Edit({ attributes, setAttributes }) {
 
 				<InspectorControls >
 
-					<PanelBody title="Thermal file">
+					<PanelBody 
+						title={__("Thermal file", "thermal-display")}
+						initialOpen={true}
+					>
 
 						{thermal && <Thumbnail
 							ID={ID}
@@ -218,23 +109,9 @@ export default function Edit({ attributes, setAttributes }) {
 
 							<ButtonGroup>
 
-								<MediaUpload
-									allowedTypes={['application/octet-stream']}
-									onSelect={result => {
-										successfullyUploadedThermalFile(result.url);
-									}}
-									onClose={calcelUploadingThermalFile}
-									render={({ open }) => <Button
-										onClick={() => {
-											startUploadingThermalFile();
-											open();
-										}}
-										variant="primary"
-										size="compact"
-									>
-										{thermal ? "Change file" : "Upload or select a LRC file"}
-									</Button>
-									}
+								<Change
+									attributes={attributes}
+									setAttributes={setAttributes}
 								/>
 
 								{thermal &&
@@ -242,7 +119,7 @@ export default function Edit({ attributes, setAttributes }) {
 										variant="secondary"
 										size='compact'
 										onClick={() => setHasEditor(true)}
-									>Editor</Button>
+									>{__("Editor", "thermal-display")}</Button>
 								}
 
 							</ButtonGroup>
@@ -251,36 +128,19 @@ export default function Edit({ attributes, setAttributes }) {
 
 					</PanelBody>
 
-					<PanelBody title="Visible file" initialOpen={false}>
+					<PanelBody 
+						title={__("Visible file", "thermal-display")}
+						initialOpen={false}
+					>
 
 						<div>
 							{visible && <img src={visible} />}
 
-							<MediaUpload
-								allowedTypes="image"
-								onSelect={result => {
-									successfullyUploadedVisibleFile(result.url);
-								}}
-								render={({ open }) => (
-									<>
-										<Button
-											onClick={() => {
-												startUploadingVisibleFile();
-												open();
-											}}
-											variant="primary"
-										>
-											{visible ? "Change file" : "Upload or select a visible image"}
-										</Button>
-										{visible && <Button
-											variant="secondary"
-											onClick={() => {
-												setAttributes({ visible: undefined, opacity: 1 });
-											}}
-										>Remove the file</Button>}
-									</>
-								)}
+							<Visible
+								attributes={attributes}
+								setAttributes={setAttributes}
 							/>
+
 						</div>
 
 						{visible && <div
@@ -288,8 +148,8 @@ export default function Edit({ attributes, setAttributes }) {
 						>
 							<RangeControl
 								__nextHasNoMarginBottom
-								label="IR image opacity"
-								help="If a visible file is provided, you can set the initial transparency of the thermal file."
+								label={__("IR image opacity", "thermal-display")}
+								help={__("If a visible file is provided, you can set the initial transparency of the thermal file.", "thermal-display")}
 								value={opacity}
 								onChange={(value) => setAttributes({ opacity: value })}
 								min={0}
@@ -301,7 +161,35 @@ export default function Edit({ attributes, setAttributes }) {
 
 					</PanelBody>
 
-					<PanelBody title="Information" initialOpen={false}>
+					<PanelBody 
+						title={__("Information", "thermal-display")}
+						initialOpen={false}
+					>
+
+						<TextControl
+							label={__(
+								'Label',
+								'thermal-display'
+							)}
+							help={__("Label appears on the black button on top & left of the app.", "thermal-display")}
+							value={label || ''}
+							onChange={(value) =>
+								setAttributes({ label: value })
+							}
+						/>
+
+						<TextControl
+							label={__(
+								'Label tooltip',
+								'thermal-display'
+							)}
+							help={
+								__("Label tooltip appears when the user hovers the top-left button containing the label", "thermal-display") + ` "${label}".`}
+							value={labeltooltip || ''}
+							onChange={(value) =>
+								setAttributes({ labeltooltip: value })
+							}
+						/>
 
 						<TextControl
 							label={__(
@@ -325,25 +213,16 @@ export default function Edit({ attributes, setAttributes }) {
 							}
 						/>
 
-						<TextControl
-							label={__(
-								'Label',
-								'thermal-display'
-							)}
-							help="Label appears on the black button on top & left of the app."
-							value={label || ''}
-							onChange={(value) =>
-								setAttributes({ label: value })
-							}
-						/>
-
 					</PanelBody>
 
-					<PanelBody title="Thermal display settings" initialOpen={false}>
+					<PanelBody 
+						title={__("Thermal display settings", "thermal-display")} 
+						initialOpen={false}
+					>
 
 						<Field
-							label="Thermal range"
-							description="Adjust the default thermal range."
+							label={__("Thermal range", "thermal-display")}
+							description={__("Adjust the default thermal range.", "thermal-display")}
 						>
 							<Range
 								ID={ID}
@@ -353,8 +232,8 @@ export default function Edit({ attributes, setAttributes }) {
 						</Field>
 
 						<Field
-							label="Colour palette"
-							description="Select the colour palette for the thermal display."
+							label={__("Colour palette", "thermal-display")}
+							description={__("Select the colour palette for the thermal display.", "thermal-display")}
 						>
 							<Palettes
 								ID={ID}
@@ -366,8 +245,8 @@ export default function Edit({ attributes, setAttributes }) {
 
 
 						<Field
-							label="Thermal Unit"
-							description="Select the unit for the thermal display."
+							label={__("Thermal Unit", "thermal-display")}
+							description={__("Select the unit for the thermal display.", "thermal-display")}
 						>
 							<Unit
 								ID={ID}
@@ -378,7 +257,10 @@ export default function Edit({ attributes, setAttributes }) {
 
 					</PanelBody>
 
-					{isSequence && <PanelBody title="Playback settings" initialOpen={false}>
+					{isSequence && <PanelBody 
+						title={__("Playback settings", "thermal-display")} 
+						initialOpen={false}
+					>
 						<Ms
 							ID={ID}
 							attributes={attributes}
@@ -390,7 +272,10 @@ export default function Edit({ attributes, setAttributes }) {
 						/>
 					</PanelBody>}
 
-					<PanelBody title="Appearance settings" initialOpen={false}>
+					<PanelBody 
+						title={__("Appearance settings", "thermal-display")} 
+						initialOpen={false}
+					>
 						<AppearencePanel {...attributes} setter={setAttributes} />
 					</PanelBody>
 
@@ -410,8 +295,8 @@ export default function Edit({ attributes, setAttributes }) {
 						ID={ID}
 					/>
 					: <Empty
-						startUploadingThermalFile={startUploadingThermalFile}
-						successfullyUploadedThermalFile={successfullyUploadedThermalFile}
+						attributes={attributes}
+						setAttributes={setAttributes}
 					/>
 				}
 
