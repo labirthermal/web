@@ -3,53 +3,56 @@
  * @see https://github.com/WordPress/gutenberg/blob/trunk/docs/reference-guides/block-api/block-metadata.md#render
  */
 
-if ( !function_exists( "analysis_is_set" ) ) {
-	function analysis_is_set( $value ) {
-		return $value !== null && $value !== "";
-	}
-}
-
+$files = $attributes['files'] ?? '';
+if ( $files !== '' ) :
 ?>
-
-<?php if ( $attributes["files"] ): ?>
-
-<div <?= get_block_wrapper_attributes(); ?>>
-	
-
-		<thermal-group-app
-			locale="<?= get_locale(); ?>"
-			<?php if (analysis_is_set( $attributes["visible"] ) ) { echo 'visible="'.$attributes["visible"].'"'; } ?>
-			palette="<?= $attributes["palette"]; ?>"
-			author="<?= $attributes["author"] ?>" 
-			license="<?= $attributes["license"] ?>"
-			<?php if ( $attributes["label"] ) { echo "label='" . $attributes["label"] . "'"; }  else { echo ""; } ?>
-			description="<?= $attributes["description"] ?>"
-			<?php if ( $attributes["from"] && $attributes["to"] ): ?>
-				from="<?= $attributes["from"] ?>"
-				to="<?= $attributes["to"]; ?>"
-			<?php endif; ?>
-			files="<?= $attributes["files"] ?>"
-			columns="<?= $attributes["columns"] ?>"
-			<?php if (analysis_is_set( $attributes["speed"] ) ) { echo 'speed="'.$attributes["speed"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["opacity"] ) ) { echo 'opacity="'.$attributes["opacity"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis1"] ) ) { echo 'analysis1="'.$attributes["analysis1"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis2"] ) ) { echo 'analysis2="'.$attributes["analysis2"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis3"] ) ) { echo 'analysis3="'.$attributes["analysis3"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis4"] ) ) { echo 'analysis4="'.$attributes["analysis4"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis5"] ) ) { echo 'analysis5="'.$attributes["analysis5"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis6"] ) ) { echo 'analysis6="'.$attributes["analysis6"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis7"] ) ) { echo 'analysis7="'.$attributes["analysis7"].'"'; } ?>
-			showhistogram="<?= $attributes["showhistogram"] ? "true": "false" ?>"
-			showabout="<?= $attributes["showabout"] ? "true": "false" ?>"
-			interactiveanalysis="<?= $attributes["interactiveanalysis"] ? "true": "false" ?>"
-			preservetime="<?= $attributes["preservetime"] ? "true" : "false" ?>"
-			skin="<?= $attributes["skin"]; ?>"
-			lines="<?= $attributes["lines"]; ?>"
-			corners="<?= $attributes["corners"]; ?>"
-		></thermal-group-app>
-
+<div <?php echo get_block_wrapper_attributes(); ?>>
+	<thermal-group-app
+		locale="<?php echo esc_attr( get_locale() ); ?>"
+		group-files="<?php echo esc_attr( $files ); ?>"
+		palette="<?php echo esc_attr( $attributes['palette'] ?? 'iron' ); ?>"
+		unit="<?php echo esc_attr( $attributes['unit'] ?? 'C' ); ?>"
+		opacity="<?php echo esc_attr( $attributes['opacity'] ?? 1 ); ?>"
+		tool="<?php echo esc_attr( $attributes['tool'] ?? 'inspect' ); ?>"
+		skin="<?php echo esc_attr( $attributes['skin'] ?? 'default' ); ?>"
+		lines="<?php echo esc_attr( $attributes['lines'] ?? 'default' ); ?>"
+		corners="<?php echo esc_attr( $attributes['corners'] ?? 'default' ); ?>"
+		advanced-palettes
+		autoclear-group
+		<?php if ( isset( $attributes['label'] ) && $attributes['label'] !== '' ) : ?>
+			label="<?php echo esc_attr( $attributes['label'] ); ?>"
+		<?php endif; ?>
+		<?php if ( isset( $attributes['author'] ) && $attributes['author'] !== '' ) : ?>
+			author="<?php echo esc_attr( $attributes['author'] ); ?>"
+		<?php endif; ?>
+		<?php if ( isset( $attributes['license'] ) && $attributes['license'] !== '' ) : ?>
+			license="<?php echo esc_attr( $attributes['license'] ); ?>"
+		<?php endif; ?>
+		<?php if ( isset( $attributes['from'] ) && isset( $attributes['to'] ) ) : ?>
+			from="<?php echo esc_attr( $attributes['from'] ); ?>"
+			to="<?php echo esc_attr( $attributes['to'] ); ?>"
+		<?php endif; ?>
+		<?php if ( ! empty( $attributes['showfullscreen'] ) ) : ?>
+			show-fullscreen
+		<?php endif; ?>
+		<?php if ( ! empty( $attributes['smooththermograms'] ) ) : ?>
+			smooth-thermograms
+		<?php endif; ?>
+		<?php if ( ! empty( $attributes['smoothgraph'] ) ) : ?>
+			smooth-graph
+		<?php endif; ?>
+		<?php if ( ! empty( $attributes['autohighlight'] ) ) : ?>
+			autohighlight
+		<?php endif; ?>
+		<?php for ( $i = 1; $i <= 7; $i++ ) :
+			$key = 'analysis' . $i;
+			if ( isset( $attributes[ $key ] ) && $attributes[ $key ] !== '' ) :
+		?>
+			<?php echo esc_attr( $key ); ?>="<?php echo esc_attr( $attributes[ $key ] ); ?>"
+		<?php
+			endif;
+		endfor;
+		?>
+	></thermal-group-app>
 </div>
-
 <?php endif; ?>
-
-

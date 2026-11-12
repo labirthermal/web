@@ -305,7 +305,7 @@ export class ThermalDropinAppElement
         }
 
         if (this.displayMode === Mode.LIST) {
-            elements.push(html`${this.groupListingController.renderListHeader("bar-header")}`);
+            elements.push(html`${this.groupListingController.renderListHeader("bar-pre")}`);
         }
 
         if (this.displayMode === Mode.DETAIL) {

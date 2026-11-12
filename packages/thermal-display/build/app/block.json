@@ -43,7 +43,7 @@
     },
     "advancedpalettes": {
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "thermal": {
       "type": "string"
@@ -72,9 +72,6 @@
     "label": {
       "type": "string",
       "default": "IR file"
-    },
-    "labeltooltip": {
-      "type": "string"
     },
     "author": {
       "type": "string"
@@ -123,6 +120,30 @@
     "unit": {
       "type": "string",
       "default": "C"
+    },
+    "tool": {
+      "type": "string",
+      "default": "inspect"
+    },
+    "autohighlight": {
+      "type": "boolean",
+      "default": false
+    },
+    "interactiveanalysis": {
+      "type": "boolean",
+      "default": true
+    },
+    "showfullscreen": {
+      "type": "boolean",
+      "default": false
+    },
+    "smooththermograms": {
+      "type": "boolean",
+      "default": false
+    },
+    "smoothgraph": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

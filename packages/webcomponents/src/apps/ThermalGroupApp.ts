@@ -169,8 +169,8 @@ export class ThermalGroupAppElement
                 <manager-palette-dropdown slot="pre-bar"></manager-palette-dropdown>
                 <registry-range-form slot="pre-bar"></registry-range-form>
                 ${this.file
-                    ? this.groupListingController.renderDetailHeader(this.file, "bar-header", listingOptions)
-                    : this.groupListingController.renderListHeader("bar-header", listingOptions)}
+                    ? this.groupListingController.renderDetailHeader(this.file, "bar-pre", listingOptions)
+                    : this.groupListingController.renderListHeader("bar-pre", listingOptions)}
                 <thermal-dialog label=${this.t("config")} slot="bar-pre">
                     <thermal-btn slot="invoker" tooltip=${this.t("config")} icon="settings" iconStyle="solid"></thermal-btn>
                     <div slot="content">

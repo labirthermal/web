@@ -1,11 +1,11 @@
 import type { ThermalGroup } from "@labirthermal/core";
 import { ThermalFileFailure, ThermalFileReader } from "@labirthermal/core";
 import type { PropertyValueMap } from "lit";
-import type { AbstractThermalElement } from "../hierarchy/AbstractThermalElement";
 import type { HostReactiveProperties } from "./AbstractHierarchyController";
 import { AbstractHierarchyController } from "./AbstractHierarchyController";
-import type { GroupController } from "./GroupController";
+import type { GroupController, IElementWithGroupController } from "./GroupController";
 import type { GroupListingController } from "./GroupListingController";
+import type { IElementWithRegistryController } from "./RegistryController";
 
 type IHostProperties = {
     /** 
@@ -61,7 +61,7 @@ type IHostProperties = {
  * }
  * ```
  */
-export interface IElementWithGroupLoadController extends AbstractThermalElement, IHostProperties {
+export interface IElementWithGroupLoadController extends IElementWithGroupController, IElementWithRegistryController, IHostProperties {
     groupController: GroupController;
     groupListingController: GroupListingController;
     groupLoadController: GroupLoadController;
@@ -313,6 +313,13 @@ export class GroupLoadController extends AbstractHierarchyController<IElementWit
         requests: GroupLoaderFileRequest[]
     ) {
 
+        const initialRange = this.host.from !== undefined && this.host.to !== undefined
+            ? {
+                from: this.host.managerController.fromCurrentUnit(this.host.from),
+                to: this.host.managerController.fromCurrentUnit(this.host.to)
+            }
+            : undefined;
+
         // If no files are requested, clear the group
         if ( requests.length === 0 ) {
             this.group.files.removeAllInstances();
@@ -353,6 +360,9 @@ export class GroupLoadController extends AbstractHierarchyController<IElementWit
 
             await registry.postLoadedProcessing();
             registry.range.applyMinmax();
+            if (initialRange) {
+                this.host.groupController.registryController.setRange(initialRange.from, initialRange.to);
+            }
         } catch (error) {
             this.errors.push(error instanceof Error ? error.message : String(error));
         } finally {

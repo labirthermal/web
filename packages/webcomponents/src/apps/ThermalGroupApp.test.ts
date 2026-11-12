@@ -125,6 +125,40 @@ describe("ThermalGroupApp", () => {
         expect(host.shadowRoot!.textContent).not.toContain("Invalid thermal file");
     });
 
+    it.each([
+        { unit: "C", from: 15, to: 25, expectedFrom: 15, expectedTo: 25 },
+        { unit: "F", from: 68, to: 86, expectedFrom: 20, expectedTo: 30 }
+    ])("preserves the configured $unit range after loading files", async ({ unit, from, to, expectedFrom, expectedTo }) => {
+        vi.spyOn(FilesService.prototype, "loadFile").mockImplementation(async function(this: FilesService, url) {
+            return readerFixture(this, url);
+        });
+
+        const host = new ThermalGroupAppElement();
+        host.setAttribute("unit", unit);
+        host.setAttribute("from", String(from));
+        host.setAttribute("to", String(to));
+        host.setAttribute("group-files", "thermal~range.lrc");
+        document.body.append(host);
+        await settle(host);
+
+        expect(host.groupObject.registry.range.value).toEqual({ from: expectedFrom, to: expectedTo });
+        expect(host.from).toBe(from);
+        expect(host.to).toBe(to);
+    });
+
+    it("uses the full range of the loaded files when no initial range is configured", async () => {
+        vi.spyOn(FilesService.prototype, "loadFile").mockImplementation(async function(this: FilesService, url) {
+            return readerFixture(this, url);
+        });
+
+        const host = new ThermalGroupAppElement();
+        host.setAttribute("group-files", "thermal~range.lrc");
+        document.body.append(host);
+        await settle(host);
+
+        expect(host.groupObject.registry.range.value).toEqual({ from: 10, to: 30 });
+    });
+
     it("removes its file-list listener on disconnect", () => {
         const host = new ThermalGroupAppElement();
         host.autoclearGroup = false;

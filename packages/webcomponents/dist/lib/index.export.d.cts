@@ -3048,6 +3048,7 @@ export declare class GroupListingController extends AbstractHierarchyController<
   private backup;
   private readonly temperatureScaleRef;
   private temperatureScaleWrapped;
+  private temperatureScalePaddingLeft;
   private temperatureScaleSlot?;
   private temperatureScaleObserver?;
   private temperatureScaleFrame?;
@@ -3143,7 +3144,7 @@ type IHostProperties$1 = {
  * }
  * ```
  */
-interface IElementWithGroupLoadController extends AbstractThermalElement, IHostProperties$1 {
+interface IElementWithGroupLoadController extends IElementWithGroupController, IElementWithRegistryController, IHostProperties$1 {
   groupController: GroupController;
   groupListingController: GroupListingController;
   groupLoadController: GroupLoadController;

@@ -3,62 +3,61 @@
  * @see https://github.com/WordPress/gutenberg/blob/trunk/docs/reference-guides/block-api/block-metadata.md#render
  */
 
-if ( !function_exists( "analysis_is_set" ) ) {
-	function analysis_is_set( $value ) {
-		return $value !== null && $value !== "";
-	}
-}
-
+$thermal = $attributes['thermal'] ?? '';
+if ( $thermal !== '' ) :
 ?>
-
-<?php if ( $attributes["thermal"] ): ?>
-
-<div <?= get_block_wrapper_attributes(); ?>>
-
-		<thermal-file-app
-			locale="<?= get_locale(); ?>"
-			thermal="<?= $attributes["thermal"]?>" 
-			<?php if (analysis_is_set( $attributes["visible"] ) ) { echo 'visible="'.$attributes["visible"].'"'; } ?>
-			palette=<?= $attributes["palette"]; ?> 
-			<?php if (analysis_is_set( $attributes["author"] ) ): ?>author="<?= $attributes["author"] ?>"<?php endif; ?>
-			<?php if (analysis_is_set( $attributes["license"] ) ): ?>license="<?= $attributes["license"] ?>"<?php endif; ?>
-			<?php if (analysis_is_set( $attributes["label"] ) ): ?>label="<?= $attributes["label"] ?>"<?php endif; ?>
-			<?php if (analysis_is_set( $attributes["description"] ) ): ?>description="<?= $attributes["description"] ?>"<?php endif; ?>
-			<?php if ( $attributes["from"] && $attributes["to"] ): ?>
-				from="<?= $attributes["from"] ?>"
-				to="<?= $attributes["to"]; ?>"
-			<?php endif; ?>
-			<?php if (analysis_is_set( $attributes["speed"] ) ) { echo 'speed="'.$attributes["speed"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["opacity"] ) ) { echo 'opacity="'.$attributes["opacity"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis1"] ) ) { echo 'analysis1="'.$attributes["analysis1"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis2"] ) ) { echo 'analysis2="'.$attributes["analysis2"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis3"] ) ) { echo 'analysis3="'.$attributes["analysis3"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis4"] ) ) { echo 'analysis4="'.$attributes["analysis4"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis5"] ) ) { echo 'analysis5="'.$attributes["analysis5"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis6"] ) ) { echo 'analysis6="'.$attributes["analysis6"].'"'; } ?>
-			<?php if (analysis_is_set( $attributes["analysis7"] ) ) { echo 'analysis7="'.$attributes["analysis7"].'"'; } ?>
-			advanced-palettes="<?= $attributes["advancedpalettes"] ? "true": "false" ?>"
-			skin="<?= $attributes["skin"]; ?>"
-			lines="<?= $attributes["lines"]; ?>"
-			corners="<?= $attributes["corners"]; ?>"
-		>
-		<?php if ( isset($attributes["notations"]) ):
-			foreach ( $attributes["notations"] as $notation ):	
+<div <?php echo get_block_wrapper_attributes(); ?>>
+	<thermal-file-app
+		locale="<?php echo esc_attr( get_locale() ); ?>"
+		thermal="<?php echo esc_attr( $thermal ); ?>"
+		palette="<?php echo esc_attr( $attributes['palette'] ?? 'iron' ); ?>"
+		unit="<?php echo esc_attr( $attributes['unit'] ?? 'C' ); ?>"
+		opacity="<?php echo esc_attr( $attributes['opacity'] ?? 1 ); ?>"
+		speed="<?php echo esc_attr( $attributes['speed'] ?? 1 ); ?>"
+		ms="<?php echo esc_attr( $attributes['ms'] ?? 0 ); ?>"
+		tool="<?php echo esc_attr( $attributes['tool'] ?? 'inspect' ); ?>"
+		skin="<?php echo esc_attr( $attributes['skin'] ?? 'default' ); ?>"
+		lines="<?php echo esc_attr( $attributes['lines'] ?? 'default' ); ?>"
+		corners="<?php echo esc_attr( $attributes['corners'] ?? 'default' ); ?>"
+		advanced-palettes
+		data-interactive-analysis="<?php echo ( $attributes['interactiveanalysis'] ?? true ) ? 'true' : 'false'; ?>"
+		<?php if ( isset( $attributes['visible'] ) && $attributes['visible'] !== '' ) : ?>
+			visible="<?php echo esc_attr( $attributes['visible'] ); ?>"
+		<?php endif; ?>
+		<?php if ( isset( $attributes['author'] ) && $attributes['author'] !== '' ) : ?>
+			author="<?php echo esc_attr( $attributes['author'] ); ?>"
+		<?php endif; ?>
+		<?php if ( isset( $attributes['license'] ) && $attributes['license'] !== '' ) : ?>
+			license="<?php echo esc_attr( $attributes['license'] ); ?>"
+		<?php endif; ?>
+		<?php if ( isset( $attributes['label'] ) && $attributes['label'] !== '' ) : ?>
+			label="<?php echo esc_attr( $attributes['label'] ); ?>"
+		<?php endif; ?>
+		<?php if ( isset( $attributes['from'] ) && isset( $attributes['to'] ) ) : ?>
+			from="<?php echo esc_attr( $attributes['from'] ); ?>"
+			to="<?php echo esc_attr( $attributes['to'] ); ?>"
+		<?php endif; ?>
+		<?php if ( ! empty( $attributes['autohighlight'] ) ) : ?>
+			autohighlight
+		<?php endif; ?>
+		<?php if ( ! empty( $attributes['showfullscreen'] ) ) : ?>
+			show-fullscreen
+		<?php endif; ?>
+		<?php if ( ! empty( $attributes['smooththermograms'] ) ) : ?>
+			smooth-thermograms
+		<?php endif; ?>
+		<?php if ( ! empty( $attributes['smoothgraph'] ) ) : ?>
+			smooth-graph
+		<?php endif; ?>
+		<?php for ( $i = 1; $i <= 7; $i++ ) :
+			$key = 'analysis' . $i;
+			if ( isset( $attributes[ $key ] ) && $attributes[ $key ] !== '' ) :
 		?>
-			<notation-entry 
-				slot="notation" 
-				from="<?= $notation['from']?>" 
-				to="<?= $notation['to']?>" 
-				label="<?= $notation['label']?>"
-				<?php if (isset($notation["image"])): ?>image='<?=$notation["image"];?>' <?php endif;?>
-			></notation-entry>
-		<?php 
-			endforeach;
-		endif; ?>
-	</thermal-file-app>
-
+			<?php echo esc_attr( $key ); ?>="<?php echo esc_attr( $attributes[ $key ] ); ?>"
+		<?php
+			endif;
+		endfor;
+		?>
+	></thermal-file-app>
 </div>
-
 <?php endif; ?>
-
-

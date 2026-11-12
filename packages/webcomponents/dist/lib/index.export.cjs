@@ -5460,6 +5460,10 @@ var GroupLoadController = class GroupLoadController extends AbstractHierarchyCon
 	}
 	/** Loads the files  specified in the `requests` array. */
 	async _load(requests) {
+		const initialRange = this.host.from !== void 0 && this.host.to !== void 0 ? {
+			from: this.host.managerController.fromCurrentUnit(this.host.from),
+			to: this.host.managerController.fromCurrentUnit(this.host.to)
+		} : void 0;
 		if (requests.length === 0) {
 			this.group.files.removeAllInstances();
 			return;
@@ -5483,6 +5487,7 @@ var GroupLoadController = class GroupLoadController extends AbstractHierarchyCon
 			}
 			await registry.postLoadedProcessing();
 			registry.range.applyMinmax();
+			if (initialRange) this.host.groupController.registryController.setRange(initialRange.from, initialRange.to);
 		} catch (error) {
 			this.errors.push(error instanceof Error ? error.message : String(error));
 		} finally {
@@ -5542,6 +5547,7 @@ var GroupListingController = class extends AbstractHierarchyController {
 		this.backup = /* @__PURE__ */ new Set();
 		this.temperatureScaleRef = (0, lit_directives_ref_js.createRef)();
 		this.temperatureScaleWrapped = false;
+		this.temperatureScalePaddingLeft = "1em";
 		this._numColumns = 3;
 		this._asTable = false;
 		this._previewWidth = 50;
@@ -5785,7 +5791,8 @@ var GroupListingController = class extends AbstractHierarchyController {
 			minWidth: "0",
 			boxSizing: "border-box",
 			width: this.temperatureScaleWrapped ? "100%" : void 0,
-			paddingLeft: this.temperatureScaleWrapped ? "0" : "1em"
+			paddingLeft: this.temperatureScalePaddingLeft,
+			paddingRight: this.temperatureScaleWrapped ? "1em" : void 0
 		})}
         >
             <registry-histogram height="15px" ?expandable=${true}></registry-histogram>
@@ -5828,8 +5835,13 @@ var GroupListingController = class extends AbstractHierarchyController {
 		}
 		available -= pixels(getComputedStyle(scale).fontSize);
 		const wrapped = available < 200;
-		if (wrapped !== this.temperatureScaleWrapped) {
+		const toolbar = this.host.shadowRoot?.querySelector("thermal-app")?.querySelector("manager-tool-bar");
+		const sidePadding = pixels(getComputedStyle(scale).fontSize);
+		const toolbarInset = wrapped && toolbar ? toolbar.getBoundingClientRect().width + gap : wrapped ? 0 : void 0;
+		const paddingLeft = toolbarInset === void 0 ? "1em" : `${toolbarInset + sidePadding}px`;
+		if (wrapped !== this.temperatureScaleWrapped || paddingLeft !== this.temperatureScalePaddingLeft) {
 			this.temperatureScaleWrapped = wrapped;
+			this.temperatureScalePaddingLeft = paddingLeft;
 			this.host.requestUpdate();
 		}
 	}
@@ -5868,16 +5880,10 @@ var GroupListingController = class extends AbstractHierarchyController {
 		await this.group.files.batchCreateInstances(fileReaders, false);
 	}
 	renderListHeader(slot, options = {}) {
-		return lit.html`<div slot="${(0, lit_directives_if_defined_js.ifDefined)(slot)}" style=${(0, lit_directives_style_map_js.styleMap)({
-			display: "flex",
-			flexDirection: "row",
-			justifyContent: "flex-start",
-			alignItems: "center",
-			boxSizing: "border-box",
-			gap: "0.5em"
-		})}>
+		return lit.html`
 
             <thermal-btn 
+                slot=${(0, lit_directives_if_defined_js.ifDefined)(slot)}
                 variant="default" 
                 style="cursor: default; font-size: .9em;"
                 icon="folder"
@@ -5886,6 +5892,7 @@ var GroupListingController = class extends AbstractHierarchyController {
             >${options.allowFileChanges === false ? `Počet souborů: ${this.group.files.value.length}` : `${this.group.files.value.length} nahraných souborů`}</thermal-btn>
 
             ${options.allowFileChanges === false ? void 0 : lit.html`<thermal-btn
+                slot=${(0, lit_directives_if_defined_js.ifDefined)(slot)}
                 tooltip="Smazat všechny soubory a nahrát nové"
                 icon="trash"
                 iconStyle="micro"
@@ -5897,7 +5904,7 @@ var GroupListingController = class extends AbstractHierarchyController {
 		}}
             ></thermal-btn>
             <group-dropin-input 
-                slot="bar-pre"
+                slot=${(0, lit_directives_if_defined_js.ifDefined)(slot)}
                 variant="background"
                 icon="upload"
                 iconStyle="micro"
@@ -5907,6 +5914,7 @@ var GroupListingController = class extends AbstractHierarchyController {
 		}}
             ></group-dropin-input>`}
             <group-download-dropdown 
+                slot=${(0, lit_directives_if_defined_js.ifDefined)(slot)}
                 variant="background"
                 icon="download"
                 iconStyle="micro"
@@ -5914,9 +5922,9 @@ var GroupListingController = class extends AbstractHierarchyController {
                 <span slot="invoker">Stáhnout skupinu</span>
             </group-download-dropdown>
             <div style="flex-grow: 1;"></div>
-            ${this.renderLayoutSwitch()}
-            ${this.renderColumnsSlider()}
-        </div>`;
+            ${this.renderLayoutSwitch(slot)}
+            ${this.renderColumnsSlider(slot)}
+        `;
 	}
 	renderThumbnail(instance, options = {}) {
 		const showDetail = () => {
@@ -5997,23 +6005,16 @@ var GroupListingController = class extends AbstractHierarchyController {
         </file-provider>`;
 	}
 	renderDetailHeader(instance, slot, options = {}) {
-		const divStyles = {
-			display: "flex",
-			flexDirection: "row",
-			justifyContent: "flex-start",
-			alignItems: "center",
-			boxSizing: "border-box",
-			gap: "0.5em"
-		};
 		const isSingular = !options.onCloseDetail && this.backup.size <= 1;
 		const fileCount = options.onCloseDetail ? this.group.files.value.length : this.backup.size;
 		const backLabel = isSingular ? "Zavřít" : "Zpět";
 		const backTooltip = options.allowFileChanges === false ? "Zpět na seznam souborů" : isSingular ? "Zavřít soubor a nahrát nový/é" : `Zpět na Vašich ${fileCount} souborů`;
 		const backIcon = isSingular ? "close" : "back";
 		const backIconStyle = isSingular ? "micro" : "micro";
-		return lit.html`<div style=${(0, lit_directives_style_map_js.styleMap)(divStyles)} slot=${(0, lit_directives_if_defined_js.ifDefined)(slot)}>
+		return lit.html`
 
             <thermal-btn 
+                slot=${(0, lit_directives_if_defined_js.ifDefined)(slot)}
                 variant="background" 
                 tooltip="Název souboru" 
                 style="cursor: default; font-size: .9em;"
@@ -6022,6 +6023,7 @@ var GroupListingController = class extends AbstractHierarchyController {
             >${instance.fileName}</thermal-btn>
 
             <thermal-btn 
+                slot=${(0, lit_directives_if_defined_js.ifDefined)(slot)}
                 variant="background" 
                 tooltip="Čas pořízení snímku" 
                 style="cursor: default; font-size: .9em;"
@@ -6030,6 +6032,7 @@ var GroupListingController = class extends AbstractHierarchyController {
             >${_labirthermal_core.TimeFormat.human(instance.timestamp)}</thermal-btn>
 
             <thermal-btn
+                slot=${(0, lit_directives_if_defined_js.ifDefined)(slot)}
                 icon=${backIcon}
                 iconStyle=${backIconStyle}
                 tooltip="${backTooltip}"
@@ -6043,7 +6046,7 @@ var GroupListingController = class extends AbstractHierarchyController {
 			} else this.restoreTheEntireBackup();
 		}}
             >${backLabel}</thermal-btn>
-            <file-info-button>
+            <file-info-button slot=${(0, lit_directives_if_defined_js.ifDefined)(slot)}>
                 <thermal-btn 
                     slot="invoker" 
                     icon="info" 
@@ -6053,12 +6056,13 @@ var GroupListingController = class extends AbstractHierarchyController {
             </file-info-button>
 
             <file-download-dropdown
+                slot=${(0, lit_directives_if_defined_js.ifDefined)(slot)}
                 icon="download"
                 iconStyle="micro"
                 variant="background"
             ></file-download-dropdown>
 
-        </div>`;
+        `;
 	}
 	/** Assumes the contexts to be provided by the host element */
 	renderDetailBody() {
@@ -17528,7 +17532,7 @@ var ThermalDropinAppElement = class extends AbstractApp {
             <registry-range-form slot="pre-bar"></registry-range-form>
             
             `);
-		if (this.displayMode === "list") elements.push(lit.html`${this.groupListingController.renderListHeader("bar-header")}`);
+		if (this.displayMode === "list") elements.push(lit.html`${this.groupListingController.renderListHeader("bar-pre")}`);
 		if (this.displayMode === "detail") elements.push(lit.html`${this.groupListingController.renderDetailHeader(this.groupObject.files.value[0], "bar-pre")}`);
 		if (this.displayMode !== "input") {
 			elements.push(lit.html`<thermal-dialog label="${t$1("config")}" slot="bar-pre">
@@ -17699,7 +17703,7 @@ var ThermalGroupAppElement = class extends AbstractApp {
                 <manager-tool-bar slot="pre-bar"></manager-tool-bar>
                 <manager-palette-dropdown slot="pre-bar"></manager-palette-dropdown>
                 <registry-range-form slot="pre-bar"></registry-range-form>
-                ${this.file ? this.groupListingController.renderDetailHeader(this.file, "bar-header", listingOptions) : this.groupListingController.renderListHeader("bar-header", listingOptions)}
+                ${this.file ? this.groupListingController.renderDetailHeader(this.file, "bar-pre", listingOptions) : this.groupListingController.renderListHeader("bar-pre", listingOptions)}
                 <thermal-dialog label=${this.t("config")} slot="bar-pre">
                     <thermal-btn slot="invoker" tooltip=${this.t("config")} icon="settings" iconStyle="solid"></thermal-btn>
                     <div slot="content">

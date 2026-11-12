@@ -73,6 +73,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
 
     private readonly temperatureScaleRef = createRef<HTMLDivElement>();
     private temperatureScaleWrapped = false;
+    private temperatureScalePaddingLeft = "1em";
     private temperatureScaleSlot?: HTMLSlotElement;
     private temperatureScaleObserver?: ResizeObserver;
     private temperatureScaleFrame?: number;
@@ -380,7 +381,8 @@ export class GroupListingController extends AbstractHierarchyController<IElement
                 minWidth: "0",
                 boxSizing: "border-box",
                 width: this.temperatureScaleWrapped ? "100%" : undefined,
-                paddingLeft: this.temperatureScaleWrapped ? "0" : "1em"
+                paddingLeft: this.temperatureScalePaddingLeft,
+                paddingRight: this.temperatureScaleWrapped ? "1em" : undefined
             })}
         >
             <registry-histogram height="15px" ?expandable=${true}></registry-histogram>
@@ -470,8 +472,19 @@ export class GroupListingController extends AbstractHierarchyController<IElement
         // Measure the prospective inline content width, even while the scale occupies its own row.
         available -= pixels(getComputedStyle(scale).fontSize);
         const wrapped = available < 200;
-        if (wrapped !== this.temperatureScaleWrapped) {
+        const toolbar = this.host.shadowRoot
+            ?.querySelector<ThermalAppElement>("thermal-app")
+            ?.querySelector<HTMLElement>("manager-tool-bar");
+        const sidePadding = pixels(getComputedStyle(scale).fontSize);
+        const toolbarInset = wrapped && toolbar
+            ? toolbar.getBoundingClientRect().width + gap
+            : wrapped ? 0 : undefined;
+        const paddingLeft = toolbarInset === undefined
+            ? "1em"
+            : `${toolbarInset + sidePadding}px`;
+        if (wrapped !== this.temperatureScaleWrapped || paddingLeft !== this.temperatureScalePaddingLeft) {
             this.temperatureScaleWrapped = wrapped;
+            this.temperatureScalePaddingLeft = paddingLeft;
             this.host.requestUpdate();
         }
     }
@@ -547,18 +560,10 @@ export class GroupListingController extends AbstractHierarchyController<IElement
         options: GroupListingRenderOptions = {}
     ): unknown {
 
-        const divStyles: StyleInfo = {
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "flex-start",
-            alignItems: "center",
-            boxSizing: "border-box",
-            gap: "0.5em"
-        };
-
-        return html`<div slot="${ifDefined( slot )}" style=${styleMap(divStyles)}>
+        return html`
 
             <thermal-btn 
+                slot=${ifDefined( slot )}
                 variant="default" 
                 style="cursor: default; font-size: .9em;"
                 icon="folder"
@@ -569,6 +574,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
                 : `${this.group.files.value.length} nahraných souborů`}</thermal-btn>
 
             ${options.allowFileChanges === false ? undefined : html`<thermal-btn
+                slot=${ifDefined( slot )}
                 tooltip="Smazat všechny soubory a nahrát nové"
                 icon="trash"
                 iconStyle="micro"
@@ -580,7 +586,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
                 }}
             ></thermal-btn>
             <group-dropin-input 
-                slot="bar-pre"
+                slot=${ifDefined( slot )}
                 variant="background"
                 icon="upload"
                 iconStyle="micro"
@@ -590,6 +596,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
                 }}
             ></group-dropin-input>`}
             <group-download-dropdown 
+                slot=${ifDefined( slot )}
                 variant="background"
                 icon="download"
                 iconStyle="micro"
@@ -597,9 +604,9 @@ export class GroupListingController extends AbstractHierarchyController<IElement
                 <span slot="invoker">Stáhnout skupinu</span>
             </group-download-dropdown>
             <div style="flex-grow: 1;"></div>
-            ${this.renderLayoutSwitch()}
-            ${this.renderColumnsSlider()}
-        </div>`;
+            ${this.renderLayoutSwitch(slot)}
+            ${this.renderColumnsSlider(slot)}
+        `;
 
     }
 
@@ -724,9 +731,10 @@ export class GroupListingController extends AbstractHierarchyController<IElement
         const backIcon = isSingular ? "close" : "back";
         const backIconStyle = isSingular ? "micro" : "micro";
 
-        return html`<div style=${styleMap(divStyles)} slot=${ifDefined(slot)}>
+        return html`
 
             <thermal-btn 
+                slot=${ifDefined( slot )}
                 variant="background" 
                 tooltip="Název souboru" 
                 style="cursor: default; font-size: .9em;"
@@ -735,6 +743,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
             >${instance.fileName}</thermal-btn>
 
             <thermal-btn 
+                slot=${ifDefined( slot )}
                 variant="background" 
                 tooltip="Čas pořízení snímku" 
                 style="cursor: default; font-size: .9em;"
@@ -743,6 +752,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
             >${TimeFormat.human( instance.timestamp )}</thermal-btn>
 
             <thermal-btn
+                slot=${ifDefined( slot )}
                 icon=${backIcon}
                 iconStyle=${backIconStyle}
                 tooltip="${backTooltip}"
@@ -759,7 +769,7 @@ export class GroupListingController extends AbstractHierarchyController<IElement
                     }
                 }}
             >${backLabel}</thermal-btn>
-            <file-info-button>
+            <file-info-button slot=${ifDefined( slot )}>
                 <thermal-btn 
                     slot="invoker" 
                     icon="info" 
@@ -769,12 +779,13 @@ export class GroupListingController extends AbstractHierarchyController<IElement
             </file-info-button>
 
             <file-download-dropdown
+                slot=${ifDefined( slot )}
                 icon="download"
                 iconStyle="micro"
                 variant="background"
             ></file-download-dropdown>
 
-        </div>`;
+        `;
     }
 
     /** Assumes the contexts to be provided by the host element */

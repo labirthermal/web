@@ -13,7 +13,7 @@
 		"html": false,
 		"anchor": true,
 		"lock": true,
-		"align": ["wide", "full"],
+		"align": [ "wide", "full" ],
 		"spacing": {
 			"padding": true,
 			"margin": true
@@ -33,32 +33,20 @@
 				"type": "constrained"
 			}
 		},
-		"showabout": {
-			"type": "boolean",
-			"default": "true"
-		},
-		"showhistogram": {
-			"type": "boolean",
-			"default": "true"
-		},
-		"interactiveanalysis": {
-			"type": "boolean",
-			"default": "true"
-		},
-		"preservetime": {
-			"type": "boolean",
-			"default": "true"
-		},
 		"files": {
 			"type": "string"
-		},
-		"columns": {
-			"type": "number",
-			"default": 3
 		},
 		"palette": {
 			"type": "string",
 			"default": "iron"
+		},
+		"unit": {
+			"type": "string",
+			"default": "C"
+		},
+		"opacity": {
+			"type": "number",
+			"default": 1
 		},
 		"from": {
 			"type": "number"
@@ -66,9 +54,13 @@
 		"to": {
 			"type": "number"
 		},
-		"speed": {
-			"type": "number",
-			"default": 1
+		"tool": {
+			"type": "string",
+			"default": "inspect"
+		},
+		"autohighlight": {
+			"type": "boolean",
+			"default": false
 		},
 		"label": {
 			"type": "string"
@@ -80,8 +72,17 @@
 			"type": "string",
 			"default": "CC BY-SA 4.0"
 		},
-		"description": {
-			"type": "string"
+		"showfullscreen": {
+			"type": "boolean",
+			"default": false
+		},
+		"smooththermograms": {
+			"type": "boolean",
+			"default": false
+		},
+		"smoothgraph": {
+			"type": "boolean",
+			"default": false
 		},
 		"analysis1": {
 			"type": "string"
@@ -109,11 +110,11 @@
 			"default": "default"
 		},
 		"lines": {
-			"type":"string",
+			"type": "string",
 			"default": "default"
 		},
 		"corners": {
-			"type":"string",
+			"type": "string",
 			"default": "default"
 		}
 	}

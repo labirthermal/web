@@ -74,7 +74,7 @@ class TestScaleListing extends TestListing {
 
     protected render() {
         return html`<thermal-app>
-            <div class="tool" slot="pre-bar"></div>
+            <manager-tool-bar class="tool" slot="pre-bar"></manager-tool-bar>
             ${this.showExtraTool ? html`<div class="extra-tool" slot="pre-bar"></div>` : undefined}
             ${this.showScale ? this.groupListingController.renderTemperatureScale() : undefined}
         </thermal-app>`;
@@ -207,7 +207,8 @@ describe("GroupListingController temperature scale", () => {
             await flushLayout(host);
             expect(scale.slot).toBe(available < 200 ? "pre-bar-wrap" : "pre-bar");
             expect(scale.style.width).toBe(available < 200 ? "100%" : "");
-            expect(scale.style.paddingLeft).toBe(available < 200 ? "0px" : "1em");
+            expect(scale.style.paddingLeft).toBe(available < 200 ? "121px" : "1em");
+            expect(scale.style.paddingRight).toBe(available < 200 ? "1em" : "");
             const slot = app.shadowRoot!.querySelector<HTMLSlotElement>(`slot[name="${scale.slot}"]`)!;
             expect(slot.assignedElements()).toContain(scale);
             host.requestUpdate();
@@ -223,10 +224,14 @@ describe("GroupListingController temperature scale", () => {
         observers[0].trigger();
         await flushLayout(host);
         expect(scale.slot).toBe("pre-bar-wrap");
+        expect(scale.style.paddingLeft).toBe("122px");
+        expect(scale.style.paddingRight).toBe("1em");
         toolWidth = 100;
         observers[0].trigger();
         await flushLayout(host);
         expect(scale.slot).toBe("pre-bar");
+        expect(scale.style.paddingLeft).toBe("1em");
+        expect(scale.style.paddingRight).toBe("");
 
         host.showExtraTool = true;
         host.requestUpdate();

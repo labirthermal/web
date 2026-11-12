@@ -13,10 +13,7 @@
 		"html": false,
 		"anchor": true,
 		"lock": true,
-		"align": [
-			"wide",
-			"full"
-		],
+		"align": [ "wide", "full" ],
 		"spacing": {
 			"padding": true,
 			"margin": true
@@ -28,12 +25,7 @@
 	"style": "file:./style-index.css",
 	"render": "file:./render.php",
 	"viewScript": "file:./view.js",
-	"keywords": [
-		"webcomponent",
-		"IR Camera",
-		"embed",
-		"LRC"
-	],
+	"keywords": [ "webcomponent", "IR Camera", "embed", "LRC" ],
 	"attributes": {
 		"layout": {
 			"type": "object",
@@ -43,7 +35,7 @@
 		},
 		"advancedpalettes": {
 			"type": "boolean",
-			"default": false
+			"default": true
 		},
 		"thermal": {
 			"type": "string"
@@ -72,9 +64,6 @@
 		"label": {
 			"type": "string",
 			"default": "IR file"
-		},
-		"labeltooltip": {
-			"type": "string"
 		},
 		"author": {
 			"type": "string"
@@ -109,11 +98,11 @@
 			"default": "default"
 		},
 		"lines": {
-			"type":"string",
+			"type": "string",
 			"default": "default"
 		},
 		"corners": {
-			"type":"string",
+			"type": "string",
 			"default": "default"
 		},
 		"ms": {
@@ -123,8 +112,30 @@
 		"unit": {
 			"type": "string",
 			"default": "C"
+		},
+		"tool": {
+			"type": "string",
+			"default": "inspect"
+		},
+		"autohighlight": {
+			"type": "boolean",
+			"default": false
+		},
+		"interactiveanalysis": {
+			"type": "boolean",
+			"default": true
+		},
+		"showfullscreen": {
+			"type": "boolean",
+			"default": false
+		},
+		"smooththermograms": {
+			"type": "boolean",
+			"default": false
+		},
+		"smoothgraph": {
+			"type": "boolean",
+			"default": false
 		}
-
-		
 	}
 }
